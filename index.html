@@ -1,1 +1,146 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#090b16">
+<title>QX Exchange</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at top,#292052,#090b16 65%);color:#f5f5ff;font-family:Arial,sans-serif;min-height:100vh}
+header{height:75px;border-bottom:1px solid #ffffff18;display:flex;align-items:center;justify-content:space-between;padding:0 6%}
+.brand{font-size:23px;font-weight:900;letter-spacing:-1px}
+.brand span{color:#9b83ff}
+button{cursor:pointer;font-weight:bold}
+.connect{background:#251d48;border:1px solid #8068e8;color:white;border-radius:12px;padding:12px 17px}
+main{max-width:1100px;margin:auto;padding:55px 20px}
+.hero{text-align:center;margin-bottom:35px}
+.hero small{color:#4de2d0;letter-spacing:3px}
+h1{font-size:clamp(34px,6vw,52px);margin:15px 0}
+h1 span{background:linear-gradient(90deg,#a58cff,#4de2d0);background-clip:text;color:transparent}
+.hero p{color:#939bb8}
+.layout{display:grid;grid-template-columns:1fr 290px;gap:22px}
+.card{background:#14182c;border:1px solid #29304c;border-radius:22px;padding:24px}
+.card h2{font-size:19px;margin:0 0 22px}
+.field{background:#0c1020;border:1px solid #29304a;border-radius:15px;padding:16px;margin-bottom:10px}
+.label{display:flex;justify-content:space-between;color:#929ab6;font-size:12px;margin-bottom:12px}
+.entry{display:flex;align-items:center;gap:10px}
+input{width:100%;min-width:0;background:none;border:0;outline:0;color:white;font-size:26px}
+select{background:#242b49;color:white;border:1px solid #41496b;border-radius:11px;padding:12px;font-weight:bold}
+.switch{display:block;margin:-1px auto 9px;background:#292c4c;color:#b7a6ff;border:3px solid #14182c;border-radius:11px;padding:7px 13px;font-size:18px}
+.details{color:#929ab6;font-size:12px;margin:18px 0}
+.details div{display:flex;justify-content:space-between;padding:8px 0}
+.details strong{color:#eee}
+.fee{color:#4de2d0!important}
+.action{width:100%;padding:16px;border:0;border-radius:13px;background:linear-gradient(100deg,#8769f5,#4dd8c8);color:#080b17;font-size:15px}
+.action:disabled{opacity:.45;cursor:not-allowed}
+.notice{font-size:11px;line-height:1.7;color:#b9b0dd;background:#211c3b;border:1px solid #55468a;border-radius:12px;padding:12px;margin-top:15px}
+.coin{padding:13px 0;border-bottom:1px solid #ffffff12;display:flex;justify-content:space-between}
+.coin:last-child{border:0}
+.coin span{color:#9b8aff;font-size:12px}
+#status{font-size:12px;color:#4de2d0;margin-top:12px;min-height:18px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:25px}
+.stat{background:#14182c;border:1px solid #29304c;border-radius:13px;text-align:center;padding:16px}
+.stat b{display:block;font-size:19px}
+.stat small{color:#929ab6}
+footer{text-align:center;color:#747d9b;border-top:1px solid #ffffff15;padding:25px;font-size:11px}
+@media(max-width:750px){.layout{grid-template-columns:1fr}.card{padding:18px}header{padding:0 17px}}
+</style>
+</head>
+<body>
+<header>
+ <div class="brand">QX <span>EXCHANGE</span></div>
+ <button class="connect" id="connect">Connect Wallet</button>
+</header>
+<main>
+ <section class="hero">
+  <small>ONE PLACE. MULTIPLE CHAINS.</small>
+  <h1>Swap Crypto <span>Your Way.</span></h1>
+  <p>A simple interface for exploring crypto swaps.</p>
+ </section>
+ <div class="layout">
+  <section class="card">
+   <h2>Exchange</h2>
+   <div class="field">
+    <div class="label"><span>You Pay</span><span>Balance: —</span></div>
+    <div class="entry">
+     <input id="amount" type="number" min="0" placeholder="0.00">
+     <select id="from">
+      <option>SOL</option><option>BTC</option><option>ETH</option><option>USDT</option><option>BNB</option>
+     </select>
+    </div>
+   </div>
+   <button class="switch" id="switch">↓↑</button>
+   <div class="field">
+    <div class="label"><span>You Receive</span><span>Estimated Amount</span></div>
+    <div class="entry">
+     <input id="receive" placeholder="—" readonly>
+     <select id="to">
+      <option>ETH</option><option>SOL</option><option>BTC</option><option>USDT</option><option>BNB</option>
+     </select>
+    </div>
+   </div>
+   <div class="details">
+    <div><span>Exchange Rate</span><strong>Not connected</strong></div>
+    <div><span>QX Service Fee (1%)</span><strong class="fee" id="fee">—</strong></div>
+    <div><span>Network Fee</span><strong>Provider estimate</strong></div>
+    <div><span>Wallet</span><strong id="wallet">Not connected</strong></div>
+   </div>
+   <button class="action" id="swap" disabled>Swap Provider Not Connected</button>
+   <div id="status">Connect your wallet to get started.</div>
+   <div class="notice">
+    Preview interface only. No swap is executed and no funds are transferred yet. Live swaps and automatic fee collection require a real swap-provider integration. Never share your recovery phrase or private keys.
+   </div>
+  </section>
+  <aside class="card">
+   <h2>Supported Assets</h2>
+   <div class="coin">◎ Solana <span>SOL</span></div>
+   <div class="coin">₿ Bitcoin <span>BTC</span></div>
+   <div class="coin">◆ Ethereum <span>ETH</span></div>
+   <div class="coin">₮ Tether <span>USDT</span></div>
+   <div class="coin">◆ BNB <span>BNB</span></div>
+  </aside>
+ </div>
+ <div class="stats">
+  <div class="stat"><b>5</b><small>Featured Assets</small></div>
+  <div class="stat"><b>1%</b><small>Planned Fee</small></div>
+  <div class="stat"><b>24/7</b><small>Interface Access</small></div>
+ </div>
+</main>
+<footer>© 2026 QX Exchange. All Rights Reserved.</footer>
+<script>
+const $=id=>document.getElementById(id);
+function update(){
+ const n=Number($("amount").value);
+ $("fee").textContent=n>0?(n*.01).toFixed(6)+" "+$("from").value:"—";
+ $("receive").value="";
+}
+$("amount").addEventListener("input",update);
+$("from").addEventListener("change",update);
+$("to").addEventListener("change",update);
+$("switch").onclick=()=>{
+ const a=$("from").value;
+ $("from").value=$("to").value;
+ $("to").value=a;
+ update();
+};
+$("connect").onclick=async()=>{
+ try{
+  if(window.solana?.isPhantom){
+   const r=await window.solana.connect();
+   $("wallet").textContent="Phantom Connected";
+   $("status").textContent="Wallet connected: "+r.publicKey.toString().slice(0,8)+"…";
+  }else if(window.ethereum){
+   const a=await window.ethereum.request({method:"eth_requestAccounts"});
+   $("wallet").textContent="EVM Wallet Connected";
+   $("status").textContent="Wallet connected: "+a[0].slice(0,8)+"…";
+  }else{
+   $("status").textContent="Open this page in Phantom or MetaMask.";
+  }
+ }catch(e){$("status").textContent="Connection cancelled."}
+};
+</script>
+</body>
+</html>
+
