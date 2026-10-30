@@ -1,291 +1,268 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>QX Exchange</title>
 <meta name="theme-color" content="#080b12">
-
+<title>QX Exchange</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#080b12;--panel:#111824;--line:#263246;--green:#b8f36c;--muted:#8c9ab0;--white:#f5f7fb}
+:root{--bg:#080b12;--panel:#111a26;--line:#263448;--green:#c7f36b;--text:#f4f6fa;--muted:#8998ad}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--white);font-family:Arial,sans-serif}
-header{height:75px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 6%;position:sticky;top:0;background:#080b12;z-index:5}
-.logo{font-weight:900;letter-spacing:2px;font-size:20px}
-.logo span{background:var(--green);color:#111;padding:9px;border-radius:9px;margin-right:8px}
-nav{display:flex;gap:25px}
-nav a{color:#aab5c7;text-decoration:none;font-size:13px}
-button{cursor:pointer;font-weight:bold}
-.connect{background:var(--green);color:#111;border:0;padding:13px 19px;border-radius:9px}
-main{max-width:1100px;margin:auto;padding:0 22px}
-.hero{padding:95px 0 65px}
-.tag{color:var(--green);font-size:11px;letter-spacing:3px;font-weight:bold}
-h1{font-size:clamp(48px,8vw,85px);line-height:1;margin:22px 0;letter-spacing:-4px}
-h1 span,h2 span{color:var(--green)}
-.hero p{color:var(--muted);max-width:540px;line-height:1.8}
-.hero a{display:inline-block;margin-top:20px;background:var(--green);color:#111;padding:15px 20px;border-radius:9px;text-decoration:none;font-weight:bold}
-.chains{display:flex;gap:10px;flex-wrap:wrap;margin-top:45px}
-.chains span{border:1px solid var(--line);border-radius:30px;padding:10px 14px;color:#c2ccda;font-size:12px}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:90px}
-.stat,.panel{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:22px}
-.stat small{color:var(--muted);font-size:10px;letter-spacing:2px}
-.stat strong{display:block;font-size:22px;margin:13px 0}
-.stat p{color:var(--muted);font-size:12px;margin:0}
-section{margin-bottom:90px;scroll-margin-top:95px}
-.heading{display:flex;justify-content:space-between;align-items:end;margin-bottom:22px}
-h2{font-size:34px;margin:9px 0}
-.status{font-size:10px;color:var(--green);border:1px solid #425331;padding:9px 12px;border-radius:25px}
-.swapgrid{display:grid;grid-template-columns:1.2fr .8fr;gap:15px}
-.panel h3{margin-top:0}
-.label{display:block;color:var(--muted);font-size:12px;margin:18px 0 8px}
-.asset{display:flex;gap:10px;background:#080e18;border:1px solid var(--line);padding:14px;border-radius:10px}
-select,input{background:transparent;color:white;border:0;outline:0;font-size:16px;min-width:0}
-select{width:100px;font-weight:bold}
-select option{background:#111824}
-input{text-align:right;width:60%;flex:1}
-.swapbtn{width:100%;padding:16px;background:var(--green);border:0;border-radius:9px;margin-top:20px}
-.secondary{background:transparent;border:1px solid #506078;color:white;border-radius:9px;padding:13px 17px}
-.muted{color:var(--muted);font-size:12px;line-height:1.8}
-table{width:100%;border-collapse:collapse}
-th,td{text-align:left;padding:17px 12px;border-bottom:1px solid var(--line);font-size:13px}
-th{font-size:10px;color:var(--muted);letter-spacing:1px}
-.green{color:var(--green)}.red{color:#ff777e}
-footer{border-top:1px solid var(--line);padding:30px 6%;display:flex;justify-content:space-between;color:var(--muted);font-size:12px}
-#walletStatus{color:var(--green);font-size:12px;margin-top:12px;overflow-wrap:anywhere}
-.note{font-size:10px;color:#78869a;line-height:1.7;margin-top:15px}
-@media(max-width:700px){
- header{padding:0 15px}nav{display:none}.connect{padding:11px;font-size:11px}
- .stats{grid-template-columns:1fr}.swapgrid{grid-template-columns:1fr}
- .hero{padding-top:65px}.heading h2{font-size:27px}
- th,td{padding:13px 7px;font-size:10px}
- footer{gap:15px;flex-wrap:wrap}
+body{margin:0;background:radial-gradient(ellipse at 50% -20%,#243444,transparent 55%),var(--bg);color:var(--text);font-family:Manrope,Arial}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:1120px;margin:auto;padding:0 22px}
+header{height:76px;border-bottom:1px solid #ffffff12;position:sticky;top:0;background:#080b12ed;backdrop-filter:blur(16px);z-index:5}
+nav{height:100%;display:flex;align-items:center;justify-content:space-between}
+.logo{font-weight:800;letter-spacing:2px;font-size:19px}
+.logo b{display:inline-grid;place-items:center;background:var(--green);color:#10150b;border-radius:10px;width:34px;height:34px;margin-right:9px}
+.links{display:flex;gap:26px;color:var(--muted);font-size:12px}
+.links a:hover{color:var(--green)}
+appkit-button{--w3m-accent:#c7f36b;--w3m-border-radius-master:12px}
+.hero{text-align:center;padding:90px 0 65px}
+.eyebrow{font:11px 'DM Mono';letter-spacing:2px;color:var(--green)}
+h1{font-size:clamp(42px,7vw,76px);line-height:1.04;letter-spacing:-3px;margin:20px 0}
+h1 span{color:var(--green)}
+.hero p{color:var(--muted);max-width:600px;margin:auto;line-height:1.8;font-size:14px}
+.actions{display:flex;justify-content:center;gap:12px;margin-top:28px;flex-wrap:wrap}
+.btn{display:inline-block;border:1px solid var(--line);background:var(--panel);color:white;padding:14px 20px;border-radius:11px;font-weight:800;font-size:12px;cursor:pointer}
+.btn.primary{background:var(--green);border-color:var(--green);color:#10150b}
+.panel{background:linear-gradient(145deg,#131e2b,#0d141e);border:1px solid var(--line);border-radius:17px;padding:23px}
+.market{margin:0 auto 65px;overflow:hidden;padding:0}
+.market-head{padding:17px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between}
+.market-head strong{font:11px 'DM Mono';letter-spacing:2px;color:var(--green)}
+.market-head span{font:10px 'DM Mono';color:var(--muted)}
+.prices{display:grid;grid-template-columns:repeat(5,1fr)}
+.coin{padding:19px;border-right:1px solid var(--line)}
+.coin:last-child{border:0}
+.coin-name{font-size:12px;color:#aeb9c8}
+.coin-price{font:17px 'DM Mono';margin:13px 0 5px}
+.coin-change{font:11px 'DM Mono';color:var(--green)}
+.down{color:#ff7882}
+section.content{padding:20px 0 65px}
+.heading{display:flex;justify-content:space-between;align-items:end;margin-bottom:20px}
+h2{font-size:28px;margin:8px 0 0;letter-spacing:-1px}
+.small{font-size:12px;color:var(--muted);line-height:1.8}
+.swap-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:17px}
+.field-label{font:10px 'DM Mono';color:var(--muted);letter-spacing:1px;margin:20px 0 8px}
+.swap-row{display:flex;gap:10px;padding:14px;background:#080f19;border:1px solid var(--line);border-radius:12px}
+.swap-row input{background:none;border:0;outline:0;color:white;min-width:0;flex:1;font:20px 'DM Mono'}
+select{background:#1a293a;color:white;border:1px solid #34445a;border-radius:9px;padding:9px;font-weight:bold}
+.swap-btn{width:100%;margin-top:17px}
+.feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.feature{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:22px}
+.feature b{color:var(--green);font:11px 'DM Mono'}
+.feature h3{font-size:15px}
+.feature p{font-size:12px;color:var(--muted);line-height:1.8}
+.create{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:27px;background:#14221b;border:1px solid #40533c;border-radius:16px}
+.create h2{font-size:23px}
+footer{border-top:1px solid var(--line);padding:25px 0;color:var(--muted);font-size:11px}
+.foot{display:flex;justify-content:space-between;gap:15px}
+.foot a{color:var(--green)}
+@media(max-width:760px){
+ .links{display:none}.hero{padding:65px 0 45px}
+ .prices{grid-template-columns:repeat(2,1fr)}
+ .coin:nth-child(2n){border-right:0}
+ .coin:last-child{display:none}
+ .swap-grid,.feature-grid{grid-template-columns:1fr}
+ .heading{display:block}.heading .small{margin-top:9px}
+ .create,.foot{align-items:flex-start;flex-direction:column}
 }
 </style>
 </head>
-
 <body>
 <header>
- <div class="logo"><span>QX</span> EXCHANGE</div>
- <nav>
-  <a href="#markets">Markets</a>
-  <a href="#swap">Swap</a>
-  <a href="#about">About</a>
+ <nav class="wrap">
+  <a class="logo" href="#"><b>Q</b> QX EXCHANGE</a>
+  <div class="links">
+   <a href="#markets">Markets</a><a href="#swap">Swap</a>
+   <a href="#features">About</a><a href="#create">Create Token</a>
+  </div>
+  <appkit-button></appkit-button>
  </nav>
- <button class="connect" id="connect">Connect Wallet</button>
 </header>
 
-<main>
+<main class="wrap">
 <section class="hero">
- <div class="tag">MULTI-CHAIN CRYPTO EXCHANGE</div>
- <h1>Trade crypto.<br><span>Without limits.</span></h1>
- <p>Explore digital assets, connect your Web3 wallet and access supported crypto swap services through one simple interface.</p>
- <a href="#swap">Start Trading ↗</a>
- <div class="chains">
-  <span>◎ Solana</span><span>◆ Ethereum</span>
-  <span>⬡ BNB Chain</span><span>₿ Bitcoin</span>
-  <span>◈ Polygon</span><span>◆ Arbitrum</span>
+ <div class="eyebrow">A NEW WAY TO ACCESS DIGITAL ASSETS</div>
+ <h1>One gateway.<br><span>Digital assets.</span></h1>
+ <p>Explore crypto markets and access onchain tools through a clean, simple interface built for the next generation of digital finance.</p>
+ <div class="actions">
+  <a class="btn primary" href="#swap">Explore Swap ↗</a>
+  <a class="btn" href="#markets">View Markets</a>
  </div>
 </section>
 
-<div class="stats">
- <div class="stat"><small>PLATFORM</small><strong>QX Exchange</strong><p>Multi-chain interface</p></div>
- <div class="stat"><small>WALLET SYSTEM</small><strong>Reown AppKit</strong><p>Multiple wallet connections</p></div>
- <div class="stat"><small>MARKET DATA</small><strong>Live Prices</strong><p>Public market ticker</p></div>
-</div>
+<section class="panel market" id="markets">
+ <div class="market-head"><strong>MARKET PRICES</strong><span id="marketStatus">Loading prices…</span></div>
+ <div class="prices" id="prices">
+  <div class="coin"><div class="coin-name">₿ Bitcoin</div><div class="coin-price">—</div><div class="coin-change">BTC</div></div>
+  <div class="coin"><div class="coin-name">Ξ Ethereum</div><div class="coin-price">—</div><div class="coin-change">ETH</div></div>
+  <div class="coin"><div class="coin-name">◎ Solana</div><div class="coin-price">—</div><div class="coin-change">SOL</div></div>
+  <div class="coin"><div class="coin-name">◆ BNB</div><div class="coin-price">—</div><div class="coin-change">BNB</div></div>
+  <div class="coin"><div class="coin-name">● XRP</div><div class="coin-price">—</div><div class="coin-change">XRP</div></div>
+ </div>
+</section>
 
-<section id="swap">
+<section class="content" id="swap">
  <div class="heading">
-  <div><div class="tag">EXCHANGE</div><h2>Swap <span>Crypto</span></h2></div>
-  <div class="status">WALLET CONNECT</div>
+  <div><div class="eyebrow">ONCHAIN EXCHANGE</div><h2>Swap assets</h2></div>
+  <div class="small">Connect your wallet to access supported swap routes.</div>
  </div>
-
- <div class="swapgrid">
+ <div class="swap-grid">
   <div class="panel">
-   <h3>Exchange assets</h3>
-   <label class="label">You pay</label>
-   <div class="asset">
-    <select id="from">
-     <option>ETH</option><option>BNB</option><option>SOL</option>
-     <option>USDT</option><option>USDC</option><option>BTC</option>
-    </select>
-    <input id="amount" type="number" placeholder="0.00" min="0">
+   <h3>Exchange tokens</h3>
+   <div class="small">Open the secure Reown swap experience for supported EVM networks.</div>
+   <div class="field-label">FROM</div>
+   <div class="swap-row">
+    <input id="amount" type="number" min="0" placeholder="1.00" value="1">
+    <select id="from"><option>ETH</option><option>USDC</option><option>USDT</option><option>BNB</option><option>POL</option></select>
    </div>
-
-   <div style="text-align:center;padding:12px;color:var(--green)">↓</div>
-
-   <label class="label">You receive</label>
-   <div class="asset">
-    <select id="to">
-     <option>USDT</option><option>USDC</option><option>ETH</option>
-     <option>BNB</option><option>SOL</option><option>BTC</option>
-    </select>
-    <div style="flex:1;text-align:right;color:var(--muted)">Quote appears in provider</div>
+   <div style="text-align:center;margin:-2px 0">
+    <button class="btn" id="reverse" style="padding:7px 13px">↕</button>
    </div>
-
-   <button class="swapbtn" id="openSwap">Open Swap</button>
-   <div class="note">Swap routes, supported assets and fees depend on the connected network and available provider. Review all details before confirming a transaction.</div>
+   <div class="field-label">TO</div>
+   <div class="swap-row">
+    <input value="Quote shown in swap window" readonly>
+    <select id="to"><option>USDC</option><option>ETH</option><option>USDT</option><option>BNB</option><option>POL</option></select>
+   </div>
+   <button class="btn primary swap-btn" id="openSwap">Open secure swap ↗</button>
+   <p class="small">Quotes, available tokens, network fees and routes are determined by Reown and its supported providers. Review every transaction in your wallet before signing.</p>
+   <div class="small" id="swapStatus">Swap routes depend on network and provider availability.</div>
   </div>
-
   <div class="panel">
-   <div class="tag">YOUR WALLET</div>
-   <h3>Connect your wallet</h3>
-   <p class="muted">Connect a compatible wallet to access supported networks and services.</p>
-   <button class="secondary" id="wallet2">Connect Wallet</button>
-   <div id="walletStatus">Wallet not connected</div>
-   <p class="note">Never share your recovery phrase or private keys. QX Exchange will never ask for them.</p>
+   <div class="eyebrow">WALLET CONNECTION</div>
+   <h3>One connection. Your control.</h3>
+   <p class="small">Use the single Connect Wallet button above. Reown manages wallet connection for supported EVM networks.</p>
+   <hr style="border:0;border-top:1px solid var(--line);margin:22px 0">
+   <div class="eyebrow">SUPPORTED NETWORKS</div>
+   <p class="small">Ethereum · Polygon · Arbitrum · Optimism · Base · BNB Smart Chain</p>
+   <hr style="border:0;border-top:1px solid var(--line);margin:22px 0">
+   <div class="eyebrow">SECURITY</div>
+   <p class="small">QX Exchange never asks for your seed phrase or private keys. Never share your recovery phrase.</p>
   </div>
  </div>
 </section>
 
-<section id="markets">
- <div class="heading">
-  <div><div class="tag">LIVE MARKET</div><h2>Market <span>Prices</span></h2></div>
-  <div class="status">● LIVE</div>
+<section class="content" id="features">
+ <div class="eyebrow">THE QX APPROACH</div><h2 style="margin-bottom:20px">Built for clarity</h2>
+ <div class="feature-grid">
+  <div class="feature"><b>01 / ACCESS</b><h3>Wallet-first</h3><p>Connect through Reown and approve transactions inside your own wallet.</p></div>
+  <div class="feature"><b>02 / MARKETS</b><h3>Market overview</h3><p>Follow leading digital assets with regularly refreshed market data.</p></div>
+  <div class="feature"><b>03 / CONTROL</b><h3>You stay in control</h3><p>Review network and transaction details before approving anything.</p></div>
  </div>
- <div class="panel" style="overflow-x:auto">
-  <table>
-   <thead><tr><th>ASSET</th><th>PAIR</th><th>PRICE USD</th><th>24H</th></tr></thead>
-   <tbody id="prices"><tr><td colspan="4">Loading prices...</td></tr></tbody>
-  </table>
- </div>
- <p class="note">Prices are indicative public market data and are not executable swap quotes.</p>
 </section>
 
-<section id="about">
- <div class="tag">ABOUT QX</div>
- <h2>One platform.<br><span>Multiple networks.</span></h2>
- <p class="muted">QX Exchange brings wallet connectivity and market information together in one interface. Swap availability depends on external providers, network support and token liquidity.</p>
+<section class="content" id="create">
+ <div class="create">
+  <div><div class="eyebrow">BUILD ON SOLANA</div><h2>Create your own token</h2><div class="small">Launch a Solana token using our dedicated token creation tool.</div></div>
+  <a class="btn primary" href="https://jhsmj5d6tc-cmd.github.io/oken-maker/" target="_blank" rel="noopener">Create Your Token ↗</a>
+ </div>
 </section>
 </main>
 
-<footer>
- <div class="logo"><span>QX</span> EXCHANGE</div>
- <div>© 2026 QX Exchange</div>
- <div class="green">Platform Online</div>
-</footer>
+<footer><div class="wrap">
+ <div class="foot"><span>© <span id="year"></span> QX Exchange. All rights reserved.</span>
+ <a href="https://x.com/solana__creator?s=11" target="_blank" rel="noopener">Follow QX on X ↗</a></div>
+ <p>Market prices are informational only. Digital assets involve risk. Always verify transaction details before signing.</p>
+</div></footer>
 
 <script type="module">
-/*
- QX Exchange — single-file frontend.
- Reown's official CDN bundle is loaded below.
- If the CDN bundle or adapters fail to load, the wallet button will show an error.
-*/
-const PROJECT_ID = "bd6faec63fbd0865f57da576a550ef09";
+import { WagmiAdapter, createAppKit, networks } from 'https://cdn.jsdelivr.net/npm/@reown/appkit-cdn@1.8.24/dist/appkit.js';
 
-const connectButtons = [
- document.getElementById("connect"),
- document.getElementById("wallet2")
+const projectId = 'bd6faec63fbd0865f57da576a550ef09';
+const appNetworks = [
+ networks.mainnet,
+ networks.polygon,
+ networks.arbitrum,
+ networks.optimism,
+ networks.base,
+ networks.bsc
 ];
 
-let appKit = null;
+const adapter = new WagmiAdapter({ networks: appNetworks, projectId });
 
-async function setupReown(){
- try {
-   const cdn = await import(
-     "https://cdn.jsdelivr.net/npm/@reown/appkit-cdn@1.8.24/+esm"
-   );
-
-   const networksModule = await import(
-     "https://esm.sh/@reown/appkit@1.8.24/networks"
-   );
-
-   const { createAppKit } = cdn;
-   const { mainnet, arbitrum, base, polygon, bsc, solana, bitcoin } = networksModule;
-
-   if (!createAppKit) throw new Error("Reown CDN export unavailable");
-
-   appKit = createAppKit({
-     projectId: PROJECT_ID,
-     networks: [mainnet, arbitrum, base, polygon, bsc, solana, bitcoin],
-     metadata: {
-       name: "QX Exchange",
-       description: "QX Exchange multi-chain platform",
-       url: location.origin,
-       icons: []
-     },
-     features: {
-       analytics: true,
-       swaps: true
-     },
-     themeMode: "dark",
-     themeVariables: {
-       "--w3m-accent": "#b8f36c",
-       "--w3m-border-radius-master": "10px"
-     }
-   });
-
-   connectButtons.forEach(button => {
-     button.addEventListener("click", () => appKit.open());
-   });
-
-   document.getElementById("openSwap").addEventListener("click", async () => {
-     try {
-       await appKit.open({ view: "Swap" });
-     } catch (error) {
-       await appKit.open();
-     }
-   });
-
-   appKit.subscribeState(state => {
-     const status = document.getElementById("walletStatus");
-     if (state?.selectedNetworkId) {
-       status.textContent = "Wallet session active — check selected account in Reown.";
-     }
-   });
-
- } catch(error) {
-   console.error("Reown initialization failed:", error);
-   document.getElementById("walletStatus").textContent =
-     "Wallet connection could not load. Check browser connection and Reown CDN.";
-   connectButtons.forEach(button => {
-     button.addEventListener("click", () => {
-       alert("Reown could not load. Please refresh the page and try again.");
-     });
-   });
+const modal = createAppKit({
+ adapters: [adapter],
+ networks: appNetworks,
+ projectId,
+ themeMode: 'dark',
+ themeVariables: {
+  '--w3m-accent': '#c7f36b',
+  '--w3m-border-radius-master': '12px'
+ },
+ metadata: {
+  name: 'QX Exchange',
+  description: 'QX Exchange — digital asset tools',
+  url: 'https://jhsmj5d6tc-cmd.github.io/qx-exchange/',
+  icons: ['https://jhsmj5d6tc-cmd.github.io/oken-maker/favicon.ico']
+ },
+ features: {
+  analytics: true,
+  swaps: true,
+  onramp: false,
+  email: false,
+  socials: []
  }
-}
+});
 
-setupReown();
+document.getElementById('openSwap').addEventListener('click', async () => {
+ try {
+  await modal.open({ view: 'Swap' });
+ } catch (error) {
+  document.getElementById('swapStatus').textContent =
+   'Swap view unavailable. Check your wallet connection and supported network.';
+  console.error(error);
+ }
+});
 
-/* Live market prices */
-const assets = {
- BTCUSDT:["Bitcoin","BTC"],
- ETHUSDT:["Ethereum","ETH"],
- BNBUSDT:["BNB","BNB"],
- SOLUSDT:["Solana","SOL"]
-};
+document.getElementById('reverse').addEventListener('click', () => {
+ const a = document.getElementById('from');
+ const b = document.getElementById('to');
+ const old = a.value;
+ a.value = b.value;
+ b.value = old;
+});
 
-async function loadPrices(){
- const body = document.getElementById("prices");
- try{
-  const symbols = Object.keys(assets);
-  const response = await fetch(
-   "https://api.binance.com/api/v3/ticker/24hr?symbols=" +
-   encodeURIComponent(JSON.stringify(symbols))
-  );
-  if(!response.ok) throw new Error("Market request failed");
+document.getElementById('year').textContent = new Date().getFullYear();
+
+const ids = ['bitcoin','ethereum','solana','binancecoin','ripple'];
+const names = ['₿ Bitcoin','Ξ Ethereum','◎ Solana','◆ BNB','● XRP'];
+const symbols = ['BTC','ETH','SOL','BNB','XRP'];
+
+async function loadPrices() {
+ const status = document.getElementById('marketStatus');
+ try {
+  const url = 'https://api.coingecko.com/api/v3/simple/price?ids=' +
+   ids.join(',') + '&vs_currencies=usd&include_24hr_change=true';
+  const response = await fetch(url, {cache:'no-store'});
+  if (!response.ok) throw new Error('Price request failed');
   const data = await response.json();
 
-  body.innerHTML = data.map(item => {
-   const [name,symbol] = assets[item.symbol];
-   const change = Number(item.priceChangePercent);
-   const price = Number(item.lastPrice).toLocaleString("en-US",{
-    minimumFractionDigits:2,maximumFractionDigits:6
-   });
-   return `<tr>
-    <td><b>${name}</b> <span style="color:#8c9ab0">${symbol}</span></td>
-    <td>${symbol}/USDT</td>
-    <td>$${price}</td>
-    <td class="${change >= 0 ? "green" : "red"}">${change >= 0 ? "+" : ""}${change.toFixed(2)}%</td>
-   </tr>`;
-  }).join("");
- }catch(error){
-  body.innerHTML = '<tr><td colspan="4">Market data temporarily unavailable.</td></tr>';
+  document.getElementById('prices').innerHTML = ids.map((id,i) => {
+   const price = data[id]?.usd;
+   const change = data[id]?.usd_24h_change;
+   const formatted = Number.isFinite(price)
+    ? new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:price < 1 ? 5 : 2}).format(price)
+    : '—';
+   const percent = Number.isFinite(change)
+    ? (change > 0 ? '+' : '') + change.toFixed(2) + '%'
+    : '—';
+   return '<div class="coin"><div class="coin-name">' + names[i] +
+    '</div><div class="coin-price">' + formatted +
+    '</div><div class="coin-change ' + (change < 0 ? 'down' : '') +
+    '">' + percent + ' · ' + symbols[i] + '</div></div>';
+  }).join('');
+
+  status.textContent = 'Updated ' + new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+ } catch (error) {
+  status.textContent = 'Market data temporarily unavailable';
+  console.warn(error);
  }
 }
-
 loadPrices();
-setInterval(loadPrices,30000);
+setInterval(loadPrices, 60000);
 </script>
 </body>
 </html>
