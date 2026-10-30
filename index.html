@@ -45,23 +45,30 @@ select{background:#242b49;color:white;border:1px solid #41496b;border-radius:11p
 .stat b{display:block;font-size:19px}
 .stat small{color:#929ab6}
 footer{text-align:center;color:#747d9b;border-top:1px solid #ffffff15;padding:25px;font-size:11px}
+.social{margin-bottom:15px}
+.social a{display:inline-flex;align-items:center;gap:8px;color:#fff;text-decoration:none;font-size:14px;font-weight:bold;background:#171b30;border:1px solid #343b59;border-radius:10px;padding:10px 16px}
+.social a:hover{border-color:#9b83ff;color:#b9a7ff}
 @media(max-width:750px){.layout{grid-template-columns:1fr}.card{padding:18px}header{padding:0 17px}}
 </style>
 </head>
 <body>
+
 <header>
  <div class="brand">QX <span>EXCHANGE</span></div>
  <button class="connect" id="connect">Connect Wallet</button>
 </header>
+
 <main>
  <section class="hero">
   <small>ONE PLACE. MULTIPLE CHAINS.</small>
   <h1>Swap Crypto <span>Your Way.</span></h1>
   <p>A simple interface for exploring crypto swaps.</p>
  </section>
+
  <div class="layout">
   <section class="card">
    <h2>Exchange</h2>
+
    <div class="field">
     <div class="label"><span>You Pay</span><span>Balance: —</span></div>
     <div class="entry">
@@ -71,7 +78,9 @@ footer{text-align:center;color:#747d9b;border-top:1px solid #ffffff15;padding:25
      </select>
     </div>
    </div>
+
    <button class="switch" id="switch">↓↑</button>
+
    <div class="field">
     <div class="label"><span>You Receive</span><span>Estimated Amount</span></div>
     <div class="entry">
@@ -81,18 +90,22 @@ footer{text-align:center;color:#747d9b;border-top:1px solid #ffffff15;padding:25
      </select>
     </div>
    </div>
+
    <div class="details">
     <div><span>Exchange Rate</span><strong>Not connected</strong></div>
     <div><span>QX Service Fee (1%)</span><strong class="fee" id="fee">—</strong></div>
     <div><span>Network Fee</span><strong>Provider estimate</strong></div>
     <div><span>Wallet</span><strong id="wallet">Not connected</strong></div>
    </div>
+
    <button class="action" id="swap" disabled>Swap Provider Not Connected</button>
    <div id="status">Connect your wallet to get started.</div>
+
    <div class="notice">
     Preview interface only. No swap is executed and no funds are transferred yet. Live swaps and automatic fee collection require a real swap-provider integration. Never share your recovery phrase or private keys.
    </div>
   </section>
+
   <aside class="card">
    <h2>Supported Assets</h2>
    <div class="coin">◎ Solana <span>SOL</span></div>
@@ -102,29 +115,43 @@ footer{text-align:center;color:#747d9b;border-top:1px solid #ffffff15;padding:25
    <div class="coin">◆ BNB <span>BNB</span></div>
   </aside>
  </div>
+
  <div class="stats">
   <div class="stat"><b>5</b><small>Featured Assets</small></div>
   <div class="stat"><b>1%</b><small>Planned Fee</small></div>
   <div class="stat"><b>24/7</b><small>Interface Access</small></div>
  </div>
 </main>
-<footer>© 2026 QX Exchange. All Rights Reserved.</footer>
+
+<footer>
+ <div class="social">
+  <a href="https://x.com/solana__creator" target="_blank" rel="noopener noreferrer">
+   𝕏 Follow us on X
+  </a>
+ </div>
+ © 2026 QX Exchange. All Rights Reserved.
+</footer>
+
 <script>
 const $=id=>document.getElementById(id);
+
 function update(){
  const n=Number($("amount").value);
  $("fee").textContent=n>0?(n*.01).toFixed(6)+" "+$("from").value:"—";
  $("receive").value="";
 }
+
 $("amount").addEventListener("input",update);
 $("from").addEventListener("change",update);
 $("to").addEventListener("change",update);
+
 $("switch").onclick=()=>{
  const a=$("from").value;
  $("from").value=$("to").value;
  $("to").value=a;
  update();
 };
+
 $("connect").onclick=async()=>{
  try{
   if(window.solana?.isPhantom){
@@ -138,9 +165,10 @@ $("connect").onclick=async()=>{
   }else{
    $("status").textContent="Open this page in Phantom or MetaMask.";
   }
- }catch(e){$("status").textContent="Connection cancelled."}
+ }catch(e){
+  $("status").textContent="Connection cancelled.";
+ }
 };
 </script>
 </body>
 </html>
-
