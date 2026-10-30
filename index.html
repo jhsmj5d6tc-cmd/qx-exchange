@@ -8,7 +8,7 @@
 <title>QX Exchange</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#080b12;--panel:#111a26;--line:#263448;--green:#c7f36b;--text:#f4f6fa;--muted:#8998ad}
+:root{--bg:#080b12;--panel:#111a26;--line:#263448;--lime:#c7f36b;--text:#f4f6fa;--muted:#8998ad}
 *{box-sizing:border-box}
 body{margin:0;background:radial-gradient(ellipse at 50% -20%,#243444,transparent 55%),var(--bg);color:var(--text);font-family:Manrope,Arial}
 a{color:inherit;text-decoration:none}
@@ -16,31 +16,32 @@ a{color:inherit;text-decoration:none}
 header{height:76px;border-bottom:1px solid #ffffff12;position:sticky;top:0;background:#080b12ed;backdrop-filter:blur(16px);z-index:5}
 nav{height:100%;display:flex;align-items:center;justify-content:space-between}
 .logo{font-weight:800;letter-spacing:2px;font-size:19px}
-.logo b{display:inline-grid;place-items:center;background:var(--green);color:#10150b;border-radius:10px;width:34px;height:34px;margin-right:9px}
+.logo b{display:inline-grid;place-items:center;background:var(--lime);color:#10150b;border-radius:10px;width:34px;height:34px;margin-right:9px}
 .links{display:flex;gap:26px;color:var(--muted);font-size:12px}
-.links a:hover{color:var(--green)}
+.links a:hover{color:var(--lime)}
 appkit-button{--w3m-accent:#c7f36b;--w3m-border-radius-master:12px}
-.hero{text-align:center;padding:90px 0 65px}
-.eyebrow{font:11px 'DM Mono';letter-spacing:2px;color:var(--green)}
+.hero{text-align:center;padding:82px 0 60px}
+.eyebrow{font:11px 'DM Mono';letter-spacing:2px;color:var(--lime)}
 h1{font-size:clamp(42px,7vw,76px);line-height:1.04;letter-spacing:-3px;margin:20px 0}
-h1 span{color:var(--green)}
-.hero p{color:var(--muted);max-width:600px;margin:auto;line-height:1.8;font-size:14px}
+h1 span{color:var(--lime)}
+.hero p{color:var(--muted);max-width:610px;margin:auto;line-height:1.8;font-size:14px}
 .actions{display:flex;justify-content:center;gap:12px;margin-top:28px;flex-wrap:wrap}
-.btn{display:inline-block;border:1px solid var(--line);background:var(--panel);color:white;padding:14px 20px;border-radius:11px;font-weight:800;font-size:12px;cursor:pointer}
-.btn.primary{background:var(--green);border-color:var(--green);color:#10150b}
+.btn{display:inline-block;border:1px solid var(--line);background:var(--panel);color:white;padding:13px 19px;border-radius:11px;font-weight:800;font-size:12px;cursor:pointer}
+.btn.primary{background:var(--lime);border-color:var(--lime);color:#10150b}
+.btn:disabled{opacity:.45;cursor:not-allowed}
 .panel{background:linear-gradient(145deg,#131e2b,#0d141e);border:1px solid var(--line);border-radius:17px;padding:23px}
-.market{margin:0 auto 65px;overflow:hidden;padding:0}
+.market{margin:0 auto 55px;overflow:hidden;padding:0}
 .market-head{padding:17px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between}
-.market-head strong{font:11px 'DM Mono';letter-spacing:2px;color:var(--green)}
+.market-head strong{font:11px 'DM Mono';letter-spacing:2px;color:var(--lime)}
 .market-head span{font:10px 'DM Mono';color:var(--muted)}
 .prices{display:grid;grid-template-columns:repeat(5,1fr)}
-.coin{padding:19px;border-right:1px solid var(--line)}
+.coin{padding:18px;border-right:1px solid var(--line)}
 .coin:last-child{border:0}
 .coin-name{font-size:12px;color:#aeb9c8}
 .coin-price{font:17px 'DM Mono';margin:13px 0 5px}
-.coin-change{font:11px 'DM Mono';color:var(--green)}
+.coin-change{font:11px 'DM Mono';color:var(--lime)}
 .down{color:#ff7882}
-section.content{padding:20px 0 65px}
+section.content{padding:20px 0 58px}
 .heading{display:flex;justify-content:space-between;align-items:end;margin-bottom:20px}
 h2{font-size:28px;margin:8px 0 0;letter-spacing:-1px}
 .small{font-size:12px;color:var(--muted);line-height:1.8}
@@ -48,221 +49,305 @@ h2{font-size:28px;margin:8px 0 0;letter-spacing:-1px}
 .field-label{font:10px 'DM Mono';color:var(--muted);letter-spacing:1px;margin:20px 0 8px}
 .swap-row{display:flex;gap:10px;padding:14px;background:#080f19;border:1px solid var(--line);border-radius:12px}
 .swap-row input{background:none;border:0;outline:0;color:white;min-width:0;flex:1;font:20px 'DM Mono'}
-select{background:#1a293a;color:white;border:1px solid #34445a;border-radius:9px;padding:9px;font-weight:bold}
+select{background:#1a293a;color:white;border:1px solid #34445a;border-radius:9px;padding:9px;font-weight:bold;max-width:48%}
 .swap-btn{width:100%;margin-top:17px}
+.tabs{display:flex;gap:8px;margin:17px 0}
+.tab{flex:1;padding:11px;border-radius:9px;background:#0a111b;border:1px solid var(--line);color:var(--muted);font-weight:800;cursor:pointer}
+.tab.active{color:var(--lime);border-color:var(--lime);background:#182318}
 .feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
 .feature{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:22px}
-.feature b{color:var(--green);font:11px 'DM Mono'}
+.feature b{color:var(--lime);font:11px 'DM Mono'}
 .feature h3{font-size:15px}
 .feature p{font-size:12px;color:var(--muted);line-height:1.8}
 .create{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:27px;background:#14221b;border:1px solid #40533c;border-radius:16px}
 .create h2{font-size:23px}
 footer{border-top:1px solid var(--line);padding:25px 0;color:var(--muted);font-size:11px}
 .foot{display:flex;justify-content:space-between;gap:15px}
-.foot a{color:var(--green)}
+.foot a{color:var(--lime)}
+.status{min-height:20px;margin-top:12px;color:var(--muted);font-size:11px;line-height:1.6}
+.hidden{display:none!important}
+.hint{padding:12px;border:1px solid var(--line);border-radius:10px;background:#0b131e;margin-top:13px}
 @media(max-width:760px){
- .links{display:none}.hero{padding:65px 0 45px}
- .prices{grid-template-columns:repeat(2,1fr)}
- .coin:nth-child(2n){border-right:0}
- .coin:last-child{display:none}
- .swap-grid,.feature-grid{grid-template-columns:1fr}
- .heading{display:block}.heading .small{margin-top:9px}
- .create,.foot{align-items:flex-start;flex-direction:column}
+.links{display:none}.hero{padding:60px 0 42px}
+.prices{grid-template-columns:repeat(2,1fr)}
+.coin:nth-child(2n){border-right:0}
+.coin:last-child{display:none}
+.swap-grid,.feature-grid{grid-template-columns:1fr}
+.heading{display:block}.heading .small{margin-top:9px}
+.create,.foot{align-items:flex-start;flex-direction:column}
 }
 </style>
 </head>
 <body>
 <header>
- <nav class="wrap">
-  <a class="logo" href="#"><b>Q</b> QX EXCHANGE</a>
-  <div class="links">
-   <a href="#markets">Markets</a><a href="#swap">Swap</a>
-   <a href="#features">About</a><a href="#create">Create Token</a>
-  </div>
-  <appkit-button></appkit-button>
- </nav>
+<nav class="wrap">
+<a class="logo" href="#"><b>Q</b> QX EXCHANGE</a>
+<div class="links">
+<a href="#markets">Markets</a><a href="#swap">Swap</a>
+<a href="#features">About</a><a href="#create">Create Token</a>
+</div>
+<appkit-button></appkit-button>
+</nav>
 </header>
 
 <main class="wrap">
 <section class="hero">
- <div class="eyebrow">A NEW WAY TO ACCESS DIGITAL ASSETS</div>
- <h1>One gateway.<br><span>Digital assets.</span></h1>
- <p>Explore crypto markets and access onchain tools through a clean, simple interface built for the next generation of digital finance.</p>
- <div class="actions">
-  <a class="btn primary" href="#swap">Explore Swap ↗</a>
-  <a class="btn" href="#markets">View Markets</a>
- </div>
+<div class="eyebrow">A NEW WAY TO ACCESS DIGITAL ASSETS</div>
+<h1>One gateway.<br><span>Digital assets.</span></h1>
+<p>Explore crypto markets and access onchain tools through a clean, simple interface built for the next generation of digital finance.</p>
+<div class="actions">
+<a class="btn primary" href="#swap">Explore Swap ↗</a>
+<a class="btn" href="#markets">View Markets</a>
+</div>
 </section>
 
 <section class="panel market" id="markets">
- <div class="market-head"><strong>MARKET PRICES</strong><span id="marketStatus">Loading prices…</span></div>
- <div class="prices" id="prices">
-  <div class="coin"><div class="coin-name">₿ Bitcoin</div><div class="coin-price">—</div><div class="coin-change">BTC</div></div>
-  <div class="coin"><div class="coin-name">Ξ Ethereum</div><div class="coin-price">—</div><div class="coin-change">ETH</div></div>
-  <div class="coin"><div class="coin-name">◎ Solana</div><div class="coin-price">—</div><div class="coin-change">SOL</div></div>
-  <div class="coin"><div class="coin-name">◆ BNB</div><div class="coin-price">—</div><div class="coin-change">BNB</div></div>
-  <div class="coin"><div class="coin-name">● XRP</div><div class="coin-price">—</div><div class="coin-change">XRP</div></div>
- </div>
+<div class="market-head"><strong>MARKET PRICES</strong><span id="marketStatus">Loading prices…</span></div>
+<div class="prices" id="prices">
+<div class="coin"><div class="coin-name">₿ Bitcoin</div><div class="coin-price">—</div><div class="coin-change">BTC</div></div>
+<div class="coin"><div class="coin-name">Ξ Ethereum</div><div class="coin-price">—</div><div class="coin-change">ETH</div></div>
+<div class="coin"><div class="coin-name">◎ Solana</div><div class="coin-price">—</div><div class="coin-change">SOL</div></div>
+<div class="coin"><div class="coin-name">◆ BNB</div><div class="coin-price">—</div><div class="coin-change">BNB</div></div>
+<div class="coin"><div class="coin-name">✕ XRP</div><div class="coin-price">—</div><div class="coin-change">XRP</div></div>
+</div>
 </section>
 
 <section class="content" id="swap">
- <div class="heading">
-  <div><div class="eyebrow">ONCHAIN EXCHANGE</div><h2>Swap assets</h2></div>
-  <div class="small">Connect your wallet to access supported swap routes.</div>
- </div>
- <div class="swap-grid">
-  <div class="panel">
-   <h3>Exchange tokens</h3>
-   <div class="small">Open the secure Reown swap experience for supported EVM networks.</div>
-   <div class="field-label">FROM</div>
-   <div class="swap-row">
-    <input id="amount" type="number" min="0" placeholder="1.00" value="1">
-    <select id="from"><option>ETH</option><option>USDC</option><option>USDT</option><option>BNB</option><option>POL</option></select>
-   </div>
-   <div style="text-align:center;margin:-2px 0">
-    <button class="btn" id="reverse" style="padding:7px 13px">↕</button>
-   </div>
-   <div class="field-label">TO</div>
-   <div class="swap-row">
-    <input value="Quote shown in swap window" readonly>
-    <select id="to"><option>USDC</option><option>ETH</option><option>USDT</option><option>BNB</option><option>POL</option></select>
-   </div>
-   <button class="btn primary swap-btn" id="openSwap">Open secure swap ↗</button>
-   <p class="small">Quotes, available tokens, network fees and routes are determined by Reown and its supported providers. Review every transaction in your wallet before signing.</p>
-   <div class="small" id="swapStatus">Swap routes depend on network and provider availability.</div>
-  </div>
-  <div class="panel">
-   <div class="eyebrow">WALLET CONNECTION</div>
-   <h3>One connection. Your control.</h3>
-   <p class="small">Use the single Connect Wallet button above. Reown manages wallet connection for supported EVM networks.</p>
-   <hr style="border:0;border-top:1px solid var(--line);margin:22px 0">
-   <div class="eyebrow">SUPPORTED NETWORKS</div>
-   <p class="small">Ethereum · Polygon · Arbitrum · Optimism · Base · BNB Smart Chain</p>
-   <hr style="border:0;border-top:1px solid var(--line);margin:22px 0">
-   <div class="eyebrow">SECURITY</div>
-   <p class="small">QX Exchange never asks for your seed phrase or private keys. Never share your recovery phrase.</p>
-  </div>
- </div>
+<div class="heading">
+<div><div class="eyebrow">ONCHAIN EXCHANGE</div><h2>Swap assets</h2></div>
+<div class="small">Choose a network to see its supported swap experience.</div>
+</div>
+
+<div class="swap-grid">
+<div class="panel">
+<h3>Exchange tokens</h3>
+<div class="tabs">
+<button class="tab active" id="solTab">Solana</button>
+<button class="tab" id="evmTab">EVM networks</button>
+</div>
+
+<div id="solPanel">
+<div class="small">Solana swaps are routed through Jupiter. Connect Phantom, review the quote, then approve the transaction in your wallet.</div>
+<div class="field-label">FROM</div>
+<div class="swap-row">
+<input id="solAmount" type="number" min="0" step="any" placeholder="1.00" value="0.1">
+<select id="solFrom">
+<option value="So11111111111111111111111111111111111111112">SOL</option>
+<option value="EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v">USDC</option>
+<option value="Es9vMFrzaCERmJfrF4H2FYD4KCoNK9u9gVxY5YwVf8">USDT</option>
+</select>
+</div>
+<div style="text-align:center;margin:-2px 0"><button class="btn" id="solReverse" style="padding:7px 13px">↕</button></div>
+<div class="field-label">TO</div>
+<div class="swap-row">
+<input id="solOutput" value="Quote will appear here" readonly>
+<select id="solTo">
+<option value="EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v">USDC</option>
+<option value="So11111111111111111111111111111111111111112">SOL</option>
+<option value="Es9vMFrzaCERmJfrF4H2FYD4KCoNK9u9gVxY5YwVf8">USDT</option>
+</select>
+</div>
+<div class="actions" style="justify-content:stretch">
+<button class="btn" id="phantomConnect" style="flex:1">Connect Phantom</button>
+<button class="btn primary" id="getQuote" style="flex:1">Get quote</button>
+</div>
+<button class="btn primary swap-btn" id="executeSwap" disabled>Review & swap</button>
+<div class="status" id="solStatus">Connect Phantom to begin. Token availability and execution depend on Jupiter routing.</div>
+</div>
+
+<div id="evmPanel" class="hidden">
+<div class="small">Use Reown's swap experience for supported EVM networks and providers.</div>
+<div class="field-label">FROM</div>
+<div class="swap-row">
+<input id="evmAmount" type="number" min="0" placeholder="1.00" value="1">
+<select id="evmFrom"><option>ETH</option><option>USDC</option><option>USDT</option><option>BNB</option><option>POL</option></select>
+</div>
+<div class="field-label">TO</div>
+<div class="swap-row">
+<input value="Quote shown in Reown" readonly>
+<select id="evmTo"><option>USDC</option><option>ETH</option><option>USDT</option><option>BNB</option><option>POL</option></select>
+</div>
+<button class="btn primary swap-btn" id="openSwap">Open secure EVM swap ↗</button>
+<div class="status" id="evmStatus">Connect an EVM wallet using the button in the header.</div>
+</div>
+</div>
+
+<div class="panel">
+<div class="eyebrow">WALLET CONNECTION</div>
+<h3>Stay in control.</h3>
+<p class="small">For Solana, connect Phantom in the Solana tab. For EVM networks, use the Reown wallet button in the header. Your wallet signs transactions; QX never asks for your recovery phrase.</p>
+<hr style="border:0;border-top:1px solid var(--line);margin:22px 0">
+<div class="eyebrow">SUPPORTED NETWORKS</div>
+<p class="small">Solana · Ethereum · Polygon · Arbitrum · Optimism · Base · BNB Smart Chain</p>
+<hr style="border:0;border-top:1px solid var(--line);margin:22px 0">
+<div class="eyebrow">IMPORTANT</div>
+<p class="small">Always verify token, network, quote, slippage and fees in your wallet before signing. Crypto assets involve risk.</p>
+<div class="hint small">Solana swaps use Jupiter's public Swap API. Availability and pricing can change. A quote is not a guarantee of execution.</div>
+</div>
+</div>
 </section>
 
 <section class="content" id="features">
- <div class="eyebrow">THE QX APPROACH</div><h2 style="margin-bottom:20px">Built for clarity</h2>
- <div class="feature-grid">
-  <div class="feature"><b>01 / ACCESS</b><h3>Wallet-first</h3><p>Connect through Reown and approve transactions inside your own wallet.</p></div>
-  <div class="feature"><b>02 / MARKETS</b><h3>Market overview</h3><p>Follow leading digital assets with regularly refreshed market data.</p></div>
-  <div class="feature"><b>03 / CONTROL</b><h3>You stay in control</h3><p>Review network and transaction details before approving anything.</p></div>
- </div>
+<div class="eyebrow">THE QX APPROACH</div><h2 style="margin-bottom:20px">Built for clarity</h2>
+<div class="feature-grid">
+<div class="feature"><b>01 / ACCESS</b><h3>Wallet-first</h3><p>Connect your own wallet and approve transactions yourself.</p></div>
+<div class="feature"><b>02 / MARKETS</b><h3>Market overview</h3><p>Follow leading digital assets with refreshed market data.</p></div>
+<div class="feature"><b>03 / CONTROL</b><h3>You stay in control</h3><p>Review network and transaction details before approving anything.</p></div>
+</div>
 </section>
 
 <section class="content" id="create">
- <div class="create">
-  <div><div class="eyebrow">BUILD ON SOLANA</div><h2>Create your own token</h2><div class="small">Launch a Solana token using our dedicated token creation tool.</div></div>
-  <a class="btn primary" href="https://jhsmj5d6tc-cmd.github.io/oken-maker/" target="_blank" rel="noopener">Create Your Token ↗</a>
- </div>
+<div class="create">
+<div><div class="eyebrow">BUILD ON SOLANA</div><h2>Create your own token</h2><div class="small">Launch a Solana token using our dedicated token creation tool.</div></div>
+<a class="btn primary" href="https://jhsmj5d6tc-cmd.github.io/oken-maker/" target="_blank" rel="noopener">Create Your Token ↗</a>
+</div>
 </section>
 </main>
 
-<footer><div class="wrap">
- <div class="foot"><span>© <span id="year"></span> QX Exchange. All rights reserved.</span>
- <a href="https://x.com/solana__creator?s=11" target="_blank" rel="noopener">Follow QX on X ↗</a></div>
- <p>Market prices are informational only. Digital assets involve risk. Always verify transaction details before signing.</p>
-</div></footer>
+<footer>
+<div class="wrap">
+<div class="foot"><span>© <span id="year"></span> QX Exchange. All rights reserved.</span>
+<a href="https://x.com/solana__creator?s=11" target="_blank" rel="noopener">Follow QX on X ↗</a></div>
+<p>Market prices are informational only. Digital assets involve risk. Always verify transaction details before signing.</p>
+</div>
+</footer>
 
+<script src="https://unpkg.com/@solana/web3.js@1.95.3/lib/index.iife.min.js"></script>
 <script type="module">
 import { WagmiAdapter, createAppKit, networks } from 'https://cdn.jsdelivr.net/npm/@reown/appkit-cdn@1.8.24/dist/appkit.js';
 
-const projectId = 'bd6faec63fbd0865f57da576a550ef09';
-const appNetworks = [
- networks.mainnet,
- networks.polygon,
- networks.arbitrum,
- networks.optimism,
- networks.base,
- networks.bsc
-];
-
-const adapter = new WagmiAdapter({ networks: appNetworks, projectId });
-
-const modal = createAppKit({
- adapters: [adapter],
- networks: appNetworks,
- projectId,
- themeMode: 'dark',
- themeVariables: {
-  '--w3m-accent': '#c7f36b',
-  '--w3m-border-radius-master': '12px'
- },
- metadata: {
-  name: 'QX Exchange',
-  description: 'QX Exchange — digital asset tools',
-  url: 'https://jhsmj5d6tc-cmd.github.io/qx-exchange/',
-  icons: ['https://jhsmj5d6tc-cmd.github.io/oken-maker/favicon.ico']
- },
- features: {
-  analytics: true,
-  swaps: true,
-  onramp: false,
-  email: false,
-  socials: []
- }
+const projectId='bd6faec63fbd0865f57da576a550ef09';
+const appNetworks=[networks.mainnet,networks.polygon,networks.arbitrum,networks.optimism,networks.base,networks.bsc];
+const adapter=new WagmiAdapter({networks:appNetworks,projectId});
+const modal=createAppKit({
+adapters:[adapter],networks:appNetworks,projectId,themeMode:'dark',
+themeVariables:{'--w3m-accent':'#c7f36b','--w3m-border-radius-master':'12px'},
+metadata:{name:'QX Exchange',description:'QX Exchange — digital asset tools',url:'https://jhsmj5d6tc-cmd.github.io/qx-exchange/',icons:['https://jhsmj5d6tc-cmd.github.io/oken-maker/favicon.ico']},
+features:{analytics:true,swaps:true,onramp:false,email:false,socials:[]}
 });
 
-document.getElementById('openSwap').addEventListener('click', async () => {
- try {
-  await modal.open({ view: 'Swap' });
- } catch (error) {
-  document.getElementById('swapStatus').textContent =
-   'Swap view unavailable. Check your wallet connection and supported network.';
-  console.error(error);
- }
-});
+const $=id=>document.getElementById(id);
 
-document.getElementById('reverse').addEventListener('click', () => {
- const a = document.getElementById('from');
- const b = document.getElementById('to');
- const old = a.value;
- a.value = b.value;
- b.value = old;
-});
+$('openSwap').onclick=async()=>{
+try{await modal.open({view:'Swap'})}
+catch(e){$('evmStatus').textContent='Reown swap is unavailable for this network/provider.';console.error(e)}
+};
 
-document.getElementById('year').textContent = new Date().getFullYear();
+$('solTab').onclick=()=>{
+$('solPanel').classList.remove('hidden');$('evmPanel').classList.add('hidden');
+$('solTab').classList.add('active');$('evmTab').classList.remove('active');
+};
+$('evmTab').onclick=()=>{
+$('evmPanel').classList.remove('hidden');$('solPanel').classList.add('hidden');
+$('evmTab').classList.add('active');$('solTab').classList.remove('active');
+};
+$('year').textContent=new Date().getFullYear();
 
-const ids = ['bitcoin','ethereum','solana','binancecoin','ripple'];
-const names = ['₿ Bitcoin','Ξ Ethereum','◎ Solana','◆ BNB','● XRP'];
-const symbols = ['BTC','ETH','SOL','BNB','XRP'];
+const SOL='So11111111111111111111111111111111111111112';
+const USDC='EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v';
+const USDT='Es9vMFrzaCERmJfrF4H2FYD4KCoNK9u9gVxY5YwVf8';
+const decimals=m=>m===SOL?9:6;
+let solWallet=null,quote=null;
 
-async function loadPrices() {
- const status = document.getElementById('marketStatus');
- try {
-  const url = 'https://api.coingecko.com/api/v3/simple/price?ids=' +
-   ids.join(',') + '&vs_currencies=usd&include_24hr_change=true';
-  const response = await fetch(url, {cache:'no-store'});
-  if (!response.ok) throw new Error('Price request failed');
-  const data = await response.json();
-
-  document.getElementById('prices').innerHTML = ids.map((id,i) => {
-   const price = data[id]?.usd;
-   const change = data[id]?.usd_24h_change;
-   const formatted = Number.isFinite(price)
-    ? new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:price < 1 ? 5 : 2}).format(price)
-    : '—';
-   const percent = Number.isFinite(change)
-    ? (change > 0 ? '+' : '') + change.toFixed(2) + '%'
-    : '—';
-   return '<div class="coin"><div class="coin-name">' + names[i] +
-    '</div><div class="coin-price">' + formatted +
-    '</div><div class="coin-change ' + (change < 0 ? 'down' : '') +
-    '">' + percent + ' · ' + symbols[i] + '</div></div>';
-  }).join('');
-
-  status.textContent = 'Updated ' + new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
- } catch (error) {
-  status.textContent = 'Market data temporarily unavailable';
-  console.warn(error);
- }
+function getPhantom(){
+if(window.phantom?.solana?.isPhantom)return window.phantom.solana;
+if(window.solana?.isPhantom)return window.solana;
+return null;
 }
-loadPrices();
-setInterval(loadPrices, 60000);
+
+$('phantomConnect').onclick=async()=>{
+const p=getPhantom();
+if(!p){$('solStatus').textContent='Phantom not detected. Open this page inside Phantom browser.';return}
+try{
+const r=await p.connect();solWallet=r.publicKey.toString();
+$('phantomConnect').textContent='Connected · '+solWallet.slice(0,4)+'…'+solWallet.slice(-4);
+$('solStatus').textContent='Phantom connected. Enter an amount and get a fresh quote.';
+}catch(e){$('solStatus').textContent='Wallet connection cancelled or failed.';console.error(e)}
+};
+
+$('solReverse').onclick=()=>{
+const a=$('solFrom'),b=$('solTo'),v=a.value;a.value=b.value;b.value=v;
+quote=null;$('executeSwap').disabled=true;$('solOutput').value='Quote will appear here';
+};
+
+$('getQuote').onclick=async()=>{
+try{
+const p=getPhantom();
+if(!p||!solWallet)throw Error('Connect Phantom first.');
+const amount=Number($('solAmount').value);
+if(!Number.isFinite(amount)||amount<=0)throw Error('Enter a valid amount.');
+const inputMint=$('solFrom').value,outputMint=$('solTo').value;
+if(inputMint===outputMint)throw Error('Choose two different tokens.');
+const raw=BigInt(Math.floor(amount*10**decimals(inputMint))).toString();
+$('solStatus').textContent='Getting a live quote from Jupiter…';
+$('executeSwap').disabled=true;
+const u=new URL('https://api.jup.ag/swap/v2/order');
+u.searchParams.set('inputMint',inputMint);
+u.searchParams.set('outputMint',outputMint);
+u.searchParams.set('amount',raw);
+u.searchParams.set('taker',solWallet);
+const res=await fetch(u);
+const data=await res.json();
+if(!res.ok||data.error)throw Error(data.error||data.message||'No route available.');
+quote=data;
+const out=Number(data.outAmount||0)/10**decimals(outputMint);
+$('solOutput').value=out.toLocaleString('en-US',{maximumFractionDigits:8});
+$('solStatus').textContent='Quote ready. Estimated output only; final execution may differ.';
+$('executeSwap').disabled=false;
+}catch(e){
+quote=null;$('solStatus').textContent=e.message||'Could not get quote. Try again.';
+console.error(e);
+}
+};
+
+$('executeSwap').onclick=async()=>{
+try{
+const p=getPhantom();
+if(!p||!solWallet||!quote)throw Error('Reconnect Phantom and get a new quote.');
+if(!quote.transaction||!quote.requestId)throw Error('Jupiter did not return a signable transaction. Get a new quote.');
+$('executeSwap').disabled=true;
+$('solStatus').textContent='Please approve the transaction in Phantom…';
+if(!window.solanaWeb3?.VersionedTransaction)throw Error('Solana transaction library did not load. Refresh and try again.');
+const bytes=Uint8Array.from(atob(quote.transaction),c=>c.charCodeAt(0));
+const tx=window.solanaWeb3.VersionedTransaction.deserialize(bytes);
+const signed=await p.signTransaction(tx);
+const serialized=signed.serialize();
+let binary='';for(const b of serialized)binary+=String.fromCharCode(b);
+const body={signedTransaction:btoa(binary),requestId:quote.requestId};
+const done=await fetch('https://api.jup.ag/swap/v2/execute',{
+method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)
+});
+const result=await done.json();
+if(!done.ok||result.error)throw Error(result.error||result.message||'Swap execution failed.');
+const sig=result.signature||result.txid;
+$('solStatus').innerHTML='Transaction submitted. <a style="color:var(--lime)" target="_blank" rel="noopener" href="https://solscan.io/tx/'+encodeURIComponent(sig)+'">View on Solscan ↗</a>';
+$('solOutput').value='Submitted';quote=null;
+}catch(e){
+$('solStatus').textContent=e.message||'Swap was not completed.';
+console.error(e);
+}finally{$('executeSwap').disabled=!quote}
+};
+
+const ids=['bitcoin','ethereum','solana','binancecoin','ripple'];
+const names=['₿ Bitcoin','Ξ Ethereum','◎ Solana','◆ BNB','✕ XRP'];
+const symbols=['BTC','ETH','SOL','BNB','XRP'];
+
+async function loadPrices(){
+const s=$('marketStatus');
+try{
+const r=await fetch('https://api.coingecko.com/api/v3/simple/price?ids='+ids.join(',')+'&vs_currencies=usd&include_24hr_change=true',{cache:'no-store'});
+if(!r.ok)throw Error('request failed');
+const d=await r.json();
+$('prices').innerHTML=ids.map((id,i)=>{
+const p=d[id]?.usd,c=d[id]?.usd_24h_change;
+const price=Number.isFinite(p)?new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:p<1?5:2}).format(p):'—';
+const change=Number.isFinite(c)?(c>0?'+':'')+c.toFixed(2)+'%':'—';
+return '<div class="coin"><div class="coin-name">'+names[i]+'</div><div class="coin-price">'+price+'</div><div class="coin-change '+(c<0?'down':'')+'">'+change+' · '+symbols[i]+'</div></div>';
+}).join('');
+s.textContent='Updated '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+}catch(e){s.textContent='Market data temporarily unavailable'}
+}
+loadPrices();setInterval(loadPrices,60000);
 </script>
 </body>
 </html>
