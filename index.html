@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#090b16">
-<title>QX Exchange | Live Crypto Exchange</title>
+<title>QX Exchange</title>
 <script src="https://unpkg.com/@solana/web3.js@1.98.4/lib/index.iife.min.js"></script>
 <style>
 *{box-sizing:border-box}
@@ -76,12 +76,14 @@ footer{text-align:center;color:#747d9b;border-top:1px solid #ffffff15;padding:25
 <div class="brand">QX <span>EXCHANGE</span></div>
 <button class="connect" id="connect">Connect Phantom</button>
 </header>
+
 <main>
 <section class="hero">
 <small>ONE PLACE. MULTIPLE CRYPTO ASSETS.</small>
 <h1>Swap Crypto <span>Your Way.</span></h1>
 <p>Live market prices. Your wallet. Your swaps.</p>
 </section>
+
 <section class="card">
 <div class="section-head">
 <h2>Live Market</h2>
@@ -90,6 +92,7 @@ footer{text-align:center;color:#747d9b;border-top:1px solid #ffffff15;padding:25
 <div class="market-grid" id="marketGrid"></div>
 <div class="portfolio-sub" style="margin-top:12px">Market data refreshes every 5 seconds. Prices shown in USD.</div>
 </section>
+
 <section class="card">
 <div class="section-head">
 <h2>Wallet Portfolio</h2>
@@ -106,6 +109,7 @@ footer{text-align:center;color:#747d9b;border-top:1px solid #ffffff15;padding:25
 </div>
 <div id="portfolioStatus"></div>
 </section>
+
 <div class="layout">
 <section class="card">
 <h2>Add Solana Token</h2>
@@ -117,10 +121,12 @@ footer{text-align:center;color:#747d9b;border-top:1px solid #ffffff15;padding:25
 <div id="addStatus" class="portfolio-sub" style="margin-top:12px"></div>
 <div class="notice">Only Solana tokens are supported here. Adding a token does not guarantee liquidity or a swap route.</div>
 </section>
+
 <section class="card">
 <h2>Exchange</h2>
 <div class="label"><span>Jupiter Publishable API Key</span></div>
 <input id="apiKey" type="password" autocomplete="off" placeholder="Paste your publishable API key">
+
 <div class="field" style="margin-top:12px">
 <div class="label"><span>You Pay</span><span id="fromBalance">Wallet: —</span></div>
 <div class="entry">
@@ -128,7 +134,9 @@ footer{text-align:center;color:#747d9b;border-top:1px solid #ffffff15;padding:25
 <select id="from"></select>
 </div>
 </div>
+
 <button class="switch" id="switch">↓↑</button>
+
 <div class="field">
 <div class="label"><span>You Receive</span><span>Estimated Amount</span></div>
 <div class="entry">
@@ -136,46 +144,51 @@ footer{text-align:center;color:#747d9b;border-top:1px solid #ffffff15;padding:25
 <select id="to"></select>
 </div>
 </div>
+
 <div class="details">
 <div><span>Exchange Rate</span><strong id="rate">Waiting for quote</strong></div>
 <div><span>QX Service Fee</span><strong class="fee">Not enabled yet</strong></div>
 <div><span>Network Fee</span><strong>Shown in Phantom</strong></div>
 <div><span>Wallet</span><strong id="wallet">Not connected</strong></div>
 </div>
+
 <button class="action" id="swap" disabled>Connect wallet to swap</button>
 <div id="status">Connect Phantom to start.</div>
 <div class="notice">Review the quote and transaction in Phantom before approving. QX's planned 1% service fee is not configured or collected.</div>
 </section>
 </div>
+
 <div class="stats">
 <div class="stat"><b>LIVE</b><small>Market Prices</small></div>
 <div class="stat"><b>Solana</b><small>Wallet Network</small></div>
 <div class="stat"><b>24/7</b><small>Site Access</small></div>
 </div>
 </main>
+
 <footer>
 <div class="social"><a href="https://x.com/solana__creator" target="_blank" rel="noopener noreferrer">𝕏 Follow us on X</a></div>
 © 2026 QX Exchange. All Rights Reserved.
 </footer>
+
 <script>
-const $=id=>document.getElementById(id);
+const $ = id => document.getElementById(id);
 
-/* HELIUS SOLANA RPC */
-const RPC="https://mainnet.helius-rpc.com/?api-key=92edc637-3b1c-470c-9590-5de81934e73b";
-const connection=new solanaWeb3.Connection(RPC,"confirmed");
+/* Helius RPC */
+const RPC = "https://mainnet.helius-rpc.com/?api-key=92edc637-3b1c-470c-9590-5de81934e73b";
+const connection = new solanaWeb3.Connection(RPC, "confirmed");
 
-const TOKEN_PROGRAMS=[
+const TOKEN_PROGRAMS = [
 "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
 "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
 ];
 
-const DEFAULT_TOKENS=[
+const DEFAULT_TOKENS = [
 {mint:"So11111111111111111111111111111111111111112",symbol:"SOL",name:"Solana",decimals:9},
 {mint:"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",symbol:"USDC",name:"USD Coin",decimals:6},
 {mint:"Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",symbol:"USDT",name:"Tether USD",decimals:6}
 ];
 
-const MARKET_COINS=[
+const MARKET_COINS = [
 {symbol:"BTC",name:"Bitcoin",pair:"BTCUSDT"},
 {symbol:"ETH",name:"Ethereum",pair:"ETHUSDT"},
 {symbol:"SOL",name:"Solana",pair:"SOLUSDT"},
@@ -184,295 +197,688 @@ const MARKET_COINS=[
 {symbol:"ADA",name:"Cardano",pair:"ADAUSDT"}
 ];
 
-let wallet=null,connected=false;
-let tokenList=[...DEFAULT_TOKENS];
-let balances={},marketPrices={},tokenPriceCache={};
-let portfolioBusy=false,marketBusy=false;
+let wallet = null;
+let connected = false;
+let tokenList = [...DEFAULT_TOKENS];
+let balances = {};
+let marketPrices = {};
+let tokenPriceCache = {};
+let portfolioBusy = false;
+let marketBusy = false;
 
-function shortAddress(s){return s.slice(0,5)+"…"+s.slice(-5)}
-function fmt(v,max=6){return Number.isFinite(v)?v.toLocaleString("en-US",{maximumFractionDigits:max}):"—"}
-function usd(v){return Number.isFinite(v)?"$"+v.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}):"—"}
+function shortAddress(s){
+  return s.slice(0,5) + "…" + s.slice(-5);
+}
+
+function fmt(v,max=6){
+  return Number.isFinite(v)
+    ? v.toLocaleString("en-US",{maximumFractionDigits:max})
+    : "—";
+}
+
+function usd(v){
+  return Number.isFinite(v)
+    ? "$" + v.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})
+    : "—";
+}
+
 function setStatus(s){$("status").textContent=s}
 function setAddStatus(s){$("addStatus").textContent=s}
 
 function loadCustomTokens(){
-try{
-const saved=JSON.parse(localStorage.getItem("qx_custom_tokens")||"[]");
-saved.forEach(t=>{if(t.mint&&!tokenList.some(x=>x.mint===t.mint))tokenList.push(t)});
-}catch(e){}
+  try{
+    const saved = JSON.parse(localStorage.getItem("qx_custom_tokens") || "[]");
+    saved.forEach(t=>{
+      if(t.mint && !tokenList.some(x=>x.mint===t.mint)) tokenList.push(t);
+    });
+  }catch(e){
+    console.warn("Could not load saved tokens",e);
+  }
 }
+
 function saveCustomTokens(){
-localStorage.setItem("qx_custom_tokens",JSON.stringify(tokenList.filter(t=>!DEFAULT_TOKENS.some(d=>d.mint===t.mint))));
+  try{
+    localStorage.setItem(
+      "qx_custom_tokens",
+      JSON.stringify(tokenList.filter(t=>!DEFAULT_TOKENS.some(d=>d.mint===t.mint)))
+    );
+  }catch(e){
+    console.warn("Could not save custom tokens",e);
+  }
 }
+
 loadCustomTokens();
 
-function tokenByMint(mint){return tokenList.find(t=>t.mint===mint)}
+function tokenByMint(mint){
+  return tokenList.find(t=>t.mint===mint);
+}
 
 function refreshSelects(){
-const oldFrom=$("from").value,oldTo=$("to").value;
-["from","to"].forEach(id=>{
-const s=$(id);s.innerHTML="";
-tokenList.forEach(t=>{
-const o=document.createElement("option");
-o.value=t.mint;o.textContent=t.symbol+" · "+t.name;s.appendChild(o);
-});
-});
-$("from").value=tokenList.some(t=>t.mint===oldFrom)?oldFrom:DEFAULT_TOKENS[0].mint;
-$("to").value=tokenList.some(t=>t.mint===oldTo)?oldTo:DEFAULT_TOKENS[1].mint;
-updateFromBalance();updateSwapButton();
+  const oldFrom = $("from").value;
+  const oldTo = $("to").value;
+
+  ["from","to"].forEach(id=>{
+    const select = $(id);
+    select.innerHTML = "";
+
+    tokenList.forEach(t=>{
+      const option = document.createElement("option");
+      option.value = t.mint;
+      option.textContent = t.symbol + " · " + t.name;
+      select.appendChild(option);
+    });
+  });
+
+  $("from").value = tokenList.some(t=>t.mint===oldFrom)
+    ? oldFrom : DEFAULT_TOKENS[0].mint;
+
+  $("to").value = tokenList.some(t=>t.mint===oldTo)
+    ? oldTo : DEFAULT_TOKENS[1].mint;
+
+  updateFromBalance();
+  updateSwapButton();
 }
+
 function updateFromBalance(){
-const item=balances[$("from").value];
-$("fromBalance").textContent=item?"Wallet: "+fmt(item.amount):"Wallet: 0";
+  const item = balances[$("from").value];
+  $("fromBalance").textContent = item
+    ? "Wallet: " + fmt(item.amount)
+    : "Wallet: 0";
 }
+
 function updateSwapButton(){
-const valid=connected&&$("amount").value&&Number($("amount").value)>0&&$("from").value!==$("to").value;
-$("swap").disabled=!valid;
-if(!connected)$("swap").textContent="Connect wallet to swap";
-else $("swap").textContent="Swap with Jupiter";
+  const valid = connected &&
+    $("amount").value &&
+    Number($("amount").value)>0 &&
+    $("from").value!==$("to").value;
+
+  $("swap").disabled = !valid;
+  $("swap").textContent = !connected
+    ? "Connect wallet to swap"
+    : "Swap with Jupiter";
 }
+
+/* MARKET PRICES */
 
 async function loadMarket(){
-if(marketBusy)return;
-marketBusy=true;
-try{
-const symbols=MARKET_COINS.map(c=>c.pair);
-const url="https://api.binance.com/api/v3/ticker/24hr?symbols="+encodeURIComponent(JSON.stringify(symbols));
-const response=await fetch(url);
-if(!response.ok)throw new Error("Market feed unavailable");
-const data=await response.json();
-data.forEach(item=>{
-const coin=MARKET_COINS.find(c=>c.pair===item.symbol);
-if(coin)marketPrices[coin.symbol]={price:Number(item.lastPrice),change:Number(item.priceChangePercent)};
-});
-renderMarket();
-$("marketTime").textContent=new Date().toLocaleTimeString();
-}catch(e){$("marketTime").textContent="Feed unavailable"}
-finally{marketBusy=false}
+  if(marketBusy) return;
+  marketBusy = true;
+
+  try{
+    const symbols = MARKET_COINS.map(c=>c.pair);
+    const url = "https://api.binance.com/api/v3/ticker/24hr?symbols=" +
+      encodeURIComponent(JSON.stringify(symbols));
+
+    const response = await fetch(url);
+    if(!response.ok) throw new Error("Market feed unavailable");
+
+    const data = await response.json();
+
+    data.forEach(item=>{
+      const coin = MARKET_COINS.find(c=>c.pair===item.symbol);
+      if(coin){
+        marketPrices[coin.symbol] = {
+          price:Number(item.lastPrice),
+          change:Number(item.priceChangePercent)
+        };
+      }
+    });
+
+    renderMarket();
+    $("marketTime").textContent = new Date().toLocaleTimeString();
+
+  }catch(e){
+    $("marketTime").textContent = "Feed unavailable";
+    console.error("Market error:",e);
+  }finally{
+    marketBusy = false;
+  }
 }
+
 function renderMarket(){
-const grid=$("marketGrid");grid.innerHTML="";
-MARKET_COINS.forEach(coin=>{
-const data=marketPrices[coin.symbol],item=document.createElement("div");
-item.className="market-item";
-const top=document.createElement("div");top.className="market-top";
-const left=document.createElement("div");
-const symbol=document.createElement("div");symbol.className="market-symbol";symbol.textContent=coin.symbol;
-const name=document.createElement("div");name.className="market-name";name.textContent=coin.name;
-left.append(symbol,name);
-const badge=document.createElement("span");badge.className="muted";badge.textContent="USD";
-top.append(left,badge);
-const price=document.createElement("div");price.className="market-price";price.textContent=data?usd(data.price):"—";
-const change=document.createElement("div");change.className="change "+(data?(data.change>=0?"up":"down"):"muted");
-change.textContent=data?(data.change>=0?"+":"")+data.change.toFixed(2)+"% · 24h":"Waiting for price";
-item.append(top,price,change);grid.appendChild(item);
-});
+  const grid = $("marketGrid");
+  grid.innerHTML = "";
+
+  MARKET_COINS.forEach(coin=>{
+    const data = marketPrices[coin.symbol];
+    const item = document.createElement("div");
+    item.className = "market-item";
+
+    const top = document.createElement("div");
+    top.className = "market-top";
+
+    const left = document.createElement("div");
+    const symbol = document.createElement("div");
+    symbol.className = "market-symbol";
+    symbol.textContent = coin.symbol;
+
+    const name = document.createElement("div");
+    name.className = "market-name";
+    name.textContent = coin.name;
+
+    left.append(symbol,name);
+
+    const badge = document.createElement("span");
+    badge.className = "muted";
+    badge.textContent = "USD";
+    top.append(left,badge);
+
+    const price = document.createElement("div");
+    price.className = "market-price";
+    price.textContent = data ? usd(data.price) : "—";
+
+    const change = document.createElement("div");
+    change.className = "change " +
+      (data ? (data.change>=0 ? "up" : "down") : "muted");
+
+    change.textContent = data
+      ? (data.change>=0 ? "+" : "") + data.change.toFixed(2) + "% · 24h"
+      : "Waiting for price";
+
+    item.append(top,price,change);
+    grid.appendChild(item);
+  });
 }
+
+/* TOKEN PRICE LOOKUP */
 
 async function getTokenInfo(mint){
-if(tokenPriceCache[mint]&&Date.now()-tokenPriceCache[mint].time<60000)return tokenPriceCache[mint].data;
-try{
-const response=await fetch("https://api.dexscreener.com/token-pairs/v1/solana/"+encodeURIComponent(mint));
-if(!response.ok)throw new Error("Token market lookup failed");
-const pairs=await response.json();
-const matching=(Array.isArray(pairs)?pairs:[]).filter(p=>
-(p.baseToken?.address?.toLowerCase()===mint.toLowerCase())||
-(p.quoteToken?.address?.toLowerCase()===mint.toLowerCase())
-).sort((a,b)=>(Number(b.liquidity?.usd)||0)-(Number(a.liquidity?.usd)||0));
-const pair=matching[0];
-let info={name:null,symbol:null,price:null,liquidity:0};
-if(pair){
-const isBase=pair.baseToken.address.toLowerCase()===mint.toLowerCase();
-const token=isBase?pair.baseToken:pair.quoteToken;
-let price=Number(pair.priceUsd)||null;
-if(!isBase&&price)price=1/price;
-info={name:token.name,symbol:token.symbol,price,liquidity:Number(pair.liquidity?.usd)||0};
+  if(tokenPriceCache[mint] && Date.now()-tokenPriceCache[mint].time<60000){
+    return tokenPriceCache[mint].data;
+  }
+
+  try{
+    const response = await fetch(
+      "https://api.dexscreener.com/token-pairs/v1/solana/" +
+      encodeURIComponent(mint)
+    );
+
+    if(!response.ok) throw new Error("Token market lookup failed");
+
+    const pairs = await response.json();
+
+    const matching = (Array.isArray(pairs)?pairs:[])
+      .filter(p=>
+        p.baseToken?.address?.toLowerCase()===mint.toLowerCase() ||
+        p.quoteToken?.address?.toLowerCase()===mint.toLowerCase()
+      )
+      .sort((a,b)=>
+        (Number(b.liquidity?.usd)||0)-(Number(a.liquidity?.usd)||0)
+      );
+
+    const pair = matching[0];
+    let info = {name:null,symbol:null,price:null,liquidity:0};
+
+    if(pair){
+      const isBase = pair.baseToken.address.toLowerCase()===mint.toLowerCase();
+      const token = isBase ? pair.baseToken : pair.quoteToken;
+      let price = Number(pair.priceUsd)||null;
+
+      if(!isBase && price) price = 1/price;
+
+      info = {
+        name:token.name,
+        symbol:token.symbol,
+        price,
+        liquidity:Number(pair.liquidity?.usd)||0
+      };
+    }
+
+    tokenPriceCache[mint] = {time:Date.now(),data:info};
+    return info;
+
+  }catch(e){
+    console.warn("Token price lookup:",e);
+    return {name:null,symbol:null,price:null,liquidity:0};
+  }
 }
-tokenPriceCache[mint]={time:Date.now(),data:info};return info;
-}catch(e){return {name:null,symbol:null,price:null,liquidity:0}}
-}
+
 function getUsdPrice(token){
-if(token.symbol==="SOL")return marketPrices.SOL?.price||null;
-if(token.symbol==="USDC"||token.symbol==="USDT")return 1;
-return tokenPriceCache[token.mint]?.data?.price||null;
+  if(token.symbol==="SOL") return marketPrices.SOL?.price || null;
+  if(token.symbol==="USDC" || token.symbol==="USDT") return 1;
+  return tokenPriceCache[token.mint]?.data?.price || null;
 }
+
+/* ADD TOKEN */
 
 async function addToken(){
-const mint=$("newMint").value.trim();
-if(!mint){setAddStatus("Paste a token mint address.");return}
-if(tokenList.some(t=>t.mint===mint)){setAddStatus("This token is already in your list.");return}
-const button=$("addToken");button.disabled=true;setAddStatus("Checking token address on Solana…");
-try{
-const pubkey=new solanaWeb3.PublicKey(mint);
-const result=await connection.getParsedAccountInfo(pubkey);
-const value=result.value;
-if(!value||!value.data?.parsed||value.data.parsed.type!=="mint")throw new Error("This address is not a valid Solana token mint.");
-const decimals=value.data.parsed.info.decimals;
-const info=await getTokenInfo(mint);
-const token={mint,decimals,symbol:info.symbol||("TOKEN-"+mint.slice(0,4)),name:info.name||("Token "+shortAddress(mint))};
-tokenList.push(token);saveCustomTokens();refreshSelects();
-$("newMint").value="";setAddStatus("Added "+token.symbol+". Refresh your wallet to check its balance.");
-if(connected)await refreshPortfolio();
-}catch(e){setAddStatus(e.message||"Could not add this token.")}
-finally{button.disabled=false}
+  const mint = $("newMint").value.trim();
+
+  if(!mint){
+    setAddStatus("Paste a token mint address.");
+    return;
+  }
+
+  if(tokenList.some(t=>t.mint===mint)){
+    setAddStatus("This token is already in your list.");
+    return;
+  }
+
+  const button = $("addToken");
+  button.disabled = true;
+  setAddStatus("Checking token address on Solana…");
+
+  try{
+    const pubkey = new solanaWeb3.PublicKey(mint);
+    const result = await connection.getParsedAccountInfo(pubkey);
+    const value = result.value;
+
+    if(!value || !value.data?.parsed || value.data.parsed.type!=="mint"){
+      throw new Error("This address is not a valid Solana token mint.");
+    }
+
+    const decimals = value.data.parsed.info.decimals;
+    const info = await getTokenInfo(mint);
+
+    const token = {
+      mint,
+      decimals,
+      symbol:info.symbol || ("TOKEN-"+mint.slice(0,4)),
+      name:info.name || ("Token "+shortAddress(mint))
+    };
+
+    tokenList.push(token);
+    saveCustomTokens();
+    refreshSelects();
+
+    $("newMint").value = "";
+    setAddStatus("Added "+token.symbol+". Refresh your wallet to check its balance.");
+
+    if(connected) await refreshPortfolio();
+
+  }catch(e){
+    setAddStatus(e.message || "Could not add this token.");
+  }finally{
+    button.disabled = false;
+  }
 }
+
+/* PHANTOM CONNECTION */
 
 async function connectWallet(){
-try{
-if(!window.solana?.isPhantom)throw new Error("Open this website inside the Phantom app browser.");
-const result=await window.solana.connect();
-wallet=result.publicKey.toString();connected=true;
-$("connect").textContent="Phantom Connected";
-$("wallet").textContent=shortAddress(wallet);
-setStatus("Phantom connected. Loading wallet balances…");
-updateSwapButton();
-await refreshPortfolio();
-}catch(e){setStatus(e.message||"Wallet connection failed.")}
+  try{
+    if(!window.solana?.isPhantom){
+      throw new Error("Open this website inside the Phantom app browser.");
+    }
+
+    const result = await window.solana.connect();
+    wallet = result.publicKey.toString();
+    connected = true;
+
+    $("connect").textContent = "Phantom Connected";
+    $("wallet").textContent = shortAddress(wallet);
+
+    setStatus("Phantom connected. Loading wallet balances…");
+    updateSwapButton();
+
+    await refreshPortfolio();
+
+  }catch(e){
+    setStatus(e.message || "Wallet connection failed.");
+  }
 }
+
+/* PORTFOLIO BALANCES */
 
 async function refreshPortfolio(){
-if(!connected||!wallet||portfolioBusy)return;
-portfolioBusy=true;$("portfolioStatus").textContent="Refreshing wallet balances…";
-try{
-const owner=new solanaWeb3.PublicKey(wallet);
-const nativeLamports=await connection.getBalance(owner,"confirmed");
-const found={};
-found[DEFAULT_TOKENS[0].mint]={mint:DEFAULT_TOKENS[0].mint,amount:nativeLamports/1e9,decimals:9};
+  if(!connected || !wallet || portfolioBusy) return;
 
-for(const program of TOKEN_PROGRAMS){
-const response=await connection.getParsedTokenAccountsByOwner(owner,{programId:new solanaWeb3.PublicKey(program)},"confirmed");
-response.value.forEach(account=>{
-const info=account.account.data.parsed.info;
-const mint=info.mint;
-const amount=Number(info.tokenAmount.uiAmountString||0);
-if(!found[mint])found[mint]={mint,amount,decimals:info.tokenAmount.decimals};
-else found[mint].amount+=amount;
-});
-}
-balances=found;
-for(const mint of Object.keys(found)){
-if(!tokenByMint(mint)){
-const info=await getTokenInfo(mint);
-tokenList.push({mint,decimals:found[mint].decimals,symbol:info.symbol||("TOKEN-"+mint.slice(0,4)),name:info.name||("Token "+shortAddress(mint))});
-}
-}
-refreshSelects();
-await renderPortfolio();
-$("portfolioStatus").textContent="Last updated "+new Date().toLocaleTimeString();
-setStatus("Wallet balances updated.");
-}catch(e){
-$("portfolioStatus").textContent="Could not load balances: "+e.message;
-}catch(e){}
-finally{portfolioBusy=false}
+  portfolioBusy = true;
+  $("portfolioStatus").textContent = "Refreshing wallet balances…";
+
+  try{
+    const owner = new solanaWeb3.PublicKey(wallet);
+    const nativeLamports = await connection.getBalance(owner,"confirmed");
+
+    const found = {};
+
+    found[DEFAULT_TOKENS[0].mint] = {
+      mint:DEFAULT_TOKENS[0].mint,
+      amount:nativeLamports/1e9,
+      decimals:9
+    };
+
+    for(const program of TOKEN_PROGRAMS){
+      const response = await connection.getParsedTokenAccountsByOwner(
+        owner,
+        {programId:new solanaWeb3.PublicKey(program)},
+        "confirmed"
+      );
+
+      response.value.forEach(account=>{
+        const info = account.account.data.parsed.info;
+        const mint = info.mint;
+        const amount = Number(info.tokenAmount.uiAmountString || 0);
+
+        if(!found[mint]){
+          found[mint] = {
+            mint,
+            amount,
+            decimals:info.tokenAmount.decimals
+          };
+        }else{
+          found[mint].amount += amount;
+        }
+      });
+    }
+
+    balances = found;
+
+    for(const mint of Object.keys(found)){
+      if(!tokenByMint(mint)){
+        const info = await getTokenInfo(mint);
+
+        tokenList.push({
+          mint,
+          decimals:found[mint].decimals,
+          symbol:info.symbol || ("TOKEN-"+mint.slice(0,4)),
+          name:info.name || ("Token "+shortAddress(mint))
+        });
+      }
+    }
+
+    refreshSelects();
+    await renderPortfolio();
+
+    $("portfolioStatus").textContent =
+      "Last updated " + new Date().toLocaleTimeString();
+
+    setStatus("Wallet balances updated.");
+
+  }catch(e){
+    $("portfolioStatus").textContent =
+      "Could not load balances: " + (e.message || String(e));
+
+    setStatus("Wallet balance loading failed.");
+    console.error("Portfolio error:",e);
+
+  }finally{
+    portfolioBusy = false;
+  }
 }
 
 async function renderPortfolio(){
-const rows=$("walletRows");rows.innerHTML="";
-const entries=Object.values(balances).filter(x=>x.amount>0);
-let total=0,priced=0;
-for(const item of entries){
-let token=tokenByMint(item.mint);
-if(!token){
-const info=await getTokenInfo(item.mint);
-token={mint:item.mint,symbol:info.symbol||("TOKEN-"+item.mint.slice(0,4)),name:info.name||"Unknown Token",decimals:item.decimals};
-tokenList.push(token);
-}
-let price=getUsdPrice(token);
-if(!price&&token.symbol!=="SOL"&&token.symbol!=="USDC"&&token.symbol!=="USDT"){
-const info=await getTokenInfo(item.mint);if(info.price)price=info.price;
-}
-const value=price!==null?item.amount*price:null;
-if(value!==null&&Number.isFinite(value)){total+=value;priced++}
-const tr=document.createElement("tr"),nameCell=document.createElement("td");
-const name=document.createElement("div");name.className="token-name";name.textContent=token.symbol;
-const address=document.createElement("div");address.className="token-address";address.textContent=shortAddress(item.mint);
-nameCell.append(name,address);
-const amountCell=document.createElement("td");amountCell.textContent=fmt(item.amount,8);
-const valueCell=document.createElement("td");valueCell.textContent=value===null?"Price unavailable":usd(value);
-tr.append(nameCell,amountCell,valueCell);rows.appendChild(tr);
-}
-if(!entries.length){
-const tr=document.createElement("tr"),td=document.createElement("td");
-td.colSpan=3;td.className="muted";td.textContent="No token balances found in this wallet.";tr.appendChild(td);rows.appendChild(tr);
-}
-$("portfolioTotal").textContent=usd(total);
-$("portfolioCount").textContent=entries.length+" assets found · "+priced+" priced in USD";
-updateFromBalance();
+  const rows = $("walletRows");
+  rows.innerHTML = "";
+
+  const entries = Object.values(balances).filter(x=>x.amount>0);
+  let total = 0;
+  let priced = 0;
+
+  for(const item of entries){
+    let token = tokenByMint(item.mint);
+
+    if(!token){
+      const info = await getTokenInfo(item.mint);
+
+      token = {
+        mint:item.mint,
+        symbol:info.symbol || ("TOKEN-"+item.mint.slice(0,4)),
+        name:info.name || "Unknown Token",
+        decimals:item.decimals
+      };
+
+      tokenList.push(token);
+    }
+
+    let price = getUsdPrice(token);
+
+    if(!price && token.symbol!=="SOL" &&
+       token.symbol!=="USDC" && token.symbol!=="USDT"){
+      const info = await getTokenInfo(item.mint);
+      if(info.price) price = info.price;
+    }
+
+    const value = price!==null ? item.amount*price : null;
+
+    if(value!==null && Number.isFinite(value)){
+      total += value;
+      priced++;
+    }
+
+    const tr = document.createElement("tr");
+    const nameCell = document.createElement("td");
+
+    const name = document.createElement("div");
+    name.className = "token-name";
+    name.textContent = token.symbol;
+
+    const address = document.createElement("div");
+    address.className = "token-address";
+    address.textContent = shortAddress(item.mint);
+
+    nameCell.append(name,address);
+
+    const amountCell = document.createElement("td");
+    amountCell.textContent = fmt(item.amount,8);
+
+    const valueCell = document.createElement("td");
+    valueCell.textContent = value===null ? "Price unavailable" : usd(value);
+
+    tr.append(nameCell,amountCell,valueCell);
+    rows.appendChild(tr);
+  }
+
+  if(!entries.length){
+    const tr = document.createElement("tr");
+    const td = document.createElement("td");
+
+    td.colSpan = 3;
+    td.className = "muted";
+    td.textContent = "No token balances found in this wallet.";
+
+    tr.appendChild(td);
+    rows.appendChild(tr);
+  }
+
+  $("portfolioTotal").textContent = usd(total);
+  $("portfolioCount").textContent =
+    entries.length+" assets found · "+priced+" priced in USD";
+
+  updateFromBalance();
 }
 
+/* JUPITER SWAP */
+
 function amountToBaseUnits(value,decimals){
-if(!/^\d+(\.\d*)?$/.test(value)||Number(value)<=0)throw new Error("Enter a valid amount.");
-const parts=value.split(".");
-if((parts[1]||"").length>decimals)throw new Error("Too many decimal places for this token.");
-return (BigInt(parts[0])*10n**BigInt(decimals)+BigInt(((parts[1]||"")+"0".repeat(decimals)).slice(0,decimals)||"0")).toString();
+  if(!/^\d+(\.\d*)?$/.test(value) || Number(value)<=0){
+    throw new Error("Enter a valid amount.");
+  }
+
+  const parts = value.split(".");
+
+  if((parts[1]||"").length>decimals){
+    throw new Error("Too many decimal places for this token.");
+  }
+
+  const whole = BigInt(parts[0]);
+  const fractionText = ((parts[1]||"")+"0".repeat(decimals)).slice(0,decimals);
+  const fraction = BigInt(fractionText || "0");
+
+  return (whole*(10n**BigInt(decimals))+fraction).toString();
 }
+
 function fromBaseUnits(value,decimals){
-const n=BigInt(value),scale=10n**BigInt(decimals);
-const whole=n/scale;
-const fraction=(n%scale).toString().padStart(decimals,"0").replace(/0+$/,"");
-return whole.toString()+(fraction?"."+fraction:"");
+  const n = BigInt(value);
+  const scale = 10n**BigInt(decimals);
+  const whole = n/scale;
+
+  const fraction = (n%scale)
+    .toString()
+    .padStart(decimals,"0")
+    .replace(/0+$/,"");
+
+  return whole.toString()+(fraction?"."+fraction:"");
 }
+
 function apiHeaders(){
-const key=$("apiKey").value.trim();
-if(!key)throw new Error("Enter your Jupiter publishable API key.");
-return {"x-api-key":key};
+  const key = $("apiKey").value.trim();
+
+  if(!key) throw new Error("Enter your Jupiter publishable API key.");
+
+  return {"x-api-key":key};
 }
 
 async function swap(){
-const button=$("swap");button.disabled=true;button.textContent="Getting Jupiter quote…";
-try{
-if(!connected||!wallet)throw new Error("Connect Phantom first.");
-const from=tokenByMint($("from").value),to=tokenByMint($("to").value);
-if(!from||!to||from.mint===to.mint)throw new Error("Choose two different tokens.");
-const amount=amountToBaseUnits($("amount").value,from.decimals);
-const params=new URLSearchParams({inputMint:from.mint,outputMint:to.mint,amount,taker:wallet});
-const response=await fetch("https://api.jup.ag/swap/v2/order?"+params.toString(),{headers:apiHeaders()});
-const order=await response.json();
-if(!response.ok)throw new Error(order.errorMessage||order.message||"Jupiter quote failed.");
-if(!order.transaction)throw new Error(order.errorMessage||"No executable swap route was returned.");
-const output=fromBaseUnits(order.outAmount,to.decimals);
-$("receive").value=output;
-$("rate").textContent=fmt(Number(output)/Number($("amount").value))+" "+to.symbol+" per "+from.symbol;
-if(!confirm("Review your swap:\n\nYou pay: "+$("amount").value+" "+from.symbol+"\nEstimated receive: "+output+" "+to.symbol+"\n\nContinue to Phantom to review and sign?")){
-setStatus("Swap cancelled before signing.");return;
-}
-button.textContent="Waiting for Phantom…";
-const bytes=Uint8Array.from(atob(order.transaction),c=>c.charCodeAt(0));
-const transaction=solanaWeb3.VersionedTransaction.deserialize(bytes);
-const signed=await window.solana.signTransaction(transaction);
-const signedBase64=btoa(String.fromCharCode(...signed.serialize()));
-button.textContent="Submitting to Jupiter…";
-const execute=await fetch("https://api.jup.ag/swap/v2/execute",{
-method:"POST",headers:{...apiHeaders(),"Content-Type":"application/json"},
-body:JSON.stringify({signedTransaction:signedBase64,requestId:order.requestId})
-});
-const result=await execute.json();
-if(!execute.ok||result.status!=="Success")throw new Error(result.error||result.errorMessage||"Swap execution failed. Check Phantom activity before retrying.");
-setStatus("Swap successful! Transaction: "+result.signature);
-$("amount").value="";$("receive").value="";$("rate").textContent="Swap completed";
-await refreshPortfolio();
-}catch(e){setStatus(e.message||"Swap failed.")}
-finally{button.textContent="Swap with Jupiter";updateSwapButton()}
+  const button = $("swap");
+  button.disabled = true;
+  button.textContent = "Getting Jupiter quote…";
+
+  try{
+    if(!connected || !wallet) throw new Error("Connect Phantom first.");
+
+    const from = tokenByMint($("from").value);
+    const to = tokenByMint($("to").value);
+
+    if(!from || !to || from.mint===to.mint){
+      throw new Error("Choose two different tokens.");
+    }
+
+    const amount = amountToBaseUnits($("amount").value,from.decimals);
+
+    const params = new URLSearchParams({
+      inputMint:from.mint,
+      outputMint:to.mint,
+      amount,
+      taker:wallet
+    });
+
+    const response = await fetch(
+      "https://api.jup.ag/swap/v2/order?"+params.toString(),
+      {headers:apiHeaders()}
+    );
+
+    const order = await response.json();
+
+    if(!response.ok){
+      throw new Error(order.errorMessage || order.message || "Jupiter quote failed.");
+    }
+
+    if(!order.transaction){
+      throw new Error(order.errorMessage || "No executable swap route was returned.");
+    }
+
+    const output = fromBaseUnits(order.outAmount,to.decimals);
+
+    $("receive").value = output;
+    $("rate").textContent =
+      fmt(Number(output)/Number($("amount").value))+
+      " "+to.symbol+" per "+from.symbol;
+
+    const approved = confirm(
+      "Review your swap:\n\n"+
+      "You pay: "+$("amount").value+" "+from.symbol+"\n"+
+      "Estimated receive: "+output+" "+to.symbol+
+      "\n\nContinue to Phantom to review and sign?"
+    );
+
+    if(!approved){
+      setStatus("Swap cancelled before signing.");
+      return;
+    }
+
+    button.textContent = "Waiting for Phantom…";
+
+    const bytes = Uint8Array.from(
+      atob(order.transaction),
+      c=>c.charCodeAt(0)
+    );
+
+    const transaction = solanaWeb3.VersionedTransaction.deserialize(bytes);
+    const signed = await window.solana.signTransaction(transaction);
+
+    const signedBase64 = btoa(
+      String.fromCharCode(...signed.serialize())
+    );
+
+    button.textContent = "Submitting to Jupiter…";
+
+    const execute = await fetch(
+      "https://api.jup.ag/swap/v2/execute",
+      {
+        method:"POST",
+        headers:{
+          ...apiHeaders(),
+          "Content-Type":"application/json"
+        },
+        body:JSON.stringify({
+          signedTransaction:signedBase64,
+          requestId:order.requestId
+        })
+      }
+    );
+
+    const result = await execute.json();
+
+    if(!execute.ok || result.status!=="Success"){
+      throw new Error(
+        result.error || result.errorMessage ||
+        "Swap execution failed. Check Phantom activity before retrying."
+      );
+    }
+
+    setStatus("Swap successful! Transaction: "+result.signature);
+
+    $("amount").value = "";
+    $("receive").value = "";
+    $("rate").textContent = "Swap completed";
+
+    await refreshPortfolio();
+
+  }catch(e){
+    setStatus(e.message || "Swap failed.");
+    console.error("Swap error:",e);
+
+  }finally{
+    button.textContent = "Swap with Jupiter";
+    updateSwapButton();
+  }
 }
 
-$("connect").onclick=connectWallet;
-$("refreshWallet").onclick=refreshPortfolio;
-$("addToken").onclick=addToken;
-$("swap").onclick=swap;
-$("switch").onclick=()=>{
-const old=$("from").value;$("from").value=$("to").value;$("to").value=old;
-$("receive").value="";$("rate").textContent="Waiting for quote";
-updateFromBalance();updateSwapButton();
+/* BUTTONS AND EVENTS */
+
+$("connect").onclick = connectWallet;
+$("refreshWallet").onclick = refreshPortfolio;
+$("addToken").onclick = addToken;
+$("swap").onclick = swap;
+
+$("switch").onclick = ()=>{
+  const old = $("from").value;
+  $("from").value = $("to").value;
+  $("to").value = old;
+
+  $("receive").value = "";
+  $("rate").textContent = "Waiting for quote";
+
+  updateFromBalance();
+  updateSwapButton();
 };
+
 $("amount").addEventListener("input",()=>{
-$("receive").value="";$("rate").textContent="Waiting for quote";updateSwapButton();
+  $("receive").value = "";
+  $("rate").textContent = "Waiting for quote";
+  updateSwapButton();
 });
-$("from").addEventListener("change",()=>{updateFromBalance();updateSwapButton()});
+
+$("from").addEventListener("change",()=>{
+  updateFromBalance();
+  updateSwapButton();
+});
+
 $("to").addEventListener("change",updateSwapButton);
 
-refreshSelects();renderMarket();loadMarket();
+/* INITIALIZE */
+
+refreshSelects();
+renderMarket();
+loadMarket();
+
 setInterval(loadMarket,5000);
-setInterval(()=>{if(connected)refreshPortfolio()},30000);
+
+setInterval(()=>{
+  if(connected) refreshPortfolio();
+},30000);
+
 </script>
 </body>
 </html>
