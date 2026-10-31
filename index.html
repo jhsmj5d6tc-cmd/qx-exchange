@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#080d18">
-<title>QX Exchange | Global Crypto Markets</title>
+<title>QX Exchange | Crypto Trading</title>
 
 <script type="importmap">
 {
@@ -20,60 +20,197 @@
 
 <style>
 :root{
- --bg:#080d18;--panel:#111a2b;--panel2:#0c1525;
- --line:#202e43;--text:#f3f6fc;--muted:#8c9bb0;
- --green:#42d6a0;--red:#ff687c;--blue:#6d9cff
+ --bg:#080d18;
+ --panel:#111a2b;
+ --panel2:#0c1525;
+ --line:#202e43;
+ --text:#f3f6fc;
+ --muted:#8c9bb0;
+ --green:#42d6a0;
+ --red:#ff687c;
+ --blue:#6d9cff;
 }
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
+body{
+ margin:0;
+ background:var(--bg);
+ color:var(--text);
+ font-family:Arial,sans-serif;
+}
 button,input,select{font:inherit}
 button{cursor:pointer}
 .wrap{max-width:1100px;margin:auto;padding:18px}
-header{display:flex;align-items:center;justify-content:space-between;padding:12px 0 25px;gap:12px}
+header{
+ display:flex;
+ align-items:center;
+ justify-content:space-between;
+ padding:12px 0 25px;
+ gap:12px;
+}
 .logo{font-size:25px;font-weight:900;letter-spacing:1px}
 .logo span{color:var(--green)}
-.connect{background:var(--green);color:#07150f;border:0;border-radius:11px;padding:13px 18px;font-weight:800}
-.portfolio{background:linear-gradient(130deg,#17283e,#101827);border:1px solid #2b3e56;border-radius:20px;padding:25px}
-.portrow{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap}
+.connect{
+ background:var(--green);
+ color:#07150f;
+ border:0;
+ border-radius:11px;
+ padding:13px 18px;
+ font-weight:800;
+}
+.portfolio{
+ background:linear-gradient(130deg,#17283e,#101827);
+ border:1px solid #2b3e56;
+ border-radius:20px;
+ padding:25px;
+}
+.portrow{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ gap:15px;
+ flex-wrap:wrap;
+}
 .eyebrow{color:var(--muted);font-size:13px}
-.total{font-size:clamp(34px,7vw,49px);font-weight:800;margin:12px 0}
+.total{
+ font-size:clamp(34px,7vw,49px);
+ font-weight:800;
+ margin:12px 0;
+ overflow-wrap:anywhere;
+}
 .sub,.status{color:var(--muted);font-size:13px;line-height:1.6}
-.swap{background:var(--green);border:0;border-radius:12px;padding:14px 23px;font-weight:800;color:#07150f}
+.swap{
+ background:var(--green);
+ border:0;
+ border-radius:12px;
+ padding:14px 23px;
+ font-weight:800;
+ color:#07150f;
+}
 section{margin:25px 0}
 h2{font-size:19px;margin:0 0 15px}
-.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-.panel{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:17px}
+.grid{
+ display:grid;
+ grid-template-columns:repeat(4,1fr);
+ gap:12px;
+}
+.panel{
+ background:var(--panel);
+ border:1px solid var(--line);
+ border-radius:15px;
+ padding:17px;
+}
 .coin{display:flex;align-items:center;gap:10px}
-.coinicon{width:36px;height:36px;border-radius:50%;background:#26364d;display:grid;place-items:center;font-weight:bold}
+.coinicon{
+ width:36px;height:36px;border-radius:50%;
+ background:#26364d;
+ display:grid;place-items:center;font-weight:bold;
+}
 .coinname{font-weight:700}
 .symbol{color:var(--muted);font-size:12px;margin-top:4px}
 .price{font-size:20px;font-weight:800;margin-top:15px}
 .toolbar{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:13px}
-input,select{background:var(--panel2);border:1px solid var(--line);border-radius:10px;color:white;padding:13px;min-width:0}
+input,select{
+ background:var(--panel2);
+ border:1px solid var(--line);
+ border-radius:10px;
+ color:white;
+ padding:13px;
+ min-width:0;
+}
 input{flex:1}
 select{min-width:145px}
-.action{background:#26364d;color:white;border:1px solid #3b4c64;border-radius:10px;padding:12px 15px}
-.list{background:var(--panel);border:1px solid var(--line);border-radius:15px;overflow:hidden}
-.row{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:10px;align-items:center;padding:15px;border-bottom:1px solid var(--line)}
+.action{
+ background:#26364d;
+ color:white;
+ border:1px solid #3b4c64;
+ border-radius:10px;
+ padding:12px 15px;
+}
+.list{
+ background:var(--panel);
+ border:1px solid var(--line);
+ border-radius:15px;
+ overflow:hidden;
+}
+.row{
+ display:grid;
+ grid-template-columns:1.5fr 1fr 1fr;
+ gap:10px;
+ align-items:center;
+ padding:15px;
+ border-bottom:1px solid var(--line);
+}
 .row:last-child{border:0}
-.rowhead{background:var(--panel2);color:var(--muted);font-size:12px}
+.rowhead{
+ background:var(--panel2);
+ color:var(--muted);
+ font-size:12px;
+}
 .right{text-align:right}
-.tokenbtn{background:none;border:0;color:var(--text);text-align:left;padding:0}
+.tokenbtn{
+ background:none;
+ border:0;
+ color:var(--text);
+ text-align:left;
+ padding:0;
+}
 .tokenbtn strong{display:block}
-.tokenbtn small{display:block;color:var(--muted);margin-top:5px;overflow-wrap:anywhere}
-.empty{padding:22px;text-align:center;color:var(--muted);font-size:13px}
-.address{font-size:12px;color:var(--muted);overflow-wrap:anywhere;margin-top:12px}
+.tokenbtn small{
+ display:block;
+ color:var(--muted);
+ margin-top:5px;
+ overflow-wrap:anywhere;
+}
+.empty{
+ padding:22px;
+ text-align:center;
+ color:var(--muted);
+ font-size:13px;
+}
+.address{
+ font-size:12px;
+ color:var(--muted);
+ overflow-wrap:anywhere;
+ margin-top:12px;
+}
 #detail{display:none}
-.chart{width:100%;height:450px;border:0;border-radius:12px;background:var(--panel2);margin-top:15px}
-.detailtop{display:flex;justify-content:space-between;align-items:center;gap:10px}
-footer{text-align:center;color:var(--muted);font-size:12px;padding:25px}
+.chart{
+ width:100%;
+ height:450px;
+ border:0;
+ border-radius:12px;
+ background:var(--panel2);
+ margin-top:15px;
+}
+.detailtop{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ gap:10px;
+}
+footer{
+ text-align:center;
+ color:var(--muted);
+ font-size:12px;
+ padding:25px;
+}
 a{color:var(--green)}
+.warning{
+ color:#e7c27a;
+ font-size:12px;
+ line-height:1.6;
+}
 @media(max-width:650px){
  .wrap{padding:13px}
  .grid{grid-template-columns:repeat(2,1fr)}
- .row{grid-template-columns:1.4fr 1fr 1fr;padding:13px 9px}
+ .row{
+  grid-template-columns:1.4fr 1fr 1fr;
+  padding:13px 9px;
+  font-size:12px;
+ }
  .portfolio{padding:19px}
  .chart{height:380px}
+ .connect{padding:12px}
 }
 </style>
 </head>
@@ -91,16 +228,18 @@ a{color:var(--green)}
   <div>
    <div class="eyebrow">Total Portfolio Value</div>
    <div class="total" id="totalValue">—</div>
-   <div class="sub" id="walletCaption">Estimated wallet value · USD</div>
+   <div class="sub" id="walletCaption">Your wallet value · USD</div>
   </div>
   <button class="swap" id="swapBtn">Swap My Wallet</button>
  </div>
  <div class="address" id="walletAddress"></div>
- <p class="status" id="walletStatus">Connect your wallet to load your portfolio.</p>
+ <p class="status" id="walletStatus">
+  Connect your wallet to load your portfolio.
+ </p>
 </section>
 
 <section>
- <h2>Market</h2>
+ <h2>Market Overview</h2>
  <div class="grid" id="marketCards">
   <div class="panel">Loading market prices...</div>
  </div>
@@ -111,12 +250,15 @@ a{color:var(--green)}
  <h2>My Assets</h2>
  <div class="list">
   <div class="row rowhead">
-   <span>Asset</span><span class="right">Balance</span><span class="right">Value (USD)</span>
+   <span>Asset</span>
+   <span class="right">Balance</span>
+   <span class="right">Value (USD)</span>
   </div>
   <div id="assetsList">
    <div class="empty">Connect your wallet to view assets.</div>
   </div>
  </div>
+ <p class="warning" id="assetWarning"></p>
 </section>
 
 <section>
@@ -137,10 +279,12 @@ a{color:var(--green)}
  </div>
  <div class="list">
   <div class="row rowhead">
-   <span>Token</span><span class="right">Price</span><span class="right">24h Volume</span>
+   <span>Token</span>
+   <span class="right">Price</span>
+   <span class="right">24h Volume</span>
   </div>
   <div id="tokenResults">
-   <div class="empty">Loading trending market tokens...</div>
+   <div class="empty">Loading market tokens...</div>
   </div>
  </div>
  <p class="status" id="discoverStatus"></p>
@@ -157,7 +301,9 @@ a{color:var(--green)}
   </div>
   <iframe id="chart" class="chart" title="Token market chart"
    allow="clipboard-write"></iframe>
-  <p class="status">Check the token contract and liquidity before trading.</p>
+  <p class="status">
+   Check the token contract and liquidity before trading.
+  </p>
  </div>
 </section>
 
@@ -165,19 +311,25 @@ a{color:var(--green)}
  <h2>New Tokens Created with QX</h2>
  <div class="list">
   <div class="row rowhead">
-   <span>Token</span><span class="right">Supply</span><span class="right">Network</span>
+   <span>Token</span>
+   <span class="right">Supply</span>
+   <span class="right">Network</span>
   </div>
   <div id="newTokens">
    <div class="empty">No locally saved tokens found.</div>
   </div>
  </div>
- <p class="status">Locally saved tokens from QX Token Creator on this browser.</p>
+ <p class="status">
+  Locally saved tokens from QX Token Creator on this browser.
+ </p>
 </section>
 
 <section class="panel">
  <h2>QX Ecosystem</h2>
  <p class="sub">Create your own Solana token.</p>
- <a href="https://jhsmj5d6tc-cmd.github.io/oken-maker/">QX Token Creator ↗</a>
+ <a href="https://jhsmj5d6tc-cmd.github.io/oken-maker/">
+  QX Token Creator ↗
+ </a>
 </section>
 
 <footer>QX Exchange · Live market data when available</footer>
@@ -188,7 +340,7 @@ import {createAppKit} from "@reown/appkit";
 import {EthersAdapter} from "@reown/appkit-adapter-ethers";
 import {SolanaAdapter} from "@reown/appkit-adapter-solana";
 import {
- mainnet, arbitrum, optimism, polygon, base, bsc, avalanche, solana
+ mainnet,arbitrum,optimism,polygon,base,bsc,avalanche,solana
 } from "@reown/appkit/networks";
 
 const PROJECT_ID="bd6faec63fbd0865f57da576a550ef09";
@@ -228,34 +380,75 @@ const marketCoins=[
 ];
 
 const chainConfig={
- ethereum:{label:"Ethereum",native:"ETH",price:"ethereum",rpc:"https://ethereum-rpc.publicnode.com",gecko:"eth"},
- bsc:{label:"BNB Chain",native:"BNB",price:"binancecoin",rpc:"https://bsc-rpc.publicnode.com",gecko:"bsc"},
- base:{label:"Base",native:"ETH",price:"ethereum",rpc:"https://mainnet.base.org",gecko:"base"},
- polygon:{label:"Polygon",native:"POL",price:"matic-network",rpc:"https://polygon-bor-rpc.publicnode.com",gecko:"polygon_pos"},
- arbitrum:{label:"Arbitrum",native:"ETH",price:"ethereum",rpc:"https://arbitrum-one-rpc.publicnode.com",gecko:"arbitrum"},
- optimism:{label:"Optimism",native:"ETH",price:"ethereum",rpc:"https://optimism-rpc.publicnode.com",gecko:"optimism"},
- avalanche:{label:"Avalanche",native:"AVAX",price:"avalanche-2",rpc:"https://avalanche-c-chain-rpc.publicnode.com",gecko:"avax"}
+ ethereum:{
+  label:"Ethereum",native:"ETH",price:"ethereum",
+  rpc:"https://ethereum-rpc.publicnode.com",gecko:"eth"
+ },
+ bsc:{
+  label:"BNB Chain",native:"BNB",price:"binancecoin",
+  rpc:"https://bsc-rpc.publicnode.com",gecko:"bsc"
+ },
+ base:{
+  label:"Base",native:"ETH",price:"ethereum",
+  rpc:"https://mainnet.base.org",gecko:"base"
+ },
+ polygon:{
+  label:"Polygon",native:"POL",price:"matic-network",
+  rpc:"https://polygon-bor-rpc.publicnode.com",gecko:"polygon_pos"
+ },
+ arbitrum:{
+  label:"Arbitrum",native:"ETH",price:"ethereum",
+  rpc:"https://arbitrum-one-rpc.publicnode.com",gecko:"arbitrum"
+ },
+ optimism:{
+  label:"Optimism",native:"ETH",price:"ethereum",
+  rpc:"https://optimism-rpc.publicnode.com",gecko:"optimism"
+ },
+ avalanche:{
+  label:"Avalanche",native:"AVAX",price:"avalanche-2",
+  rpc:"https://avalanche-c-chain-rpc.publicnode.com",gecko:"avax"
+ }
 };
+
+const SOLANA_RPC="https://solana-rpc.publicnode.com";
+
+const TOKEN_PROGRAMS=[
+ "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+ "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+];
 
 let prices={};
 let account={};
-let providers={};
 let currentPairs=[];
 let activeAddress="";
 let activeNamespace="";
+let portfolioRequest=0;
 
 function safe(value){
  return String(value??"").replace(/[&<>"']/g,c=>({
-  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  "&":"&amp;",
+  "<":"&lt;",
+  ">":"&gt;",
+  '"':"&quot;",
+  "'":"&#39;"
  }[c]));
 }
-function money(n){
- return Number(n).toLocaleString("en-US",{
-  minimumFractionDigits:2,maximumFractionDigits:2
+
+function money(value){
+ return Number(value).toLocaleString("en-US",{
+  minimumFractionDigits:2,
+  maximumFractionDigits:2
  });
 }
+
 function short(value){
  return value?value.slice(0,6)+"..."+value.slice(-4):"";
+}
+
+function amountFormat(value){
+ return Number(value).toLocaleString("en-US",{
+  maximumFractionDigits:8
+ });
 }
 
 async function loadPrices(){
@@ -264,29 +457,43 @@ async function loadPrices(){
    ...marketCoins.map(c=>c.id),
    ...Object.values(chainConfig).map(c=>c.price)
   ])].join(",");
+
   const response=await fetch(
-   "https://api.coingecko.com/api/v3/simple/price?ids="+ids+"&vs_currencies=usd"
+   "https://api.coingecko.com/api/v3/simple/price?ids="+
+   ids+"&vs_currencies=usd"
   );
+
   if(!response.ok)throw Error("Price service unavailable");
+
   prices=await response.json();
   renderMarket();
-  $("priceStatus").textContent="Market prices updated from CoinGecko.";
-  if(activeAddress)await loadPortfolio();
+
+  $("priceStatus").textContent=
+   "Market prices updated from CoinGecko.";
+
+  if(activeAddress)loadPortfolio();
+
  }catch(error){
-  $("priceStatus").textContent="Live prices unavailable. Try again shortly.";
-  $("marketCards").innerHTML='<div class="panel">Market prices temporarily unavailable.</div>';
+  $("priceStatus").textContent=
+   "Live prices unavailable. Try again shortly.";
  }
 }
 
 function renderMarket(){
  $("marketCards").innerHTML=marketCoins.map(c=>{
   const price=prices[c.id]?.usd;
+
   return `<div class="panel">
    <div class="coin">
     <div class="coinicon">${c.icon}</div>
-    <div><div class="coinname">${c.name}</div><div class="symbol">${c.symbol}</div></div>
+    <div>
+     <div class="coinname">${c.name}</div>
+     <div class="symbol">${c.symbol}</div>
+    </div>
    </div>
-   <div class="price">${price==null?"—":"$"+money(price)}</div>
+   <div class="price">
+    ${price==null?"—":"$"+money(price)}
+   </div>
   </div>`;
  }).join("");
 }
@@ -295,105 +502,323 @@ async function rpcCall(url,method,params){
  const response=await fetch(url,{
   method:"POST",
   headers:{"Content-Type":"application/json"},
-  body:JSON.stringify({jsonrpc:"2.0",id:1,method,params})
+  body:JSON.stringify({
+   jsonrpc:"2.0",
+   id:1,
+   method,
+   params
+  })
  });
- if(!response.ok)throw Error("RPC unavailable");
- const data=await response.json();
- if(data.error)throw Error(data.error.message);
- return data.result;
-}
 
-async function getEvmBalance(url,address){
- const result=await rpcCall(url,"eth_getBalance",[address,"latest"]);
- return Number(BigInt(result))/1e18;
+ if(!response.ok)throw Error("RPC service unavailable");
+
+ const data=await response.json();
+
+ if(data.error)throw Error(data.error.message||"RPC error");
+
+ return data.result;
 }
 
 async function getSolBalance(address){
  const result=await rpcCall(
-  "https://solana-rpc.publicnode.com",
-  "getBalance",[address]
+  SOLANA_RPC,
+  "getBalance",
+  [address,{commitment:"confirmed"}]
  );
- return result.value/1e9;
+
+ return Number(result.value)/1e9;
+}
+
+async function getSolTokenBalances(owner){
+ const results=await Promise.all(
+  TOKEN_PROGRAMS.map(programId=>
+   rpcCall(
+    SOLANA_RPC,
+    "getTokenAccountsByOwner",
+    [
+     owner,
+     {programId},
+     {encoding:"jsonParsed",commitment:"confirmed"}
+    ]
+   )
+  )
+ );
+
+ const balances={};
+
+ for(const result of results){
+  for(const item of result.value||[]){
+   const info=item.account?.data?.parsed?.info;
+   if(!info)continue;
+
+   const mint=info.mint;
+   const raw=info.tokenAmount?.uiAmountString;
+   const amount=Number(raw||0);
+
+   if(!mint||!Number.isFinite(amount)||amount<=0)continue;
+
+   if(!balances[mint]){
+    balances[mint]={
+     mint,
+     amount:0
+    };
+   }
+
+   balances[mint].amount+=amount;
+  }
+ }
+
+ return Object.values(balances);
+}
+
+async function getSolTokenPrices(tokens){
+ const pricesByMint={};
+ const mints=tokens.map(token=>token.mint);
+
+ for(let i=0;i<mints.length;i+=25){
+  const batch=mints.slice(i,i+25);
+
+  try{
+   const url=
+    "https://api.dexscreener.com/tokens/v1/solana/"+
+    batch.join(",");
+
+   const response=await fetch(url);
+
+   if(!response.ok)continue;
+
+   const pairs=await response.json();
+
+   for(const pair of pairs||[]){
+    const mint=pair.baseToken?.address;
+    const price=Number(pair.priceUsd);
+    const liquidity=Number(pair.liquidity?.usd||0);
+
+    if(!mint||!Number.isFinite(price)||price<=0)continue;
+
+    const previous=pricesByMint[mint];
+
+    if(!previous||liquidity>previous.liquidity){
+     pricesByMint[mint]={
+      price,
+      liquidity,
+      symbol:pair.baseToken?.symbol||"SPL Token",
+      name:pair.baseToken?.name||""
+     };
+    }
+   }
+  }catch(error){
+   // Keep tokens without verified market prices unpriced.
+  }
+ }
+
+ return pricesByMint;
+}
+
+async function getEvmBalance(url,address){
+ const result=await rpcCall(
+  url,
+  "eth_getBalance",
+  [address,"latest"]
+ );
+
+ return Number(BigInt(result))/1e18;
+}
+
+function resetAssets(){
+ $("totalValue").textContent="—";
+ $("walletCaption").textContent="Your wallet value · USD";
+ $("walletAddress").textContent="";
+ $("assetsList").innerHTML=
+  '<div class="empty">Connect your wallet to view assets.</div>';
+ $("assetWarning").textContent="";
 }
 
 async function loadPortfolio(){
  if(!activeAddress)return;
 
- $("walletStatus").textContent="Loading wallet balances...";
+ const requestId=++portfolioRequest;
+
+ $("walletStatus").textContent="Loading wallet assets...";
+ $("assetWarning").textContent="";
+
  const rows=[];
  let total=0;
- let priceMissing=false;
+ let unpricedCount=0;
+ let failedCount=0;
 
- if(activeNamespace==="solana"){
-  try{
-   const amount=await getSolBalance(activeAddress);
-   const price=prices.solana?.usd;
-   const value=price==null?null:amount*price;
-   if(value==null)priceMissing=true;
-   else total+=value;
-   rows.push({name:"Solana",symbol:"SOL",amount,value});
-  }catch(error){
-   $("walletStatus").textContent="Unable to read Solana balance: "+error.message;
-  }
- }else if(activeNamespace==="eip155"){
-  const entries=Object.entries(chainConfig);
-  const results=await Promise.allSettled(entries.map(async([key,c])=>{
-   const amount=await getEvmBalance(c.rpc,activeAddress);
-   const price=prices[c.price]?.usd;
-   const value=price==null?null:amount*price;
-   return {name:c.label,symbol:c.native,amount,value};
-  }));
-  for(const result of results){
-   if(result.status==="fulfilled"){
-    const row=result.value;
-    rows.push(row);
-    if(row.value==null)priceMissing=true;
-    else total+=row.value;
+ try{
+  if(activeNamespace==="solana"){
+   const [solAmount,tokens]=await Promise.all([
+    getSolBalance(activeAddress),
+    getSolTokenBalances(activeAddress)
+   ]);
+
+   if(requestId!==portfolioRequest)return;
+
+   const solPrice=prices.solana?.usd;
+   const solValue=solPrice==null?null:solAmount*solPrice;
+
+   if(solValue!==null)total+=solValue;
+   else unpricedCount++;
+
+   rows.push({
+    name:"Solana",
+    symbol:"SOL",
+    amount:solAmount,
+    value:solValue
+   });
+
+   const tokenPrices=await getSolTokenPrices(tokens);
+
+   if(requestId!==portfolioRequest)return;
+
+   for(const token of tokens){
+    const info=tokenPrices[token.mint];
+    const value=info?token.amount*info.price:null;
+
+    if(value!==null&&Number.isFinite(value)){
+     total+=value;
+    }else{
+     unpricedCount++;
+    }
+
+    rows.push({
+     name:info?.name||info?.symbol||"SPL Token",
+     symbol:info?.symbol||short(token.mint),
+     mint:token.mint,
+     amount:token.amount,
+     value
+    });
    }
+
+  }else if(activeNamespace==="eip155"){
+   const entries=Object.entries(chainConfig);
+
+   const results=await Promise.allSettled(
+    entries.map(async([key,config])=>{
+     const amount=await getEvmBalance(
+      config.rpc,
+      activeAddress
+     );
+
+     const price=prices[config.price]?.usd;
+     const value=price==null?null:amount*price;
+
+     return {
+      name:config.label,
+      symbol:config.native,
+      amount,
+      value
+     };
+    })
+   );
+
+   if(requestId!==portfolioRequest)return;
+
+   for(const result of results){
+    if(result.status==="fulfilled"){
+     const row=result.value;
+     rows.push(row);
+
+     if(row.value!==null)total+=row.value;
+     else unpricedCount++;
+    }else{
+     failedCount++;
+    }
+   }
+
+  }else{
+   $("walletStatus").textContent=
+    "Choose a supported Solana or EVM wallet network.";
+   return;
   }
- }else{
-  $("walletStatus").textContent="Select a supported EVM or Solana account in Reown.";
-  return;
+
+  if(requestId!==portfolioRequest)return;
+
+  $("totalValue").textContent="$"+money(total);
+  $("walletCaption").textContent=
+   "Estimated value of priced assets · USD";
+
+  $("assetsList").innerHTML=rows.length?
+   rows.map(row=>`
+    <div class="row">
+     <span>
+      <strong>${safe(row.name)}</strong>
+      <div class="symbol">${safe(row.symbol)}</div>
+      ${row.mint?
+       `<div class="symbol">${safe(short(row.mint))}</div>`:""}
+     </span>
+     <span class="right">${amountFormat(row.amount)}</span>
+     <span class="right">
+      ${row.value===null?"Price unavailable":"$"+money(row.value)}
+     </span>
+    </div>
+   `).join("") :
+   '<div class="empty">No assets found.</div>';
+
+  let status="Wallet portfolio updated.";
+
+  if(unpricedCount>0){
+   status+=" "+unpricedCount+
+    " asset(s) have no available market price and are excluded from the total.";
+  }
+
+  if(failedCount>0){
+   status+=" "+failedCount+
+    " network balance request(s) could not be completed.";
+  }
+
+  $("walletStatus").textContent=status;
+
+  if(unpricedCount>0){
+   $("assetWarning").textContent=
+    "Some tokens may not have a reliable market price. Their value is not included in the total.";
+  }
+
+ }catch(error){
+  if(requestId!==portfolioRequest)return;
+
+  $("walletStatus").textContent=
+   "Could not load wallet assets: "+error.message;
+
+  $("totalValue").textContent="—";
  }
-
- $("totalValue").textContent="$"+money(total);
- $("walletCaption").textContent="Supported native-coin balances · USD";
- $("assetsList").innerHTML=rows.length?rows.map(row=>`
-  <div class="row">
-   <span><strong>${safe(row.name)}</strong><div class="symbol">${safe(row.symbol)}</div></span>
-   <span class="right">${row.amount.toFixed(6)}</span>
-   <span class="right">${row.value==null?"Price unavailable":"$"+money(row.value)}</span>
-  </div>`).join(""):'<div class="empty">No balances retrieved.</div>';
-
- $("walletStatus").textContent=
-  "Native coin balances only. Other token holdings are not included in this portfolio calculation."+
-  (priceMissing?" Some asset prices are unavailable.":"");
 }
 
 function updateAccount(state){
  account=state||{};
+
  const address=account.address||"";
  const caip=account.caipAddress||"";
+
  const connected=Boolean(account.isConnected&&address);
 
  if(!connected){
   activeAddress="";
   activeNamespace="";
+  portfolioRequest++;
+
   $("connectBtn").textContent="Connect Wallet";
-  $("walletAddress").textContent="";
-  $("totalValue").textContent="—";
-  $("walletCaption").textContent="Estimated wallet value · USD";
-  $("walletStatus").textContent="Connect your wallet to load your portfolio.";
-  $("assetsList").innerHTML='<div class="empty">Connect your wallet to view assets.</div>';
+  resetAssets();
+
+  $("walletStatus").textContent=
+   "Connect your wallet to load your portfolio.";
+
   return;
  }
 
  activeAddress=address;
- activeNamespace=caip.startsWith("solana:")?"solana":
-  caip.startsWith("eip155:")?"eip155":"";
+
+ activeNamespace=
+  caip.startsWith("solana:")?"solana":
+  caip.startsWith("eip155:")?"eip155":
+  account.chainNamespace==="solana"?"solana":
+  account.chainNamespace==="eip155"?"eip155":"";
 
  $("connectBtn").textContent=short(address);
- $("walletAddress").textContent=activeAddress;
+ $("walletAddress").textContent=address;
+
  loadPortfolio();
 }
 
@@ -406,6 +831,7 @@ $("swapBtn").addEventListener("click",()=>{
   appKit.open();
   return;
  }
+
  appKit.open({view:"Swap"});
 });
 
@@ -413,39 +839,46 @@ appKit.subscribeAccount(state=>{
  updateAccount(state);
 });
 
-appKit.subscribeProviders(state=>{
- providers=state||{};
-});
-
-appKit.subscribeState(state=>{
- if(state?.open===false&&account?.isConnected){
+appKit.subscribeNetwork(state=>{
+ if(account?.isConnected){
   updateAccount(account);
  }
 });
 
 async function loadTrending(){
  const network=$("network").value;
- const config=network==="solana"?{gecko:"solana"}:chainConfig[network];
- $("tokenResults").innerHTML='<div class="empty">Loading trending tokens...</div>';
+ const config=network==="solana"?
+  {gecko:"solana"}:chainConfig[network];
+
+ $("tokenResults").innerHTML=
+  '<div class="empty">Loading trending tokens...</div>';
 
  try{
   const response=await fetch(
    "https://api.geckoterminal.com/api/v2/networks/"+
    config.gecko+"/trending_pools"
   );
+
   if(!response.ok)throw Error("Market discovery unavailable");
+
   const data=await response.json();
+
   currentPairs=(data.data||[]).slice(0,15);
+
   renderPairs();
-  $("discoverStatus").textContent="Trending pools for "+network+".";
+
+  $("discoverStatus").textContent=
+   "Trending pools for "+network+".";
  }catch(error){
-  $("tokenResults").innerHTML='<div class="empty">Unable to load trending tokens. Try searching by contract.</div>';
+  $("tokenResults").innerHTML=
+   '<div class="empty">Unable to load trending tokens. Try searching by contract.</div>';
  }
 }
 
 function renderPairs(){
  if(!currentPairs.length){
-  $("tokenResults").innerHTML='<div class="empty">No matching market pairs found.</div>';
+  $("tokenResults").innerHTML=
+   '<div class="empty">No matching market pairs found.</div>';
   return;
  }
 
@@ -455,61 +888,98 @@ function renderPairs(){
   const price=Number(a.base_token_price_usd);
   const volume=Number(a.volume_usd?.h24);
   const address=a.address||"";
+
   return `<div class="row">
    <button class="tokenbtn" data-pair="${index}">
     <strong>${safe(name)}</strong>
     <small>${safe(short(address))}</small>
    </button>
-   <span class="right">${Number.isFinite(price)&&price>0?"$"+money(price):"—"}</span>
-   <span class="right">${Number.isFinite(volume)?"$"+money(volume):"—"}</span>
+   <span class="right">
+    ${Number.isFinite(price)&&price>0?"$"+money(price):"—"}
+   </span>
+   <span class="right">
+    ${Number.isFinite(volume)?"$"+money(volume):"—"}
+   </span>
   </div>`;
  }).join("");
 
  $("tokenResults").querySelectorAll("[data-pair]").forEach(button=>{
-  button.addEventListener("click",()=>openPair(Number(button.dataset.pair)));
+  button.addEventListener("click",()=>{
+   openPair(Number(button.dataset.pair));
+  });
  });
 }
 
 async function searchTokens(){
  const query=$("search").value.trim();
  const network=$("network").value;
- if(!query){loadTrending();return;}
 
- $("tokenResults").innerHTML='<div class="empty">Searching tokens...</div>';
+ if(!query){
+  loadTrending();
+  return;
+ }
+
+ $("tokenResults").innerHTML=
+  '<div class="empty">Searching tokens...</div>';
 
  try{
   const response=await fetch(
-   "https://api.dexscreener.com/latest/dex/search?q="+encodeURIComponent(query)
+   "https://api.dexscreener.com/latest/dex/search?q="+
+   encodeURIComponent(query)
   );
+
   if(!response.ok)throw Error("Search unavailable");
+
   const data=await response.json();
-  currentPairs=(data.pairs||[]).filter(p=>p.chainId===network).slice(0,15);
+
+  currentPairs=(data.pairs||[])
+   .filter(pair=>pair.chainId===network)
+   .sort((a,b)=>
+    Number(b.liquidity?.usd||0)-
+    Number(a.liquidity?.usd||0)
+   )
+   .slice(0,15);
 
   if(!currentPairs.length){
-   $("tokenResults").innerHTML='<div class="empty">No results on this network.</div>';
+   $("tokenResults").innerHTML=
+    '<div class="empty">No results on this network.</div>';
    return;
   }
 
-  $("tokenResults").innerHTML=currentPairs.map((p,index)=>`
+  $("tokenResults").innerHTML=currentPairs.map((pair,index)=>`
    <div class="row">
     <button class="tokenbtn" data-pair="${index}">
-     <strong>${safe(p.baseToken?.name)} (${safe(p.baseToken?.symbol)})</strong>
-     <small>${safe(short(p.baseToken?.address))}</small>
+     <strong>
+      ${safe(pair.baseToken?.name)}
+      (${safe(pair.baseToken?.symbol)})
+     </strong>
+     <small>${safe(short(pair.baseToken?.address))}</small>
     </button>
-    <span class="right">${p.priceUsd?"$"+money(Number(p.priceUsd)):"—"}</span>
-    <span class="right">${p.volume?.h24?"$"+money(Number(p.volume.h24)):"—"}</span>
-   </div>`).join("");
+    <span class="right">
+     ${pair.priceUsd?"$"+money(Number(pair.priceUsd)):"—"}
+    </span>
+    <span class="right">
+     ${pair.volume?.h24?
+      "$"+money(Number(pair.volume.h24)):"—"}
+    </span>
+   </div>
+  `).join("");
 
   $("tokenResults").querySelectorAll("[data-pair]").forEach(button=>{
-   button.addEventListener("click",()=>openPair(Number(button.dataset.pair)));
+   button.addEventListener("click",()=>{
+    openPair(Number(button.dataset.pair));
+   });
   });
+
  }catch(error){
-  $("tokenResults").innerHTML='<div class="empty">Search service unavailable. Try again.</div>';
+  $("tokenResults").innerHTML=
+   '<div class="empty">Search service unavailable. Try again.</div>';
  }
 }
 
 function openPair(index){
  const pair=currentPairs[index];
+
  if(!pair)return;
 
  const attrs=pair.attributes||{};
@@ -519,26 +989,36 @@ function openPair(index){
  if(!pairAddress)return;
 
  $("detailName").textContent=
-  attrs.name||((pair.baseToken?.name||"Token")+" / "+(pair.quoteToken?.symbol||""));
+  attrs.name||
+  ((pair.baseToken?.name||"Token")+
+   " / "+(pair.quoteToken?.symbol||""));
+
  $("detailAddress").textContent=
-  pair.baseToken?.address||attrs.base_token_address||pairAddress;
+  pair.baseToken?.address||
+  attrs.base_token_address||
+  pairAddress;
 
  $("chart").src=
-  "https://dexscreener.com/"+encodeURIComponent(chain)+"/"+
-  encodeURIComponent(pairAddress)+"?embed=1&theme=dark&trades=0&info=0";
+  "https://dexscreener.com/"+
+  encodeURIComponent(chain)+"/"+
+  encodeURIComponent(pairAddress)+
+  "?embed=1&theme=dark&trades=0&info=0";
 
  $("detail").style.display="block";
  $("detail").scrollIntoView({behavior:"smooth"});
 }
 
 $("searchBtn").addEventListener("click",searchTokens);
+
 $("search").addEventListener("keydown",event=>{
  if(event.key==="Enter")searchTokens();
 });
+
 $("network").addEventListener("change",()=>{
  $("search").value="";
  loadTrending();
 });
+
 $("closeDetail").addEventListener("click",()=>{
  $("detail").style.display="none";
  $("chart").src="about:blank";
@@ -546,18 +1026,28 @@ $("closeDetail").addEventListener("click",()=>{
 
 function loadCreatedTokens(){
  try{
-  const tokens=JSON.parse(localStorage.getItem("qx_created_tokens_v1")||"[]");
-  $("newTokens").innerHTML=tokens.length?tokens.map(token=>`
-   <div class="row">
-    <span>
-     <strong>${safe(token.name)} (${safe(token.symbol)})</strong>
-     <div class="symbol">${safe(short(token.mint))}</div>
-    </span>
-    <span class="right">${safe(token.supply||"—")}</span>
-    <span class="right">Solana</span>
-   </div>`).join(""):'<div class="empty">No locally saved tokens found.</div>';
+  const tokens=JSON.parse(
+   localStorage.getItem("qx_created_tokens_v1")||"[]"
+  );
+
+  $("newTokens").innerHTML=tokens.length?
+   tokens.map(token=>`
+    <div class="row">
+     <span>
+      <strong>
+       ${safe(token.name)} (${safe(token.symbol)})
+      </strong>
+      <div class="symbol">${safe(short(token.mint))}</div>
+     </span>
+     <span class="right">${safe(token.supply||"—")}</span>
+     <span class="right">Solana</span>
+    </div>
+   `).join("") :
+   '<div class="empty">No locally saved tokens found.</div>';
+
  }catch(error){
-  $("newTokens").innerHTML='<div class="empty">Could not read local token registry.</div>';
+  $("newTokens").innerHTML=
+   '<div class="empty">Could not read local token registry.</div>';
  }
 }
 
