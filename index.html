@@ -6,104 +6,46 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#080d18">
 <title>QX Exchange | Solana</title>
-
 <script src="https://plugin.jup.ag/plugin-v1.js" defer></script>
-
 <style>
-:root{
---bg:#080d18;
---panel:#111a2b;
---line:#263750;
---text:#f4f7ff;
---muted:#91a0b5;
---green:#42d6a0;
-}
+:root{--bg:#080d18;--panel:#111a2b;--line:#263750;--text:#f4f7ff;--muted:#91a0b5;--green:#42d6a0}
 *{box-sizing:border-box}
-body{
-margin:0;background:var(--bg);color:var(--text);
-font:15px Arial,sans-serif;
-}
+body{margin:0;background:var(--bg);color:var(--text);font:15px Arial,sans-serif}
 .wrap{max-width:1150px;margin:auto;padding:16px}
-header,.between,.coin{
-display:flex;align-items:center;
-justify-content:space-between;gap:12px
-}
+header,.between,.coin{display:flex;align-items:center;justify-content:space-between;gap:12px}
 header{padding:12px 0 25px}
-.logo{font-size:26px;font-weight:900}
-.logo span{color:var(--green)}
-.small,.muted,.status{
-color:var(--muted);font-size:13px;line-height:1.6
-}
-button,input{font:inherit}
-button{cursor:pointer}
-.btn{
-background:#1b2a40;color:white;
-border:1px solid var(--line);
-padding:12px 16px;border-radius:11px;
-font-weight:bold
-}
+.logo{font-size:26px;font-weight:900}.logo span{color:var(--green)}
+.small,.muted,.status{color:var(--muted);font-size:13px;line-height:1.6}
+button,input{font:inherit}button{cursor:pointer}
+.btn{background:#1b2a40;color:white;border:1px solid var(--line);padding:12px 16px;border-radius:11px;font-weight:bold}
 .primary{background:var(--green);color:#06150f;border:0}
-.hero,.panel,.list{
-background:var(--panel);
-border:1px solid var(--line);
-border-radius:17px;padding:18px
-}
-.hero{
-background:linear-gradient(130deg,#172d46,#101827)
-}
+.hero,.panel,.list{background:var(--panel);border:1px solid var(--line);border-radius:17px;padding:18px}
+.hero{background:linear-gradient(130deg,#172d46,#101827)}
 .value{font-size:clamp(32px,7vw,48px);font-weight:800;margin:12px 0}
 .address{font-size:12px;overflow-wrap:anywhere;color:var(--muted);margin-top:10px}
-.section{margin:27px 0}
-.section h2{font-size:19px;margin:0 0 14px}
+.section{margin:27px 0}.section h2{font-size:19px;margin:0 0 14px}
 .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
 .price{font-size:22px;font-weight:bold;margin-top:13px}
-.coinicon{
-width:38px;height:38px;border-radius:50%;
-background:#263b55;display:grid;place-items:center;font-weight:bold
-}
+.coinicon{width:38px;height:38px;border-radius:50%;background:#263b55;display:grid;place-items:center;font-weight:bold}
 .toolbar{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:12px}
-input{
-flex:1;min-width:150px;background:#0c1525;
-border:1px solid var(--line);border-radius:10px;
-padding:13px;color:white
-}
+input{flex:1;min-width:150px;background:#0c1525;border:1px solid var(--line);border-radius:10px;padding:13px;color:white}
 .list{padding:0;overflow:hidden}
-.row{
-display:grid;grid-template-columns:1.5fr 1fr 1fr;
-gap:10px;align-items:center;padding:14px;
-border-bottom:1px solid var(--line)
-}
-.row:last-child{border:0}
-.rowhead{background:#0c1525;color:var(--muted);font-size:12px}
-.right{text-align:right}
-.tokenbtn{
-background:none;border:0;color:white;
-text-align:left;padding:0;min-width:0
-}
-.tokenbtn strong{display:block}
-.tokenbtn small{display:block;color:var(--muted);margin-top:5px;overflow-wrap:anywhere}
+.row{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:10px;align-items:center;padding:14px;border-bottom:1px solid var(--line)}
+.row:last-child{border:0}.rowhead{background:#0c1525;color:var(--muted);font-size:12px}
+.right{text-align:right}.tokenbtn{background:none;border:0;color:white;text-align:left;padding:0;min-width:0}
+.tokenbtn strong{display:block}.tokenbtn small{display:block;color:var(--muted);margin-top:5px;overflow-wrap:anywhere}
 .empty{text-align:center;padding:20px;color:var(--muted)}
 .chart{width:100%;height:420px;border:0;border-radius:12px}
-#detail{display:none}
-#jupiter-plugin{min-height:650px}
+#detail{display:none}#jupiter-plugin{min-height:650px}
 .notice{font-size:12px;color:#e7c27a;line-height:1.7}
-a{color:var(--green)}
-footer{text-align:center;color:var(--muted);padding:30px;font-size:12px}
-@media(max-width:680px){
-.wrap{padding:12px}
-.grid{grid-template-columns:repeat(2,1fr)}
-.row{grid-template-columns:1.4fr .9fr .9fr;padding:12px 9px;font-size:12px}
-.chart{height:350px}
-}
+a{color:var(--green)}footer{text-align:center;color:var(--muted);padding:30px;font-size:12px}
+@media(max-width:680px){.wrap{padding:12px}.grid{grid-template-columns:repeat(2,1fr)}.row{grid-template-columns:1.4fr .9fr .9fr;padding:12px 9px;font-size:12px}.chart{height:350px}}
 </style>
 </head>
-
 <body>
 <div class="wrap">
-
 <header>
- <div class="logo">QX <span>EXCHANGE</span>
- <div class="small">SOLANA ONLY</div></div>
+ <div class="logo">QX <span>EXCHANGE</span><div class="small">SOLANA ONLY</div></div>
  <button class="btn primary" id="connectBtn">Connect Phantom / Wallet</button>
 </header>
 
@@ -122,36 +64,23 @@ footer{text-align:center;color:var(--muted);padding:30px;font-size:12px}
 
 <section class="section">
  <h2>Solana Market</h2>
- <div class="grid" id="marketCards">
-  <div class="panel">Loading market...</div>
- </div>
+ <div class="grid" id="marketCards"><div class="panel">Loading market...</div></div>
  <p class="status" id="priceStatus"></p>
 </section>
 
 <section class="section">
  <h2>My Solana Assets</h2>
  <div class="list">
-  <div class="row rowhead">
-   <span>Token</span><span class="right">Balance</span><span class="right">Value USD</span>
-  </div>
-  <div id="assetsList">
-   <div class="empty">Connect wallet to view assets.</div>
-  </div>
+  <div class="row rowhead"><span>Token</span><span class="right">Balance</span><span class="right">Value USD</span></div>
+  <div id="assetsList"><div class="empty">Connect wallet to view assets.</div></div>
  </div>
  <p class="notice" id="assetWarning"></p>
 </section>
 
 <section class="section">
- <div class="between">
-  <h2>Swap on Solana</h2>
-  <span class="small">Powered by Jupiter</span>
- </div>
- <div class="panel">
-  <div id="jupiter-plugin"></div>
- </div>
- <p class="notice" id="feeStatus">
-  QX referral fee configuration is pending.
- </p>
+ <div class="between"><h2>Swap on Solana</h2><span class="small">Powered by Jupiter</span></div>
+ <div class="panel"><div id="jupiter-plugin"></div></div>
+ <p class="notice" id="feeStatus">Loading QX referral settings...</p>
 </section>
 
 <section class="section">
@@ -162,14 +91,8 @@ footer{text-align:center;color:var(--muted);padding:30px;font-size:12px}
   <button class="btn" id="trendingBtn">Trending</button>
  </div>
  <div class="list">
-  <div class="row rowhead">
-   <span>Token / Pair</span>
-   <span class="right">Price USD</span>
-   <span class="right">24h Volume</span>
-  </div>
-  <div id="tokenResults">
-   <div class="empty">Loading Solana tokens...</div>
-  </div>
+  <div class="row rowhead"><span>Token / Pair</span><span class="right">Price USD</span><span class="right">24h Volume</span></div>
+  <div id="tokenResults"><div class="empty">Loading Solana tokens...</div></div>
  </div>
  <p class="status" id="discoverStatus"></p>
 </section>
@@ -177,10 +100,7 @@ footer{text-align:center;color:var(--muted);padding:30px;font-size:12px}
 <section class="section" id="detail">
  <div class="panel">
   <div class="between">
-   <div>
-    <h2 id="detailName">Token chart</h2>
-    <div class="small" id="detailAddress"></div>
-   </div>
+   <div><h2 id="detailName">Token chart</h2><div class="small" id="detailAddress"></div></div>
    <button class="btn" id="closeDetail">Close</button>
   </div>
   <iframe id="chart" class="chart" title="Token chart"></iframe>
@@ -191,37 +111,26 @@ footer{text-align:center;color:var(--muted);padding:30px;font-size:12px}
  <h2>QX Token Creator</h2>
  <div class="panel">
   <p class="muted">Create your own SPL token on Solana.</p>
-  <a class="btn primary"
-  href="https://jhsmj5d6tc-cmd.github.io/oken-maker/"
-  target="_blank" rel="noopener">
-  Open QX Token Creator ↗
-  </a>
+  <a class="btn primary" href="https://jhsmj5d6tc-cmd.github.io/oken-maker/" target="_blank" rel="noopener">Open QX Token Creator ↗</a>
  </div>
 </section>
 
 <section class="section">
  <h2>Tokens Created with QX</h2>
  <div class="list">
-  <div class="row rowhead">
-   <span>Token</span><span class="right">Supply</span><span class="right">Network</span>
-  </div>
-  <div id="newTokens">
-   <div class="empty">No locally saved tokens.</div>
-  </div>
+  <div class="row rowhead"><span>Token</span><span class="right">Supply</span><span class="right">Network</span></div>
+  <div id="newTokens"><div class="empty">No locally saved tokens.</div></div>
  </div>
 </section>
-
 <footer>QX Exchange · Solana Mainnet · Jupiter Swap</footer>
 </div>
 
 <script type="importmap">
-{
- "imports":{
-  "@reown/appkit":"https://esm.sh/@reown/appkit@1.8.24",
-  "@reown/appkit/networks":"https://esm.sh/@reown/appkit@1.8.24/networks",
-  "@reown/appkit-adapter-solana":"https://esm.sh/@reown/appkit-adapter-solana@1.8.24?external=@reown/appkit"
- }
-}
+{"imports":{
+ "@reown/appkit":"https://esm.sh/@reown/appkit@1.8.24",
+ "@reown/appkit/networks":"https://esm.sh/@reown/appkit@1.8.24/networks",
+ "@reown/appkit-adapter-solana":"https://esm.sh/@reown/appkit-adapter-solana@1.8.24?external=@reown/appkit"
+}}
 </script>
 
 <script type="module">
@@ -230,53 +139,24 @@ import{SolanaAdapter}from"@reown/appkit-adapter-solana";
 import{solana}from"@reown/appkit/networks";
 
 const $=id=>document.getElementById(id);
-
 const PROJECT_ID="bd6faec63fbd0865f57da576a550ef09";
-
 const SOL_MINT="So11111111111111111111111111111111111111112";
-
 const USDC_MINT="EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
+const JUPITER_REFERRAL_ACCOUNT="UMRAMLr2CqNNSUhVJvdB2bbEGHPwL5n6LpFzTxycmBW";
+const QX_REFERRAL_FEE_BPS=100;
 
 const RPCS=[
  "https://solana-rpc.publicnode.com",
  "https://api.mainnet-beta.solana.com"
 ];
-
 const PROGRAMS=[
  "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
  "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
 ];
 
-/*
- QX FEE SETTINGS
+let appKit,walletAddress="",walletConnected=false,solPrice=null,pairs=[],job=0;
 
- This is your normal Phantom receiving wallet.
- It is NOT the Jupiter referral account.
-*/
-const QX_FEE_WALLET="E4x2DiVVDuVQHSUGgzTPjJMDbiJ6jCRwpEvsvAd31Qs4";
-
-/*
- Paste the Jupiter Referral Account address here
- after creating it in referral.jup.ag.
-
- Do not paste your normal Phantom wallet address here.
-*/
-const JUPITER_REFERRAL_ACCOUNT="PASTE_JUPITER_REFERRAL_ACCOUNT_HERE";
-
-/* 100 bps = 1% */
-const QX_REFERRAL_FEE_BPS=100;
-
-let appKit;
-let walletAddress="";
-let walletConnected=false;
-let solPrice=null;
-let pairs=[];
-let job=0;
-
-const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({
- "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-}[c]));
-
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const fmt=n=>Number(n).toLocaleString("en-US",{maximumFractionDigits:8});
 const usd=n=>"$"+Number(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
 const short=s=>s?s.slice(0,6)+"…"+s.slice(-4):"";
@@ -286,11 +166,7 @@ async function rpc(method,params){
  let last="RPC unavailable";
  for(const endpoint of RPCS){
   try{
-   const r=await fetch(endpoint,{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({jsonrpc:"2.0",id:1,method,params})
-   });
+   const r=await fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({jsonrpc:"2.0",id:1,method,params})});
    if(!r.ok)throw Error("HTTP "+r.status);
    const j=await r.json();
    if(j.error)throw Error(j.error.message);
@@ -312,26 +188,20 @@ try{
    icons:[]
   },
   themeMode:"dark",
-  themeVariables:{
-   "--w3m-accent":"#42d6a0",
-   "--w3m-border-radius-master":"10px"
-  },
+  themeVariables:{"--w3m-accent":"#42d6a0","--w3m-border-radius-master":"10px"},
   features:{analytics:true,email:false,socials:false}
  });
 
  appKit.subscribeAccount(async s=>{
   const a=s?.address||"";
   if(s?.isConnected&&valid(a)){
-   walletAddress=a;
-   walletConnected=true;
+   walletAddress=a;walletConnected=true;
    $("connectBtn").textContent=short(a);
    $("walletAddress").textContent=a;
    $("walletStatus").textContent="Wallet connected. Loading assets...";
    await loadPortfolio();
   }else{
-   walletAddress="";
-   walletConnected=false;
-   job++;
+   walletAddress="";walletConnected=false;job++;
    $("connectBtn").textContent="Connect Phantom / Wallet";
    $("walletAddress").textContent="";
    $("totalValue").textContent="—";
@@ -339,9 +209,7 @@ try{
    $("walletStatus").textContent="Wallet disconnected.";
   }
  });
-}catch(e){
- $("walletStatus").textContent="Wallet setup error: "+e.message;
-}
+}catch(e){$("walletStatus").textContent="Wallet setup error: "+e.message}
 
 $("connectBtn").onclick=async()=>{
  try{await appKit.open()}
@@ -352,17 +220,14 @@ async function tokenBalances(owner){
  const out=new Map();
  for(const programId of PROGRAMS){
   try{
-   const r=await rpc("getTokenAccountsByOwner",[
-    owner,{programId},{encoding:"jsonParsed",commitment:"confirmed"}
-   ]);
+   const r=await rpc("getTokenAccountsByOwner",[owner,{programId},{encoding:"jsonParsed",commitment:"confirmed"}]);
    for(const x of r.value||[]){
     const i=x.account?.data?.parsed?.info;
     if(!i?.mint)continue;
     const n=Number(i.tokenAmount?.uiAmountString||0);
     if(n<=0)continue;
     const old=out.get(i.mint)||{mint:i.mint,amount:0};
-    old.amount+=n;
-    out.set(i.mint,old);
+    old.amount+=n;out.set(i.mint,old);
    }
   }catch(e){console.warn(e)}
  }
@@ -377,12 +242,8 @@ async function tokenPrices(tokens){
    const r=await fetch("https://api.dexscreener.com/tokens/v1/solana/"+ids);
    if(!r.ok)continue;
    for(const p of await r.json()){
-    const m=p.baseToken?.address;
-    const v=Number(p.priceUsd);
-    const liq=Number(p.liquidity?.usd||0);
-    if(m&&v>0&&(!out[m]||liq>out[m].liq)){
-     out[m]={price:v,liq,name:p.baseToken.name,symbol:p.baseToken.symbol};
-    }
+    const m=p.baseToken?.address,v=Number(p.priceUsd),liq=Number(p.liquidity?.usd||0);
+    if(m&&v>0&&(!out[m]||liq>out[m].liq))out[m]={price:v,liq,name:p.baseToken.name,symbol:p.baseToken.symbol};
    }
   }catch(e){console.warn(e)}
  }
@@ -400,24 +261,16 @@ async function loadPortfolio(){
   const tokens=await tokenBalances(owner);
   const p=await tokenPrices(tokens);
   if(id!==job)return;
-
   let total=solPrice?sol*solPrice:0;
   let unpriced=solPrice?0:1;
-
   const rows=[
    {name:"Solana",symbol:"SOL",mint:"",amount:sol,value:solPrice?sol*solPrice:null},
    ...tokens.map(t=>{
     const q=p[t.mint],v=q?t.amount*q.price:null;
-    if(v===null)unpriced++;
-    else total+=v;
-    return{
-     name:q?.name||"SPL Token",
-     symbol:q?.symbol||short(t.mint),
-     mint:t.mint,amount:t.amount,value:v
-    };
+    if(v===null)unpriced++;else total+=v;
+    return{name:q?.name||"SPL Token",symbol:q?.symbol||short(t.mint),mint:t.mint,amount:t.amount,value:v};
    })
   ];
-
   $("totalValue").textContent=usd(total);
   $("assetsList").innerHTML=rows.map(t=>
    '<div class="row"><span><strong>'+esc(t.name)+' ('+esc(t.symbol)+')</strong>'+
@@ -425,10 +278,8 @@ async function loadPortfolio(){
    '</span><span class="right">'+fmt(t.amount)+'</span>'+
    '<span class="right">'+(t.value===null?"No price":usd(t.value))+'</span></div>'
   ).join("");
-
   $("walletStatus").textContent="Solana balances updated.";
-  $("assetWarning").textContent=unpriced?
-   unpriced+" asset(s) have no available price.":"";
+  $("assetWarning").textContent=unpriced?unpriced+" asset(s) have no available price.":"";
  }catch(e){
   $("walletStatus").textContent="Balance error: "+e.message;
   $("assetsList").innerHTML='<div class="empty">Could not read balances. Try refresh.</div>';
@@ -440,30 +291,15 @@ async function loadMarket(){
   const r=await fetch("https://api.dexscreener.com/latest/dex/tokens/"+SOL_MINT);
   if(!r.ok)throw Error("Price service unavailable");
   const j=await r.json();
-  const p=(j.pairs||[]).filter(x=>x.chainId==="solana")
-   .sort((a,b)=>Number(b.liquidity?.usd||0)-Number(a.liquidity?.usd||0))[0];
-
+  const p=(j.pairs||[]).filter(x=>x.chainId==="solana").sort((a,b)=>Number(b.liquidity?.usd||0)-Number(a.liquidity?.usd||0))[0];
   solPrice=p?Number(p.priceUsd):null;
-
-  const cards=[
-   ["Solana","SOL",solPrice],
-   ["USD Coin","USDC",1],
-   ["Jupiter","JUP",null],
-   ["Wrapped SOL","WSOL",solPrice]
-  ];
-
+  const cards=[["Solana","SOL",solPrice],["USD Coin","USDC",1],["Jupiter","JUP",null],["Wrapped SOL","WSOL",solPrice]];
   $("marketCards").innerHTML=cards.map(x=>
-   '<div class="panel"><div class="coin"><span class="coinicon">'+x[1][0]+
-   '</span><div><strong>'+x[0]+'</strong><div class="small">'+x[1]+
-   '</div></div></div><div class="price">'+(x[2]?usd(x[2]):"—")+
-   '</div></div>'
+   '<div class="panel"><div class="coin"><span class="coinicon">'+x[1][0]+'</span><div><strong>'+x[0]+'</strong><div class="small">'+x[1]+'</div></div></div><div class="price">'+(x[2]?usd(x[2]):"—")+'</div></div>'
   ).join("");
-
   $("priceStatus").textContent="Market prices from public Solana pools.";
   if(walletConnected)loadPortfolio();
- }catch(e){
-  $("priceStatus").textContent="Market data unavailable: "+e.message;
- }
+ }catch(e){$("priceStatus").textContent="Market data unavailable: "+e.message}
 }
 
 async function loadTrending(){
@@ -471,9 +307,7 @@ async function loadTrending(){
  try{
   const r=await fetch("https://api.geckoterminal.com/api/v2/networks/solana/trending_pools");
   if(!r.ok)throw Error("Market API unavailable");
-  const j=await r.json();
-  pairs=(j.data||[]).slice(0,20);
-  renderPairs();
+  const j=await r.json();pairs=(j.data||[]).slice(0,20);renderPairs();
   $("discoverStatus").textContent="Trending Solana pools.";
  }catch(e){
   $("tokenResults").innerHTML='<div class="empty">Could not load pools. Try again.</div>';
@@ -482,24 +316,12 @@ async function loadTrending(){
 }
 
 function renderPairs(){
- if(!pairs.length){
-  $("tokenResults").innerHTML='<div class="empty">No pools found.</div>';
-  return;
- }
+ if(!pairs.length){$("tokenResults").innerHTML='<div class="empty">No pools found.</div>';return}
  $("tokenResults").innerHTML=pairs.map((p,i)=>{
-  const a=p.attributes||{};
-  const v=Number(a.base_token_price_usd);
-  const vol=Number(a.volume_usd?.h24);
-  return '<div class="row"><button class="tokenbtn" data-i="'+i+'"><strong>'+
-   esc(a.name||"Solana pool")+'</strong><small>'+
-   esc(short(a.address||""))+'</small></button><span class="right">'+
-   (v>0?usd(v):"—")+'</span><span class="right">'+
-   (vol>0?usd(vol):"—")+'</span></div>';
+  const a=p.attributes||{},v=Number(a.base_token_price_usd),vol=Number(a.volume_usd?.h24);
+  return '<div class="row"><button class="tokenbtn" data-i="'+i+'"><strong>'+esc(a.name||"Solana pool")+'</strong><small>'+esc(short(a.address||""))+'</small></button><span class="right">'+(v>0?usd(v):"—")+'</span><span class="right">'+(vol>0?usd(vol):"—")+'</span></div>';
  }).join("");
-
- $("tokenResults").querySelectorAll("[data-i]").forEach(b=>
-  b.onclick=()=>openPair(+b.dataset.i)
- );
+ $("tokenResults").querySelectorAll("[data-i]").forEach(b=>b.onclick=()=>openPair(+b.dataset.i));
 }
 
 async function search(){
@@ -510,84 +332,44 @@ async function search(){
   const r=await fetch("https://api.dexscreener.com/latest/dex/search?q="+encodeURIComponent(q));
   if(!r.ok)throw Error("Search unavailable");
   const j=await r.json();
-  pairs=(j.pairs||[]).filter(p=>p.chainId==="solana")
-   .sort((a,b)=>Number(b.liquidity?.usd||0)-Number(a.liquidity?.usd||0))
-   .slice(0,20);
-
-  if(!pairs.length){
-   $("tokenResults").innerHTML='<div class="empty">No matching Solana pools.</div>';
-   return;
-  }
-
+  pairs=(j.pairs||[]).filter(p=>p.chainId==="solana").sort((a,b)=>Number(b.liquidity?.usd||0)-Number(a.liquidity?.usd||0)).slice(0,20);
+  if(!pairs.length){$("tokenResults").innerHTML='<div class="empty">No matching Solana pools.</div>';return}
   $("tokenResults").innerHTML=pairs.map((p,i)=>
-   '<div class="row"><button class="tokenbtn" data-i="'+i+'"><strong>'+
-   esc(p.baseToken?.name)+" ("+esc(p.baseToken?.symbol)+')</strong><small>'+
-   esc(short(p.baseToken?.address))+'</small></button><span class="right">'+
-   (p.priceUsd?usd(+p.priceUsd):"—")+'</span><span class="right">'+
-   usd(+(p.volume?.h24||0))+'</span></div>'
+   '<div class="row"><button class="tokenbtn" data-i="'+i+'"><strong>'+esc(p.baseToken?.name)+" ("+esc(p.baseToken?.symbol)+')</strong><small>'+esc(short(p.baseToken?.address))+'</small></button><span class="right">'+(p.priceUsd?usd(+p.priceUsd):"—")+'</span><span class="right">'+usd(+(p.volume?.h24||0))+'</span></div>'
   ).join("");
-
-  $("tokenResults").querySelectorAll("[data-i]").forEach(b=>
-   b.onclick=()=>openPair(+b.dataset.i)
-  );
+  $("tokenResults").querySelectorAll("[data-i]").forEach(b=>b.onclick=()=>openPair(+b.dataset.i));
   $("discoverStatus").textContent="Search results filtered to Solana.";
- }catch(e){
-  $("tokenResults").innerHTML='<div class="empty">Search failed: '+esc(e.message)+'</div>';
- }
+ }catch(e){$("tokenResults").innerHTML='<div class="empty">Search failed: '+esc(e.message)+'</div>'}
 }
 
 function openPair(i){
- const p=pairs[i];
- if(!p)return;
- const a=p.attributes||{};
- const address=a.address||p.pairAddress;
- if(!address)return;
-
- $("detailName").textContent=a.name||(
-  (p.baseToken?.name||"Token")+" / "+(p.quoteToken?.symbol||"")
- );
+ const p=pairs[i];if(!p)return;
+ const a=p.attributes||{},address=a.address||p.pairAddress;if(!address)return;
+ $("detailName").textContent=a.name||(p.baseToken?.name||"Token")+" / "+(p.quoteToken?.symbol||"");
  $("detailAddress").textContent=p.baseToken?.address||a.base_token_address||address;
- $("chart").src="https://dexscreener.com/solana/"+
-  encodeURIComponent(address)+"?embed=1&theme=dark&trades=0&info=0";
- $("detail").style.display="block";
- $("detail").scrollIntoView({behavior:"smooth"});
+ $("chart").src="https://dexscreener.com/solana/"+encodeURIComponent(address)+"?embed=1&theme=dark&trades=0&info=0";
+ $("detail").style.display="block";$("detail").scrollIntoView({behavior:"smooth"});
 }
 
 $("searchBtn").onclick=search;
 $("search").onkeydown=e=>{if(e.key==="Enter")search()};
 $("trendingBtn").onclick=loadTrending;
-$("refreshBtn").onclick=()=>{
- loadMarket();
- if(walletConnected)loadPortfolio();
- loadTrending();
-};
-$("closeDetail").onclick=()=>{
- $("detail").style.display="none";
- $("chart").src="about:blank";
-};
+$("refreshBtn").onclick=()=>{loadMarket();if(walletConnected)loadPortfolio();loadTrending()};
+$("closeDetail").onclick=()=>{$("detail").style.display="none";$("chart").src="about:blank"};
 
 function initJupiter(){
  if(!window.Jupiter?.init){
-  $("feeStatus").textContent="Jupiter is loading. Refresh if the swap panel does not appear.";
-  return;
+  $("feeStatus").textContent="Jupiter is loading. Refresh if the swap panel does not appear.";return;
  }
-
- const referralReady=
-  valid(JUPITER_REFERRAL_ACCOUNT)&&
-  JUPITER_REFERRAL_ACCOUNT!=="PASTE_JUPITER_REFERRAL_ACCOUNT_HERE";
-
+ const referralReady=valid(JUPITER_REFERRAL_ACCOUNT);
  const formProps={initialInputMint:SOL_MINT};
-
  if(referralReady){
   formProps.referralAccount=JUPITER_REFERRAL_ACCOUNT;
   formProps.referralFee=QX_REFERRAL_FEE_BPS;
-  $("feeStatus").textContent=
-   "QX referral fee configured at 1%. Confirm referral token accounts are initialized for the fee mints.";
+  $("feeStatus").textContent="QX referral fee set to 1% (100 BPS). Referral fees are collected in your initialized referral token accounts.";
  }else{
-  $("feeStatus").textContent=
-   "Swap is available, but QX fees are NOT active. Add your real Jupiter Referral Account address in the code first.";
+  $("feeStatus").textContent="QX referral account address is invalid. Swap fees are not configured.";
  }
-
  try{
   window.Jupiter.init({
    displayMode:"integrated",
@@ -604,41 +386,25 @@ function initJupiter(){
     $("feeStatus").textContent="Swap error: "+(error?.message||"Please try again.");
    }
   });
- }catch(e){
-  $("feeStatus").textContent="Jupiter initialization failed: "+e.message;
- }
+ }catch(e){$("feeStatus").textContent="Jupiter initialization failed: "+e.message}
 }
 
 function loadCreated(){
  try{
   const t=JSON.parse(localStorage.getItem("qx_created_tokens_v1")||"[]");
   $("newTokens").innerHTML=t.length?t.map(x=>
-   '<div class="row"><span><strong>'+esc(x.name)+' ('+esc(x.symbol)+
-   ')</strong><div class="small">'+esc(short(x.mint))+
-   '</div></span><span class="right">'+esc(x.supply||"—")+
-   '</span><span class="right">Solana</span></div>'
+   '<div class="row"><span><strong>'+esc(x.name)+' ('+esc(x.symbol)+')</strong><div class="small">'+esc(short(x.mint))+'</div></span><span class="right">'+esc(x.supply||"—")+'</span><span class="right">Solana</span></div>'
   ).join(""):'<div class="empty">No locally saved tokens.</div>';
- }catch(e){
-  $("newTokens").innerHTML='<div class="empty">Token registry unavailable.</div>';
- }
+ }catch(e){$("newTokens").innerHTML='<div class="empty">Token registry unavailable.</div>'}
 }
 
-loadMarket();
-loadTrending();
-loadCreated();
-
+loadMarket();loadTrending();loadCreated();
 let attempts=0;
 const jupiterTimer=setInterval(()=>{
  attempts++;
- if(window.Jupiter?.init){
-  clearInterval(jupiterTimer);
-  initJupiter();
- }else if(attempts>=20){
-  clearInterval(jupiterTimer);
-  $("feeStatus").textContent="Jupiter could not load. Check your internet connection and refresh.";
- }
+ if(window.Jupiter?.init){clearInterval(jupiterTimer);initJupiter()}
+ else if(attempts>=30){clearInterval(jupiterTimer);$("feeStatus").textContent="Jupiter could not load. Check your internet connection and refresh."}
 },500);
-
 setInterval(loadMarket,60000);
 setInterval(loadCreated,20000);
 </script>
