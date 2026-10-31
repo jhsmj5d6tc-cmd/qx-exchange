@@ -7,207 +7,65 @@
 <meta name="theme-color" content="#080d18">
 <title>QX Exchange | Crypto Trading</title>
 
-<script type="importmap">
-{
-  "imports": {
-    "@reown/appkit": "https://esm.sh/@reown/appkit@1.8.24",
-    "@reown/appkit/": "https://esm.sh/@reown/appkit@1.8.24/",
-    "@reown/appkit-adapter-ethers": "https://esm.sh/@reown/appkit-adapter-ethers@1.8.24?external=@reown/appkit",
-    "@reown/appkit-adapter-solana": "https://esm.sh/@reown/appkit-adapter-solana@1.8.24?external=@reown/appkit"
-  }
-}
-</script>
-
 <style>
 :root{
- --bg:#080d18;
- --panel:#111a2b;
- --panel2:#0c1525;
- --line:#202e43;
- --text:#f3f6fc;
- --muted:#8c9bb0;
- --green:#42d6a0;
- --red:#ff687c;
- --blue:#6d9cff;
+ --bg:#080d18;--panel:#111a2b;--panel2:#0c1525;
+ --line:#202e43;--text:#f3f6fc;--muted:#8c9bb0;
+ --green:#42d6a0;--red:#ff687c;--blue:#6d9cff;
 }
 *{box-sizing:border-box}
-body{
- margin:0;
- background:var(--bg);
- color:var(--text);
- font-family:Arial,sans-serif;
-}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
 button,input,select{font:inherit}
 button{cursor:pointer}
 .wrap{max-width:1100px;margin:auto;padding:18px}
-header{
- display:flex;
- align-items:center;
- justify-content:space-between;
- padding:12px 0 25px;
- gap:12px;
-}
+header{display:flex;align-items:center;justify-content:space-between;padding:12px 0 25px;gap:12px}
 .logo{font-size:25px;font-weight:900;letter-spacing:1px}
 .logo span{color:var(--green)}
-.connect{
- background:var(--green);
- color:#07150f;
- border:0;
- border-radius:11px;
- padding:13px 18px;
- font-weight:800;
+.connect,.swap{
+ background:var(--green);color:#07150f;border:0;
+ border-radius:11px;padding:13px 18px;font-weight:800
 }
 .portfolio{
  background:linear-gradient(130deg,#17283e,#101827);
- border:1px solid #2b3e56;
- border-radius:20px;
- padding:25px;
+ border:1px solid #2b3e56;border-radius:20px;padding:25px
 }
-.portrow{
- display:flex;
- justify-content:space-between;
- align-items:center;
- gap:15px;
- flex-wrap:wrap;
-}
-.eyebrow{color:var(--muted);font-size:13px}
-.total{
- font-size:clamp(34px,7vw,49px);
- font-weight:800;
- margin:12px 0;
- overflow-wrap:anywhere;
-}
-.sub,.status{color:var(--muted);font-size:13px;line-height:1.6}
-.swap{
- background:var(--green);
- border:0;
- border-radius:12px;
- padding:14px 23px;
- font-weight:800;
- color:#07150f;
-}
+.portrow{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap}
+.eyebrow,.sub,.status{color:var(--muted);font-size:13px;line-height:1.6}
+.total{font-size:clamp(34px,7vw,49px);font-weight:800;margin:12px 0;overflow-wrap:anywhere}
 section{margin:25px 0}
 h2{font-size:19px;margin:0 0 15px}
-.grid{
- display:grid;
- grid-template-columns:repeat(4,1fr);
- gap:12px;
-}
-.panel{
- background:var(--panel);
- border:1px solid var(--line);
- border-radius:15px;
- padding:17px;
-}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:17px}
 .coin{display:flex;align-items:center;gap:10px}
-.coinicon{
- width:36px;height:36px;border-radius:50%;
- background:#26364d;
- display:grid;place-items:center;font-weight:bold;
-}
+.coinicon{width:36px;height:36px;border-radius:50%;background:#26364d;display:grid;place-items:center;font-weight:bold}
 .coinname{font-weight:700}
 .symbol{color:var(--muted);font-size:12px;margin-top:4px}
 .price{font-size:20px;font-weight:800;margin-top:15px}
 .toolbar{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:13px}
-input,select{
- background:var(--panel2);
- border:1px solid var(--line);
- border-radius:10px;
- color:white;
- padding:13px;
- min-width:0;
-}
+input,select{background:var(--panel2);border:1px solid var(--line);border-radius:10px;color:white;padding:13px;min-width:0}
 input{flex:1}
 select{min-width:145px}
-.action{
- background:#26364d;
- color:white;
- border:1px solid #3b4c64;
- border-radius:10px;
- padding:12px 15px;
-}
-.list{
- background:var(--panel);
- border:1px solid var(--line);
- border-radius:15px;
- overflow:hidden;
-}
-.row{
- display:grid;
- grid-template-columns:1.5fr 1fr 1fr;
- gap:10px;
- align-items:center;
- padding:15px;
- border-bottom:1px solid var(--line);
-}
+.action{background:#26364d;color:white;border:1px solid #3b4c64;border-radius:10px;padding:12px 15px}
+.list{background:var(--panel);border:1px solid var(--line);border-radius:15px;overflow:hidden}
+.row{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:10px;align-items:center;padding:15px;border-bottom:1px solid var(--line)}
 .row:last-child{border:0}
-.rowhead{
- background:var(--panel2);
- color:var(--muted);
- font-size:12px;
-}
+.rowhead{background:var(--panel2);color:var(--muted);font-size:12px}
 .right{text-align:right}
-.tokenbtn{
- background:none;
- border:0;
- color:var(--text);
- text-align:left;
- padding:0;
-}
+.tokenbtn{background:none;border:0;color:var(--text);text-align:left;padding:0;min-width:0}
 .tokenbtn strong{display:block}
-.tokenbtn small{
- display:block;
- color:var(--muted);
- margin-top:5px;
- overflow-wrap:anywhere;
-}
-.empty{
- padding:22px;
- text-align:center;
- color:var(--muted);
- font-size:13px;
-}
-.address{
- font-size:12px;
- color:var(--muted);
- overflow-wrap:anywhere;
- margin-top:12px;
-}
+.tokenbtn small{display:block;color:var(--muted);margin-top:5px;overflow-wrap:anywhere}
+.empty{padding:22px;text-align:center;color:var(--muted);font-size:13px}
+.address{font-size:12px;color:var(--muted);overflow-wrap:anywhere;margin-top:12px}
 #detail{display:none}
-.chart{
- width:100%;
- height:450px;
- border:0;
- border-radius:12px;
- background:var(--panel2);
- margin-top:15px;
-}
-.detailtop{
- display:flex;
- justify-content:space-between;
- align-items:center;
- gap:10px;
-}
-footer{
- text-align:center;
- color:var(--muted);
- font-size:12px;
- padding:25px;
-}
+.chart{width:100%;height:450px;border:0;border-radius:12px;background:var(--panel2);margin-top:15px}
+.detailtop{display:flex;justify-content:space-between;align-items:center;gap:10px}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:25px}
 a{color:var(--green)}
-.warning{
- color:#e7c27a;
- font-size:12px;
- line-height:1.6;
-}
+.warning{color:#e7c27a;font-size:12px;line-height:1.6}
 @media(max-width:650px){
  .wrap{padding:13px}
  .grid{grid-template-columns:repeat(2,1fr)}
- .row{
-  grid-template-columns:1.4fr 1fr 1fr;
-  padding:13px 9px;
-  font-size:12px;
- }
+ .row{grid-template-columns:1.4fr 1fr 1fr;padding:13px 9px;font-size:12px}
  .portfolio{padding:19px}
  .chart{height:380px}
  .connect{padding:12px}
@@ -220,22 +78,20 @@ a{color:var(--green)}
 
 <header>
  <div class="logo">QX <span>EXCHANGE</span></div>
- <button class="connect" id="connectBtn">Connect Wallet</button>
+ <button class="connect" id="connectBtn">Connect Phantom</button>
 </header>
 
 <section class="portfolio">
  <div class="portrow">
   <div>
    <div class="eyebrow">Total Portfolio Value</div>
-   <div class="total" id="totalValue">—</div>
-   <div class="sub" id="walletCaption">Your wallet value · USD</div>
+   <div class="total" id="totalValue">$0.00</div>
+   <div class="sub">Estimated value of priced assets · USD</div>
   </div>
-  <button class="swap" id="swapBtn">Swap My Wallet</button>
+  <button class="swap" id="swapBtn">Swap SOL</button>
  </div>
  <div class="address" id="walletAddress"></div>
- <p class="status" id="walletStatus">
-  Connect your wallet to load your portfolio.
- </p>
+ <p class="status" id="walletStatus">Connect Phantom to load your portfolio.</p>
 </section>
 
 <section>
@@ -255,7 +111,7 @@ a{color:var(--green)}
    <span class="right">Value (USD)</span>
   </div>
   <div id="assetsList">
-   <div class="empty">Connect your wallet to view assets.</div>
+   <div class="empty">Connect Phantom to view assets.</div>
   </div>
  </div>
  <p class="warning" id="assetWarning"></p>
@@ -299,11 +155,8 @@ a{color:var(--green)}
    </div>
    <button class="action" id="closeDetail">Close</button>
   </div>
-  <iframe id="chart" class="chart" title="Token market chart"
-   allow="clipboard-write"></iframe>
-  <p class="status">
-   Check the token contract and liquidity before trading.
-  </p>
+  <iframe id="chart" class="chart" title="Token market chart" allow="clipboard-write"></iframe>
+  <p class="status">Check the token contract and liquidity before trading.</p>
  </div>
 </section>
 
@@ -319,113 +172,59 @@ a{color:var(--green)}
    <div class="empty">No locally saved tokens found.</div>
   </div>
  </div>
- <p class="status">
-  Locally saved tokens from QX Token Creator on this browser.
- </p>
+ <p class="status">Locally saved tokens from QX Token Creator on this browser.</p>
 </section>
 
 <section class="panel">
  <h2>QX Ecosystem</h2>
  <p class="sub">Create your own Solana token.</p>
- <a href="https://jhsmj5d6tc-cmd.github.io/oken-maker/">
-  QX Token Creator ↗
- </a>
+ <a href="https://jhsmj5d6tc-cmd.github.io/oken-maker/">QX Token Creator ↗</a>
 </section>
 
 <footer>QX Exchange · Live market data when available</footer>
 </div>
 
-<script type="module">
-import {createAppKit} from "@reown/appkit";
-import {EthersAdapter} from "@reown/appkit-adapter-ethers";
-import {SolanaAdapter} from "@reown/appkit-adapter-solana";
-import {
- mainnet,arbitrum,optimism,polygon,base,bsc,avalanche,solana
-} from "@reown/appkit/networks";
+<script>
+"use strict";
 
-const PROJECT_ID="bd6faec63fbd0865f57da576a550ef09";
-const $=id=>document.getElementById(id);
+/* QX EXCHANGE - PHANTOM SOLANA VERSION */
 
-const networks=[
- mainnet,arbitrum,optimism,polygon,base,bsc,avalanche,solana
+const $ = id => document.getElementById(id);
+
+const RPC = "https://solana-rpc.publicnode.com";
+
+const TOKEN_PROGRAMS = [
+ "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+ "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
 ];
 
-const appKit=createAppKit({
- adapters:[new EthersAdapter(),new SolanaAdapter()],
- networks,
- projectId:PROJECT_ID,
- metadata:{
-  name:"QX Exchange",
-  description:"Global crypto markets and wallet portfolio",
-  url:"https://jhsmj5d6tc-cmd.github.io",
-  icons:["https://jhsmj5d6tc-cmd.github.io/qx-exchange/favicon.ico"]
- },
- features:{
-  analytics:true,
-  swaps:true,
-  onramp:false
- },
- themeMode:"dark",
- themeVariables:{
-  "--w3m-accent":"#42d6a0",
-  "--w3m-border-radius-master":"12px"
- }
-});
-
-const marketCoins=[
+const marketCoins = [
  {id:"bitcoin",name:"Bitcoin",symbol:"BTC",icon:"₿"},
  {id:"ethereum",name:"Ethereum",symbol:"ETH",icon:"Ξ"},
  {id:"solana",name:"Solana",symbol:"SOL",icon:"◎"},
  {id:"binancecoin",name:"BNB",symbol:"BNB",icon:"◆"}
 ];
 
-const chainConfig={
- ethereum:{
-  label:"Ethereum",native:"ETH",price:"ethereum",
-  rpc:"https://ethereum-rpc.publicnode.com",gecko:"eth"
- },
- bsc:{
-  label:"BNB Chain",native:"BNB",price:"binancecoin",
-  rpc:"https://bsc-rpc.publicnode.com",gecko:"bsc"
- },
- base:{
-  label:"Base",native:"ETH",price:"ethereum",
-  rpc:"https://mainnet.base.org",gecko:"base"
- },
- polygon:{
-  label:"Polygon",native:"POL",price:"matic-network",
-  rpc:"https://polygon-bor-rpc.publicnode.com",gecko:"polygon_pos"
- },
- arbitrum:{
-  label:"Arbitrum",native:"ETH",price:"ethereum",
-  rpc:"https://arbitrum-one-rpc.publicnode.com",gecko:"arbitrum"
- },
- optimism:{
-  label:"Optimism",native:"ETH",price:"ethereum",
-  rpc:"https://optimism-rpc.publicnode.com",gecko:"optimism"
- },
- avalanche:{
-  label:"Avalanche",native:"AVAX",price:"avalanche-2",
-  rpc:"https://avalanche-c-chain-rpc.publicnode.com",gecko:"avax"
- }
+const networks = {
+ solana:"solana",
+ ethereum:"eth",
+ bsc:"bsc",
+ base:"base",
+ polygon:"polygon",
+ arbitrum:"arbitrum",
+ optimism:"optimism",
+ avalanche:"avax"
 };
 
-const SOLANA_RPC="https://solana-rpc.publicnode.com";
+let prices = {};
+let provider = null;
+let walletAddress = "";
+let walletConnected = false;
+let currentPairs = [];
+let portfolioRequest = 0;
 
-const TOKEN_PROGRAMS=[
- "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
- "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
-];
-
-let prices={};
-let account={};
-let currentPairs=[];
-let activeAddress="";
-let activeNamespace="";
-let portfolioRequest=0;
-
-function safe(value){
- return String(value??"").replace(/[&<>"']/g,c=>({
+function safe(value) {
+ return String(value ?? "").replace(/[&<>"']/g,c=>({
   "&":"&amp;",
   "<":"&lt;",
   ">":"&gt;",
@@ -434,72 +233,146 @@ function safe(value){
  }[c]));
 }
 
-function money(value){
+function money(value) {
  return Number(value).toLocaleString("en-US",{
   minimumFractionDigits:2,
   maximumFractionDigits:2
  });
 }
 
-function short(value){
- return value?value.slice(0,6)+"..."+value.slice(-4):"";
-}
-
-function amountFormat(value){
+function amountFormat(value) {
  return Number(value).toLocaleString("en-US",{
   maximumFractionDigits:8
  });
 }
 
-async function loadPrices(){
- try{
-  const ids=[...new Set([
-   ...marketCoins.map(c=>c.id),
-   ...Object.values(chainConfig).map(c=>c.price)
-  ])].join(",");
+function short(value) {
+ return value ? value.slice(0,6)+"..."+value.slice(-4) : "";
+}
 
-  const response=await fetch(
-   "https://api.coingecko.com/api/v3/simple/price?ids="+
-   ids+"&vs_currencies=usd"
-  );
+/* PHANTOM CONNECTION */
 
-  if(!response.ok)throw Error("Price service unavailable");
+function getPhantom() {
+ if(window.phantom?.solana?.isPhantom) {
+  return window.phantom.solana;
+ }
 
-  prices=await response.json();
-  renderMarket();
+ if(window.solana?.isPhantom) {
+  return window.solana;
+ }
 
-  $("priceStatus").textContent=
-   "Market prices updated from CoinGecko.";
+ return null;
+}
 
-  if(activeAddress)loadPortfolio();
+async function connectWallet() {
+ try {
+  provider = getPhantom();
 
- }catch(error){
-  $("priceStatus").textContent=
-   "Live prices unavailable. Try again shortly.";
+  if(!provider) {
+   $("walletStatus").textContent =
+    "Phantom not detected. Open QX Exchange inside the Phantom browser.";
+   return;
+  }
+
+  $("walletStatus").textContent = "Connecting to Phantom...";
+
+  const response = await provider.connect();
+
+  if(!response?.publicKey) {
+   throw new Error("Phantom did not return a wallet address.");
+  }
+
+  walletAddress = response.publicKey.toString();
+  walletConnected = true;
+
+  $("connectBtn").textContent = short(walletAddress);
+  $("walletAddress").textContent = walletAddress;
+
+  $("walletStatus").textContent = "Phantom connected. Loading Solana assets...";
+
+  await loadPortfolio();
+
+ } catch(error) {
+  $("walletStatus").textContent =
+   "Connection failed: " + error.message;
  }
 }
 
-function renderMarket(){
- $("marketCards").innerHTML=marketCoins.map(c=>{
-  const price=prices[c.id]?.usd;
+async function disconnectWallet() {
+ try {
+  if(provider) {
+   await provider.disconnect();
+  }
+ } catch(error) {}
 
-  return `<div class="panel">
-   <div class="coin">
-    <div class="coinicon">${c.icon}</div>
-    <div>
-     <div class="coinname">${c.name}</div>
-     <div class="symbol">${c.symbol}</div>
-    </div>
-   </div>
-   <div class="price">
-    ${price==null?"—":"$"+money(price)}
-   </div>
-  </div>`;
- }).join("");
+ walletAddress = "";
+ walletConnected = false;
+ portfolioRequest++;
+
+ $("connectBtn").textContent = "Connect Phantom";
+ $("walletAddress").textContent = "";
+ $("totalValue").textContent = "$0.00";
+
+ $("assetsList").innerHTML =
+  '<div class="empty">Connect Phantom to view assets.</div>';
+
+ $("walletStatus").textContent = "Wallet disconnected.";
+ $("assetWarning").textContent = "";
 }
 
-async function rpcCall(url,method,params){
- const response=await fetch(url,{
+$("connectBtn").addEventListener("click",async()=>{
+ if(walletConnected) {
+  await disconnectWallet();
+ } else {
+  await connectWallet();
+ }
+});
+
+/* HANDLE PHANTOM ACCOUNT CHANGES */
+
+function setupWalletEvents() {
+ provider = getPhantom();
+ if(!provider) return;
+
+ provider.on("accountChanged",publicKey=>{
+  if(publicKey) {
+   walletAddress = publicKey.toString();
+   walletConnected = true;
+
+   $("connectBtn").textContent = short(walletAddress);
+   $("walletAddress").textContent = walletAddress;
+
+   loadPortfolio();
+  } else {
+   walletAddress = "";
+   walletConnected = false;
+   portfolioRequest++;
+   resetPortfolio();
+  }
+ });
+
+ provider.on("disconnect",()=>{
+  walletAddress = "";
+  walletConnected = false;
+  portfolioRequest++;
+  resetPortfolio();
+ });
+}
+
+function resetPortfolio() {
+ $("connectBtn").textContent = "Connect Phantom";
+ $("walletAddress").textContent = "";
+ $("totalValue").textContent = "$0.00";
+ $("assetsList").innerHTML =
+  '<div class="empty">Connect Phantom to view assets.</div>';
+ $("walletStatus").textContent = "Wallet disconnected.";
+ $("assetWarning").textContent = "";
+}
+
+/* SOLANA RPC */
+
+async function rpc(method,params) {
+ const response = await fetch(RPC,{
   method:"POST",
   headers:{"Content-Type":"application/json"},
   body:JSON.stringify({
@@ -510,397 +383,327 @@ async function rpcCall(url,method,params){
   })
  });
 
- if(!response.ok)throw Error("RPC service unavailable");
+ if(!response.ok) {
+  throw new Error("Solana RPC connection failed: HTTP "+response.status);
+ }
 
- const data=await response.json();
+ const data = await response.json();
 
- if(data.error)throw Error(data.error.message||"RPC error");
+ if(data.error) {
+  throw new Error(data.error.message || "Solana RPC error");
+ }
 
  return data.result;
 }
 
-async function getSolBalance(address){
- const result=await rpcCall(
-  SOLANA_RPC,
-  "getBalance",
-  [address,{commitment:"confirmed"}]
- );
+async function getSolBalance(address) {
+ const result = await rpc("getBalance",[
+  address,
+  {commitment:"confirmed"}
+ ]);
 
- return Number(result.value)/1e9;
+ return Number(result.value)/1000000000;
 }
 
-async function getSolTokenBalances(owner){
- const results=await Promise.all(
+async function getTokenBalances(owner) {
+ const results = await Promise.all(
   TOKEN_PROGRAMS.map(programId=>
-   rpcCall(
-    SOLANA_RPC,
-    "getTokenAccountsByOwner",
-    [
-     owner,
-     {programId},
-     {encoding:"jsonParsed",commitment:"confirmed"}
-    ]
-   )
+   rpc("getTokenAccountsByOwner",[
+    owner,
+    {programId},
+    {encoding:"jsonParsed",commitment:"confirmed"}
+   ])
   )
  );
 
- const balances={};
+ const balances = {};
 
- for(const result of results){
-  for(const item of result.value||[]){
-   const info=item.account?.data?.parsed?.info;
-   if(!info)continue;
+ for(const result of results) {
+  for(const item of result.value || []) {
+   const info = item.account?.data?.parsed?.info;
+   if(!info) continue;
 
-   const mint=info.mint;
-   const raw=info.tokenAmount?.uiAmountString;
-   const amount=Number(raw||0);
+   const mint = info.mint;
+   const amount = Number(
+    info.tokenAmount?.uiAmountString || 0
+   );
 
-   if(!mint||!Number.isFinite(amount)||amount<=0)continue;
+   if(!mint || !Number.isFinite(amount) || amount <= 0) continue;
 
-   if(!balances[mint]){
-    balances[mint]={
+   if(!balances[mint]) {
+    balances[mint] = {
      mint,
      amount:0
     };
    }
 
-   balances[mint].amount+=amount;
+   balances[mint].amount += amount;
   }
  }
 
  return Object.values(balances);
 }
 
-async function getSolTokenPrices(tokens){
- const pricesByMint={};
- const mints=tokens.map(token=>token.mint);
+/* TOKEN PRICES */
 
- for(let i=0;i<mints.length;i+=25){
-  const batch=mints.slice(i,i+25);
+async function getTokenPrices(tokens) {
+ const result = {};
+ const mints = tokens.map(token=>token.mint);
 
-  try{
-   const url=
-    "https://api.dexscreener.com/tokens/v1/solana/"+
-    batch.join(",");
+ for(let i=0;i<mints.length;i+=25) {
+  const batch = mints.slice(i,i+25);
 
-   const response=await fetch(url);
-
-   if(!response.ok)continue;
-
-   const pairs=await response.json();
-
-   for(const pair of pairs||[]){
-    const mint=pair.baseToken?.address;
-    const price=Number(pair.priceUsd);
-    const liquidity=Number(pair.liquidity?.usd||0);
-
-    if(!mint||!Number.isFinite(price)||price<=0)continue;
-
-    const previous=pricesByMint[mint];
-
-    if(!previous||liquidity>previous.liquidity){
-     pricesByMint[mint]={
-      price,
-      liquidity,
-      symbol:pair.baseToken?.symbol||"SPL Token",
-      name:pair.baseToken?.name||""
-     };
-    }
-   }
-  }catch(error){
-   // Keep tokens without verified market prices unpriced.
-  }
- }
-
- return pricesByMint;
-}
-
-async function getEvmBalance(url,address){
- const result=await rpcCall(
-  url,
-  "eth_getBalance",
-  [address,"latest"]
- );
-
- return Number(BigInt(result))/1e18;
-}
-
-function resetAssets(){
- $("totalValue").textContent="—";
- $("walletCaption").textContent="Your wallet value · USD";
- $("walletAddress").textContent="";
- $("assetsList").innerHTML=
-  '<div class="empty">Connect your wallet to view assets.</div>';
- $("assetWarning").textContent="";
-}
-
-async function loadPortfolio(){
- if(!activeAddress)return;
-
- const requestId=++portfolioRequest;
-
- $("walletStatus").textContent="Loading wallet assets...";
- $("assetWarning").textContent="";
-
- const rows=[];
- let total=0;
- let unpricedCount=0;
- let failedCount=0;
-
- try{
-  if(activeNamespace==="solana"){
-   const [solAmount,tokens]=await Promise.all([
-    getSolBalance(activeAddress),
-    getSolTokenBalances(activeAddress)
-   ]);
-
-   if(requestId!==portfolioRequest)return;
-
-   const solPrice=prices.solana?.usd;
-   const solValue=solPrice==null?null:solAmount*solPrice;
-
-   if(solValue!==null)total+=solValue;
-   else unpricedCount++;
-
-   rows.push({
-    name:"Solana",
-    symbol:"SOL",
-    amount:solAmount,
-    value:solValue
-   });
-
-   const tokenPrices=await getSolTokenPrices(tokens);
-
-   if(requestId!==portfolioRequest)return;
-
-   for(const token of tokens){
-    const info=tokenPrices[token.mint];
-    const value=info?token.amount*info.price:null;
-
-    if(value!==null&&Number.isFinite(value)){
-     total+=value;
-    }else{
-     unpricedCount++;
-    }
-
-    rows.push({
-     name:info?.name||info?.symbol||"SPL Token",
-     symbol:info?.symbol||short(token.mint),
-     mint:token.mint,
-     amount:token.amount,
-     value
-    });
-   }
-
-  }else if(activeNamespace==="eip155"){
-   const entries=Object.entries(chainConfig);
-
-   const results=await Promise.allSettled(
-    entries.map(async([key,config])=>{
-     const amount=await getEvmBalance(
-      config.rpc,
-      activeAddress
-     );
-
-     const price=prices[config.price]?.usd;
-     const value=price==null?null:amount*price;
-
-     return {
-      name:config.label,
-      symbol:config.native,
-      amount,
-      value
-     };
-    })
+  try {
+   const response = await fetch(
+    "https://api.dexscreener.com/tokens/v1/solana/"+batch.join(",")
    );
 
-   if(requestId!==portfolioRequest)return;
+   if(!response.ok) continue;
 
-   for(const result of results){
-    if(result.status==="fulfilled"){
-     const row=result.value;
-     rows.push(row);
+   const pairs = await response.json();
 
-     if(row.value!==null)total+=row.value;
-     else unpricedCount++;
-    }else{
-     failedCount++;
+   for(const pair of pairs || []) {
+    const mint = pair.baseToken?.address;
+    const price = Number(pair.priceUsd);
+    const liquidity = Number(pair.liquidity?.usd || 0);
+
+    if(!mint || !Number.isFinite(price) || price<=0) continue;
+
+    if(!result[mint] || liquidity>result[mint].liquidity) {
+     result[mint] = {
+      price,
+      liquidity,
+      symbol:pair.baseToken?.symbol || "SPL Token",
+      name:pair.baseToken?.name || "Solana Token"
+     };
     }
    }
+  } catch(error) {
+   // Unpriced tokens remain visible.
+  }
+ }
 
-  }else{
-   $("walletStatus").textContent=
-    "Choose a supported Solana or EVM wallet network.";
-   return;
+ return result;
+}
+
+/* PORTFOLIO */
+
+async function loadPortfolio() {
+ if(!walletConnected || !walletAddress) return;
+
+ const requestId = ++portfolioRequest;
+
+ $("walletStatus").textContent = "Reading your Solana wallet...";
+ $("assetWarning").textContent = "";
+
+ try {
+  const [solAmount,tokens] = await Promise.all([
+   getSolBalance(walletAddress),
+   getTokenBalances(walletAddress)
+  ]);
+
+  if(requestId !== portfolioRequest) return;
+
+  const tokenPrices = await getTokenPrices(tokens);
+
+  if(requestId !== portfolioRequest) return;
+
+  const solPrice = prices.solana?.usd;
+  let total = 0;
+  let unpriced = 0;
+
+  const solValue = solPrice == null
+   ? null
+   : solAmount * solPrice;
+
+  if(solValue !== null) total += solValue;
+  else unpriced++;
+
+  const rows = [{
+   name:"Solana",
+   symbol:"SOL",
+   amount:solAmount,
+   value:solValue
+  }];
+
+  for(const token of tokens) {
+   const info = tokenPrices[token.mint];
+
+   const value = info
+    ? token.amount * info.price
+    : null;
+
+   if(value !== null && Number.isFinite(value)) {
+    total += value;
+   } else {
+    unpriced++;
+   }
+
+   rows.push({
+    name:info?.name || "SPL Token",
+    symbol:info?.symbol || short(token.mint),
+    mint:token.mint,
+    amount:token.amount,
+    value
+   });
   }
 
-  if(requestId!==portfolioRequest)return;
+  if(requestId !== portfolioRequest) return;
 
-  $("totalValue").textContent="$"+money(total);
-  $("walletCaption").textContent=
-   "Estimated value of priced assets · USD";
+  $("totalValue").textContent = "$"+money(total);
 
-  $("assetsList").innerHTML=rows.length?
-   rows.map(row=>`
-    <div class="row">
-     <span>
-      <strong>${safe(row.name)}</strong>
-      <div class="symbol">${safe(row.symbol)}</div>
-      ${row.mint?
-       `<div class="symbol">${safe(short(row.mint))}</div>`:""}
-     </span>
-     <span class="right">${amountFormat(row.amount)}</span>
-     <span class="right">
-      ${row.value===null?"Price unavailable":"$"+money(row.value)}
-     </span>
-    </div>
-   `).join("") :
-   '<div class="empty">No assets found.</div>';
+  $("assetsList").innerHTML = rows.map(row=>`
+   <div class="row">
+    <span>
+     <strong>${safe(row.name)}</strong>
+     <div class="symbol">${safe(row.symbol)}</div>
+     ${row.mint ?
+      `<div class="symbol">${safe(short(row.mint))}</div>` : ""}
+    </span>
+    <span class="right">${amountFormat(row.amount)}</span>
+    <span class="right">
+     ${row.value===null ? "Price unavailable" : "$"+money(row.value)}
+    </span>
+   </div>
+  `).join("");
 
-  let status="Wallet portfolio updated.";
+  $("walletStatus").textContent =
+   "Solana wallet successfully updated.";
 
-  if(unpricedCount>0){
-   status+=" "+unpricedCount+
-    " asset(s) have no available market price and are excluded from the total.";
+  if(unpriced>0) {
+   $("assetWarning").textContent =
+    unpriced+" asset(s) have no available market price. Their balances are still displayed.";
   }
 
-  if(failedCount>0){
-   status+=" "+failedCount+
-    " network balance request(s) could not be completed.";
-  }
+ } catch(error) {
+  if(requestId !== portfolioRequest) return;
 
-  $("walletStatus").textContent=status;
+  $("walletStatus").textContent =
+   "Portfolio error: "+error.message;
 
-  if(unpricedCount>0){
-   $("assetWarning").textContent=
-    "Some tokens may not have a reliable market price. Their value is not included in the total.";
-  }
+  $("totalValue").textContent = "—";
 
- }catch(error){
-  if(requestId!==portfolioRequest)return;
-
-  $("walletStatus").textContent=
-   "Could not load wallet assets: "+error.message;
-
-  $("totalValue").textContent="—";
+  $("assetsList").innerHTML =
+   '<div class="empty">Unable to retrieve wallet balances. Please retry.</div>';
  }
 }
 
-function updateAccount(state){
- account=state||{};
+/* MARKET PRICES */
 
- const address=account.address||"";
- const caip=account.caipAddress||"";
+async function loadPrices() {
+ try {
+  const ids = "bitcoin,ethereum,solana,binancecoin";
 
- const connected=Boolean(account.isConnected&&address);
-
- if(!connected){
-  activeAddress="";
-  activeNamespace="";
-  portfolioRequest++;
-
-  $("connectBtn").textContent="Connect Wallet";
-  resetAssets();
-
-  $("walletStatus").textContent=
-   "Connect your wallet to load your portfolio.";
-
-  return;
- }
-
- activeAddress=address;
-
- activeNamespace=
-  caip.startsWith("solana:")?"solana":
-  caip.startsWith("eip155:")?"eip155":
-  account.chainNamespace==="solana"?"solana":
-  account.chainNamespace==="eip155"?"eip155":"";
-
- $("connectBtn").textContent=short(address);
- $("walletAddress").textContent=address;
-
- loadPortfolio();
-}
-
-$("connectBtn").addEventListener("click",()=>{
- appKit.open();
-});
-
-$("swapBtn").addEventListener("click",()=>{
- if(!account?.isConnected){
-  appKit.open();
-  return;
- }
-
- appKit.open({view:"Swap"});
-});
-
-appKit.subscribeAccount(state=>{
- updateAccount(state);
-});
-
-appKit.subscribeNetwork(state=>{
- if(account?.isConnected){
-  updateAccount(account);
- }
-});
-
-async function loadTrending(){
- const network=$("network").value;
- const config=network==="solana"?
-  {gecko:"solana"}:chainConfig[network];
-
- $("tokenResults").innerHTML=
-  '<div class="empty">Loading trending tokens...</div>';
-
- try{
-  const response=await fetch(
-   "https://api.geckoterminal.com/api/v2/networks/"+
-   config.gecko+"/trending_pools"
+  const response = await fetch(
+   "https://api.coingecko.com/api/v3/simple/price?ids="+ids+"&vs_currencies=usd"
   );
 
-  if(!response.ok)throw Error("Market discovery unavailable");
+  if(!response.ok) throw new Error("Price API unavailable");
 
-  const data=await response.json();
+  prices = await response.json();
 
-  currentPairs=(data.data||[]).slice(0,15);
+  renderMarket();
+
+  $("priceStatus").textContent =
+   "Market prices updated from CoinGecko.";
+
+  if(walletConnected) loadPortfolio();
+
+ } catch(error) {
+  $("priceStatus").textContent =
+   "Live market prices temporarily unavailable.";
+ }
+}
+
+function renderMarket() {
+ $("marketCards").innerHTML = marketCoins.map(coin=>{
+  const price = prices[coin.id]?.usd;
+
+  return `
+   <div class="panel">
+    <div class="coin">
+     <div class="coinicon">${coin.icon}</div>
+     <div>
+      <div class="coinname">${coin.name}</div>
+      <div class="symbol">${coin.symbol}</div>
+     </div>
+    </div>
+    <div class="price">
+     ${price==null ? "—" : "$"+money(price)}
+    </div>
+   </div>
+  `;
+ }).join("");
+}
+
+/* SWAP */
+
+$("swapBtn").addEventListener("click",()=>{
+ if(!walletConnected) {
+  connectWallet();
+  return;
+ }
+
+ window.location.href = "https://jup.ag/swap/SOL-USDC";
+});
+
+/* MARKET DISCOVERY */
+
+async function loadTrending() {
+ const network = $("network").value;
+
+ $("tokenResults").innerHTML =
+  '<div class="empty">Loading trending pools...</div>';
+
+ try {
+  const response = await fetch(
+   "https://api.geckoterminal.com/api/v2/networks/"+networks[network]+"/trending_pools"
+  );
+
+  if(!response.ok) throw new Error("Market service unavailable");
+
+  const data = await response.json();
+
+  currentPairs = (data.data || []).slice(0,15);
 
   renderPairs();
 
-  $("discoverStatus").textContent=
+  $("discoverStatus").textContent =
    "Trending pools for "+network+".";
- }catch(error){
-  $("tokenResults").innerHTML=
-   '<div class="empty">Unable to load trending tokens. Try searching by contract.</div>';
+ } catch(error) {
+  $("tokenResults").innerHTML =
+   '<div class="empty">Unable to load market tokens. Try again.</div>';
  }
 }
 
-function renderPairs(){
- if(!currentPairs.length){
-  $("tokenResults").innerHTML=
-   '<div class="empty">No matching market pairs found.</div>';
+function renderPairs() {
+ if(!currentPairs.length) {
+  $("tokenResults").innerHTML =
+   '<div class="empty">No market pairs found.</div>';
   return;
  }
 
- $("tokenResults").innerHTML=currentPairs.map((item,index)=>{
-  const a=item.attributes||{};
-  const name=a.name||"Token pair";
-  const price=Number(a.base_token_price_usd);
-  const volume=Number(a.volume_usd?.h24);
-  const address=a.address||"";
+ $("tokenResults").innerHTML = currentPairs.map((item,index)=>{
+  const a = item.attributes || {};
+  const name = a.name || "Token Pair";
+  const price = Number(a.base_token_price_usd);
+  const volume = Number(a.volume_usd?.h24);
+  const address = a.address || "";
 
-  return `<div class="row">
-   <button class="tokenbtn" data-pair="${index}">
-    <strong>${safe(name)}</strong>
-    <small>${safe(short(address))}</small>
-   </button>
-   <span class="right">
-    ${Number.isFinite(price)&&price>0?"$"+money(price):"—"}
-   </span>
-   <span class="right">
-    ${Number.isFinite(volume)?"$"+money(volume):"—"}
-   </span>
-  </div>`;
+  return `
+   <div class="row">
+    <button class="tokenbtn" data-pair="${index}">
+     <strong>${safe(name)}</strong>
+     <small>${safe(short(address))}</small>
+    </button>
+    <span class="right">
+     ${Number.isFinite(price)&&price>0 ? "$"+money(price) : "—"}
+    </span>
+    <span class="right">
+     ${Number.isFinite(volume) ? "$"+money(volume) : "—"}
+    </span>
+   </div>
+  `;
  }).join("");
 
  $("tokenResults").querySelectorAll("[data-pair]").forEach(button=>{
@@ -910,43 +713,44 @@ function renderPairs(){
  });
 }
 
-async function searchTokens(){
- const query=$("search").value.trim();
- const network=$("network").value;
+/* SEARCH */
 
- if(!query){
+async function searchTokens() {
+ const query = $("search").value.trim();
+ const network = $("network").value;
+
+ if(!query) {
   loadTrending();
   return;
  }
 
- $("tokenResults").innerHTML=
-  '<div class="empty">Searching tokens...</div>';
+ $("tokenResults").innerHTML =
+  '<div class="empty">Searching...</div>';
 
- try{
-  const response=await fetch(
-   "https://api.dexscreener.com/latest/dex/search?q="+
-   encodeURIComponent(query)
+ try {
+  const response = await fetch(
+   "https://api.dexscreener.com/latest/dex/search?q="+encodeURIComponent(query)
   );
 
-  if(!response.ok)throw Error("Search unavailable");
+  if(!response.ok) throw new Error("Search unavailable");
 
-  const data=await response.json();
+  const data = await response.json();
 
-  currentPairs=(data.pairs||[])
-   .filter(pair=>pair.chainId===network)
+  currentPairs = (data.pairs || [])
+   .filter(pair=>pair.chainId===networks[network])
    .sort((a,b)=>
-    Number(b.liquidity?.usd||0)-
-    Number(a.liquidity?.usd||0)
+    Number(b.liquidity?.usd || 0)-
+    Number(a.liquidity?.usd || 0)
    )
    .slice(0,15);
 
-  if(!currentPairs.length){
-   $("tokenResults").innerHTML=
-    '<div class="empty">No results on this network.</div>';
+  if(!currentPairs.length) {
+   $("tokenResults").innerHTML =
+    '<div class="empty">No results found on this network.</div>';
    return;
   }
 
-  $("tokenResults").innerHTML=currentPairs.map((pair,index)=>`
+  $("tokenResults").innerHTML = currentPairs.map((pair,index)=>`
    <div class="row">
     <button class="tokenbtn" data-pair="${index}">
      <strong>
@@ -956,11 +760,10 @@ async function searchTokens(){
      <small>${safe(short(pair.baseToken?.address))}</small>
     </button>
     <span class="right">
-     ${pair.priceUsd?"$"+money(Number(pair.priceUsd)):"—"}
+     ${pair.priceUsd ? "$"+money(Number(pair.priceUsd)) : "—"}
     </span>
     <span class="right">
-     ${pair.volume?.h24?
-      "$"+money(Number(pair.volume.h24)):"—"}
+     ${pair.volume?.h24 ? "$"+money(Number(pair.volume.h24)) : "—"}
     </span>
    </div>
   `).join("");
@@ -971,47 +774,16 @@ async function searchTokens(){
    });
   });
 
- }catch(error){
-  $("tokenResults").innerHTML=
+ } catch(error) {
+  $("tokenResults").innerHTML =
    '<div class="empty">Search service unavailable. Try again.</div>';
  }
-}
-
-function openPair(index){
- const pair=currentPairs[index];
-
- if(!pair)return;
-
- const attrs=pair.attributes||{};
- const chain=pair.chainId||$("network").value;
- const pairAddress=attrs.address||pair.pairAddress;
-
- if(!pairAddress)return;
-
- $("detailName").textContent=
-  attrs.name||
-  ((pair.baseToken?.name||"Token")+
-   " / "+(pair.quoteToken?.symbol||""));
-
- $("detailAddress").textContent=
-  pair.baseToken?.address||
-  attrs.base_token_address||
-  pairAddress;
-
- $("chart").src=
-  "https://dexscreener.com/"+
-  encodeURIComponent(chain)+"/"+
-  encodeURIComponent(pairAddress)+
-  "?embed=1&theme=dark&trades=0&info=0";
-
- $("detail").style.display="block";
- $("detail").scrollIntoView({behavior:"smooth"});
 }
 
 $("searchBtn").addEventListener("click",searchTokens);
 
 $("search").addEventListener("keydown",event=>{
- if(event.key==="Enter")searchTokens();
+ if(event.key==="Enter") searchTokens();
 });
 
 $("network").addEventListener("change",()=>{
@@ -1019,41 +791,99 @@ $("network").addEventListener("change",()=>{
  loadTrending();
 });
 
+/* TOKEN CHART */
+
+function openPair(index) {
+ const pair = currentPairs[index];
+ if(!pair) return;
+
+ const attrs = pair.attributes || {};
+ const chain = pair.chainId || $("network").value;
+ const pairAddress = attrs.address || pair.pairAddress;
+
+ if(!pairAddress) return;
+
+ $("detailName").textContent =
+  attrs.name ||
+  ((pair.baseToken?.name || "Token")+" / "+(pair.quoteToken?.symbol || ""));
+
+ $("detailAddress").textContent =
+  pair.baseToken?.address ||
+  attrs.base_token_address ||
+  pairAddress;
+
+ $("chart").src =
+  "https://dexscreener.com/"+encodeURIComponent(chain)+"/"+
+  encodeURIComponent(pairAddress)+
+  "?embed=1&theme=dark&trades=0&info=0";
+
+ $("detail").style.display = "block";
+ $("detail").scrollIntoView({behavior:"smooth"});
+}
+
 $("closeDetail").addEventListener("click",()=>{
- $("detail").style.display="none";
- $("chart").src="about:blank";
+ $("detail").style.display = "none";
+ $("chart").src = "about:blank";
 });
 
-function loadCreatedTokens(){
- try{
-  const tokens=JSON.parse(
-   localStorage.getItem("qx_created_tokens_v1")||"[]"
+/* QX CREATED TOKENS */
+
+function loadCreatedTokens() {
+ try {
+  const tokens = JSON.parse(
+   localStorage.getItem("qx_created_tokens_v1") || "[]"
   );
 
-  $("newTokens").innerHTML=tokens.length?
-   tokens.map(token=>`
-    <div class="row">
-     <span>
-      <strong>
-       ${safe(token.name)} (${safe(token.symbol)})
-      </strong>
-      <div class="symbol">${safe(short(token.mint))}</div>
-     </span>
-     <span class="right">${safe(token.supply||"—")}</span>
-     <span class="right">Solana</span>
-    </div>
-   `).join("") :
-   '<div class="empty">No locally saved tokens found.</div>';
+  $("newTokens").innerHTML = tokens.length
+   ? tokens.map(token=>`
+     <div class="row">
+      <span>
+       <strong>${safe(token.name)} (${safe(token.symbol)})</strong>
+       <div class="symbol">${safe(short(token.mint))}</div>
+      </span>
+      <span class="right">${safe(token.supply || "—")}</span>
+      <span class="right">Solana</span>
+     </div>
+    `).join("")
+   : '<div class="empty">No locally saved tokens found.</div>';
 
- }catch(error){
-  $("newTokens").innerHTML=
+ } catch(error) {
+  $("newTokens").innerHTML =
    '<div class="empty">Could not read local token registry.</div>';
  }
 }
 
-loadPrices();
-loadTrending();
-loadCreatedTokens();
+/* START */
+
+async function start() {
+ loadPrices();
+ loadTrending();
+ loadCreatedTokens();
+
+ provider = getPhantom();
+
+ if(provider) {
+  setupWalletEvents();
+
+  try {
+   const existing = await provider.connect({onlyIfTrusted:true});
+
+   if(existing?.publicKey) {
+    walletAddress = existing.publicKey.toString();
+    walletConnected = true;
+
+    $("connectBtn").textContent = short(walletAddress);
+    $("walletAddress").textContent = walletAddress;
+
+    await loadPortfolio();
+   }
+  } catch(error) {
+   // User can connect manually.
+  }
+ }
+}
+
+start();
 
 setInterval(loadPrices,60000);
 setInterval(loadCreatedTokens,15000);
