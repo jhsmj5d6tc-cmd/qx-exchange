@@ -1,390 +1,482 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#080b12">
-<title>QX Exchange | Global Crypto Markets</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="google-site-verification" content="A5ntuJ6pvvK-Uo8HHA96o5bUPFGOg_70p-Nh_rsZ8NM">
+<meta name="theme-color" content="#0b1220">
+<title>Solana Token Creator | QX</title>
 <style>
-:root{
---bg:#080b12;--panel:#111b2a;--panel2:#0b1421;
---line:#283950;--green:#27e0ad;--text:#f4f7fb;
---muted:#91a0b5;--red:#ff6878
-}
 *{box-sizing:border-box}
-body{margin:0;background:radial-gradient(ellipse at 50% -15%,#203c60 0,transparent 45%),var(--bg);color:var(--text);font-family:Arial,system-ui,sans-serif}
-.wrap{max-width:1200px;margin:auto;padding:0 15px}
-header{height:68px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:10px}
-.logo{font-size:23px;font-weight:950;letter-spacing:-1px}.logo span{color:var(--green)}
-button,input,select{font:inherit}
-button{cursor:pointer}
-.btn{background:#19283d;border:1px solid #3b506a;color:white;border-radius:11px;padding:11px 15px;font-weight:750}
-.btn.primary{background:linear-gradient(110deg,#24d9a6,#75f0c9);color:#07150f;border:0}
-.btn:disabled{opacity:.45;cursor:not-allowed}
-.hero{text-align:center;padding:48px 0 30px}
-.kicker{color:var(--green);font-size:11px;font-weight:900;letter-spacing:2px}
-h1{font-size:clamp(36px,7vw,62px);letter-spacing:-2px;line-height:1.05;margin:16px 0}
-.hero p{color:var(--muted);max-width:650px;margin:auto;line-height:1.8;font-size:14px}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:760px;margin:0 auto 22px}
-.stat,.panel,.coin,.result{background:linear-gradient(145deg,#142237,#0d1624);border:1px solid var(--line);border-radius:15px}
-.stat{text-align:center;padding:14px}.stat b{display:block}.stat small{color:var(--muted);font-size:10px}
-.panel{padding:18px;margin-bottom:16px;min-width:0}
-.heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:15px}
-h2{font-size:18px;margin:0}
-.tag{font-size:10px;color:var(--green);border:1px solid #276d59;border-radius:20px;padding:7px 10px}
-.layout{display:grid;grid-template-columns:1fr 1fr;gap:15px}
-.marketgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
-.coin{padding:13px}.coin small{display:block;color:var(--muted);margin-top:5px}
-.price{font-size:18px;font-weight:850;margin-top:10px;overflow-wrap:anywhere}
-.up{color:var(--green)}.down{color:var(--red)}
-.search{display:flex;gap:8px}
-.search input{flex:1;min-width:0;background:#09121e;border:1px solid var(--line);border-radius:11px;padding:13px;color:white;outline:0}
-.search input:focus{border-color:var(--green)}
-.filters{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
-.chip{background:#152338;color:#aab8cb;border:1px solid #344861;border-radius:20px;padding:7px 11px;font-size:10px}
-.chip.active{border-color:var(--green);color:var(--green)}
-.result{padding:13px;margin-top:9px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center}
-.result small{display:block;color:var(--muted);font-size:10px;margin-top:5px;overflow-wrap:anywhere}
-.result .pairprice{text-align:right;font-weight:bold;font-size:13px}
-.result-actions{display:flex;gap:6px;margin-top:9px;flex-wrap:wrap}
-.result-actions button{font-size:10px;padding:7px 10px}
-.note,.status{font-size:11px;color:var(--muted);line-height:1.7;margin-top:12px;overflow-wrap:anywhere}
-.hidden{display:none!important}
-#detail{scroll-margin-top:15px}
-.detail-top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
-.token-title{display:flex;align-items:center;gap:12px}
-.token-icon{width:42px;height:42px;border-radius:50%;background:#20354e;display:grid;place-items:center;font-weight:900;color:var(--green)}
-.token-title h2{font-size:21px}
-.token-title small{color:var(--muted)}
-.detail-price{font-size:30px;font-weight:900;margin:20px 0 5px}
-.detail-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:16px 0}
-.detail-stat{background:#09121e;border:1px solid var(--line);border-radius:11px;padding:11px;min-width:0}
-.detail-stat small{display:block;color:var(--muted);font-size:10px;margin-bottom:7px}
-.detail-stat b{font-size:13px;overflow-wrap:anywhere}
-.chart-wrap{height:440px;background:#09121e;border:1px solid var(--line);border-radius:13px;overflow:hidden}
-.chart-wrap iframe{width:100%;height:100%;border:0}
-.chart-note{font-size:10px;color:var(--muted);margin-top:7px}
-.trade-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
-.trade-actions button{padding:15px}
-.address{background:#09121e;border:1px solid var(--line);padding:12px;border-radius:10px;overflow-wrap:anywhere;font-size:11px;color:#b9c8d9}
-footer{text-align:center;padding:30px;color:var(--muted);font-size:11px}
-@media(max-width:760px){
-.layout{grid-template-columns:1fr}.hero{padding:38px 0 25px}
-.detail-stats{grid-template-columns:repeat(2,1fr)}
-.chart-wrap{height:390px}.panel{padding:14px}
-}
+body{margin:0;padding:20px;background:#0b1220;color:#f4f7fb;font-family:Arial,sans-serif}
+main{max-width:620px;margin:auto}
+.card{background:#131e31;border:1px solid #2b3a52;border-radius:16px;padding:18px;margin:16px 0}
+label{display:block;margin:14px 0 7px}
+input{width:100%;padding:13px;border-radius:9px;border:1px solid #2b3a52;background:#0b1424;color:white;font-size:16px}
+button{width:100%;padding:14px;margin-top:12px;border:0;border-radius:10px;background:#57d6a0;font-size:16px;font-weight:bold;cursor:pointer}
+button:disabled{opacity:.5}
+.status{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.7}
+.hint{color:#aab7ca;line-height:1.7}
+a{color:#57d6a0;overflow-wrap:anywhere}
 </style>
 </head>
 <body>
-<div class="wrap">
-<header>
- <div class="logo">QX<span>.</span>EXCHANGE</div>
- <button class="btn" id="connect">Connect Wallet</button>
-</header>
+<main>
+<h1>QX Solana Token Creator</h1>
+<p class="hint">Create your SPL token on Solana Mainnet.</p>
 
-<section class="hero">
- <div class="kicker">GLOBAL DECENTRALIZED MARKETS</div>
- <h1>Discover crypto.<br><span style="color:var(--green)">Trade without limits.</span></h1>
- <p>Discover tokens, explore live markets and access trading from one place.</p>
-</section>
-
-<div class="stats">
- <div class="stat"><b>Multi-chain</b><small>NETWORK ACCESS</small></div>
- <div class="stat"><b>Self-custody</b><small>YOUR WALLET</small></div>
- <div class="stat"><b>Live markets</b><small>DEX DATA</small></div>
+<div class="card">
+<h2>1. Connect Wallet</h2>
+<button id="openPhantom">Open in Phantom</button>
+<button id="connect">Connect Phantom</button>
+<p id="wallet" class="status">Wallet not connected.</p>
+<p class="hint">
+On iPhone, open this website in Phantom's in-app browser.
+Review all transaction details before signing.
+</p>
 </div>
 
-<main class="layout">
-<section class="panel">
- <div class="heading"><h2>Market Overview</h2><span class="tag">LIVE PRICES</span></div>
- <div class="marketgrid" id="marketGrid">Loading markets...</div>
- <div class="status" id="marketStatus"></div>
-</section>
+<div class="card">
+<h2>2. Token Details</h2>
 
-<section class="panel">
- <div class="heading"><h2>QX Swap</h2><span class="tag">WALLET TRADING</span></div>
- <p class="note">Connect your wallet and choose a supported network to access available swap routes.</p>
- <button class="btn primary" style="width:100%;margin-top:12px" id="openSwap">Open Swap</button>
- <button class="btn" style="width:100%;margin-top:9px" id="connect2">Connect Wallet</button>
- <div class="status" id="walletStatus">Wallet connection ready.</div>
-</section>
+<label for="tokenName">Token Name</label>
+<input id="tokenName" maxlength="32" placeholder="My Token">
+
+<label for="tokenSymbol">Token Symbol</label>
+<input id="tokenSymbol" maxlength="10" placeholder="MTK">
+
+<label for="decimals">Decimals (0–9)</label>
+<input id="decimals" type="number" min="0" max="9" step="1" value="9">
+
+<label for="supply">Initial Supply</label>
+<input id="supply" type="number" min="0.000000001" step="any" value="1000">
+
+<p class="hint">
+Name, symbol and logo metadata are not stored on-chain.
+This version creates a basic SPL token.
+</p>
+
+<button id="create" disabled>Create Token — One Signature</button>
+</div>
+
+<div class="card">
+<h2>Status</h2>
+<p id="status" class="status">Connect Phantom to begin.</p>
+</div>
+
+<div class="card">
+<h2>QX Ecosystem</h2>
+<p class="hint">Your created token can be saved to the QX local token registry for display in QX Exchange on this browser.</p>
+<a href="https://jhsmj5d6tc-cmd.github.io/qx-exchange/">Open QX Exchange</a>
+</div>
 </main>
 
-<section class="panel" id="discover">
- <div class="heading"><h2>Discover Global Tokens</h2><span class="tag">LIVE DEX DATA</span></div>
- <div class="search">
-  <input id="searchInput" placeholder="Token name, symbol or contract address" autocomplete="off">
-  <button class="btn primary" id="searchBtn">Search</button>
- </div>
- <div class="filters" id="filters">
-  <button class="chip active" data-chain="all">All networks</button>
-  <button class="chip" data-chain="solana">Solana</button>
-  <button class="chip" data-chain="ethereum">Ethereum</button>
-  <button class="chip" data-chain="bsc">BNB Chain</button>
-  <button class="chip" data-chain="base">Base</button>
-  <button class="chip" data-chain="polygon">Polygon</button>
-  <button class="chip" data-chain="arbitrum">Arbitrum</button>
-  <button class="chip" data-chain="optimism">Optimism</button>
-  <button class="chip" data-chain="avalanche">Avalanche</button>
- </div>
- <div id="results" class="status">Search to discover available trading pairs.</div>
- <div class="status" id="searchStatus">Pairs are indexed by DexScreener. Tokens without liquidity may not have a tradable route.</div>
-</section>
-
-<section id="detail" class="panel hidden">
- <div class="detail-top">
-  <button class="btn" id="backBtn">← Back to markets</button>
-  <span class="tag" id="detailNetwork">NETWORK</span>
- </div>
- <div class="token-title" style="margin-top:18px">
-  <div class="token-icon" id="detailIcon">QX</div>
-  <div><h2 id="detailName">Token</h2><small id="detailPair">TOKEN / USDT</small></div>
- </div>
- <div class="detail-price" id="detailPrice">—</div>
- <div id="detailChange" class="status">24h change —</div>
-
- <div class="detail-stats">
-  <div class="detail-stat"><small>Liquidity</small><b id="detailLiquidity">—</b></div>
-  <div class="detail-stat"><small>24h Volume</small><b id="detailVolume">—</b></div>
-  <div class="detail-stat"><small>Market Cap / FDV</small><b id="detailMcap">—</b></div>
-  <div class="detail-stat"><small>24h Transactions</small><b id="detailTxns">—</b></div>
- </div>
-
- <div class="heading"><h2>Live Price Chart</h2><span class="tag">IN QX</span></div>
- <div class="chart-wrap">
-  <iframe id="chartFrame" title="Token price chart" loading="lazy" allowfullscreen></iframe>
- </div>
- <div class="chart-note">Chart data is embedded inside QX Exchange and supplied by DexScreener.</div>
-
- <div class="heading" style="margin-top:20px"><h2>Trade this token</h2></div>
- <div class="trade-actions">
-  <button class="btn primary" id="buyBtn">Buy</button>
-  <button class="btn" id="sellBtn">Sell</button>
- </div>
- <p class="note" id="tradeNote">Check the network, token address, route and estimated fees before approving a transaction.</p>
-
- <div class="heading" style="margin-top:20px"><h2>Token Contract</h2></div>
- <div class="address" id="detailAddress">—</div>
- <button class="btn" id="copyAddress" style="margin-top:9px">Copy Contract Address</button>
-</section>
-
-<section class="panel">
- <div class="heading"><h2>QX Ecosystem</h2><span class="tag">BUILD WITH QX</span></div>
- <p class="note">Create your own Solana token using QX Token Creator.</p>
- <a class="btn primary" href="https://jhsmj5d6tc-cmd.github.io/oken-maker/">Open Token Creator</a>
-</section>
-<footer>© 2026 QX Exchange · Always verify token addresses before trading.</footer>
-</div>
-
 <script type="module">
-import {createAppKit} from "https://esm.sh/@reown/appkit@1.8.24";
-import {EthersAdapter} from "https://esm.sh/@reown/appkit-adapter-ethers@1.8.24";
-import {SolanaAdapter} from "https://esm.sh/@reown/appkit-adapter-solana@1.8.24";
-import {mainnet,arbitrum,base,bsc,polygon,optimism,avalanche,solana} from "https://esm.sh/@reown/appkit@1.8.24/networks";
+import {
+  Connection, PublicKey, Keypair, SystemProgram,
+  Transaction, LAMPORTS_PER_SOL
+} from "https://esm.sh/@solana/web3.js@1.98.4";
 
-const PROJECT_ID="bd6faec63fbd0865f57da576a550ef09";
-const networks=[mainnet,bsc,base,polygon,arbitrum,optimism,avalanche,solana];
-let appKit=null;
+import {
+  TOKEN_PROGRAM_ID, MINT_SIZE,
+  getMinimumBalanceForRentExemptMint,
+  createInitializeMintInstruction,
+  createAssociatedTokenAccountInstruction,
+  getAssociatedTokenAddress,
+  createMintToInstruction
+} from "https://esm.sh/@solana/spl-token@0.4.13?external=web3";
 
-const $=id=>document.getElementById(id);
-const status=$("walletStatus");
-
-try{
- appKit=createAppKit({
-  adapters:[new EthersAdapter(),new SolanaAdapter()],
-  networks,
-  defaultNetwork:mainnet,
-  projectId:PROJECT_ID,
-  metadata:{
-   name:"QX Exchange",
-   description:"QX Global Crypto Markets",
-   url:"https://jhsmj5d6tc-cmd.github.io/qx-exchange/",
-   icons:["https://jhsmj5d6tc-cmd.github.io/oken-maker/"]
-  },
-  features:{analytics:true,swaps:true,onramp:false},
-  themeMode:"dark",
-  themeVariables:{"--w3m-accent":"#27e0ad","--w3m-border-radius-master":"12px"}
- });
- status.textContent="Wallet connection service initialized.";
-}catch(e){
- console.error(e);
- status.textContent="Wallet service could not initialize. Refresh the page.";
-}
-
-function connect(){
- if(appKit)appKit.open({view:"Connect"});
- else status.textContent="Wallet service unavailable.";
-}
-function swap(){
- if(appKit)appKit.open({view:"Swap"});
- else status.textContent="Wallet service unavailable.";
-}
-$("connect").onclick=connect;
-$("connect2").onclick=connect;
-$("openSwap").onclick=swap;
-
-const coins=[
- ["bitcoin","BTC","Bitcoin"],["ethereum","ETH","Ethereum"],
- ["solana","SOL","Solana"],["binancecoin","BNB","BNB"],
- ["ripple","XRP","XRP"],["cardano","ADA","Cardano"],
- ["dogecoin","DOGE","Dogecoin"],["chainlink","LINK","Chainlink"]
+const RPC_URLS = [
+  "https://solana-rpc.publicnode.com",
+  "https://api.mainnet-beta.solana.com"
 ];
 
-function money(v){
- if(v===null||v===undefined||!Number.isFinite(Number(v)))return "—";
- return "$"+Number(v).toLocaleString("en-US",{maximumFractionDigits:Number(v)<1?8:2});
-}
-function safe(v){
- return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-}
+const FEE_RECEIVER =
+  "FqUJ6SbQoKgZVzBf2Rgy2b2sEpeaad9wg6zJ24JRFhdi";
 
-async function loadPrices(){
- try{
-  const ids=coins.map(x=>x[0]).join(",");
-  const r=await fetch("https://api.coingecko.com/api/v3/simple/price?ids="+ids+"&vs_currencies=usd&include_24hr_change=true");
-  if(!r.ok)throw Error("Price feed unavailable");
-  const d=await r.json();
-  $("marketGrid").innerHTML=coins.slice(0,4).map(c=>{
-   const p=d[c[0]]||{};
-   const n=Number(p.usd_24h_change||0);
-   return `<div class="coin"><b>${c[1]}</b><small>${c[2]}</small><div class="price">${money(p.usd)}</div><small class="${n>=0?"up":"down"}">${n>=0?"+":""}${n.toFixed(2)}% (24h)</small></div>`;
-  }).join("");
-  $("marketStatus").textContent="Prices refreshed "+new Date().toLocaleTimeString();
- }catch(e){
-  $("marketGrid").textContent="Live prices temporarily unavailable.";
-  $("marketStatus").textContent="Price provider did not respond.";
- }
-}
-loadPrices();
+const SITE_FEE = 0.05 * LAMPORTS_PER_SOL;
+const REGISTRY_KEY = "qx_created_tokens_v1";
+const $ = id => document.getElementById(id);
 
-let allPairs=[];
-let selectedChain="all";
-let selectedPair=null;
+let provider = null;
+let publicKey = null;
+let connection = null;
+let busy = false;
 
-const chainNames={
- solana:"Solana",ethereum:"Ethereum",bsc:"BNB Chain",base:"Base",
- polygon:"Polygon",arbitrum:"Arbitrum",optimism:"Optimism",avalanche:"Avalanche"
-};
-
-function renderPairs(){
- const filtered=allPairs.filter(p=>selectedChain==="all"||p.chainId===selectedChain);
- if(!filtered.length){
-  $("results").innerHTML='<div class="status">No pairs found on this network.</div>';
-  return;
- }
- $("results").innerHTML=filtered.slice(0,40).map((p,i)=>{
-  const b=p.baseToken||{},q=p.quoteToken||{};
-  const n=Number(p.priceChange?.h24||0);
-  return `<div class="result">
-   <div>
-    <b>${safe(b.symbol||"TOKEN")}/${safe(q.symbol||"")}</b>
-    <small>${safe(chainNames[p.chainId]||p.chainId)} · ${safe(p.dexId||"DEX")}</small>
-    <small>Liquidity: ${money(p.liquidity?.usd)} · 24h Vol: ${money(p.volume?.h24)}</small>
-    <small class="${n>=0?"up":"down"}">${n>=0?"+":""}${n.toFixed(2)}% (24h)</small>
-   </div>
-   <div class="pairprice">${money(p.priceUsd)}
-    <div class="result-actions"><button class="btn primary" data-open="${i}">Open Market</button></div>
-   </div>
-  </div>`;
- }).join("");
-
- $("results").querySelectorAll("[data-open]").forEach(btn=>{
-  btn.onclick=()=>openDetail(filtered[Number(btn.dataset.open)]);
- });
+function status(message) {
+  $("status").textContent = message;
 }
 
-async function searchTokens(){
- const q=$("searchInput").value.trim();
- if(!q)return;
- $("results").innerHTML='<div class="status">Searching token markets…</div>';
- try{
-  const r=await fetch("https://api.dexscreener.com/latest/dex/search?q="+encodeURIComponent(q));
-  if(!r.ok)throw Error("Search unavailable");
-  const d=await r.json();
-  allPairs=(d.pairs||[]).sort((a,b)=>Number(b.liquidity?.usd||0)-Number(a.liquidity?.usd||0));
-  $("searchStatus").textContent=allPairs.length+" trading pairs indexed. Sorted by liquidity.";
-  renderPairs();
- }catch(e){
-  $("results").innerHTML='<div class="status">Market search unavailable. Please try again.</div>';
- }
-}
-$("searchBtn").onclick=searchTokens;
-$("searchInput").addEventListener("keydown",e=>{if(e.key==="Enter")searchTokens()});
+function findPhantom() {
+  if (window.phantom?.solana?.isPhantom)
+    return window.phantom.solana;
 
-document.querySelectorAll(".chip").forEach(btn=>{
- btn.onclick=()=>{
-  document.querySelectorAll(".chip").forEach(x=>x.classList.remove("active"));
-  btn.classList.add("active");
-  selectedChain=btn.dataset.chain;
-  renderPairs();
- };
+  if (window.solana?.isPhantom)
+    return window.solana;
+
+  return null;
+}
+
+$("openPhantom").addEventListener("click", () => {
+  const target = encodeURIComponent(window.location.href);
+  window.location.href =
+    "https://phantom.app/ul/browse/" + target;
 });
 
-function openDetail(p){
- if(!p||!p.pairAddress||!p.chainId)return;
- selectedPair=p;
- const b=p.baseToken||{},q=p.quoteToken||{};
- const n=Number(p.priceChange?.h24||0);
- $("detailName").textContent=(b.name||"Token")+" ("+(b.symbol||"")+")";
- $("detailIcon").textContent=(b.symbol||"QX").slice(0,3).toUpperCase();
- $("detailPair").textContent=(b.symbol||"TOKEN")+" / "+(q.symbol||"");
- $("detailNetwork").textContent=chainNames[p.chainId]||p.chainId;
- $("detailPrice").textContent=money(p.priceUsd);
- $("detailChange").textContent=(n>=0?"+":"")+n.toFixed(2)+"% in the last 24 hours";
- $("detailChange").className="status "+(n>=0?"up":"down");
- $("detailLiquidity").textContent=money(p.liquidity?.usd);
- $("detailVolume").textContent=money(p.volume?.h24);
- $("detailMcap").textContent=money(p.marketCap||p.fdv);
- const tx=p.txns?.h24||{};
- $("detailTxns").textContent=((tx.buys||0)+(tx.sells||0)).toLocaleString();
- $("detailAddress").textContent=b.address||"Contract unavailable";
+async function connectWallet() {
+  provider = findPhantom();
 
- const chartUrl="https://dexscreener.com/"+encodeURIComponent(p.chainId)+"/"+encodeURIComponent(p.pairAddress)+"?embed=1&theme=dark&trades=0&info=0";
- $("chartFrame").src=chartUrl;
+  if (!provider) {
+    throw new Error(
+      "Phantom was not detected. Open this URL in Phantom's in-app browser."
+    );
+  }
 
- $("tradeNote").textContent=p.chainId==="solana"
-  ?"Solana trade routing will use a supported Solana swap provider. Check the token address and route before signing."
-  :"Choose Buy or Sell to open the available wallet swap interface. Availability depends on the selected network and token route.";
+  const result = await provider.connect();
+  const key = result.publicKey || provider.publicKey;
 
- $("detail").classList.remove("hidden");
- $("detail").scrollIntoView({behavior:"smooth",block:"start"});
+  if (!key) throw new Error("No wallet address returned.");
+
+  publicKey = new PublicKey(key.toString());
+
+  $("wallet").textContent =
+    "Connected:\n" + publicKey.toBase58();
+
+  $("create").disabled = false;
+  status("Wallet connected.");
 }
 
-$("backBtn").onclick=()=>{
- $("detail").classList.add("hidden");
- $("chartFrame").src="about:blank";
- $("discover").scrollIntoView({behavior:"smooth"});
-};
+$("connect").addEventListener("click", async () => {
+  $("connect").disabled = true;
 
-$("buyBtn").onclick=()=>startTrade("buy");
-$("sellBtn").onclick=()=>startTrade("sell");
+  try {
+    await connectWallet();
+  } catch (e) {
+    status("Connection failed:\n" + (e.message || String(e)));
+  } finally {
+    $("connect").disabled = false;
+  }
+});
 
-function startTrade(side){
- if(!selectedPair)return;
- const p=selectedPair;
- if(p.chainId==="solana"){
-  $("tradeNote").textContent="Solana swap is not connected to the QX trade engine in this version. Do not sign a transaction here. We are keeping the market page inside QX while the Solana swap integration is completed.";
-  return;
- }
- if(appKit){
-  $("tradeNote").textContent="Review the token, network and swap route in the wallet swap interface before approving.";
-  appKit.open({view:"Swap"});
- }else{
-  $("tradeNote").textContent="Wallet swap service unavailable. Refresh and reconnect.";
- }
+async function selectRPC() {
+  const errors = [];
+
+  for (const url of RPC_URLS) {
+    try {
+      const candidate = new Connection(url, "confirmed");
+      await candidate.getVersion();
+      connection = candidate;
+      return;
+    } catch (e) {
+      errors.push(url + ": " + (e.message || String(e)));
+    }
+  }
+
+  throw new Error(
+    "No RPC endpoint available:\n" + errors.join("\n")
+  );
 }
 
-$("copyAddress").onclick=async()=>{
- const address=$("detailAddress").textContent;
- if(!address||address==="Contract unavailable")return;
- try{
-  await navigator.clipboard.writeText(address);
-  $("copyAddress").textContent="Copied";
-  setTimeout(()=>$("copyAddress").textContent="Copy Contract Address",1500);
- }catch(e){
-  $("copyAddress").textContent="Copy not available";
- }
-};
+function parseSupply(text, decimals) {
+  if (!/^\d+(\.\d+)?$/.test(text))
+    throw new Error("Enter a valid positive supply.");
+
+  const parts = text.split(".");
+
+  if ((parts[1] || "").length > decimals)
+    throw new Error("Supply has too many decimal places.");
+
+  const whole = BigInt(parts[0]);
+  const fraction = BigInt(
+    (parts[1] || "").padEnd(decimals, "0") || "0"
+  );
+
+  const amount =
+    whole * (10n ** BigInt(decimals)) + fraction;
+
+  if (amount <= 0n || amount > 18446744073709551615n)
+    throw new Error("Supply is outside the supported range.");
+
+  return amount;
+}
+
+function saveTokenToQX(token) {
+  const existing = JSON.parse(
+    localStorage.getItem(REGISTRY_KEY) || "[]"
+  );
+
+  const updated = [
+    token,
+    ...existing.filter(item => item.mint !== token.mint)
+  ].slice(0, 100);
+
+  localStorage.setItem(
+    REGISTRY_KEY,
+    JSON.stringify(updated)
+  );
+}
+
+$("create").addEventListener("click", async () => {
+  if (busy) return;
+
+  if (!provider || !publicKey) {
+    status("Connect Phantom first.");
+    return;
+  }
+
+  const name = $("tokenName").value.trim();
+  const symbol = $("tokenSymbol").value.trim();
+  const decimals = Number($("decimals").value);
+  const supplyText = $("supply").value.trim();
+
+  if (!name || !symbol) {
+    status("Enter the token name and symbol.");
+    return;
+  }
+
+  if (!/^[a-zA-Z0-9._-]+$/.test(symbol)) {
+    status("Use only letters, numbers, dots, underscores or hyphens in the symbol.");
+    return;
+  }
+
+  if (!Number.isInteger(decimals) || decimals < 0 || decimals > 9) {
+    status("Decimals must be between 0 and 9.");
+    return;
+  }
+
+  let rawSupply;
+
+  try {
+    rawSupply = parseSupply(supplyText, decimals);
+  } catch (e) {
+    status(e.message);
+    return;
+  }
+
+  busy = true;
+  $("create").disabled = true;
+  $("connect").disabled = true;
+
+  let mint = null;
+  let signature = null;
+
+  try {
+    const feeReceiver = new PublicKey(FEE_RECEIVER);
+
+    if (feeReceiver.equals(publicKey)) {
+      throw new Error("Fee receiver must not be your own wallet.");
+    }
+
+    await selectRPC();
+    status("Checking balance and preparing transaction...");
+
+    const balance = await connection.getBalance(
+      publicKey,
+      "confirmed"
+    );
+
+    mint = Keypair.generate();
+
+    const rent =
+      await getMinimumBalanceForRentExemptMint(connection);
+
+    const ata = await getAssociatedTokenAddress(
+      mint.publicKey,
+      publicKey,
+      false,
+      TOKEN_PROGRAM_ID
+    );
+
+    const existing = await connection.getAccountInfo(
+      ata,
+      "confirmed"
+    );
+
+    if (existing) {
+      throw new Error(
+        "This newly generated mint unexpectedly has an existing token account."
+      );
+    }
+
+    const transaction = new Transaction();
+
+    transaction.add(
+      SystemProgram.createAccount({
+        fromPubkey: publicKey,
+        newAccountPubkey: mint.publicKey,
+        space: MINT_SIZE,
+        lamports: rent,
+        programId: TOKEN_PROGRAM_ID
+      }),
+
+      createInitializeMintInstruction(
+        mint.publicKey,
+        decimals,
+        publicKey,
+        null,
+        TOKEN_PROGRAM_ID
+      ),
+
+      createAssociatedTokenAccountInstruction(
+        publicKey,
+        ata,
+        publicKey,
+        mint.publicKey,
+        TOKEN_PROGRAM_ID
+      ),
+
+      createMintToInstruction(
+        mint.publicKey,
+        ata,
+        publicKey,
+        rawSupply,
+        [],
+        TOKEN_PROGRAM_ID
+      ),
+
+      SystemProgram.transfer({
+        fromPubkey: publicKey,
+        toPubkey: feeReceiver,
+        lamports: SITE_FEE
+      })
+    );
+
+    const latest = await connection.getLatestBlockhash("confirmed");
+
+    transaction.feePayer = publicKey;
+    transaction.recentBlockhash = latest.blockhash;
+
+    transaction.partialSign(mint);
+
+    const estimatedFee = await connection.getFeeForMessage(
+      transaction.compileMessage(),
+      "confirmed"
+    );
+
+    const required =
+      rent + SITE_FEE + (estimatedFee.value ?? 10000);
+
+    if (balance < required) {
+      throw new Error(
+        "Insufficient SOL for mint rent, site fee and network fee. " +
+        "Current balance: " +
+        (balance / LAMPORTS_PER_SOL) + " SOL."
+      );
+    }
+
+    const size = transaction.serialize({
+      requireAllSignatures: false,
+      verifySignatures: false
+    }).length;
+
+    if (size > 1232) {
+      throw new Error(
+        "Transaction exceeds Solana's standard size limit (" +
+        size + " bytes). No transaction was sent."
+      );
+    }
+
+    status(
+      "Review in Phantom:\n" +
+      "Create mint + token account + initial supply\n" +
+      "Site fee: 0.05 SOL\n" +
+      "Network fee is additional.\n\n" +
+      "Approve once to submit the combined transaction."
+    );
+
+    if (typeof provider.signAndSendTransaction !== "function") {
+      throw new Error(
+        "This Phantom provider does not support signAndSendTransaction."
+      );
+    }
+
+    const result =
+      await provider.signAndSendTransaction(transaction);
+
+    signature = result.signature || result;
+
+    status("Transaction submitted. Waiting for confirmation...");
+
+    const confirmation = await connection.confirmTransaction({
+      signature,
+      blockhash: latest.blockhash,
+      lastValidBlockHeight: latest.lastValidBlockHeight
+    }, "confirmed");
+
+    if (confirmation.value.err) {
+      throw new Error(
+        "Transaction failed on-chain: " +
+        JSON.stringify(confirmation.value.err)
+      );
+    }
+
+    const tokenRecord = {
+      name: name,
+      symbol: symbol,
+      decimals: decimals,
+      supply: supplyText,
+      mint: mint.publicKey.toBase58(),
+      tokenAccount: ata.toBase58(),
+      owner: publicKey.toBase58(),
+      network: "solana",
+      signature: signature,
+      createdAt: new Date().toISOString(),
+      source: "QX Token Creator"
+    };
+
+    let savedToRegistry = false;
+
+    try {
+      saveTokenToQX(tokenRecord);
+      savedToRegistry = true;
+    } catch (storageError) {
+      console.error("QX registry save failed:", storageError);
+    }
+
+    status(
+      "SUCCESS\n\n" +
+      "Name: " + name + "\n" +
+      "Symbol: " + symbol + "\n" +
+      "Decimals: " + decimals + "\n" +
+      "Initial supply: " + supplyText + "\n\n" +
+      "Mint address:\n" + mint.publicKey.toBase58() + "\n\n" +
+      "Token account:\n" + ata.toBase58() + "\n\n" +
+      "Site fee: 0.05 SOL\n" +
+      "QX registry: " +
+      (savedToRegistry ? "Saved on this browser" : "Could not save locally") +
+      "\n\nTransaction:\n" + signature + "\n\n" +
+      "Explorer:\nhttps://explorer.solana.com/tx/" +
+      signature + "?cluster=mainnet-beta\n\n" +
+      "Name, symbol and logo metadata are not included."
+    );
+
+  } catch (e) {
+    console.error(e);
+
+    status(
+      "Operation failed:\n" + (e.message || String(e)) +
+      (signature ? "\nTransaction signature:\n" + signature : "") +
+      (mint ? "\nMint address:\n" + mint.publicKey.toBase58() : "")
+    );
+
+  } finally {
+    busy = false;
+    $("connect").disabled = false;
+    $("create").disabled = !publicKey;
+  }
+});
+
+provider = findPhantom();
+
+if (provider?.isConnected && provider.publicKey) {
+  publicKey = new PublicKey(provider.publicKey.toString());
+
+  $("wallet").textContent =
+    "Connected:\n" + publicKey.toBase58();
+
+  $("create").disabled = false;
+}
 </script>
 </body>
 </html>
