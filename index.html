@@ -928,6 +928,14 @@ $("percentRange").addEventListener("input",event=>setTradePercent(event.target.v
 
 /* QX NATIVE SWAP â Jupiter API runs behind the QX interface */
 const JUPITER_SWAP_API="https://api.jup.ag/swap/v2";
+// Paste your Jupiter publishable key here for request attribution in your dashboard.
+// Publishable keys are designed for browser use; never put a server/secret key here.
+const JUPITER_API_KEY="";
+function jupiterHeaders(extra={}){
+ const headers={"Accept":"application/json",...extra};
+ if(JUPITER_API_KEY.trim())headers["x-api-key"]=JUPITER_API_KEY.trim();
+ return headers;
+}
 // Set this to the referralAccount created for QX in the official Jupiter Referral Dashboard.
 // The matching SOL referral token account must also be initialized before enabling swaps.
 const QX_REFERRAL_ACCOUNT="UMRAMLr2CqNNSUhVJvdB2bbEGHPwL5n6LpFzTxycmBW";
@@ -995,9 +1003,12 @@ async function requestQXQuote(){
   $("swapWallet").textContent=short(walletAddress);
   $("swapStatus").textContent="QX is finding the best available market route. Nothing moves until you approve in Phantom.";
   const params=new URLSearchParams({inputMint:pair.inputMint,outputMint:pair.outputMint,amount:input.raw,taker:walletAddress,referralAccount:QX_REFERRAL_ACCOUNT,referralFee:String(QX_REFERRAL_FEE_BPS)});
-  const response=await fetch(JUPITER_SWAP_API+"/order?"+params.toString(),{headers:{"Accept":"application/json"}});
+  const response=await fetch(JUPITER_SWAP_API+"/order?"+params.toString(),{headers:jupiterHeaders()});
   const data=await response.json().catch(()=>({}));
-  if(!response.ok)throw new Error(data.errorMessage||data.error||("Quote service error ("+response.status+")"));
+  if(!response.ok){
+   const detail=data.errorMessage||data.error||data.message||"";
+   throw new Error("Jupiter quote error ("+response.status+"): "+(detail||"Check the API key and try again."));
+  }
   if(data.referralAccount!==QX_REFERRAL_ACCOUNT||Number(data.feeBps)<QX_REFERRAL_FEE_BPS||data.feeMint!==SOL){
    throw new Error("QX fee account is not ready for this SOL pair. Initialize the SOL referral token account in the Jupiter Referral Dashboard; no swap was submitted.");
   }
@@ -1008,7 +1019,7 @@ async function requestQXQuote(){
   const outputDecimals=await getMintDecimals(pair.outputMint);
   pendingSwapOrder={data,outputDecimals,inputAmount:input.amount,inputSymbol:tradeDirection==="buy"?"SOL":selectedToken.baseToken.symbol,outputSymbol:tradeDirection==="buy"?selectedToken.baseToken.symbol:"SOL",createdAt:Date.now(),wallet:walletAddress};
   $("swapReceive").textContent=displayRawAmount(data.outAmount,outputDecimals)+" "+pendingSwapOrder.outputSymbol;
-  $("qxFeeDisplay").textContent="1.00% Â· collected in SOL";
+  $("qxFeeDisplay").textContent="1.00% Â· fee included in quote";
   $("swapRoute").textContent="QX best available route";
   $("confirmSwapBtn").disabled=false;
   $("swapStatus").textContent="Price ready. Review the estimated receive amount, then confirm the swap in Phantom. Final output can change with market conditions.";
@@ -1044,12 +1055,12 @@ async function executeQXSwap(){
   $("confirmSwapBtn").textContent="Processing swap...";
   $("swapStatus").textContent="Transaction signed. QX is submitting it for confirmation.";
   const response=await fetch(JUPITER_SWAP_API+"/execute",{
-   method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},
+   method:"POST",headers:jupiterHeaders({"Content-Type":"application/json"}),
    body:JSON.stringify({signedTransaction,requestId:pendingSwapOrder.data.requestId})
   });
   const result=await response.json().catch(()=>({}));
   if(!response.ok)throw new Error(result.error||result.errorMessage||("Swap execution error ("+response.status+")"));
-  if(result.status!=="Success"||Number(result.code)!==0){
+  if(result.status!=="Success"||Number(result.code)!==0||!result.signature){
    const suffix=result.signature?" Â· https://solscan.io/tx/"+result.signature:"";
    throw new Error((result.error||"Swap failed or was not confirmed.")+suffix);
   }
