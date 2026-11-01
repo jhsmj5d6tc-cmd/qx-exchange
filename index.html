@@ -34,7 +34,6 @@ h2{font-size:19px}
 .address{font-size:11px;color:var(--muted);overflow-wrap:anywhere}
 .row{display:grid;grid-template-columns:1.4fr .8fr .8fr;gap:8px;padding:13px 9px;border-bottom:1px solid var(--line);align-items:center;font-size:12px}
 .row:last-child{border:0}
-.row.head{color:var(--muted)}
 .right{text-align:right}
 .list{background:var(--panel);border:1px solid var(--line);border-radius:13px;overflow:hidden}
 .empty{padding:22px;text-align:center;color:var(--muted)}
@@ -45,7 +44,6 @@ input{width:100%;min-width:0;background:#0c1525;color:white;border:1px solid var
 .nav-btn{border:0;background:none;color:var(--muted);font-size:12px;font-weight:bold;display:flex;flex-direction:column;align-items:center;gap:5px;padding:6px}
 .nav-btn .icon{font-size:21px}
 .nav-btn.active{color:var(--green)}
-#jupiter-plugin{width:100%;min-height:550px}
 footer{text-align:center;color:var(--muted);padding:25px;font-size:11px}
 .market-heading{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .market-tabs{display:flex;gap:8px;overflow-x:auto;padding:4px 0 13px;scrollbar-width:none}
@@ -72,9 +70,21 @@ footer{text-align:center;color:var(--muted);padding:25px;font-size:11px}
 .detail-top img{width:48px;height:48px;border-radius:50%;object-fit:cover}
 .detail-top h2{margin:0 0 5px}
 .detail-link{color:var(--green);font-size:12px;text-decoration:none}
+.detail-price{font-size:27px;font-weight:800;margin:12px 0 4px}
+.detail-change{font-size:13px;font-weight:bold}
+.chart-wrap{margin:16px 0 12px;overflow:hidden;border-radius:12px;background:#080d18}
+#detailChart{display:block;width:100%;height:360px;border:0;background:#080d18}
+.trade-buttons{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}
+.trade-btn{padding:14px;border:1px solid var(--line);border-radius:10px;background:#1b2a40;color:white;font-weight:bold}
+.trade-btn.buy.active{background:var(--green);border-color:var(--green);color:#06150f}
+.trade-btn.sell.active{background:var(--red);border-color:var(--red);color:#23060b}
+#jupiter-plugin{width:100%;min-height:480px}
+.trade-heading{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.trade-note{font-size:11px;color:var(--muted);line-height:1.5}
 @media(min-width:700px){
  .wrap{padding-top:25px}
  .coin-info strong{max-width:300px}
+ #detailChart{height:430px}
 }
 </style>
 </head>
@@ -123,11 +133,6 @@ footer{text-align:center;color:var(--muted);padding:25px;font-size:11px}
     <span class="tag">LIVE MARKET</span>
   </div>
 
-  <div class="toolbar">
-    <input id="search" placeholder="Search name, symbol or contract">
-    <button class="btn primary" id="searchBtn">Search</button>
-  </div>
-
   <div class="market-tabs" id="marketTabs">
     <button class="market-tab active" data-category="all">All Markets</button>
     <button class="market-tab" data-category="new">New Pairs</button>
@@ -135,6 +140,56 @@ footer{text-align:center;color:var(--muted);padding:25px;font-size:11px}
     <button class="market-tab" data-category="losers">Top Losers</button>
     <button class="market-tab" data-category="trending">Trending</button>
     <button class="market-tab" data-category="volume">Top Volume</button>
+  </div>
+
+  <!-- SELECTED TOKEN: CHART + BUY/SELL IN THE SAME MARKET AREA -->
+  <section id="detail" class="panel" style="display:none">
+    <div class="detail-top">
+      <img id="detailImage" alt="" src="" style="display:none">
+      <div>
+        <h2 id="detailName">Token</h2>
+        <span class="small" id="detailSymbol"></span>
+      </div>
+    </div>
+
+    <div class="detail-price" id="detailPrice">—</div>
+    <div id="detailChange" class="detail-change neutral">—</div>
+    <p class="address" id="detailAddress"></p>
+
+    <div class="row">
+      <span>Liquidity</span><span class="right" id="detailLiquidity">—</span><span></span>
+    </div>
+    <div class="row">
+      <span>24h Volume</span><span class="right" id="detailVolume">—</span><span></span>
+    </div>
+
+    <div class="chart-wrap" id="detailChartWrap" style="display:none">
+      <iframe id="detailChart" title="Token live price chart"
+        loading="lazy"
+        allow="clipboard-write"
+        referrerpolicy="strict-origin-when-cross-origin"></iframe>
+    </div>
+
+    <a id="solscanLink" class="detail-link" target="_blank" rel="noopener">View contract on Solscan ↗</a>
+
+    <div class="trade-buttons">
+      <button class="trade-btn buy active" id="buyBtn">BUY</button>
+      <button class="trade-btn sell" id="sellBtn">SELL</button>
+    </div>
+
+    <div class="trade-heading">
+      <strong id="tradeTitle">Buy this token</strong>
+      <span class="tag">JUPITER</span>
+    </div>
+    <div id="jupiter-plugin"></div>
+    <p class="trade-note" id="swapStatus">
+      Connect your wallet, review the swap route and confirm the transaction in your wallet.
+    </p>
+  </section>
+
+  <div class="toolbar">
+    <input id="search" placeholder="Search name, symbol or contract">
+    <button class="btn primary" id="searchBtn">Search</button>
   </div>
 
   <div class="market-meta">
@@ -152,37 +207,6 @@ footer{text-align:center;color:var(--muted);padding:25px;font-size:11px}
   </div>
 
   <p class="market-status" id="marketStatus">Connecting to live market data...</p>
-
-  <section id="detail" class="panel" style="display:none">
-    <div class="detail-top">
-      <img id="detailImage" alt="" src="">
-      <div>
-        <h2 id="detailName">Token</h2>
-        <span class="small" id="detailSymbol"></span>
-      </div>
-    </div>
-    <p class="address" id="detailAddress"></p>
-    <div class="row">
-      <span>Price</span><span class="right" id="detailPrice">—</span><span></span>
-    </div>
-    <div class="row">
-      <span>24h change</span><span class="right" id="detailChange">—</span><span></span>
-    </div>
-    <div class="row">
-      <span>Liquidity</span><span class="right" id="detailLiquidity">—</span><span></span>
-    </div>
-    <div class="row">
-      <span>24h volume</span><span class="right" id="detailVolume">—</span><span></span>
-    </div>
-    <a id="solscanLink" class="detail-link" target="_blank" rel="noopener">View contract on Solscan ↗</a>
-  </section>
-
-  <h2>Swap Tokens</h2>
-  <div class="panel">
-    <div class="tag">POWERED BY JUPITER</div>
-    <div id="jupiter-plugin"></div>
-    <p class="small" id="swapStatus">Review transactions in your wallet before confirming.</p>
-  </div>
 </main>
 
 <footer>QX Exchange · Solana</footer>
@@ -239,6 +263,10 @@ let trendingPairs=[];
 let currentCategory="all";
 let marketBusy=false;
 let canonicalSolPair=null;
+let selectedToken=null;
+let tradeDirection="buy";
+let jupiterStarted=false;
+let jupiterTimer=null;
 
 const valid=s=>typeof s==="string"&&/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(s);
 const short=s=>s?s.slice(0,6)+"..."+s.slice(-4):"";
@@ -403,8 +431,6 @@ async function loadPortfolio(){
 }
 
 /* MARKET DATA HELPERS */
-
-/* One entry per mint. Native SOL is only allowed by its exact mint address. */
 function bestPairsByMint(input,includeSol=false){
   const map=new Map();
 
@@ -424,7 +450,6 @@ function bestPairsByMint(input,includeSol=false){
       continue;
     }
 
-    /* Avoid unrelated tokens pretending to be native SOL. */
     if(symbol==="SOL")continue;
 
     const previous=map.get(mint);
@@ -436,7 +461,6 @@ function bestPairsByMint(input,includeSol=false){
   return [...map.values()];
 }
 
-/* Fetch one canonical SOL pair independently. */
 async function fetchCanonicalSol(){
   try{
     const data=await getJSON("https://api.dexscreener.com/latest/dex/tokens/"+SOL);
@@ -485,7 +509,7 @@ function boostMints(data){
     .filter(mint=>mint!==SOL);
 }
 
-/* LOAD ALL MARKET CATEGORIES */
+/* LOAD MARKET */
 async function loadMarket(){
   if(marketBusy)return;
   marketBusy=true;
@@ -503,9 +527,7 @@ async function loadMarket(){
     const profileData=results[1].status==="fulfilled"?results[1].value:[];
     const boostData=results[2].status==="fulfilled"?results[2].value:[];
 
-    if(results[3].status==="fulfilled"){
-      canonicalSolPair=results[3].value;
-    }
+    if(results[3].status==="fulfilled")canonicalSolPair=results[3].value;
 
     const profileList=await fetchPairsForMints(profileMints(profileData));
     const boostList=await fetchPairsForMints(boostMints(boostData));
@@ -519,10 +541,7 @@ async function loadMarket(){
       ...boostList
     ],false);
 
-    /* Add exactly one SOL row, independently selected by liquidity. */
-    allPairs=canonicalSolPair
-      ? [canonicalSolPair,...otherTokens]
-      : otherTokens;
+    allPairs=canonicalSolPair?[canonicalSolPair,...otherTokens]:otherTokens;
 
     if(!allPairs.length)throw new Error("No Solana tokens returned. Try again shortly.");
 
@@ -640,8 +659,6 @@ $("marketTabs").addEventListener("click",event=>{
   document.querySelectorAll(".market-tab").forEach(tab=>{
     tab.classList.toggle("active",tab===button);
   });
-
-  $("detail").style.display="none";
   renderMarket();
 });
 
@@ -663,7 +680,6 @@ async function searchMarket(){
 
     let results=bestPairsByMint(data.pairs||[],true);
 
-    /* If searching for SOL, include only the canonical SOL pair. */
     if(query.toLowerCase()==="sol"||SOL.toLowerCase().includes(query.toLowerCase())){
       if(canonicalSolPair){
         results=[
@@ -689,7 +705,6 @@ async function searchMarket(){
       tab.classList.toggle("active",tab.dataset.category==="all");
     });
 
-    /* Display only the search results, deduplicated by mint. */
     $("categoryTitle").textContent="Search results";
     $("coinCount").textContent=results.length+" tokens";
     renderSearchResults(results);
@@ -753,14 +768,73 @@ $("search").onkeydown=event=>{
   if(event.key==="Enter")searchMarket();
 };
 $("search").oninput=()=>{
-  if(!$("search").value.trim()){
-    renderMarket();
-  }
+  if(!$("search").value.trim())renderMarket();
 };
 
-/* TOKEN DETAILS */
+/* JUPITER: LOAD THE SELECTED TOKEN INTO THE TRADE FORM */
+function startJupiter(){
+  if(!selectedToken)return;
+
+  if(!window.Jupiter?.init){
+    $("swapStatus").textContent="Jupiter is loading. Please wait...";
+    return;
+  }
+
+  const mint=selectedToken.baseToken.address;
+  if(!valid(mint)){
+    $("swapStatus").textContent="Invalid token address.";
+    return;
+  }
+
+  const inputMint=tradeDirection==="buy"?SOL:mint;
+  const outputMint=tradeDirection==="buy"?mint:SOL;
+
+  try{
+    $("jupiter-plugin").innerHTML="";
+    jupiterStarted=false;
+
+    window.Jupiter.init({
+      displayMode:"integrated",
+      integratedTargetId:"jupiter-plugin",
+      formProps:{
+        initialInputMint:inputMint,
+        initialOutputMint:outputMint
+      },
+      branding:{name:"QX Exchange"}
+    });
+
+    jupiterStarted=true;
+    $("tradeTitle").textContent=
+      tradeDirection==="buy"
+        ?"Buy "+(selectedToken.baseToken.symbol||"token")
+        :"Sell "+(selectedToken.baseToken.symbol||"token");
+
+    $("swapStatus").textContent=
+      tradeDirection==="buy"
+        ?"Buy route: SOL → "+(selectedToken.baseToken.symbol||"token")+". Review the quote before confirming."
+        :"Sell route: "+(selectedToken.baseToken.symbol||"token")+" → SOL. Review the quote before confirming.";
+  }catch(error){
+    $("swapStatus").textContent="Jupiter error: "+error.message;
+  }
+}
+
+function changeTradeDirection(direction){
+  tradeDirection=direction;
+
+  $("buyBtn").classList.toggle("active",direction==="buy");
+  $("sellBtn").classList.toggle("active",direction==="sell");
+
+  if(selectedToken)startJupiter();
+}
+
+$("buyBtn").onclick=()=>changeTradeDirection("buy");
+$("sellBtn").onclick=()=>changeTradeDirection("sell");
+
+/* TOKEN DETAILS + CHART */
 function openToken(token){
+  selectedToken=token;
   const mint=token.baseToken.address;
+
   $("detail").style.display="block";
   $("detailName").textContent=token.baseToken.name||"Token";
   $("detailSymbol").textContent=token.baseToken.symbol||"";
@@ -768,8 +842,14 @@ function openToken(token){
   $("detailPrice").textContent=usd(token.priceUsd);
 
   const change=Number(token.priceChange?.h24);
-  $("detailChange").textContent=Number.isFinite(change)?change.toFixed(2)+"%":"—";
-  $("detailChange").className="right "+(change>0?"up":change<0?"down":"neutral");
+  $("detailChange").textContent=
+    Number.isFinite(change)
+      ? (change>0?"+":"")+change.toFixed(2)+"% · 24h"
+      : "24h change unavailable";
+
+  $("detailChange").className=
+    "detail-change "+(change>0?"up":change<0?"down":"neutral");
+
   $("detailLiquidity").textContent=money(token.liquidity?.usd);
   $("detailVolume").textContent=money(token.volume?.h24);
   $("solscanLink").href="https://solscan.io/token/"+mint;
@@ -778,32 +858,20 @@ function openToken(token){
   $("detailImage").src=image;
   $("detailImage").style.display=image?"block":"none";
 
-  $("detail").scrollIntoView({behavior:"smooth",block:"start"});
-}
-
-/* JUPITER SWAP */
-function startJupiter(){
-  if(!window.Jupiter?.init){
-    $("swapStatus").textContent="Jupiter is loading. Refresh shortly.";
-    return;
+  /* DexScreener chart uses the selected trading pair address. */
+  const pairAddress=token.pairAddress;
+  if(valid(pairAddress)){
+    $("detailChart").src=
+      "https://dexscreener.com/solana/"+
+      encodeURIComponent(pairAddress)+
+      "?embed=1&theme=dark&trades=0&info=0";
+    $("detailChartWrap").style.display="block";
+  }else{
+    $("detailChart").removeAttribute("src");
+    $("detailChartWrap").style.display="none";
   }
 
-  try{
-    window.Jupiter.init({
-      displayMode:"integrated",
-      integratedTargetId:"jupiter-plugin",
-      formProps:{
-        initialInputMint:SOL,
-        initialOutputMint:USDC
-      },
-      branding:{name:"QX Exchange"}
-    });
-
-    $("swapStatus").textContent=
-      "Review the swap and confirm it in your wallet.";
-  }catch(error){
-    $("swapStatus").textContent="Jupiter error: "+error.message;
-  }
+  changeTradeDirection(tradeDirection);
 }
 
 /* REFRESH */
@@ -815,18 +883,12 @@ $("refreshBtn").onclick=async()=>{
 loadSolPrice();
 loadMarket();
 
-let attempts=0;
-const timer=setInterval(()=>{
-  attempts++;
-  if(window.Jupiter?.init){
-    clearInterval(timer);
-    startJupiter();
+/* Start Jupiter only after a token is selected. */
+setInterval(()=>{
+  if(selectedToken&&!window.Jupiter?.init){
+    $("swapStatus").textContent="Waiting for Jupiter to load...";
   }
-  if(attempts>=30){
-    clearInterval(timer);
-    $("swapStatus").textContent="Jupiter failed to load.";
-  }
-},500);
+},1500);
 
 setInterval(loadSolPrice,60000);
 setInterval(loadMarket,120000);
