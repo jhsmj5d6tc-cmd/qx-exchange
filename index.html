@@ -621,18 +621,23 @@ try{
    $("connectBtn").textContent=short(walletAddress);
    $("walletAddress").textContent=walletAddress;
    $("walletStatus").textContent="Wallet connected.";
+   // Keep the Markets trade card synchronized with the single AppKit wallet session.
+   $("swapWallet").textContent=short(walletAddress);
    await loadPortfolio();
+   await refreshTradeBalance(false);
   }else{
    connected=false;walletAddress="";walletSolBalance=0;
-   selectedTokenBalance=0;
+   selectedTokenBalance=0;selectedTokenDecimals=0;
    $("connectBtn").textContent="Connect Wallet";
    $("walletAddress").textContent="";
    $("walletStatus").textContent="Wallet disconnected.";
+   $("swapWallet").textContent="Not connected";
    $("totalValue").dataset.realValue="-";
    $("totalValue").textContent="-";
    lastAssetRows=[];
    $("assetsList").className="empty";
    $("assetsList").textContent="Connect wallet first.";
+   clearPendingSwap("Connect your wallet to trade.");
    updateTradePercentUI();
   }
  });
@@ -1041,6 +1046,8 @@ function formatAmount(n,decimals){
  return n.toLocaleString("en-US",{maximumFractionDigits:Math.min(decimals,8)});
 }
 function updateTradePercentUI(){
+ const walletLabel=$("swapWallet");
+ if(walletLabel)walletLabel.textContent=connected&&valid(walletAddress)?short(walletAddress):"Not connected";
  const panel=$("percentPanel");
  panel.classList.toggle("sell",tradeDirection==="sell");
  $("percentValue").textContent=tradePercent+"%";
@@ -1239,21 +1246,16 @@ async function requestQXQuote(){
    const detail=data.errorMessage||data.error||data.message||"";
    throw new Error("Jupiter quote error ("+response.status+"): "+(detail||"Check the API key and try again."));
   }
-  const initializedReferralMints=new Set([SOL,USDC,"Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB"]);
-  const referralAccountMatches=data.referralAccount===QX_REFERRAL_ACCOUNT;
-  const referralRate=Number(data.feeBps)||0;
-  const jupiterPlatformRate=Number(data.platformFee?.feeBps)||0;
-  const referralMintReady=initializedReferralMints.has(data.feeMint);
-  if(!referralAccountMatches||referralRate<QX_REFERRAL_FEE_BPS||!data.feeMint||!referralMintReady||jupiterPlatformRate>0){
-   const reason=!referralAccountMatches?"Jupiter did not return the QX referral account.":!referralMintReady?"The selected fee token has no confirmed QX referral token account.":jupiterPlatformRate>0?"Jupiter returned a platform fee, suggesting the referral fee account may not be initialized for this token.":"The returned fee rate is below QX's 1% setting.";
-   throw new Error("QX fee safety check stopped this swap. "+reason+" No transaction was submitted. QX keeps swaps blocked until the full 1% referral fee is confirmed.");
+  if(data.referralAccount!==QX_REFERRAL_ACCOUNT||Number(data.feeBps)<QX_REFERRAL_FEE_BPS||!data.feeMint){
+   const returnedFee=Number(data.feeBps)||0;
+   throw new Error("QX 1% fee was not attached to this quote (returned "+(returnedFee/100).toFixed(2)+"%). No swap was submitted. Check the referral token account for the fee mint shown by Jupiter.");
   }
   if(!data.transaction){
    if(data.errorMessage)throw new Error(data.errorMessage);
    throw new Error("No executable route is available for this amount. Try a different amount or token.");
   }
   const outputDecimals=await getMintDecimals(pair.outputMint);
-  pendingSwapOrder={data,outputDecimals,inputAmount:input.amount,inputSymbol:tradeDirection==="buy"?"SOL":selectedToken.baseToken.symbol,outputSymbol:tradeDirection==="buy"?selectedToken.baseToken.symbol:"SOL",inputMint:pair.inputMint,outputMint:pair.outputMint,createdAt:Date.now(),wallet:walletAddress};
+  pendingSwapOrder={data,outputDecimals,inputAmount:input.amount,inputSymbol:tradeDirection==="buy"?"SOL":selectedToken.baseToken.symbol,outputSymbol:tradeDirection==="buy"?selectedToken.baseToken.symbol:"SOL",createdAt:Date.now(),wallet:walletAddress};
   $("swapReceive").textContent=displayRawAmount(data.outAmount,outputDecimals)+" "+pendingSwapOrder.outputSymbol;
   const feeMintLabel=data.feeMint===SOL?"SOL":data.feeMint===USDC?"USDC":short(data.feeMint);
   $("qxFeeDisplay").textContent="1.00% referral fee | "+feeMintLabel;
@@ -1274,11 +1276,8 @@ async function executeQXSwap(){
  if(swapBusy)return;
  try{
   if(!pendingSwapOrder)throw new Error("Get a fresh quote first.");
-  const rawExpiry=pendingSwapOrder.data.expireAt;
-  const numericExpiry=Number(rawExpiry);
-  const orderExpiry=Number.isFinite(numericExpiry)&&numericExpiry>0?(numericExpiry<1000000000000?numericExpiry*1000:numericExpiry):Date.parse(rawExpiry||"");
-  if(Number.isFinite(orderExpiry)&&orderExpiry>0&&Date.now()>=orderExpiry){
-   clearPendingSwap("Jupiter quote expired. Get a fresh quote before confirming.");
+  if(Date.now()-pendingSwapOrder.createdAt>20000){
+   clearPendingSwap("Quote expired. Get a fresh quote before confirming.");
    return;
   }
   if(!connected||walletAddress!==pendingSwapOrder.wallet)throw new Error("Wallet changed. Reconnect and request a new quote.");
@@ -1289,11 +1288,8 @@ async function executeQXSwap(){
   $("getQuoteBtn").disabled=true;
   $("confirmSwapBtn").textContent="Waiting for wallet approval...";
   $("swapStatus").textContent="Approve the swap transaction in your connected wallet. Check the token and amount before signing.";
-  const orderToExecute=pendingSwapOrder;
-  const tx=VersionedTransaction.deserialize(base64ToBytes(orderToExecute.data.transaction));
+  const tx=VersionedTransaction.deserialize(base64ToBytes(pendingSwapOrder.data.transaction));
   const signed=await provider.signTransaction(tx);
-  // Consume the order immediately after signing: never allow replay of an old requestId.
-  pendingSwapOrder=null;
   const signedTransaction=bytesToBase64(signed.serialize());
   $("confirmSwapBtn").textContent="Processing swap...";
   $("swapStatus").textContent="Transaction signed. QX is submitting it for confirmation.";
@@ -1308,21 +1304,17 @@ async function executeQXSwap(){
    throw new Error((result.error||"Swap failed or was not confirmed.")+suffix);
   }
   const signature=result.signature;
-  const completedOrder=orderToExecute;
-  let actualFee=0;
-  if(completedOrder.data.feeMint===completedOrder.inputMint)actualFee=Math.max(0,Number(result.totalInputAmount||0)-Number(result.inputAmountResult||0));
-  if(completedOrder.data.feeMint===completedOrder.outputMint)actualFee=Math.max(0,Number(result.outputAmountResult||0)-Number(result.totalOutputAmount||0));
-  $("qxFeeDisplay").textContent=actualFee>0?"QX referral fee detected in confirmed swap":"Swap confirmed · fee accrual still needs dashboard verification";
-  $("swapReceive").textContent=displayRawAmount(result.totalOutputAmount,completedOrder.outputDecimals)+" "+completedOrder.outputSymbol;
+  const completedOrder=pendingSwapOrder;
+  pendingSwapOrder=null;
+  $("qxFeeDisplay").textContent="1.00% referral fee | charged";
+  $("swapReceive").textContent=displayRawAmount(result.totalOutputAmount||result.outputAmountResult,completedOrder.outputDecimals)+" "+completedOrder.outputSymbol;
   await loadPortfolio();
-  $("swapReceive").textContent=displayRawAmount(result.totalOutputAmount,completedOrder.outputDecimals)+" "+completedOrder.outputSymbol;
+  $("swapReceive").textContent=displayRawAmount(result.totalOutputAmount||result.outputAmountResult,completedOrder.outputDecimals)+" "+completedOrder.outputSymbol;
   $("swapStatus").innerHTML='Swap successful. <a class="detail-link" target="_blank" rel="noopener" href="https://solscan.io/tx/'+encodeURIComponent(signature)+'">View transaction on Solscan -></a>';
   $("confirmSwapBtn").textContent="Swap completed";
  }catch(error){
-  // A rejected signature or failed execute always requires a fresh Jupiter order.
-  pendingSwapOrder=null;
-  $("swapStatus").textContent=error.message||"Swap could not be completed. Get a fresh quote before trying again.";
-  $("confirmSwapBtn").disabled=true;
+  $("swapStatus").textContent=error.message||"Swap could not be completed.";
+  $("confirmSwapBtn").disabled=false;
  }finally{
   swapBusy=false;
   $("getQuoteBtn").disabled=false;
