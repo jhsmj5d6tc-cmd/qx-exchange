@@ -10,154 +10,74 @@
 <script src="https://plugin.jup.ag/plugin-v1.js"></script>
 
 <style>
-:root {
-  --bg:#080d18;
-  --panel:#111a2b;
-  --line:#263750;
-  --text:#f4f7ff;
-  --muted:#91a0b5;
-  --green:#42d6a0;
+:root{
+  --bg:#080d18;--panel:#111a2b;--line:#263750;
+  --text:#f4f7ff;--muted:#91a0b5;--green:#42d6a0;
+  --red:#ff657b;
 }
-* {box-sizing:border-box}
-body {
-  margin:0;
-  background:var(--bg);
-  color:var(--text);
-  font-family:Arial,sans-serif;
-}
-button,input {font:inherit}
-button {cursor:pointer}
-.wrap {
-  max-width:1000px;
-  margin:auto;
-  padding:14px 14px 105px;
-}
-header {
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:12px 0 25px;
-}
-.logo {font-size:26px;font-weight:900}
-.logo span {color:var(--green)}
-.small {font-size:12px;color:var(--muted)}
-.btn {
-  background:#1b2a40;
-  color:white;
-  border:1px solid var(--line);
-  padding:12px 15px;
-  border-radius:10px;
-}
-.primary {
-  background:var(--green);
-  color:#06150f;
-  border:0;
-  font-weight:bold;
-}
-.panel {
-  background:var(--panel);
-  border:1px solid var(--line);
-  border-radius:15px;
-  padding:16px;
-  margin-bottom:16px;
-}
-.page {display:none}
-.page.active {display:block}
-h2 {font-size:19px}
-.hero {
-  background:linear-gradient(130deg,#172d46,#101827);
-  border:1px solid var(--line);
-  border-radius:15px;
-  padding:20px;
-}
-.value {font-size:36px;font-weight:bold;margin:12px 0}
-.address {
-  font-size:11px;
-  color:var(--muted);
-  overflow-wrap:anywhere;
-}
-.row {
-  display:grid;
-  grid-template-columns:1.4fr .8fr .8fr;
-  gap:8px;
-  padding:13px 9px;
-  border-bottom:1px solid var(--line);
-  align-items:center;
-  font-size:12px;
-}
-.row:last-child {border:0}
-.row.head {color:var(--muted)}
-.right {text-align:right}
-.token {
-  background:none;
-  border:0;
-  color:white;
-  text-align:left;
-  overflow-wrap:anywhere;
-}
-.token strong {display:block}
-.token small {color:var(--muted)}
-.list {
-  background:var(--panel);
-  border:1px solid var(--line);
-  border-radius:13px;
-  overflow:hidden;
-}
-.empty {
-  padding:22px;
-  text-align:center;
-  color:var(--muted);
-}
-.toolbar {display:flex;gap:8px;margin-bottom:12px}
-input {
-  width:100%;
-  min-width:0;
-  background:#0c1525;
-  color:white;
-  border:1px solid var(--line);
-  border-radius:10px;
-  padding:13px;
-}
-.tag {
-  color:var(--green);
-  font-size:11px;
-  background:#193d35;
-  padding:6px 9px;
-  border-radius:7px;
-}
-.bottom-nav {
-  position:fixed;
-  left:0;right:0;bottom:0;
-  z-index:999;
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  background:rgba(8,13,24,.97);
-  border-top:1px solid var(--line);
-  padding:9px 10px calc(9px + env(safe-area-inset-bottom));
-}
-.nav-btn {
-  border:0;
-  background:none;
-  color:var(--muted);
-  font-size:12px;
-  font-weight:bold;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  gap:5px;
-  padding:6px;
-}
-.nav-btn .icon {font-size:21px}
-.nav-btn.active {color:var(--green)}
-#jupiter-plugin {width:100%;min-height:550px}
-footer {
-  text-align:center;
-  color:var(--muted);
-  padding:25px;
-  font-size:11px;
-}
-@media(min-width:700px) {
-  .wrap {padding-top:25px}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
+button,input{font:inherit}
+button{cursor:pointer}
+.wrap{max-width:1000px;margin:auto;padding:14px 14px 105px}
+header{display:flex;align-items:center;justify-content:space-between;padding:12px 0 25px}
+.logo{font-size:26px;font-weight:900}
+.logo span{color:var(--green)}
+.small{font-size:12px;color:var(--muted)}
+.btn{background:#1b2a40;color:white;border:1px solid var(--line);padding:12px 15px;border-radius:10px}
+.primary{background:var(--green);color:#06150f;border:0;font-weight:bold}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:16px;margin-bottom:16px}
+.page{display:none}
+.page.active{display:block}
+h2{font-size:19px}
+.hero{background:linear-gradient(130deg,#172d46,#101827);border:1px solid var(--line);border-radius:15px;padding:20px}
+.value{font-size:36px;font-weight:bold;margin:12px 0}
+.address{font-size:11px;color:var(--muted);overflow-wrap:anywhere}
+.row{display:grid;grid-template-columns:1.4fr .8fr .8fr;gap:8px;padding:13px 9px;border-bottom:1px solid var(--line);align-items:center;font-size:12px}
+.row:last-child{border:0}
+.row.head{color:var(--muted)}
+.right{text-align:right}
+.list{background:var(--panel);border:1px solid var(--line);border-radius:13px;overflow:hidden}
+.empty{padding:22px;text-align:center;color:var(--muted)}
+.toolbar{display:flex;gap:8px;margin-bottom:12px}
+input{width:100%;min-width:0;background:#0c1525;color:white;border:1px solid var(--line);border-radius:10px;padding:13px}
+.tag{color:var(--green);font-size:11px;background:#193d35;padding:6px 9px;border-radius:7px}
+.bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:999;display:grid;grid-template-columns:repeat(3,1fr);background:rgba(8,13,24,.97);border-top:1px solid var(--line);padding:9px 10px calc(9px + env(safe-area-inset-bottom))}
+.nav-btn{border:0;background:none;color:var(--muted);font-size:12px;font-weight:bold;display:flex;flex-direction:column;align-items:center;gap:5px;padding:6px}
+.nav-btn .icon{font-size:21px}
+.nav-btn.active{color:var(--green)}
+#jupiter-plugin{width:100%;min-height:550px}
+footer{text-align:center;color:var(--muted);padding:25px;font-size:11px}
+
+/* MARKET */
+.market-heading{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.market-tabs{display:flex;gap:8px;overflow-x:auto;padding:4px 0 13px;scrollbar-width:none}
+.market-tabs::-webkit-scrollbar{display:none}
+.market-tab{white-space:nowrap;border:1px solid var(--line);background:#111a2b;color:var(--muted);padding:10px 14px;border-radius:9px;font-size:12px;font-weight:bold}
+.market-tab.active{background:var(--green);border-color:var(--green);color:#06150f}
+.market-meta{display:flex;justify-content:space-between;align-items:center;margin:5px 0 10px}
+.market-row{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(75px,.8fr) minmax(65px,.65fr);gap:7px;align-items:center;padding:12px 10px;border-bottom:1px solid var(--line)}
+.market-row:last-child{border:0}
+.coin-button{display:flex;align-items:center;gap:10px;min-width:0;border:0;background:none;color:white;text-align:left;padding:0}
+.coin-logo{width:37px;height:37px;flex-shrink:0;border-radius:50%;object-fit:cover;background:#263750;border:1px solid #34445c}
+.coin-fallback{width:37px;height:37px;flex-shrink:0;border-radius:50%;background:#263750;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:bold;color:var(--green)}
+.coin-info{min-width:0}
+.coin-info strong{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:145px}
+.coin-info small{display:block;color:var(--muted);font-size:11px;margin-top:4px}
+.market-price{text-align:right;font-size:12px;overflow-wrap:anywhere}
+.market-change{text-align:right;font-size:12px;font-weight:bold}
+.up{color:var(--green)}
+.down{color:var(--red)}
+.neutral{color:var(--muted)}
+.market-empty{padding:28px 15px;text-align:center;color:var(--muted);font-size:13px}
+.market-status{font-size:11px;color:var(--muted);margin:10px 2px 20px}
+.detail-top{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.detail-top img{width:48px;height:48px;border-radius:50%;object-fit:cover}
+.detail-top h2{margin:0 0 5px}
+.detail-link{color:var(--green);font-size:12px;text-decoration:none}
+@media(min-width:700px){
+ .wrap{padding-top:25px}
+ .coin-info strong{max-width:300px}
 }
 </style>
 </head>
@@ -172,7 +92,6 @@ footer {
   <button class="btn primary" id="connectBtn">Connect Wallet</button>
 </header>
 
-<!-- WALLET PAGE -->
 <main id="walletPage" class="page">
   <div class="hero">
     <div class="small">PORTFOLIO VALUE</div>
@@ -181,113 +100,116 @@ footer {
     <p class="small" id="walletStatus">Connect your wallet to view assets.</p>
     <button class="btn" id="refreshBtn">Refresh ↻</button>
   </div>
-
   <h2>My Assets</h2>
   <div class="list">
     <div class="row head">
-      <span>Token</span>
-      <span class="right">Balance</span>
-      <span class="right">Value</span>
+      <span>Token</span><span class="right">Balance</span><span class="right">Value</span>
     </div>
     <div id="assetsList" class="empty">Connect wallet first.</div>
   </div>
 </main>
 
-<!-- CREATE TOKEN PAGE -->
 <main id="createPage" class="page">
   <h2>Create Your Token</h2>
   <div class="panel">
     <div class="tag">SOLANA TOKEN CREATOR</div>
     <h2>Launch your own coin</h2>
     <p class="small">Create a token on Solana using QX Token Creator.</p>
-    <a class="btn primary"
-       href="https://jhsmj5d6tc-cmd.github.io/oken-maker/"
-       target="_blank"
-       style="display:inline-block;text-decoration:none">
-       Create Token ↗
+    <a class="btn primary" href="https://jhsmj5d6tc-cmd.github.io/oken-maker/" target="_blank" rel="noopener" style="display:inline-block;text-decoration:none">
+      Create Token ↗
     </a>
   </div>
 </main>
 
-<!-- MARKETS PAGE -->
 <main id="marketsPage" class="page active">
-  <div style="display:flex;justify-content:space-between;align-items:center">
+  <div class="market-heading">
     <h2>Solana Markets</h2>
     <span class="tag">LIVE MARKET</span>
   </div>
 
   <div class="toolbar">
-    <input id="search" placeholder="Search token or contract address">
+    <input id="search" placeholder="Search name, symbol or contract">
     <button class="btn primary" id="searchBtn">Search</button>
   </div>
 
+  <div class="market-tabs" id="marketTabs">
+    <button class="market-tab active" data-category="all">All Markets</button>
+    <button class="market-tab" data-category="new">New Pairs</button>
+    <button class="market-tab" data-category="gainers">Top Gainers</button>
+    <button class="market-tab" data-category="losers">Top Losers</button>
+    <button class="market-tab" data-category="trending">Trending</button>
+    <button class="market-tab" data-category="volume">Top Volume</button>
+  </div>
+
+  <div class="market-meta">
+    <span class="small" id="categoryTitle">All Solana tokens</span>
+    <span class="small" id="coinCount">Loading...</span>
+  </div>
+
   <div class="list">
-    <div class="row head">
+    <div class="market-row" style="color:var(--muted);font-size:11px">
       <span>Token</span>
       <span class="right">Price USD</span>
       <span class="right">24h</span>
     </div>
-    <div id="tokenResults" class="empty">Loading market...</div>
+    <div id="tokenResults" class="market-empty">Loading market...</div>
   </div>
 
-  <p class="small" id="marketStatus"></p>
+  <p class="market-status" id="marketStatus">Connecting to live market data...</p>
 
   <section id="detail" class="panel" style="display:none">
-    <h2 id="detailName">Token</h2>
+    <div class="detail-top">
+      <img id="detailImage" alt="" src="">
+      <div>
+        <h2 id="detailName">Token</h2>
+        <span class="small" id="detailSymbol"></span>
+      </div>
+    </div>
     <p class="address" id="detailAddress"></p>
     <div class="row">
-      <span>Price</span><span class="right" id="detailPrice">—</span>
-      <span></span>
+      <span>Price</span><span class="right" id="detailPrice">—</span><span></span>
     </div>
     <div class="row">
-      <span>24h change</span><span class="right" id="detailChange">—</span>
-      <span></span>
+      <span>24h change</span><span class="right" id="detailChange">—</span><span></span>
     </div>
-    <a id="solscanLink" target="_blank">View contract on Solscan ↗</a>
+    <div class="row">
+      <span>Liquidity</span><span class="right" id="detailLiquidity">—</span><span></span>
+    </div>
+    <div class="row">
+      <span>24h volume</span><span class="right" id="detailVolume">—</span><span></span>
+    </div>
+    <a id="solscanLink" class="detail-link" target="_blank" rel="noopener">View contract on Solscan ↗</a>
   </section>
 
   <h2>Swap Tokens</h2>
   <div class="panel">
     <div class="tag">POWERED BY JUPITER</div>
     <div id="jupiter-plugin"></div>
-    <p class="small" id="swapStatus">
-      Review transactions in your wallet before confirming.
-    </p>
+    <p class="small" id="swapStatus">Review transactions in your wallet before confirming.</p>
   </div>
 </main>
 
 <footer>QX Exchange · Solana</footer>
 </div>
 
-<!-- BOTTOM NAVIGATION -->
 <nav class="bottom-nav">
-  <button class="nav-btn" data-page="walletPage">
-    <span class="icon">👛</span>Wallet
-  </button>
-  <button class="nav-btn" data-page="createPage">
-    <span class="icon">🚀</span>Create Token
-  </button>
-  <button class="nav-btn active" data-page="marketsPage">
-    <span class="icon">📊</span>Markets
-  </button>
+  <button class="nav-btn" data-page="walletPage"><span class="icon">👛</span>Wallet</button>
+  <button class="nav-btn" data-page="createPage"><span class="icon">🚀</span>Create Token</button>
+  <button class="nav-btn active" data-page="marketsPage"><span class="icon">📊</span>Markets</button>
 </nav>
 
 <script>
-/* PAGE NAVIGATION */
-function showPage(id) {
-  document.querySelectorAll(".page").forEach(page => {
-    page.classList.toggle("active", page.id === id);
+function showPage(id){
+  document.querySelectorAll(".page").forEach(page=>{
+    page.classList.toggle("active",page.id===id);
   });
-
-  document.querySelectorAll(".nav-btn").forEach(btn => {
-    btn.classList.toggle("active", btn.dataset.page === id);
+  document.querySelectorAll(".nav-btn").forEach(btn=>{
+    btn.classList.toggle("active",btn.dataset.page===id);
   });
-
   window.scrollTo({top:0,behavior:"smooth"});
 }
-
-document.querySelectorAll(".nav-btn").forEach(btn => {
-  btn.addEventListener("click", () => showPage(btn.dataset.page));
+document.querySelectorAll(".nav-btn").forEach(btn=>{
+  btn.addEventListener("click",()=>showPage(btn.dataset.page));
 });
 </script>
 
@@ -306,38 +228,51 @@ import {createAppKit} from "@reown/appkit";
 import {SolanaAdapter} from "@reown/appkit-adapter-solana";
 import {solana} from "@reown/appkit/networks";
 
-const $ = id => document.getElementById(id);
-
-const PROJECT_ID = "bd6faec63fbd0865f57da576a550ef09";
-const SOL = "So11111111111111111111111111111111111111112";
-const USDC = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
+const $=id=>document.getElementById(id);
+const PROJECT_ID="bd6faec63fbd0865f57da576a550ef09";
+const SOL="So11111111111111111111111111111111111111112";
+const USDC="EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
 
 let appKit;
-let walletAddress = "";
-let connected = false;
-let solPrice = 0;
-let selectedMint = "";
-let pairs = [];
+let walletAddress="";
+let connected=false;
+let solPrice=0;
+let pairs=[];
+let allPairs=[];
+let newPairs=[];
+let trendingPairs=[];
+let currentCategory="all";
+let searchMode=false;
+let marketBusy=false;
 
-const valid = s =>
-  typeof s === "string" &&
-  /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(s);
-
-const short = s => s ? s.slice(0,6)+"..."+s.slice(-4) : "";
-
-const usd = n => "$"+Number(n).toLocaleString("en-US",{
-  maximumFractionDigits:6
-});
-
-async function getJSON(url,options={}) {
-  const response = await fetch(url,options);
-  if(!response.ok) throw new Error("Request failed");
+const valid=s=>typeof s==="string"&&/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(s);
+const short=s=>s?s.slice(0,6)+"..."+s.slice(-4):"";
+const usd=n=>{
+  const value=Number(n);
+  if(!Number.isFinite(value))return "—";
+  return "$"+value.toLocaleString("en-US",{maximumFractionDigits:6});
+};
+const money=n=>{
+  const value=Number(n||0);
+  if(value>=1e9)return "$"+(value/1e9).toFixed(2)+"B";
+  if(value>=1e6)return "$"+(value/1e6).toFixed(2)+"M";
+  if(value>=1e3)return "$"+(value/1e3).toFixed(2)+"K";
+  return "$"+value.toFixed(2);
+};
+async function getJSON(url){
+  const response=await fetch(url);
+  if(!response.ok)throw new Error("Market data request failed");
   return response.json();
 }
+function escapeHTML(value){
+  return String(value??"").replace(/[&<>"']/g,c=>({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  })[c]);
+}
 
-/* REOWN WALLET CONNECTION */
-try {
-  appKit = createAppKit({
+/* WALLET CONNECTION */
+try{
+  appKit=createAppKit({
     adapters:[new SolanaAdapter()],
     networks:[solana],
     projectId:PROJECT_ID,
@@ -352,249 +287,369 @@ try {
       "--w3m-accent":"#42d6a0",
       "--w3m-border-radius-master":"10px"
     },
-    features:{
-      analytics:true,
-      email:false,
-      socials:false
-    }
+    features:{analytics:true,email:false,socials:false}
   });
 
-  appKit.subscribeAccount(async state => {
-    if(state?.isConnected && valid(state.address)) {
-      connected = true;
-      walletAddress = state.address;
-      $("connectBtn").textContent = short(walletAddress);
-      $("walletAddress").textContent = walletAddress;
-      $("walletStatus").textContent = "Wallet connected.";
+  appKit.subscribeAccount(async state=>{
+    if(state?.isConnected&&valid(state.address)){
+      connected=true;
+      walletAddress=state.address;
+      $("connectBtn").textContent=short(walletAddress);
+      $("walletAddress").textContent=walletAddress;
+      $("walletStatus").textContent="Wallet connected.";
       await loadPortfolio();
-    } else {
-      connected = false;
-      walletAddress = "";
-      $("connectBtn").textContent = "Connect Wallet";
-      $("walletAddress").textContent = "";
-      $("walletStatus").textContent = "Wallet disconnected.";
-      $("totalValue").textContent = "—";
-      $("assetsList").textContent = "Connect wallet first.";
+    }else{
+      connected=false;
+      walletAddress="";
+      $("connectBtn").textContent="Connect Wallet";
+      $("walletAddress").textContent="";
+      $("walletStatus").textContent="Wallet disconnected.";
+      $("totalValue").textContent="—";
+      $("assetsList").textContent="Connect wallet first.";
     }
   });
-} catch(error) {
-  $("walletStatus").textContent = "Wallet setup error: "+error.message;
+}catch(error){
+  $("walletStatus").textContent="Wallet setup error: "+error.message;
 }
-
-$("connectBtn").onclick = () => appKit?.open();
+$("connectBtn").onclick=()=>appKit?.open();
 
 /* SOL PRICE */
-async function loadSolPrice() {
-  try {
-    const data = await getJSON(
-      "https://api.dexscreener.com/latest/dex/tokens/"+SOL
-    );
-    const best = (data.pairs || [])
-      .filter(p => p.chainId === "solana")
-      .sort((a,b) =>
-        Number(b.liquidity?.usd || 0) -
-        Number(a.liquidity?.usd || 0)
-      )[0];
-
-    solPrice = Number(best?.priceUsd || 0);
-    if(connected) await loadPortfolio();
-  } catch(error) {
-    console.warn(error);
-  }
+async function loadSolPrice(){
+  try{
+    const data=await getJSON("https://api.dexscreener.com/latest/dex/tokens/"+SOL);
+    const best=(data.pairs||[])
+      .filter(p=>p.chainId==="solana")
+      .sort((a,b)=>Number(b.liquidity?.usd||0)-Number(a.liquidity?.usd||0))[0];
+    solPrice=Number(best?.priceUsd||0);
+    if(connected)await loadPortfolio();
+  }catch(error){console.warn(error);}
 }
 
 /* WALLET ASSETS */
-async function loadPortfolio() {
-  if(!connected || !walletAddress) return;
-
-  $("assetsList").textContent = "Loading assets...";
-
-  try {
-    const endpoints = [
+async function loadPortfolio(){
+  if(!connected||!walletAddress)return;
+  $("assetsList").textContent="Loading assets...";
+  try{
+    const endpoints=[
       "https://solana-rpc.publicnode.com",
       "https://api.mainnet-beta.solana.com"
     ];
-
-    let balanceResult = null;
-
-    for(const endpoint of endpoints) {
-      try {
-        const response = await fetch(endpoint,{
-          method:"POST",
-          headers:{"Content-Type":"application/json"},
+    let balanceResult=null;
+    for(const endpoint of endpoints){
+      try{
+        const response=await fetch(endpoint,{
+          method:"POST",headers:{"Content-Type":"application/json"},
           body:JSON.stringify({
-            jsonrpc:"2.0",
-            id:1,
-            method:"getBalance",
-            params:[walletAddress]
+            jsonrpc:"2.0",id:1,method:"getBalance",params:[walletAddress]
           })
         });
-        const data = await response.json();
-        if(data.result) {
-          balanceResult = data.result;
-          break;
-        }
-      } catch(error) {}
+        const data=await response.json();
+        if(data.result){balanceResult=data.result;break;}
+      }catch(error){}
     }
+    if(!balanceResult)throw new Error("RPC unavailable");
 
-    if(!balanceResult) throw new Error("RPC unavailable");
-
-    const sol = balanceResult.value / 1e9;
-    let total = sol * solPrice;
-
-    const tokenRows = [{
-      name:"Solana",
-      symbol:"SOL",
-      amount:sol,
-      value:sol*solPrice
-    }];
-
-    const programs = [
+    const sol=balanceResult.value/1e9;
+    const total=sol*solPrice;
+    const tokenRows=[{name:"Solana",symbol:"SOL",amount:sol,value:sol*solPrice}];
+    const programs=[
       "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
       "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
     ];
 
-    for(const programId of programs) {
-      try {
-        const response = await fetch(endpoints[0],{
-          method:"POST",
-          headers:{"Content-Type":"application/json"},
+    for(const programId of programs){
+      try{
+        const response=await fetch(endpoints[0],{
+          method:"POST",headers:{"Content-Type":"application/json"},
           body:JSON.stringify({
-            jsonrpc:"2.0",
-            id:1,
-            method:"getTokenAccountsByOwner",
-            params:[
-              walletAddress,
-              {programId},
-              {encoding:"jsonParsed"}
-            ]
+            jsonrpc:"2.0",id:1,method:"getTokenAccountsByOwner",
+            params:[walletAddress,{programId},{encoding:"jsonParsed"}]
           })
         });
-
-        const data = await response.json();
-
-        for(const account of data.result?.value || []) {
-          const info = account.account.data.parsed.info;
-          const amount = Number(info.tokenAmount.uiAmountString || 0);
-          if(amount > 0) {
+        const data=await response.json();
+        for(const account of data.result?.value||[]){
+          const info=account.account.data.parsed.info;
+          const amount=Number(info.tokenAmount.uiAmountString||0);
+          if(amount>0){
             tokenRows.push({
-              name:"SPL Token",
-              symbol:short(info.mint),
-              amount,
-              value:null
+              name:"SPL Token",symbol:short(info.mint),amount,value:null
             });
           }
         }
-      } catch(error) {
-        console.warn(error);
-      }
+      }catch(error){console.warn(error);}
     }
 
-    $("totalValue").textContent = usd(total);
-
-    $("assetsList").innerHTML = tokenRows.map(token => `
+    $("totalValue").textContent=usd(total);
+    $("assetsList").innerHTML=tokenRows.map(token=>`
       <div class="row">
-        <span><strong>${token.name}</strong>
-        <div class="small">${token.symbol}</div></span>
+        <span><strong>${token.name}</strong><div class="small">${token.symbol}</div></span>
         <span class="right">${token.amount.toLocaleString()}</span>
-        <span class="right">${token.value === null ? "—" : usd(token.value)}</span>
+        <span class="right">${token.value===null?"—":usd(token.value)}</span>
       </div>
     `).join("");
-
-    $("walletStatus").textContent = "Balances updated.";
-  } catch(error) {
-    $("walletStatus").textContent = error.message;
-    $("assetsList").textContent = "Could not load wallet assets.";
+    $("walletStatus").textContent="Balances updated.";
+  }catch(error){
+    $("walletStatus").textContent=error.message;
+    $("assetsList").textContent="Could not load wallet assets.";
   }
 }
 
-/* SOLANA MARKET */
-async function loadMarket(query="SOL") {
-  $("tokenResults").textContent = "Loading market...";
-
-  try {
-    const data = await getJSON(
-      "https://api.dexscreener.com/latest/dex/search?q="+
-      encodeURIComponent(query)
+/* MARKET DATA HELPERS */
+function bestPairsByMint(input){
+  const map=new Map();
+  for(const p of input||[]){
+    if(p.chainId!=="solana"||!valid(p.baseToken?.address))continue;
+    const mint=p.baseToken.address;
+    const previous=map.get(mint);
+    if(!previous||Number(p.liquidity?.usd||0)>Number(previous.liquidity?.usd||0)){
+      map.set(mint,p);
+    }
+  }
+  return [...map.values()];
+}
+async function fetchPairsForMints(mints){
+  const unique=[...new Set((mints||[]).filter(valid))].slice(0,30);
+  if(!unique.length)return [];
+  try{
+    const data=await getJSON(
+      "https://api.dexscreener.com/tokens/v1/solana/"+unique.join(",")
     );
+    return bestPairsByMint(data);
+  }catch(error){
+    console.warn("Token pair lookup:",error);
+    return [];
+  }
+}
+function profileMints(data){
+  return (data||[])
+    .filter(item=>item.chainId==="solana"&&valid(item.tokenAddress))
+    .map(item=>item.tokenAddress);
+}
+function boostMints(data){
+  return (data||[])
+    .filter(item=>item.chainId==="solana"&&valid(item.tokenAddress))
+    .map(item=>item.tokenAddress);
+}
 
-    pairs = (data.pairs || [])
-      .filter(p => p.chainId === "solana" &&
-                   valid(p.baseToken?.address))
-      .sort((a,b) =>
-        Number(b.liquidity?.usd || 0) -
-        Number(a.liquidity?.usd || 0)
-      )
-      .slice(0,40);
+/* LOAD ALL MARKET CATEGORIES */
+async function loadMarket(){
+  if(marketBusy)return;
+  marketBusy=true;
+  $("marketStatus").textContent="Updating Solana market data...";
+  try{
+    const results=await Promise.allSettled([
+      getJSON("https://api.dexscreener.com/latest/dex/search?q=solana"),
+      getJSON("https://api.dexscreener.com/token-profiles/latest/v1"),
+      getJSON("https://api.dexscreener.com/token-boosts/top/v1")
+    ]);
+
+    const searchData=results[0].status==="fulfilled"?results[0].value:{pairs:[]};
+    const profileData=results[1].status==="fulfilled"?results[1].value:[];
+    const boostData=results[2].status==="fulfilled"?results[2].value:[];
+
+    const profileList=await fetchPairsForMints(profileMints(profileData));
+    const boostList=await fetchPairsForMints(boostMints(boostData));
+
+    newPairs=profileList;
+    trendingPairs=boostList;
+
+    allPairs=bestPairsByMint([
+      ...(searchData.pairs||[]),
+      ...profileList,
+      ...boostList
+    ]);
+
+    if(!allPairs.length)throw new Error("No Solana tokens returned. Try again shortly.");
+
+    $("marketStatus").textContent=
+      "Live data from DexScreener · "+new Date().toLocaleTimeString();
 
     renderMarket();
-    $("marketStatus").textContent =
-      pairs.length+" Solana market results.";
-  } catch(error) {
-    $("tokenResults").textContent = "Market temporarily unavailable.";
-    $("marketStatus").textContent = error.message;
+  }catch(error){
+    $("marketStatus").textContent=error.message;
+    $("tokenResults").innerHTML=
+      '<div class="market-empty">Market data unavailable. Please try again.</div>';
+  }finally{
+    marketBusy=false;
   }
 }
 
-function renderMarket() {
-  if(!pairs.length) {
-    $("tokenResults").textContent = "No tokens found.";
+/* CATEGORY FILTERS */
+const categoryNames={
+  all:"All Solana tokens",
+  new:"New Pairs",
+  gainers:"Top Gainers · 24h",
+  losers:"Top Losers · 24h",
+  trending:"Trending tokens",
+  volume:"Top Volume · 24h"
+};
+function getCategoryPairs(){
+  let list=allPairs.slice();
+
+  if(currentCategory==="new"){
+    list=newPairs.slice();
+  }else if(currentCategory==="trending"){
+    list=trendingPairs.slice();
+  }else if(currentCategory==="gainers"){
+    list=list.filter(p=>Number(p.priceChange?.h24)>0)
+      .sort((a,b)=>Number(b.priceChange.h24)-Number(a.priceChange.h24));
+  }else if(currentCategory==="losers"){
+    list=list.filter(p=>Number(p.priceChange?.h24)<0)
+      .sort((a,b)=>Number(a.priceChange.h24)-Number(b.priceChange.h24));
+  }else if(currentCategory==="volume"){
+    list.sort((a,b)=>Number(b.volume?.h24||0)-Number(a.volume?.h24||0));
+  }else{
+    list.sort((a,b)=>Number(b.liquidity?.usd||0)-Number(a.liquidity?.usd||0));
+  }
+
+  if(currentCategory==="new"){
+    list.sort((a,b)=>Number(b.pairCreatedAt||0)-Number(a.pairCreatedAt||0));
+  }
+  return bestPairsByMint(list);
+}
+
+function renderMarket(){
+  let list=getCategoryPairs();
+  const query=$("search").value.trim().toLowerCase();
+
+  if(query){
+    list=list.filter(p=>
+      (p.baseToken?.name||"").toLowerCase().includes(query)||
+      (p.baseToken?.symbol||"").toLowerCase().includes(query)||
+      (p.baseToken?.address||"").toLowerCase().includes(query)
+    );
+  }
+
+  $("categoryTitle").textContent=categoryNames[currentCategory];
+  $("coinCount").textContent=list.length+" tokens";
+
+  if(!list.length){
+    $("tokenResults").innerHTML=
+      '<div class="market-empty">No tokens found in this category.</div>';
     return;
   }
 
-  $("tokenResults").innerHTML = pairs.map((p,i) => `
-    <div class="row">
-      <button class="token" data-index="${i}">
-        <strong>${p.baseToken.name}</strong>
-        <small>${p.baseToken.symbol}</small>
-      </button>
-      <span class="right">${p.priceUsd ? usd(p.priceUsd) : "—"}</span>
-      <span class="right">${p.priceChange?.h24 ?? "—"}%</span>
-    </div>
-  `).join("");
+  $("tokenResults").innerHTML=list.map((p,index)=>{
+    const name=escapeHTML(p.baseToken?.name||"Unknown Token");
+    const symbol=escapeHTML(p.baseToken?.symbol||"TOKEN");
+    const price=usd(p.priceUsd);
+    const change=Number(p.priceChange?.h24);
+    const hasChange=Number.isFinite(change);
+    const changeText=hasChange?(change>0?"+":"")+change.toFixed(2)+"%":"—";
+    const changeClass=!hasChange?"neutral":change>0?"up":change<0?"down":"neutral";
+    const image=p.info?.imageUrl||"";
+    const imageHTML=image
+      ? `<img class="coin-logo" src="${escapeHTML(image)}" alt="${name}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+      : "";
+    const fallback=`<span class="coin-fallback" style="display:${image?"none":"flex"}">${escapeHTML((p.baseToken?.symbol||"?").slice(0,2))}</span>`;
 
-  document.querySelectorAll("[data-index]").forEach(btn => {
-    btn.onclick = () => openToken(Number(btn.dataset.index));
+    return `
+      <div class="market-row">
+        <button class="coin-button" data-mint="${p.baseToken.address}">
+          ${imageHTML}${fallback}
+          <span class="coin-info">
+            <strong>${name}</strong>
+            <small>${symbol}</small>
+          </span>
+        </button>
+        <span class="market-price">${price}</span>
+        <span class="market-change ${changeClass}">${changeText}</span>
+      </div>
+    `;
+  }).join("");
+
+  document.querySelectorAll(".coin-button[data-mint]").forEach(button=>{
+    button.onclick=()=>{
+      const token=list.find(p=>p.baseToken.address===button.dataset.mint);
+      if(token)openToken(token);
+    };
   });
 }
 
-/* TOKEN DETAILS */
-function openToken(index) {
-  const token = pairs[index];
-  if(!token) return;
+/* CATEGORY BUTTONS */
+$("marketTabs").addEventListener("click",event=>{
+  const button=event.target.closest("[data-category]");
+  if(!button)return;
+  currentCategory=button.dataset.category;
+  document.querySelectorAll(".market-tab").forEach(tab=>{
+    tab.classList.toggle("active",tab===button);
+  });
+  $("detail").style.display="none";
+  renderMarket();
+});
 
-  selectedMint = token.baseToken.address;
-
-  $("detail").style.display = "block";
-  $("detailName").textContent =
-    token.baseToken.name+" ("+token.baseToken.symbol+")";
-  $("detailAddress").textContent = selectedMint;
-  $("detailPrice").textContent = usd(token.priceUsd || 0);
-  $("detailChange").textContent =
-    (token.priceChange?.h24 ?? "—")+"%";
-  $("solscanLink").href =
-    "https://solscan.io/token/"+selectedMint;
-
-  $("detail").scrollIntoView({behavior:"smooth"});
-}
-
-$("searchBtn").onclick = () => {
-  const query = $("search").value.trim();
-  if(query) loadMarket(query);
-};
-
-$("search").onkeydown = event => {
-  if(event.key === "Enter") $("searchBtn").click();
-};
-
-/* JUPITER SWAP */
-function startJupiter() {
-  if(!window.Jupiter?.init) {
-    $("swapStatus").textContent = "Jupiter is loading. Refresh shortly.";
+/* SEARCH */
+async function searchMarket(){
+  const query=$("search").value.trim();
+  if(!query){
+    renderMarket();
     return;
   }
 
-  try {
+  $("tokenResults").innerHTML=
+    '<div class="market-empty">Searching Solana tokens...</div>';
+
+  try{
+    const data=await getJSON(
+      "https://api.dexscreener.com/latest/dex/search?q="+encodeURIComponent(query)
+    );
+    const results=bestPairsByMint(data.pairs||[]);
+    if(!results.length){
+      $("tokenResults").innerHTML=
+        '<div class="market-empty">No matching Solana tokens found.</div>';
+      $("coinCount").textContent="0 tokens";
+      return;
+    }
+    const existing=new Map(allPairs.map(p=>[p.baseToken.address,p]));
+    results.forEach(p=>existing.set(p.baseToken.address,p));
+    allPairs=[...existing.values()];
+    currentCategory="all";
+    document.querySelectorAll(".market-tab").forEach(tab=>{
+      tab.classList.toggle("active",tab.dataset.category==="all");
+    });
+    renderMarket();
+  }catch(error){
+    $("tokenResults").innerHTML=
+      '<div class="market-empty">Search failed. Please try again.</div>';
+  }
+}
+$("searchBtn").onclick=searchMarket;
+$("search").onkeydown=event=>{
+  if(event.key==="Enter")searchMarket();
+};
+$("search").oninput=()=>{
+  if(!$("search").value.trim())renderMarket();
+};
+
+/* TOKEN DETAILS */
+function openToken(token){
+  const mint=token.baseToken.address;
+  $("detail").style.display="block";
+  $("detailName").textContent=token.baseToken.name||"Token";
+  $("detailSymbol").textContent=token.baseToken.symbol||"";
+  $("detailAddress").textContent=mint;
+  $("detailPrice").textContent=usd(token.priceUsd);
+  const change=Number(token.priceChange?.h24);
+  $("detailChange").textContent=Number.isFinite(change)?change.toFixed(2)+"%":"—";
+  $("detailChange").className="right "+(change>0?"up":change<0?"down":"neutral");
+  $("detailLiquidity").textContent=money(token.liquidity?.usd);
+  $("detailVolume").textContent=money(token.volume?.h24);
+  $("solscanLink").href="https://solscan.io/token/"+mint;
+
+  const image=token.info?.imageUrl||"";
+  $("detailImage").src=image;
+  $("detailImage").style.display=image?"block":"none";
+
+  $("detail").scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+/* JUPITER SWAP */
+function startJupiter(){
+  if(!window.Jupiter?.init){
+    $("swapStatus").textContent="Jupiter is loading. Refresh shortly.";
+    return;
+  }
+  try{
     window.Jupiter.init({
       displayMode:"integrated",
       integratedTargetId:"jupiter-plugin",
@@ -604,37 +659,36 @@ function startJupiter() {
       },
       branding:{name:"QX Exchange"}
     });
-
-    $("swapStatus").textContent =
+    $("swapStatus").textContent=
       "Review the swap and confirm it in your wallet.";
-  } catch(error) {
-    $("swapStatus").textContent = "Jupiter error: "+error.message;
+  }catch(error){
+    $("swapStatus").textContent="Jupiter error: "+error.message;
   }
 }
 
 /* REFRESH */
-$("refreshBtn").onclick = async () => {
+$("refreshBtn").onclick=async()=>{
   await loadSolPrice();
-  if(connected) await loadPortfolio();
+  if(connected)await loadPortfolio();
 };
-
 loadSolPrice();
-loadMarket("SOL");
+loadMarket();
 
-let attempts = 0;
-const timer = setInterval(() => {
+let attempts=0;
+const timer=setInterval(()=>{
   attempts++;
-  if(window.Jupiter?.init) {
+  if(window.Jupiter?.init){
     clearInterval(timer);
     startJupiter();
   }
-  if(attempts >= 30) {
+  if(attempts>=30){
     clearInterval(timer);
-    $("swapStatus").textContent = "Jupiter failed to load.";
+    $("swapStatus").textContent="Jupiter failed to load.";
   }
 },500);
 
 setInterval(loadSolPrice,60000);
+setInterval(loadMarket,120000);
 </script>
 </body>
 </html>
