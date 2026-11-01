@@ -36,9 +36,10 @@ h2{font-size:19px}
 .value{font-size:34px;font-weight:800;margin:12px 0;letter-spacing:-1px}
 .wallet-value-line{display:flex;align-items:center;gap:12px}
 .balance-toggle{
-  width:42px;height:42px;display:grid;place-items:center;
-  border:1px solid #59427b;border-radius:12px;
-  background:rgba(155,108,255,.13);color:#d8c6ff;font-size:19px
+  width:30px;height:30px;padding:0;display:grid;place-items:center;
+  border:1px solid #59427b;border-radius:9px;
+  background:rgba(155,108,255,.13);color:#d8c6ff;font-size:15px;
+  box-shadow:0 2px 8px rgba(155,108,255,.12)
 }
 .wallet-badges{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:12px 0}
 .wallet-badge{
@@ -67,21 +68,12 @@ h2{font-size:19px}
 }
 .asset-name small{display:block;color:var(--muted);font-size:11px;margin-top:4px}
 .asset-number{text-align:right;font-size:12px;overflow-wrap:anywhere}
-.wallet-social{
-  display:flex;justify-content:space-between;align-items:center;gap:12px;
-  margin:18px 2px 8px;padding:13px 14px;border:1px solid #302447;
-  border-radius:14px;background:linear-gradient(110deg,rgba(155,108,255,.12),rgba(69,224,162,.06))
-}
+.wallet-social{display:flex;justify-content:flex-start;margin:14px 2px 5px;padding:0;border:0;background:none}
 .wallet-social a{
-  display:flex;align-items:center;gap:9px;color:#e5d9ff;
-  text-decoration:none;font-weight:700;font-size:13px
+  width:25px;height:25px;display:grid;place-items:center;
+  border-radius:8px;background:#111;border:1px solid #393044;
+  color:#fff;text-decoration:none;font-size:14px;font-weight:bold
 }
-.x-mark{
-  width:28px;height:28px;border-radius:9px;background:#090811;
-  border:1px solid #51416c;display:grid;place-items:center;
-  color:white;font-weight:900;font-size:15px
-}
-.wallet-social small{color:var(--muted);font-size:10px}
 .address{font-size:11px;color:var(--muted);overflow-wrap:anywhere}
 .row{
   display:grid;grid-template-columns:1.4fr .8fr .8fr;gap:8px;
@@ -112,6 +104,22 @@ footer{text-align:center;color:var(--muted);padding:25px;font-size:11px}
 .market-heading{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .market-tabs{display:flex;gap:8px;overflow-x:auto;padding:4px 0 13px;scrollbar-width:none}
 .market-tabs::-webkit-scrollbar{display:none}
+.sort-panel{margin:0 0 13px;padding:11px;background:#100c1c;border:1px solid var(--line);border-radius:12px}
+.sort-title{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:10px;letter-spacing:.7px;margin:0 2px 9px}
+.sort-title span{color:var(--green);letter-spacing:0;text-transform:none}
+.sort-options{display:flex;gap:7px;overflow-x:auto;scrollbar-width:none}
+.sort-options::-webkit-scrollbar{display:none}
+.sort-option{
+  flex:0 0 auto;display:flex;align-items:center;gap:4px;
+  padding:4px 5px 4px 8px;border:1px solid #302447;
+  border-radius:9px;background:#171126
+}
+.sort-option span{font-size:10px;color:#c8bfd8;white-space:nowrap;margin-right:2px}
+.sort-option button{
+  width:25px;height:25px;padding:0;border:1px solid transparent;
+  border-radius:6px;background:#211a30;color:#a99dbd;font-weight:bold;font-size:15px
+}
+.sort-option button.active{background:var(--purple);color:#fff;border-color:#b69aff}
 .market-tab{
   white-space:nowrap;border:1px solid var(--line);background:#171126;
   color:var(--muted);padding:10px 14px;border-radius:9px;font-size:12px;font-weight:bold
@@ -210,10 +218,7 @@ footer{text-align:center;color:var(--muted);padding:25px;font-size:11px}
   </div>
 
   <div class="wallet-social">
-    <span><small>FOLLOW THE PROJECT</small><br><strong>QX on X</strong></span>
-    <a href="https://x.com/solana__creator?s=11" target="_blank" rel="noopener noreferrer">
-      <span class="x-mark">𝕏</span>@solana__creator ↗
-    </a>
+    <a href="https://x.com/solana__creator?s=11" target="_blank" rel="noopener noreferrer" aria-label="QX on X">𝕏</a>
   </div>
 </main>
 
@@ -289,6 +294,18 @@ footer{text-align:center;color:var(--muted);padding:25px;font-size:11px}
     <span class="small" id="categoryTitle">All Solana tokens</span>
     <span class="small" id="coinCount">Loading...</span>
   </div>
+
+  <div class="sort-panel">
+    <div class="sort-title">SORT MARKET <span id="sortLabel">Default order</span></div>
+    <div class="sort-options" id="sortOptions">
+      <div class="sort-option"><span>Price</span><button data-sort="price" data-dir="asc">↑</button><button data-sort="price" data-dir="desc">↓</button></div>
+      <div class="sort-option"><span>Change</span><button data-sort="change" data-dir="asc">↑</button><button data-sort="change" data-dir="desc">↓</button></div>
+      <div class="sort-option"><span>Volume</span><button data-sort="volume" data-dir="asc">↑</button><button data-sort="volume" data-dir="desc">↓</button></div>
+      <div class="sort-option"><span>Market Cap</span><button data-sort="marketcap" data-dir="asc">↑</button><button data-sort="marketcap" data-dir="desc">↓</button></div>
+      <div class="sort-option"><span>Liquidity</span><button data-sort="liquidity" data-dir="asc">↑</button><button data-sort="liquidity" data-dir="desc">↓</button></div>
+    </div>
+  </div>
+
   <div class="list">
     <div class="market-row" style="color:var(--muted);font-size:11px">
       <span>Token</span><span class="right">Price USD</span><span class="right">24h</span>
@@ -350,6 +367,8 @@ let tradeDirection="buy";
 let jupiterStarted=false;
 let balancesHidden=false;
 let lastAssetRows=[];
+let sortMetric="";
+let sortDirection="desc";
 
 const valid=s=>typeof s==="string"&&/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(s);
 const short=s=>s?s.slice(0,6)+"..."+s.slice(-4):"";
@@ -692,6 +711,54 @@ function getCategoryPairs(){
   return bestPairsByMint(list,currentCategory==="all");
 }
 
+/* USER-CONTROLLED SORTING */
+function sortPairs(list){
+  if(!sortMetric)return list;
+  const fields={
+    price:p=>Number(p.priceUsd),
+    change:p=>Number(p.priceChange?.h24),
+    volume:p=>Number(p.volume?.h24),
+    marketcap:p=>Number(p.marketCap??p.fdv),
+    liquidity:p=>Number(p.liquidity?.usd)
+  };
+  const getValue=fields[sortMetric];
+  if(!getValue)return list;
+  const direction=sortDirection==="asc"?1:-1;
+  return list.slice().sort((a,b)=>{
+    const av=getValue(a),bv=getValue(b);
+    const aOK=Number.isFinite(av),bOK=Number.isFinite(bv);
+    if(!aOK&&!bOK)return 0;
+    if(!aOK)return 1;
+    if(!bOK)return -1;
+    return (av-bv)*direction;
+  });
+}
+
+function updateSortUI(){
+  document.querySelectorAll("#sortOptions button").forEach(button=>{
+    button.classList.toggle("active",
+      button.dataset.sort===sortMetric&&button.dataset.dir===sortDirection
+    );
+  });
+  const names={
+    price:"Price",change:"Change",volume:"Volume",
+    marketcap:"Market Cap",liquidity:"Liquidity"
+  };
+  $("sortLabel").textContent=sortMetric
+    ?names[sortMetric]+" · "+(sortDirection==="asc"?"Low to high":"High to low")
+    :"Default order";
+}
+
+$("sortOptions").addEventListener("click",event=>{
+  const button=event.target.closest("button[data-sort]");
+  if(!button)return;
+  sortMetric=button.dataset.sort;
+  sortDirection=button.dataset.dir;
+  updateSortUI();
+  if($("search").value.trim())searchMarket();
+  else renderMarket();
+});
+
 function renderMarket(){
   let list=getCategoryPairs();
   const query=$("search").value.trim().toLowerCase();
@@ -702,6 +769,7 @@ function renderMarket(){
       (p.baseToken?.address||"").toLowerCase().includes(query)
     );
   }
+  list=sortPairs(list);
   $("categoryTitle").textContent=categoryNames[currentCategory];
   $("coinCount").textContent=list.length+" tokens";
   if(!list.length){
@@ -746,7 +814,9 @@ $("marketTabs").addEventListener("click",event=>{
   const button=event.target.closest("[data-category]");
   if(!button)return;
   currentCategory=button.dataset.category;
-  document.querySelectorAll(".market-tab").forEach(tab=>tab.classList.toggle("active",tab===button));
+  document.querySelectorAll(".market-tab").forEach(tab=>
+    tab.classList.toggle("active",tab===button)
+  );
   renderMarket();
 });
 
@@ -770,7 +840,9 @@ async function searchMarket(){
     results.forEach(p=>existing.set(p.baseToken.address,p));
     allPairs=[...existing.values()];
     currentCategory="all";
-    document.querySelectorAll(".market-tab").forEach(tab=>tab.classList.toggle("active",tab.dataset.category==="all"));
+    document.querySelectorAll(".market-tab").forEach(tab=>
+      tab.classList.toggle("active",tab.dataset.category==="all")
+    );
     $("categoryTitle").textContent="Search results";
     $("coinCount").textContent=results.length+" tokens";
     renderSearchResults(results);
@@ -781,11 +853,11 @@ async function searchMarket(){
 
 function renderSearchResults(list){
   const query=$("search").value.trim().toLowerCase();
-  const filtered=list.filter(p=>
+  const filtered=sortPairs(list.filter(p=>
     (p.baseToken?.name||"").toLowerCase().includes(query)||
     (p.baseToken?.symbol||"").toLowerCase().includes(query)||
     (p.baseToken?.address||"").toLowerCase().includes(query)||query==="sol"
-  );
+  ));
   $("coinCount").textContent=filtered.length+" tokens";
   if(!filtered.length){
     $("tokenResults").innerHTML='<div class="market-empty">No matching tokens found.</div>';
@@ -857,6 +929,7 @@ function startJupiter(){
     $("swapStatus").textContent="Jupiter error: "+error.message;
   }
 }
+
 function changeTradeDirection(direction){
   tradeDirection=direction;
   $("buyBtn").classList.toggle("active",direction==="buy");
@@ -902,6 +975,7 @@ $("refreshBtn").onclick=async()=>{
   await loadSolPrice();
   if(connected)await loadPortfolio();
 };
+updateSortUI();
 loadSolPrice();
 loadMarket();
 setInterval(loadSolPrice,60000);
