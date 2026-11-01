@@ -2,7 +2,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#080711">
 <title>QX Exchange</title>
@@ -14,7 +15,7 @@
   --red:#ff557e;--purple:#b45cff;--purple2:#762dff
 }
 *{box-sizing:border-box}
-body{margin:0;background:radial-gradient(ellipse at 50% -18%,rgba(111,69,217,.18),transparent 48%),var(--bg);color:var(--text);font-family:Arial,sans-serif;padding-bottom:env(safe-area-inset-bottom)}
+html{charset:"utf-8"} body{margin:0;background:radial-gradient(ellipse at 50% -18%,rgba(111,69,217,.18),transparent 48%),var(--bg);color:var(--text);font-family:Arial,sans-serif;padding-bottom:env(safe-area-inset-bottom)}
 button,input{font:inherit}
 button{cursor:pointer}
 .wrap{max-width:1000px;margin:auto;padding:14px 14px 105px}
@@ -324,7 +325,7 @@ input:focus{outline:none;border-color:#43ffad;box-shadow:0 0 0 2px rgba(67,255,1
 <body>
 <div class="wrap">
 <header>
- <div class="brand-lockup"><div class="brand-mark">Q<span>X</span></div><div class="logo">QX <span>EXCHANGE</span><div class="small">SWAP â¢ CREATE â¢ DISCOVER</div></div></div>
+ <div class="brand-lockup"><div class="brand-mark">Q<span>X</span></div><div class="logo">QX <span>EXCHANGE</span><div class="small">SWAP | CREATE | DISCOVER</div></div></div>
  <button class="btn primary" id="connectBtn">Connect Wallet</button>
 </header>
 
@@ -348,12 +349,22 @@ input:focus{outline:none;border-color:#43ffad;box-shadow:0 0 0 2px rgba(67,255,1
 </main>
 
 <main id="createPage" class="page">
- <h2>Create Your Token</h2>
+ <div class="market-heading"><h2>Create Your Token</h2><span class="tag">SOLANA MAINNET</span></div>
  <div class="panel">
-  <div class="tag">SOLANA TOKEN CREATOR</div>
-  <h2>Launch your own coin</h2>
-  <p class="small">Create a token on Solana using QX Token Creator.</p>
-  <a class="btn primary" href="https://jhsmj5d6tc-cmd.github.io/oken-maker/" target="_blank" rel="noopener" style="display:inline-block;text-decoration:none">Create Token -></a>
+  <div class="tag">QX TOKEN CREATOR</div>
+  <p class="small">Create a new SPL token directly inside QX using the wallet already connected above.</p>
+  <label class="ad-field" for="tokenName">Token name</label>
+  <input id="tokenName" maxlength="32" placeholder="Example: QX Token" autocomplete="off">
+  <label class="ad-field" for="tokenSymbol">Token symbol</label>
+  <input id="tokenSymbol" maxlength="10" placeholder="Example: QXT" autocapitalize="characters" autocomplete="off">
+  <label class="ad-field" for="tokenDecimals">Decimals</label>
+  <select id="tokenDecimals"><option value="9" selected>9 (standard)</option><option value="6">6</option><option value="8">8</option><option value="0">0</option></select>
+  <label class="ad-field" for="tokenSupply">Initial supply</label>
+  <input id="tokenSupply" type="number" min="0" step="any" inputmode="decimal" placeholder="1000000">
+  <p class="ad-modal-note">The new mint and initial token supply are created on Solana Mainnet and sent to your connected wallet. You will approve the transaction in your wallet. Network rent and transaction fees apply. This creates the SPL token; token logo and public name metadata are not uploaded in this step.</p>
+  <button class="ad-pay-btn" id="createTokenBtn" type="button">CREATE TOKEN IN QX</button>
+  <div class="ad-status" id="createTokenStatus" aria-live="polite"></div>
+  <div id="createdTokenResult" class="small" style="overflow-wrap:anywhere;margin-top:10px"></div>
  </div>
 </main>
 
@@ -363,8 +374,8 @@ input:focus{outline:none;border-color:#43ffad;box-shadow:0 0 0 2px rgba(67,255,1
   <div class="ads-head">
    <div><div class="ads-title">Sponsored</div><div class="ads-sub">Featured projects</div></div>
    <div class="ads-menu-wrap">
-    <button class="ads-menu-btn" id="adsMenuBtn" aria-label="Advertisement options" aria-expanded="false">â®</button>
-    <div class="ads-menu" id="adsMenu"><button type="button" id="addAdMenuBtn">ï¼ Add advertisement</button></div>
+    <button class="ads-menu-btn" id="adsMenuBtn" aria-label="Advertisement options" aria-expanded="false">⋮</button>
+    <div class="ads-menu" id="adsMenu"><button type="button" id="addAdMenuBtn">＋ Add advertisement</button></div>
    </div>
   </div>
   <div class="ads-list" id="publicAdsList"><div class="ad-empty">No sponsored advertisements yet.</div></div>
@@ -427,8 +438,8 @@ input:focus{outline:none;border-color:#43ffad;box-shadow:0 0 0 2px rgba(67,255,1
     <button class="trade-btn buy active" id="buyBtn">BUY</button>
     <button class="trade-btn sell" id="sellBtn">SELL</button>
    </div>
-   <button class="trade-flip" id="swapDirectionBtn" type="button" aria-label="Reverse swap direction">â SWAP DIRECTION Â· SOL â TOKEN</button>
-   <div class="qx-swap-head"><div><div class="qx-swap-kicker">QX EXCHANGE / INSTANT TRADE</div><strong id="tradeTitle">Buy this token with SOL</strong><p>Trade directly inside QX. No external swap page.</p></div><div class="qx-swap-icon">â</div></div>
+   <button class="trade-flip" id="swapDirectionBtn" type="button" aria-label="Reverse swap direction">↕ SWAP DIRECTION · SOL → TOKEN</button>
+   <div class="qx-swap-head"><div><div class="qx-swap-kicker">QX EXCHANGE / INSTANT TRADE</div><strong id="tradeTitle">Buy this token with SOL</strong><p>Trade directly inside QX. No external swap page.</p></div><div class="qx-swap-icon">⇄</div></div>
    <div class="percent-panel" id="percentPanel">
     <div class="percent-top"><span class="percent-title">YOU PAY</span><span class="percent-amount" id="percentAmount">Loading wallet balance...</span></div>
     <div class="amount-entry"><input id="tradeAmountInput" type="number" min="0" step="any" inputmode="decimal" placeholder="0.00" aria-label="Trade amount"><span class="amount-symbol" id="tradeAmountSymbol">SOL</span></div>
@@ -445,7 +456,7 @@ input:focus{outline:none;border-color:#43ffad;box-shadow:0 0 0 2px rgba(67,255,1
     <div class="swap-quote"><span>QX commission</span><strong id="qxFeeDisplay">1.00% | fee setup required</strong></div>
     <div class="swap-quote"><span>Route</span><strong id="swapRoute">QX best available route</strong></div>
     <div class="swap-quote"><span>Wallet</span><strong id="swapWallet">Not connected</strong></div>
-    <button class="swap-action" id="getQuoteBtn"><span>GET BEST PRICE</span><small>Jupiter route Â· inside QX</small></button>
+    <button class="swap-action" id="getQuoteBtn"><span>GET BEST PRICE</span><small>Jupiter route · inside QX</small></button>
     <button class="swap-action swap-secondary" id="confirmSwapBtn" disabled>CONFIRM IN CONNECTED WALLET</button>
     <p class="fee-note">QX fee: <strong>1%</strong> per completed swap. The live quote must confirm the full fee before wallet approval. No fee is charged when a swap is not completed.</p>
     <p class="swap-status" id="swapStatus">Connect your wallet, enter an amount, get a quote, then confirm in your connected wallet.</p>
@@ -456,14 +467,14 @@ input:focus{outline:none;border-color:#43ffad;box-shadow:0 0 0 2px rgba(67,255,1
 
 <div class="ad-modal-backdrop" id="adModalBackdrop" role="dialog" aria-modal="true" aria-labelledby="adModalTitle">
  <div class="ad-modal">
-  <div class="ad-modal-head"><h3 id="adModalTitle">Add advertisement</h3><button class="ad-close" id="adCloseBtn" type="button" aria-label="Close">Ã</button></div>
+  <div class="ad-modal-head"><h3 id="adModalTitle">Add advertisement</h3><button class="ad-close" id="adCloseBtn" type="button" aria-label="Close">×</button></div>
   <label class="ad-field" for="adDuration">Advertisement duration</label>
   <select id="adDuration">
-   <option value="1">1 hour â $49.99</option>
-   <option value="3">3 hours â $99.99</option>
-   <option value="9">9 hours â $179.99</option>
-   <option value="24">24 hours â $299.99</option>
-   <option value="72">3 days â $599.99</option>
+   <option value="1">1 hour — $49.99</option>
+   <option value="3">3 hours — $99.99</option>
+   <option value="9">9 hours — $179.99</option>
+   <option value="24">24 hours — $299.99</option>
+   <option value="72">3 days — $599.99</option>
   </select>
   <div class="ad-price-line"><span>Total price</span><strong id="adUsdPrice">$49.99</strong></div>
   <div class="ad-price-line"><span>Estimated SOL payment</span><strong id="adSolPrice">Waiting for SOL price</strong></div>
@@ -522,7 +533,7 @@ document.querySelectorAll(".nav-btn").forEach(b=>b.addEventListener("click",()=>
 import {createAppKit} from "@reown/appkit";
 import {SolanaAdapter} from "@reown/appkit-adapter-solana";
 import {solana} from "@reown/appkit/networks";
-import {VersionedTransaction,Transaction,SystemProgram,PublicKey} from "@solana/web3.js";
+import {VersionedTransaction,Transaction,SystemProgram,PublicKey,Keypair,TransactionInstruction} from "@solana/web3.js";
 
 const $=id=>document.getElementById(id);
 const PROJECT_ID="bd6faec63fbd0865f57da576a550ef09";
@@ -830,20 +841,20 @@ async function loadMarket(){
   if(canonicalSolPair)merged.set(SOL,canonicalSolPair);
   allPairs=[...merged.values()];
   if(!allPairs.length)throw new Error("No Solana market data returned. Try again shortly.");
-  $("marketStatus").textContent="Market data refreshes automatically Â· Last update "+new Date().toLocaleTimeString();
+  $("marketStatus").textContent="Market data refreshes automatically · Last update "+new Date().toLocaleTimeString();
   renderMarket();
   if(selectedToken){
    const updated=allPairs.find(p=>p.baseToken.address===selectedToken.baseToken.address);
    if(updated){selectedToken=updated;refreshSelectedTokenDetails(updated);updateIndicativeEstimate();}
   }
  }catch(e){
-  $("marketStatus").textContent="Market feed temporarily unavailable Â· "+(e.message||"Retrying automatically");
+  $("marketStatus").textContent="Market feed temporarily unavailable · "+(e.message||"Retrying automatically");
   if(!allPairs.length)$ ("tokenResults").innerHTML='<div class="market-empty">Market data unavailable. Please try again.</div>';
  }finally{marketBusy=false;}
 }
 
 const categoryNames={
- all:"All Solana tokens",new:"New Coins Â· Live",gainers:"Top Gainers | 24h",
+ all:"All Solana tokens",new:"New Coins · Live",gainers:"Top Gainers | 24h",
  losers:"Top Losers | 24h",trending:"Trending tokens",volume:"Top Volume | 24h"
 };
 function getCategoryPairs(){
@@ -936,7 +947,7 @@ function renderMarket(){
   const img=image?`<img class="coin-logo" src="${escapeHTML(image)}" alt="${name}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`:"";
   const fallback=`<span class="coin-fallback" style="display:${image?"none":"flex"}">${escapeHTML((p.baseToken?.symbol||"?").slice(0,2))}</span>`;
   const age=p.pairCreatedAt?timeSince(p.pairCreatedAt):"Recently discovered";
-  const meta=currentCategory==="new"?`<span class="new-coin-meta">${age} Â· MC ${money(p.marketCap||p.fdv)} Â· LIQ ${money(p.liquidity?.usd)} Â· VOL ${money(p.volume?.h24)} Â· TX ${Number(p.txns?.h24?.buys||0)+Number(p.txns?.h24?.sells||0)}</span>`:"";
+  const meta=currentCategory==="new"?`<span class="new-coin-meta">${age} · MC ${money(p.marketCap||p.fdv)} · LIQ ${money(p.liquidity?.usd)} · VOL ${money(p.volume?.h24)} · TX ${Number(p.txns?.h24?.buys||0)+Number(p.txns?.h24?.sells||0)}</span>`:"";
   return `<div class="market-row">
    <button class="coin-button" data-mint="${mint}">${img}${fallback}<span class="coin-info"><strong>${name}</strong><small>${symbol}</small>${meta}</span></button>
    <span class="market-price">${usd(p.priceUsd)}</span><span class="market-change ${cls}">${changeText}</span>
@@ -1182,7 +1193,7 @@ function updateIndicativeEstimate(){
  estimate*=0.99;
  const outputSymbol=tradeDirection==="buy"?(selectedToken.baseToken.symbol||"TOKEN"):"SOL";
  $("swapPay").textContent=formatAmount(amount,tradeDirection==="buy"?9:selectedTokenDecimals)+" "+(tradeDirection==="buy"?"SOL":(selectedToken.baseToken.symbol||"TOKEN"));
- $("swapReceive").textContent="â "+formatAmount(estimate,tradeDirection==="buy"?6:9)+" "+outputSymbol+" Â· indicative";
+ $("swapReceive").textContent="≈ "+formatAmount(estimate,tradeDirection==="buy"?6:9)+" "+outputSymbol+" · indicative";
 }
 function getSwapMints(){
  const mint=selectedToken?.baseToken?.address;
@@ -1309,7 +1320,7 @@ $("confirmSwapBtn").onclick=executeQXSwap;
 function changeTradeDirection(direction){
  tradeDirection=direction;
  $("tradeTitle").textContent=direction==="buy"?"Buy this token with SOL":"Sell this token for SOL";
- $("swapDirectionBtn").textContent=direction==="buy"?"â SWAP DIRECTION Â· SOL â TOKEN":"â SWAP DIRECTION Â· TOKEN â SOL";
+ $("swapDirectionBtn").textContent=direction==="buy"?"↕ SWAP DIRECTION · SOL → TOKEN":"↕ SWAP DIRECTION · TOKEN → SOL";
  $("buyBtn").classList.toggle("active",direction==="buy");
  $("sellBtn").classList.toggle("active",direction==="sell");
  updateTradePercentUI();
@@ -1334,7 +1345,7 @@ function refreshSelectedTokenDetails(token){
  $("detailLiquidity").textContent=money(token.liquidity?.usd);
  $("detailVolume").textContent=money(token.volume?.h24);
  const buys=Number(token.txns?.h24?.buys||0),sells=Number(token.txns?.h24?.sells||0);
- $("detailTransactions").textContent=(buys+sells).toLocaleString("en-US")+" Â· "+buys+" buys / "+sells+" sells";
+ $("detailTransactions").textContent=(buys+sells).toLocaleString("en-US")+" · "+buys+" buys / "+sells+" sells";
  $("solscanLink").href="https://solscan.io/token/"+mint;
  const image=token.info?.imageUrl||"";
  if(image){$("detailImage").src=image;$("detailImage").style.display="block";}else{$("detailImage").removeAttribute("src");$("detailImage").style.display="none";}
@@ -1362,7 +1373,7 @@ $("refreshBtn").onclick=async()=>{
  if(connected)await loadPortfolio();
 };
 
-/* PUBLIC ADVERTISEMENTS â secure activation requires the QX Supabase Edge Function */
+/* PUBLIC ADVERTISEMENTS — secure activation requires the QX Supabase Edge Function */
 const QX_AD_TREASURY="E4x2DiVVDuVQHSUGgzTPjJMDbiJ6jCRwpEvsvAd31Qs4";
 // Fill these two public Supabase values after creating the QX Ads backend.
 // Never place a Supabase service-role key or any private wallet key in this file.
@@ -1419,7 +1430,7 @@ async function loadPublicAds(){
   if(!ads.length){host.innerHTML='<div class="ad-empty">No sponsored advertisements yet.</div>';return;}
   host.innerHTML=ads.map(ad=>{
    const title=escapeHTML(ad.title||"Sponsored project"),body=escapeHTML(ad.body||""),url=safeAdUrl(ad.url),image=ad.image_url?safeAdUrl(ad.image_url):"";
-   return '<article class="ad-card">'+(image?'<img class="ad-image" src="'+escapeHTML(image)+'" alt="" loading="lazy" referrerpolicy="no-referrer">':'')+'<div class="ad-copy"><strong>'+title+'</strong><p>'+body+'</p><a href="'+escapeHTML(url)+'" target="_blank" rel="noopener noreferrer">Visit project â</a></div></article>';
+   return '<article class="ad-card">'+(image?'<img class="ad-image" src="'+escapeHTML(image)+'" alt="" loading="lazy" referrerpolicy="no-referrer">':'')+'<div class="ad-copy"><strong>'+title+'</strong><p>'+body+'</p><a href="'+escapeHTML(url)+'" target="_blank" rel="noopener noreferrer">Visit project ↗</a></div></article>';
   }).join("");
  }catch(e){console.warn("QX ads feed:",e);host.innerHTML='<div class="ad-empty">Advertisements are temporarily unavailable.</div>';}
 }
@@ -1472,6 +1483,55 @@ async function payForAdvertisement(){
  finally{adBusy=false;adEl("adPayBtn").disabled=false;adEl("adPayBtn").textContent="PAY WITH CONNECTED WALLET";}
 }
 adEl("adPayBtn").addEventListener("click",payForAdvertisement);
+
+/* IN-PAGE SPL TOKEN CREATOR - uses the existing QX wallet connection */
+const TOKEN_PROGRAM_ID=new PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
+const ASSOCIATED_TOKEN_PROGRAM_ID=new PublicKey("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL");
+const RENT_SYSVAR_ID=new PublicKey("SysvarRent111111111111111111111111111111111");
+function u64le(value){
+ let n=BigInt(value);const out=new Uint8Array(8);
+ for(let i=0;i<8;i++){out[i]=Number(n&255n);n>>=8n;}
+ return out;
+}
+function concatBytes(...parts){const size=parts.reduce((n,p)=>n+p.length,0),out=new Uint8Array(size);let offset=0;for(const part of parts){out.set(part,offset);offset+=part.length;}return out;}
+async function createTokenInsideQX(){
+ const button=$("createTokenBtn"),status=$("createTokenStatus"),result=$("createdTokenResult");
+ if(button.disabled)return;
+ try{
+  if(!connected||!walletAddress)throw new Error("Connect your Solana wallet in QX first.");
+  const name=$("tokenName").value.trim(),symbol=$("tokenSymbol").value.trim().toUpperCase();
+  const decimals=Number($("tokenDecimals").value),supplyText=$("tokenSupply").value.trim();
+  if(name.length<2||name.length>32)throw new Error("Token name must be 2 to 32 characters.");
+  if(!/^[A-Z0-9]{2,10}$/.test(symbol))throw new Error("Symbol must contain 2 to 10 letters or numbers.");
+  if(!Number.isInteger(decimals)||decimals<0||decimals>9)throw new Error("Choose decimals from 0 to 9.");
+  if(!supplyText||!/^\d+(\.\d+)?$/.test(supplyText))throw new Error("Enter a valid initial supply.");
+  const [whole,frac=""]=supplyText.split(".");
+  if(frac.length>decimals)throw new Error("Initial supply has more decimal places than the selected decimals.");
+  const raw=BigInt(whole)*10n**BigInt(decimals)+BigInt((frac+"0".repeat(decimals)).slice(0,decimals)||"0");
+  if(raw<=0n||raw>18446744073709551615n)throw new Error("Initial supply must be greater than zero and fit the SPL token supply limit.");
+  const provider=appKit?.getWalletProvider?.();
+  if(typeof provider?.signTransaction!=="function")throw new Error("Your connected wallet does not support transaction signing. Reconnect it through QX.");
+  button.disabled=true;button.textContent="PREPARING TOKEN...";status.textContent="Creating your token mint. Approve the transaction in your connected wallet.";result.textContent="";
+  const owner=new PublicKey(walletAddress),mintKeypair=Keypair.generate();
+  const [ata]=PublicKey.findProgramAddressSync([owner.toBytes(),TOKEN_PROGRAM_ID.toBytes(),mintKeypair.publicKey.toBytes()],ASSOCIATED_TOKEN_PROGRAM_ID);
+  const rent=await rpc("getMinimumBalanceForRentExemption",[82,{commitment:"confirmed"}]);
+  const latest=await rpc("getLatestBlockhash",[{commitment:"confirmed"}]);
+  const tx=new Transaction({feePayer:owner,recentBlockhash:latest.value.blockhash});
+  tx.add(SystemProgram.createAccount({fromPubkey:owner,newAccountPubkey:mintKeypair.publicKey,lamports:Number(rent),space:82,programId:TOKEN_PROGRAM_ID}));
+  tx.add(new TransactionInstruction({programId:TOKEN_PROGRAM_ID,keys:[{pubkey:mintKeypair.publicKey,isSigner:false,isWritable:true},{pubkey:RENT_SYSVAR_ID,isSigner:false,isWritable:false}],data:concatBytes(new Uint8Array([0,decimals]),owner.toBytes(),new Uint8Array([0]))}));
+  tx.add(new TransactionInstruction({programId:ASSOCIATED_TOKEN_PROGRAM_ID,keys:[{pubkey:owner,isSigner:true,isWritable:true},{pubkey:ata,isSigner:false,isWritable:true},{pubkey:owner,isSigner:false,isWritable:false},{pubkey:mintKeypair.publicKey,isSigner:false,isWritable:false},{pubkey:SystemProgram.programId,isSigner:false,isWritable:false},{pubkey:TOKEN_PROGRAM_ID,isSigner:false,isWritable:false}],data:new Uint8Array([1])}));
+  tx.add(new TransactionInstruction({programId:TOKEN_PROGRAM_ID,keys:[{pubkey:mintKeypair.publicKey,isSigner:false,isWritable:true},{pubkey:ata,isSigner:false,isWritable:true},{pubkey:owner,isSigner:true,isWritable:false}],data:concatBytes(new Uint8Array([7]),u64le(raw))}));
+  tx.partialSign(mintKeypair);
+  const signed=await provider.signTransaction(tx);
+  const signature=await rpc("sendTransaction",[bytesToBase64(signed.serialize()),{encoding:"base64",skipPreflight:false,preflightCommitment:"confirmed",maxRetries:3}]);
+  status.textContent="Transaction submitted. Waiting for Solana confirmation...";
+  await waitForSolanaConfirmation(signature);
+  result.innerHTML='<strong>Token created:</strong> '+escapeHTML(name)+' ('+escapeHTML(symbol)+')<br><strong>Mint address:</strong> '+escapeHTML(mintKeypair.publicKey.toBase58())+'<br><a class="detail-link" target="_blank" rel="noopener" href="https://solscan.io/token/'+encodeURIComponent(mintKeypair.publicKey.toBase58())+'">View token on Solscan</a><br><span>Transaction: '+escapeHTML(signature)+'</span>';
+  status.textContent="Token successfully created on Solana Mainnet.";
+ }catch(error){status.textContent=error?.message||"Token creation failed. No token was confirmed.";}
+ finally{button.disabled=false;button.textContent="CREATE TOKEN IN QX";}
+}
+$("createTokenBtn").addEventListener("click",createTokenInsideQX);
 loadPublicAds();
 setInterval(loadPublicAds,60000);
 
