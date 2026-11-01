@@ -816,6 +816,28 @@ async function refreshRecentCoins(render=true){
  finally{recentBusy=false;}
 }
 
+const categoryNames={
+ all:"All Solana tokens",new:"New Coins Â· Live",gainers:"Top Gainers | 24h",
+ losers:"Top Losers | 24h",trending:"Trending tokens",volume:"Top Volume | 24h"
+};
+function getCategoryPairs(){
+ let list=allPairs.slice();
+ if(currentCategory==="new"){
+  list=newPairs.slice().sort((a,b)=>Number(b.pairCreatedAt||0)-Number(a.pairCreatedAt||0));
+ }else if(currentCategory==="trending"){
+  list=trendingPairs.slice();
+ }else if(currentCategory==="gainers"){
+  list=list.filter(p=>Number(p.priceChange?.h24)>0).sort((a,b)=>Number(b.priceChange.h24)-Number(a.priceChange.h24));
+ }else if(currentCategory==="losers"){
+  list=list.filter(p=>Number(p.priceChange?.h24)<0).sort((a,b)=>Number(a.priceChange.h24)-Number(b.priceChange.h24));
+ }else if(currentCategory==="volume"){
+  list.sort((a,b)=>Number(b.volume?.h24||0)-Number(a.volume?.h24||0));
+ }else{
+  list.sort((a,b)=>Number(b.liquidity?.usd||0)-Number(a.liquidity?.usd||0));
+ }
+ return bestPairsByMint(list,currentCategory==="all");
+}
+
 /* SORT: ONE CONNECTED DOUBLE-ARROW BUTTON PER FIELD */
 function sortPairs(list){
  if(!sortMetric)return list;
