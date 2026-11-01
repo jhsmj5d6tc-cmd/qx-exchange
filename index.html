@@ -284,27 +284,27 @@ footer{text-align:center;color:var(--muted);padding:25px;font-size:11px}
     <button class="trade-btn buy active" id="buyBtn" type="button">BUY</button>
     <button class="trade-btn sell" id="sellBtn" type="button">SELL</button>
    </div>
-   <button class="trade-flip" id="swapDirectionBtn" type="button" aria-label="Reverse swap direction">↕ SWAP DIRECTION</button>
+   <button class="trade-flip" id="swapDirectionBtn" type="button" aria-label="Reverse swap direction">â SWAP DIRECTION</button>
    <div class="trade-heading"><strong id="tradeTitle">Buy this token with SOL</strong><span class="small">Live amount calculator</span></div>
    <div class="trade-input-card">
-    <label id="payAssetTitle" for="tradeAmountInput">You pay · SOL</label>
+    <label id="payAssetTitle" for="tradeAmountInput">You pay Â· SOL</label>
     <div class="trade-input-line"><input id="tradeAmountInput" type="number" min="0" step="any" inputmode="decimal" placeholder="0.00"><strong id="payAssetSymbol">SOL</strong></div>
     <small id="tradeAvailable">Available balance: connect wallet</small>
    </div>
    <div class="trade-input-card receive-card">
-    <label id="receiveAssetTitle">You receive · TOKEN</label>
+    <label id="receiveAssetTitle">You receive Â· TOKEN</label>
     <div class="trade-input-line"><strong id="receiveAmountPreview">0.00</strong><strong id="receiveAssetSymbol">TOKEN</strong></div>
-    <small id="receiveEstimateNote">Estimated amount after 1% QX commission</small>
+    <small id="receiveEstimateNote">Estimated receive amount Â· final amount confirmed by live Jupiter quote</small>
    </div>
    <div class="swap-quote"><span>You pay</span><strong id="swapPay">-</strong></div>
    <div class="swap-quote"><span>Estimated receive</span><strong id="swapReceive">Select amount for estimate</strong></div>
-   <div class="swap-quote"><span>Market calculation</span><strong id="indicativeReceive">Waiting for token and SOL price</strong></div>
+   <div class="swap-quote"><span>Live market estimate</span><strong id="indicativeReceive">Select a token and enter an amount</strong></div>
    <div class="swap-quote"><span>QX commission</span><strong id="qxFeeDisplay">1.00% | fee setup required</strong></div>
    <div class="swap-quote"><span>Route</span><strong id="swapRoute">QX best available route</strong></div>
    <div class="swap-quote"><span>Wallet</span><strong id="swapWallet">Not connected</strong></div>
    <button class="swap-action" id="getQuoteBtn">Get best price</button>
    <button class="swap-action swap-secondary" id="confirmSwapBtn" disabled>Confirm in Phantom</button>
-   <p class="fee-note">Market estimate uses the live token price and SOL/USD price, with an estimated 1% QX fee. The live Jupiter quote replaces this estimate before signing. Final output can change with price impact, liquidity and slippage. QX fee: <strong>1%</strong> per completed swap; no fee is charged when a swap is not completed.</p>
+   <p class="fee-note">Enter an amount or choose 25%, 50%, 75% or 100% of your available balance. QX shows an indicative amount using live token and SOL prices; the live Jupiter quote is the final estimate before signing. QX commission: <strong>1%</strong> per completed swap; no fee is charged when a swap is not completed.</p>
    <p class="swap-status" id="swapStatus">Connect your wallet, get a quote, then confirm the transaction in Phantom. QX is the only trading interface.</p>
   </div>
  </section>
@@ -385,7 +385,7 @@ const PROJECT_ID="bd6faec63fbd0865f57da576a550ef09";
 const SOL="So11111111111111111111111111111111111111112";
 const USDC="EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
 const RPCS=["https://solana-rpc.publicnode.com","https://api.mainnet-beta.solana.com"];
-const SOL_RESERVE=0.002;
+const SOL_RESERVE=0.0001; // Keep a small SOL reserve for network fees.
 
 let appKit,walletAddress="",connected=false,solPrice=0;
 let walletSolBalance=0,selectedTokenBalance=0,selectedTokenDecimals=0;
@@ -466,13 +466,18 @@ try{
    $("connectBtn").textContent=short(walletAddress);
    $("walletAddress").textContent=walletAddress;
    $("walletStatus").textContent="Wallet connected.";
+   $("swapWallet").textContent=short(walletAddress);
+   updateTradePercentUI();
    await loadPortfolio();
+   updateTradePercentUI();
   }else{
    connected=false;walletAddress="";walletSolBalance=0;
    selectedTokenBalance=0;
    $("connectBtn").textContent="Connect Wallet";
    $("walletAddress").textContent="";
    $("walletStatus").textContent="Wallet disconnected.";
+   $("swapWallet").textContent="Not connected";
+   $("swapPay").textContent="-";
    $("totalValue").dataset.realValue="-";
    $("totalValue").textContent="-";
    lastAssetRows=[];
@@ -524,9 +529,12 @@ async function loadPortfolio(){
      const info=account.account.data.parsed.info;
      const amount=Number(info.tokenAmount.uiAmountString||0);
      if(amount>0){
+      const justBought=selectedToken?.baseToken?.address===info.mint?selectedToken:null;
       rows.push({
-       name:"Token",symbol:short(info.mint),mint:info.mint,
-       amount,value:null,logo:"",decimals:info.tokenAmount.decimals
+       name:justBought?.baseToken?.name||"Token",
+       symbol:justBought?.baseToken?.symbol||short(info.mint),
+       mint:info.mint,amount,value:null,
+       logo:justBought?.info?.imageUrl||"",decimals:info.tokenAmount.decimals
       });
      }
     }
@@ -583,6 +591,9 @@ async function loadPortfolio(){
   renderAssetRows();
   $("walletStatus").textContent="Balances updated. Token prices are shown when market data is available.";
   if(selectedToken)await refreshTradeBalance(false);
+  else updateTradePercentUI();
+  $("swapWallet").textContent=short(walletAddress);
+  $("swapPay").textContent=tradeDirection==="buy"?formatAmount(getSelectedTradeAmount(),9)+" SOL":"-";
  }catch(e){
   $("walletStatus").textContent=e.message;
   $("assetsList").textContent="Could not load wallet assets.";
@@ -891,9 +902,9 @@ function getSelectedTradeAmount(){
 function updateTradeAmountLabels(){
  const paySymbol=tradeDirection==="buy"?"SOL":(selectedToken?.baseToken?.symbol||"TOKEN");
  const receiveSymbol=tradeDirection==="buy"?(selectedToken?.baseToken?.symbol||"TOKEN"):"SOL";
- $("payAssetTitle").textContent="You pay · "+paySymbol;
+ $("payAssetTitle").textContent="You pay Â· "+paySymbol;
  $("payAssetSymbol").textContent=paySymbol;
- $("receiveAssetTitle").textContent="You receive · "+receiveSymbol;
+ $("receiveAssetTitle").textContent="You receive Â· "+receiveSymbol;
  $("receiveAssetSymbol").textContent=receiveSymbol;
  $("tradeAvailable").textContent=connected
   ?"Available balance: "+formatAmount(getTradeBalance(),tradeDirection==="buy"?9:selectedTokenDecimals)+" "+paySymbol
@@ -998,13 +1009,15 @@ function updateIndicativeTradeEstimate(){
  const detail=$("indicativeReceive");
  if(!selectedToken||!Number(selectedToken.priceUsd)||!solPrice){
   output.textContent="Waiting for live market prices";
-  detail.textContent="Token price or SOL price unavailable";
+  detail.textContent="Live token price and SOL/USD price are required for this estimate";
+  $("receiveAmountPreview").textContent="0.00";
   return;
  }
  const amount=getSelectedTradeAmount();
- if(!connected||amount<=0){
-  output.textContent="Connect wallet / choose amount";
-  detail.textContent="Estimate appears when balance is available";
+ if(amount<=0){
+  output.textContent="Enter an amount to calculate";
+  detail.textContent="Enter SOL or token amount to see the estimated receive amount";
+  $("receiveAmountPreview").textContent="0.00";
   return;
  }
  const tokenPrice=Number(selectedToken.priceUsd);
@@ -1109,7 +1122,7 @@ async function requestQXQuote(){
   const outputDecimals=await getMintDecimals(pair.outputMint);
   pendingSwapOrder={data,outputDecimals,inputAmount:input.amount,inputSymbol:tradeDirection==="buy"?"SOL":selectedToken.baseToken.symbol,outputSymbol:tradeDirection==="buy"?selectedToken.baseToken.symbol:"SOL",createdAt:Date.now(),wallet:walletAddress};
   $("swapReceive").textContent=displayRawAmount(data.outAmount,outputDecimals)+" "+pendingSwapOrder.outputSymbol;
-  $("indicativeReceive").textContent="Live Jupiter quote · final amount before signing";
+  $("indicativeReceive").textContent="Live Jupiter quote Â· final amount before signing";
   const feeMintLabel=data.feeMint===SOL?"SOL":data.feeMint===USDC?"USDC":short(data.feeMint);
   $("qxFeeDisplay").textContent="1.00% | included in "+feeMintLabel;
   $("swapRoute").textContent="QX / "+(data.router||"Best available route");
@@ -1125,6 +1138,19 @@ async function requestQXQuote(){
   $("getQuoteBtn").textContent="Refresh best price";
  }
 }
+async function refreshPortfolioAfterSwap(expectedMint){
+ // Jupiter's successful execution creates/credits the destination token account on-chain.
+ // Retry briefly so QX's asset list catches the new SPL token immediately.
+ for(let attempt=0;attempt<4;attempt++){
+  if(attempt>0)await new Promise(resolve=>setTimeout(resolve,900));
+  await loadPortfolio();
+  const found=lastAssetRows.some(asset=>asset.mint===expectedMint&&Number(asset.amount)>0);
+  if(found||!expectedMint)break;
+ }
+ if(selectedToken)await refreshTradeBalance(false);
+ updateTradePercentUI();
+}
+
 async function executeQXSwap(){
  if(swapBusy)return;
  try{
@@ -1161,7 +1187,8 @@ async function executeQXSwap(){
   pendingSwapOrder=null;
   $("qxFeeDisplay").textContent="1.00% | included in swap";
   $("swapReceive").textContent=displayRawAmount(result.totalOutputAmount||result.outputAmountResult,completedOrder.outputDecimals)+" "+completedOrder.outputSymbol;
-  await loadPortfolio();
+  const boughtMint=tradeDirection==="buy"?selectedToken?.baseToken?.address:null;
+  await refreshPortfolioAfterSwap(boughtMint);
   $("swapReceive").textContent=displayRawAmount(result.totalOutputAmount||result.outputAmountResult,completedOrder.outputDecimals)+" "+completedOrder.outputSymbol;
   $("swapStatus").innerHTML='Swap successful. <a class="detail-link" target="_blank" rel="noopener" href="https://solscan.io/tx/'+encodeURIComponent(signature)+'">View transaction on Solscan -></a>';
   $("confirmSwapBtn").textContent="Swap completed";
@@ -1181,7 +1208,7 @@ function changeTradeDirection(direction){
  tradeDirection=direction;
  tradeAmountManuallyEdited=false;
  $("tradeTitle").textContent=direction==="buy"?"Buy this token with SOL":"Sell this token for SOL";
- $("swapDirectionBtn").textContent=direction==="buy"?"↕ SWAP DIRECTION · SOL → TOKEN":"↕ SWAP DIRECTION · TOKEN → SOL";
+ $("swapDirectionBtn").textContent=direction==="buy"?"â SWAP DIRECTION Â· SOL â TOKEN":"â SWAP DIRECTION Â· TOKEN â SOL";
  $("buyBtn").classList.toggle("active",direction==="buy");
  $("sellBtn").classList.toggle("active",direction==="sell");
  updateTradePercentUI();
