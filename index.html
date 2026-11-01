@@ -198,15 +198,15 @@ footer{text-align:center;color:var(--muted);padding:25px;font-size:11px}
 
 <main id="walletPage" class="page">
  <div class="hero">
-  <div class="small">TOTAL PORTFOLIO VALUE Â· USD ESTIMATE</div>
+  <div class="small">TOTAL PORTFOLIO VALUE | USD ESTIMATE</div>
   <div class="wallet-value-line">
-   <div class="value" id="totalValue">â</div>
-   <button class="balance-toggle" id="balanceToggle" aria-label="Hide balances" title="Hide balances">â</button>
+   <div class="value" id="totalValue">-</div>
+   <button class="balance-toggle" id="balanceToggle" aria-label="Hide balances" title="Hide balances">O</button>
   </div>
   <div class="address" id="walletAddress"></div>
-  <div class="wallet-badges"><span class="wallet-badge">â SOLANA WALLET</span><span class="small">Live balance</span></div>
+  <div class="wallet-badges"><span class="wallet-badge">* SOLANA WALLET</span><span class="small">Live balance</span></div>
   <p class="small" id="walletStatus">Connect your wallet to view assets.</p>
-  <div class="wallet-actions"><button class="btn" id="refreshBtn">Refresh â»</button></div>
+  <div class="wallet-actions"><button class="btn" id="refreshBtn">Refresh Refresh</button></div>
  </div>
  <div class="market-heading"><h2>My Assets</h2><span class="tag">ON-CHAIN</span></div>
  <div class="list">
@@ -221,7 +221,7 @@ footer{text-align:center;color:var(--muted);padding:25px;font-size:11px}
   <div class="tag">SOLANA TOKEN CREATOR</div>
   <h2>Launch your own coin</h2>
   <p class="small">Create a token on Solana using QX Token Creator.</p>
-  <a class="btn primary" href="https://jhsmj5d6tc-cmd.github.io/oken-maker/" target="_blank" rel="noopener" style="display:inline-block;text-decoration:none">Create Token â</a>
+  <a class="btn primary" href="https://jhsmj5d6tc-cmd.github.io/oken-maker/" target="_blank" rel="noopener" style="display:inline-block;text-decoration:none">Create Token -></a>
  </div>
 </main>
 
@@ -241,15 +241,15 @@ footer{text-align:center;color:var(--muted);padding:25px;font-size:11px}
    <img id="detailImage" alt="" src="" style="display:none">
    <div><h2 id="detailName">Token</h2><span class="small" id="detailSymbol"></span></div>
   </div>
-  <div class="detail-price" id="detailPrice">â</div>
-  <div id="detailChange" class="detail-change neutral">â</div>
+  <div class="detail-price" id="detailPrice">-</div>
+  <div id="detailChange" class="detail-change neutral">-</div>
   <p class="address" id="detailAddress"></p>
-  <div class="row"><span>Liquidity</span><span class="right" id="detailLiquidity">â</span><span></span></div>
-  <div class="row"><span>24h Volume</span><span class="right" id="detailVolume">â</span><span></span></div>
+  <div class="row"><span>Liquidity</span><span class="right" id="detailLiquidity">-</span><span></span></div>
+  <div class="row"><span>24h Volume</span><span class="right" id="detailVolume">-</span><span></span></div>
   <div class="chart-wrap" id="detailChartWrap" style="display:none">
    <iframe id="detailChart" title="Token live price chart" loading="lazy" allow="clipboard-write" referrerpolicy="strict-origin-when-cross-origin"></iframe>
   </div>
-  <a id="solscanLink" class="detail-link" target="_blank" rel="noopener">View contract on Solscan â</a>
+  <a id="solscanLink" class="detail-link" target="_blank" rel="noopener">View contract on Solscan -></a>
 
   <div class="trade-buttons">
    <button class="trade-btn buy active" id="buyBtn">BUY</button>
@@ -276,9 +276,9 @@ footer{text-align:center;color:var(--muted);padding:25px;font-size:11px}
   </div>
 
   <div class="swap-box">
-   <div class="swap-quote"><span>You pay</span><strong id="swapPay">â</strong></div>
+   <div class="swap-quote"><span>You pay</span><strong id="swapPay">-</strong></div>
    <div class="swap-quote"><span>Estimated receive</span><strong id="swapReceive">Get quote to see estimate</strong></div>
-   <div class="swap-quote"><span>QX commission</span><strong id="qxFeeDisplay">1.00% Â· fee setup required</strong></div>
+   <div class="swap-quote"><span>QX commission</span><strong id="qxFeeDisplay">1.00% | fee setup required</strong></div>
    <div class="swap-quote"><span>Route</span><strong id="swapRoute">QX best available route</strong></div>
    <div class="swap-quote"><span>Wallet</span><strong id="swapWallet">Not connected</strong></div>
    <button class="swap-action" id="getQuoteBtn">Get best price</button>
@@ -315,7 +315,7 @@ footer{text-align:center;color:var(--muted);padding:25px;font-size:11px}
  <p class="market-status" id="marketStatus">Connecting to live market data...</p>
 </main>
 
-<footer>QX Exchange Â· Solana</footer>
+<footer>QX Exchange | Solana</footer>
 </div>
 
 <nav class="bottom-nav" aria-label="Main navigation">
@@ -378,7 +378,7 @@ const valid=s=>typeof s==="string"&&/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(s);
 const short=s=>s?s.slice(0,6)+"..."+s.slice(-4):"";
 const usd=n=>{
  const v=Number(n);
- return Number.isFinite(v)?"$"+v.toLocaleString("en-US",{maximumFractionDigits:6}):"â";
+ return Number.isFinite(v)?"$"+v.toLocaleString("en-US",{maximumFractionDigits:6}):"-";
 };
 const money=n=>{
  const v=Number(n||0);
@@ -387,7 +387,7 @@ const money=n=>{
  if(v>=1e3)return "$"+(v/1e3).toFixed(2)+"K";
  return "$"+v.toFixed(2);
 };
-const masked=v=>balancesHidden?"â¢â¢â¢â¢â¢â¢":v;
+const masked=v=>balancesHidden?"******":v;
 function escapeHTML(v){
  return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 }
@@ -415,10 +415,10 @@ async function rpc(method,params){
 /* WALLET */
 
 function setBalanceVisibility(){
- $("balanceToggle").textContent=balancesHidden?"â":"â";
+ $("balanceToggle").textContent=balancesHidden?"O":"O";
  $("balanceToggle").setAttribute("aria-label",balancesHidden?"Show balances":"Hide balances");
  $("balanceToggle").title=balancesHidden?"Show balances":"Hide balances";
- $("totalValue").textContent=masked($("totalValue").dataset.realValue||"â");
+ $("totalValue").textContent=masked($("totalValue").dataset.realValue||"-");
  renderAssetRows();
 }
 $("balanceToggle").onclick=()=>{
@@ -452,8 +452,8 @@ try{
    $("connectBtn").textContent="Connect Wallet";
    $("walletAddress").textContent="";
    $("walletStatus").textContent="Wallet disconnected.";
-   $("totalValue").dataset.realValue="â";
-   $("totalValue").textContent="â";
+   $("totalValue").dataset.realValue="-";
+   $("totalValue").textContent="-";
    lastAssetRows=[];
    $("assetsList").className="empty";
    $("assetsList").textContent="Connect wallet first.";
@@ -580,7 +580,7 @@ function renderAssetRows(){
   return `<div class="asset-row">
    <span class="asset-token">${img}${fallback}<span class="asset-name"><strong>${name}</strong><small>${symbol}</small></span></span>
    <span class="asset-number">${masked(amount)}</span>
-   <span class="asset-number">${masked(t.value===null?"â":usd(t.value))}</span>
+   <span class="asset-number">${masked(t.value===null?"-":usd(t.value))}</span>
   </div>`;
  }).join("");
 }
@@ -650,7 +650,7 @@ async function loadMarket(){
   const others=bestPairsByMint([...(search.pairs||[]),...profileList,...boostList],false);
   allPairs=canonicalSolPair?[canonicalSolPair,...others]:others;
   if(!allPairs.length)throw new Error("No Solana tokens returned. Try again shortly.");
-  $("marketStatus").textContent="Live data from DexScreener Â· "+new Date().toLocaleTimeString();
+  $("marketStatus").textContent="Live data from DexScreener | "+new Date().toLocaleTimeString();
   renderMarket();
  }catch(e){
   $("marketStatus").textContent=e.message;
@@ -659,8 +659,8 @@ async function loadMarket(){
 }
 
 const categoryNames={
- all:"All Solana tokens",new:"New Pairs",gainers:"Top Gainers Â· 24h",
- losers:"Top Losers Â· 24h",trending:"Trending tokens",volume:"Top Volume Â· 24h"
+ all:"All Solana tokens",new:"New Pairs",gainers:"Top Gainers | 24h",
+ losers:"Top Losers | 24h",trending:"Trending tokens",volume:"Top Volume | 24h"
 };
 function getCategoryPairs(){
  let list=allPairs.slice();
@@ -713,7 +713,7 @@ function updateSortUI(){
  });
  const names={price:"Price",change:"Change",volume:"Volume",marketcap:"Market Cap",liquidity:"Liquidity"};
  $("sortLabel").textContent=sortMetric
-  ?names[sortMetric]+" Â· "+(sortDirection==="asc"?"Low to high":"High to low")
+  ?names[sortMetric]+" | "+(sortDirection==="asc"?"Low to high":"High to low")
   :"Default order";
 }
 $("sortOptions").addEventListener("click",event=>{
@@ -746,7 +746,7 @@ function renderMarket(){
   const name=escapeHTML(p.baseToken?.name||"Unknown Token");
   const symbol=escapeHTML(p.baseToken?.symbol||"TOKEN");
   const change=Number(p.priceChange?.h24),has=Number.isFinite(change);
-  const changeText=has?(change>0?"+":"")+change.toFixed(2)+"%":"â";
+  const changeText=has?(change>0?"+":"")+change.toFixed(2)+"%":"-";
   const cls=!has?"neutral":change>0?"up":change<0?"down":"neutral";
   const image=p.info?.imageUrl||"",mint=escapeHTML(p.baseToken.address);
   const img=image?`<img class="coin-logo" src="${escapeHTML(image)}" alt="${name}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`:"";
@@ -813,7 +813,7 @@ function renderSearchResults(list){
   const name=escapeHTML(p.baseToken?.name||"Unknown Token");
   const symbol=escapeHTML(p.baseToken?.symbol||"TOKEN");
   const change=Number(p.priceChange?.h24);
-  const changeText=Number.isFinite(change)?(change>0?"+":"")+change.toFixed(2)+"%":"â";
+  const changeText=Number.isFinite(change)?(change>0?"+":"")+change.toFixed(2)+"%":"-";
   const cls=!Number.isFinite(change)?"neutral":change>0?"up":change<0?"down":"neutral";
   const image=p.info?.imageUrl||"";
   const img=image?`<img class="coin-logo" src="${escapeHTML(image)}" alt="${name}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`:"";
@@ -926,7 +926,7 @@ document.querySelectorAll(".percent-btn").forEach(button=>{
 });
 $("percentRange").addEventListener("input",event=>setTradePercent(event.target.value));
 
-/* QX NATIVE SWAP â Jupiter API runs behind the QX interface */
+/* QX NATIVE SWAP - Jupiter API runs behind the QX interface */
 const JUPITER_SWAP_API="https://api.jup.ag/swap/v2";
 // Paste your Jupiter publishable key here for request attribution in your dashboard.
 // Publishable keys are designed for browser use; never put a server/secret key here.
@@ -962,7 +962,7 @@ function bytesToBase64(bytes){
 }
 function displayRawAmount(raw,decimals){
  const n=Number(raw)/Math.pow(10,decimals);
- if(!Number.isFinite(n))return "â";
+ if(!Number.isFinite(n))return "-";
  return n.toLocaleString("en-US",{maximumFractionDigits:Math.min(8,decimals)});
 }
 async function getMintDecimals(mint){
@@ -989,7 +989,7 @@ async function requestQXQuote(){
  try{
   if(!selectedToken)throw new Error("Select a token from the market first.");
   if(!valid(QX_REFERRAL_ACCOUNT)){
-   $("qxFeeDisplay").textContent="1.00% Â· setup pending";
+   $("qxFeeDisplay").textContent="1.00% | setup pending";
    throw new Error("QX 1% commission is not activated yet. Add the QX referral account and initialize its SOL fee account before enabling swaps.");
   }
   const pair=getSwapMints();
@@ -1019,7 +1019,7 @@ async function requestQXQuote(){
   const outputDecimals=await getMintDecimals(pair.outputMint);
   pendingSwapOrder={data,outputDecimals,inputAmount:input.amount,inputSymbol:tradeDirection==="buy"?"SOL":selectedToken.baseToken.symbol,outputSymbol:tradeDirection==="buy"?selectedToken.baseToken.symbol:"SOL",createdAt:Date.now(),wallet:walletAddress};
   $("swapReceive").textContent=displayRawAmount(data.outAmount,outputDecimals)+" "+pendingSwapOrder.outputSymbol;
-  $("qxFeeDisplay").textContent="1.00% Â· fee included in quote";
+  $("qxFeeDisplay").textContent="1.00% | fee included in quote";
   $("swapRoute").textContent="QX best available route";
   $("confirmSwapBtn").disabled=false;
   $("swapStatus").textContent="Price ready. Review the estimated receive amount, then confirm the swap in Phantom. Final output can change with market conditions.";
@@ -1061,17 +1061,17 @@ async function executeQXSwap(){
   const result=await response.json().catch(()=>({}));
   if(!response.ok)throw new Error(result.error||result.errorMessage||("Swap execution error ("+response.status+")"));
   if(result.status!=="Success"||Number(result.code)!==0||!result.signature){
-   const suffix=result.signature?" Â· https://solscan.io/tx/"+result.signature:"";
+   const suffix=result.signature?" | https://solscan.io/tx/"+result.signature:"";
    throw new Error((result.error||"Swap failed or was not confirmed.")+suffix);
   }
   const signature=result.signature;
   const completedOrder=pendingSwapOrder;
   pendingSwapOrder=null;
-  $("qxFeeDisplay").textContent="1.00% Â· included in swap";
+  $("qxFeeDisplay").textContent="1.00% | included in swap";
   $("swapReceive").textContent=displayRawAmount(result.totalOutputAmount||result.outputAmountResult,completedOrder.outputDecimals)+" "+completedOrder.outputSymbol;
   await loadPortfolio();
   $("swapReceive").textContent=displayRawAmount(result.totalOutputAmount||result.outputAmountResult,completedOrder.outputDecimals)+" "+completedOrder.outputSymbol;
-  $("swapStatus").innerHTML='Swap successful. <a class="detail-link" target="_blank" rel="noopener" href="https://solscan.io/tx/'+encodeURIComponent(signature)+'">View transaction on Solscan â</a>';
+  $("swapStatus").innerHTML='Swap successful. <a class="detail-link" target="_blank" rel="noopener" href="https://solscan.io/tx/'+encodeURIComponent(signature)+'">View transaction on Solscan -></a>';
   $("confirmSwapBtn").textContent="Swap completed";
  }catch(error){
   $("swapStatus").textContent=error.message||"Swap could not be completed.";
@@ -1108,7 +1108,7 @@ function openToken(token){
  $("detailPrice").textContent=usd(token.priceUsd);
  const change=Number(token.priceChange?.h24);
  $("detailChange").textContent=Number.isFinite(change)
-  ?(change>0?"+":"")+change.toFixed(2)+"% Â· 24h":"24h change unavailable";
+  ?(change>0?"+":"")+change.toFixed(2)+"% | 24h":"24h change unavailable";
  $("detailChange").className="detail-change "+(change>0?"up":change<0?"down":"neutral");
  $("detailLiquidity").textContent=money(token.liquidity?.usd);
  $("detailVolume").textContent=money(token.volume?.h24);
