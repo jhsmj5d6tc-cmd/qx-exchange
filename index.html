@@ -188,6 +188,40 @@ footer{text-align:center;color:var(--muted);padding:25px;font-size:11px}
 .fee-note{color:#c7b9dc;font-size:10px;line-height:1.45}
 .fee-note strong{color:var(--green)}
 @media(min-width:700px){.qx-social{right:max(22px,calc((100vw - 1000px)/2 + 18px));bottom:95px;width:43px;height:43px}}
+
+/* QX MARKET WORKSPACE */
+.market-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(330px,390px);grid-template-areas:"list detail";gap:14px;align-items:start}
+.market-list-column{grid-area:list;min-width:0}
+#detail{grid-area:detail;position:sticky;top:10px;max-height:calc(100vh - 105px);overflow:auto;overscroll-behavior:contain;margin:0;scrollbar-width:thin;scrollbar-color:#49336b transparent}
+#detail::-webkit-scrollbar{width:5px}#detail::-webkit-scrollbar-thumb{background:#49336b;border-radius:8px}
+.new-coin-meta{display:block;color:#9f94b4;font-size:10px;line-height:1.45;margin-top:4px;white-space:normal}
+.new-live-tag{display:inline-flex;align-items:center;gap:5px;color:var(--green);font-size:10px;font-weight:800;letter-spacing:.5px}
+.new-live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 9px var(--green)}
+.amount-entry{display:flex;align-items:center;gap:9px;background:#0c0915;border:1px solid #49336b;border-radius:11px;padding:7px 10px;margin:8px 0 9px}
+.amount-entry input{border:0!important;background:transparent!important;padding:7px 2px!important;font-size:20px;font-weight:800;outline:none;box-shadow:none!important}
+.amount-entry .amount-symbol{flex:0 0 auto;border:1px solid #49336b;background:#211a30;border-radius:8px;padding:8px 10px;font-size:11px;font-weight:800;color:#e8def8}
+.percent-available{font-size:10px;color:var(--muted);text-align:right;margin:-3px 2px 8px}
+.detail-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:10px 0}
+.detail-stat{background:#100c1c;border:1px solid var(--line);border-radius:10px;padding:9px}
+.detail-stat small{display:block;color:var(--muted);font-size:10px;margin-bottom:5px}
+.detail-stat strong{font-size:12px;overflow-wrap:anywhere}
+@media(max-width:760px){
+ .market-layout{display:flex;flex-direction:column;gap:12px}
+ #detail{position:relative;top:auto;order:-1;width:100%;max-height:none;overflow:visible;padding:12px}
+ .market-list-column{width:100%;order:1}
+ #detailChart{height:185px}
+ .detail-price{font-size:23px;margin:8px 0 3px}
+ .detail-top{margin-bottom:7px}
+ .trade-buttons{margin:9px 0 9px}
+ .trade-flip{margin-bottom:8px}
+ .percent-panel{padding:9px;margin:8px 0}
+ .swap-box{padding:10px;margin-top:8px}
+ .market-row{grid-template-columns:minmax(0,1.35fr) minmax(68px,.75fr) minmax(54px,.6fr);gap:5px;padding:10px 7px}
+ .coin-logo,.coin-fallback{width:32px;height:32px}
+ .coin-info strong{max-width:125px;font-size:12px}
+}
+@media(min-width:761px) and (max-width:980px){.market-layout{grid-template-columns:minmax(0,1fr) minmax(300px,350px);gap:10px}.panel{padding:13px}}
+
 </style>
 </head>
 <body>
@@ -207,7 +241,7 @@ footer{text-align:center;color:var(--muted);padding:25px;font-size:11px}
   <div class="address" id="walletAddress"></div>
   <div class="wallet-badges"><span class="wallet-badge">* SOLANA WALLET</span><span class="small">Live balance</span></div>
   <p class="small" id="walletStatus">Connect your wallet to view assets.</p>
-  <div class="wallet-actions"><button class="btn" id="refreshBtn">Refresh</button></div>
+  <div class="wallet-actions"><button class="btn" id="refreshBtn">Refresh Refresh</button></div>
  </div>
  <div class="market-heading"><h2>My Assets</h2><span class="tag">ON-CHAIN</span></div>
  <div class="list">
@@ -228,92 +262,89 @@ footer{text-align:center;color:var(--muted);padding:25px;font-size:11px}
 
 <main id="marketsPage" class="page active">
  <div class="market-heading"><h2>Solana Markets</h2><span class="tag">LIVE MARKET</span></div>
- <div class="market-tabs" id="marketTabs">
-  <button class="market-tab active" data-category="all">All Markets</button>
-  <button class="market-tab" data-category="new">New Pairs</button>
-  <button class="market-tab" data-category="gainers">Top Gainers</button>
-  <button class="market-tab" data-category="losers">Top Losers</button>
-  <button class="market-tab" data-category="trending">Trending</button>
-  <button class="market-tab" data-category="volume">Top Volume</button>
- </div>
-
- <section id="detail" class="panel" style="display:none">
-  <div class="detail-top">
-   <img id="detailImage" alt="" src="" style="display:none">
-   <div><h2 id="detailName">Token</h2><span class="small" id="detailSymbol"></span></div>
-  </div>
-  <div class="detail-price" id="detailPrice">-</div>
-  <div id="detailChange" class="detail-change neutral">-</div>
-  <p class="address" id="detailAddress"></p>
-  <div class="row"><span>Liquidity</span><span class="right" id="detailLiquidity">-</span><span></span></div>
-  <div class="row"><span>24h Volume</span><span class="right" id="detailVolume">-</span><span></span></div>
-  <div class="chart-wrap" id="detailChartWrap" style="display:none">
-   <iframe id="detailChart" title="Token live price chart" loading="lazy" allow="clipboard-write" referrerpolicy="strict-origin-when-cross-origin"></iframe>
-  </div>
-  <a id="solscanLink" class="detail-link" target="_blank" rel="noopener">View contract on Solscan -></a>
-
-  <button class="trade-flip" id="swapDirectionBtn" type="button" aria-label="Reverse swap direction">↕ SWAP DIRECTION</button>
-
-  <div class="trade-heading">
-   <strong id="tradeTitle">Buy this token</strong><span class="tag">QX SWAP</span>
-  </div>
-
-  <div class="percent-panel" id="percentPanel">
-   <div class="percent-top">
-    <span class="percent-title">Trade amount</span>
-    <span class="percent-amount" id="percentAmount">Loading wallet balance...</span>
+ <div class="market-layout">
+  <div class="market-list-column">
+   <div class="market-tabs" id="marketTabs">
+    <button class="market-tab active" data-category="all">All Coins</button>
+    <button class="market-tab" data-category="new">New Coins <span class="new-live-tag"><i class="new-live-dot"></i>LIVE</span></button>
+    <button class="market-tab" data-category="gainers">Top Gainers</button>
+    <button class="market-tab" data-category="losers">Top Losers</button>
+    <button class="market-tab" data-category="trending">Trending</button>
+    <button class="market-tab" data-category="volume">Top Volume</button>
    </div>
-   <div class="percent-buttons">
-    <button class="percent-btn" data-percent="25">25%</button>
-    <button class="percent-btn" data-percent="50">50%</button>
-    <button class="percent-btn" data-percent="75">75%</button>
-    <button class="percent-btn" data-percent="100">100%</button>
+   <div class="toolbar">
+    <input id="search" placeholder="Search name, symbol or contract">
+    <button class="btn primary" id="searchBtn">Search</button>
    </div>
-   <input class="percent-range" id="percentRange" type="range" min="0" max="100" step="1" value="25" aria-label="Trade percentage">
-   <div class="percent-foot"><span>0%</span><span id="percentValue">25%</span><span>100%</span></div>
+   <div class="market-meta">
+    <span class="small" id="categoryTitle">All Solana tokens</span>
+    <span class="small" id="coinCount">Loading...</span>
+   </div>
+   <div class="sort-panel">
+    <div class="sort-title">SORT MARKET <span id="sortLabel">Default order</span></div>
+    <div class="sort-options" id="sortOptions">
+     <div class="sort-option"><span>Price</span><button data-sort="price" aria-label="Sort price"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10l-3-3m3 3-3 3M17 17H7l3 3m-3-3 3-3"/></svg></button></div>
+     <div class="sort-option"><span>Change</span><button data-sort="change" aria-label="Sort change"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10l-3-3m3 3-3 3M17 17H7l3 3m-3-3 3-3"/></svg></button></div>
+     <div class="sort-option"><span>Volume</span><button data-sort="volume" aria-label="Sort volume"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10l-3-3m3 3-3 3M17 17H7l3 3m-3-3 3-3"/></svg></button></div>
+     <div class="sort-option"><span>Market Cap</span><button data-sort="marketcap" aria-label="Sort market cap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10l-3-3m3 3-3 3M17 17H7l3 3m-3-3 3-3"/></svg></button></div>
+     <div class="sort-option"><span>Liquidity</span><button data-sort="liquidity" aria-label="Sort liquidity"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10l-3-3m3 3-3 3M17 17H7l3 3m-3-3 3-3"/></svg></button></div>
+    </div>
+   </div>
+   <div class="list">
+    <div class="market-row" style="color:var(--muted);font-size:11px"><span>Token</span><span class="right">Price USD</span><span class="right">24h</span></div>
+    <div id="tokenResults" class="market-empty">Loading market...</div>
+   </div>
+   <p class="market-status" id="marketStatus">Connecting to live market data...</p>
   </div>
 
-  <div class="swap-box">
-   <div class="swap-quote"><span>You pay</span><strong id="swapPay">-</strong></div>
-   <div class="swap-quote"><span>Estimated receive</span><strong id="swapReceive">Get quote to see estimate</strong></div>
-   <div class="swap-quote"><span>QX commission</span><strong id="qxFeeDisplay">1.00% | fee setup required</strong></div>
-   <div class="swap-quote"><span>Route</span><strong id="swapRoute">QX best available route</strong></div>
-   <div class="swap-quote"><span>Wallet</span><strong id="swapWallet">Not connected</strong></div>
+  <section id="detail" class="panel" style="display:none">
+   <div class="detail-top">
+    <img id="detailImage" alt="" src="" style="display:none">
+    <div><h2 id="detailName">Token</h2><span class="small" id="detailSymbol"></span></div>
+   </div>
+   <div class="detail-price" id="detailPrice">-</div>
+   <div id="detailChange" class="detail-change neutral">-</div>
+   <p class="address" id="detailAddress"></p>
+   <div class="detail-stats">
+    <div class="detail-stat"><small>Market Cap / FDV</small><strong id="detailMarketCap">-</strong></div>
+    <div class="detail-stat"><small>Liquidity</small><strong id="detailLiquidity">-</strong></div>
+    <div class="detail-stat"><small>24h Volume</small><strong id="detailVolume">-</strong></div>
+    <div class="detail-stat"><small>24h Transactions</small><strong id="detailTransactions">-</strong></div>
+   </div>
+   <div class="chart-wrap" id="detailChartWrap" style="display:none">
+    <iframe id="detailChart" title="Token live price chart" loading="lazy" allow="clipboard-write" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+   </div>
+   <a id="solscanLink" class="detail-link" target="_blank" rel="noopener">View contract on Solscan -&gt;</a>
+
    <div class="trade-buttons">
-    <button class="trade-btn buy active" id="buyBtn" type="button">BUY</button>
-    <button class="trade-btn sell" id="sellBtn" type="button">SELL</button>
+    <button class="trade-btn buy active" id="buyBtn">BUY</button>
+    <button class="trade-btn sell" id="sellBtn">SELL</button>
    </div>
-   <button class="swap-action swap-secondary" id="confirmSwapBtn" disabled>Confirm in Phantom</button>
-   <p class="fee-note">QX fee: <strong>1%</strong> per completed swap. The quote must confirm the full fee before Phantom signing. No fee is charged when a swap is not completed.</p>
-   <p class="swap-status" id="swapStatus">Connect your wallet, get a quote, then confirm the transaction in Phantom. QX is the only trading interface.</p>
-  </div>
- </section>
-
- <div class="toolbar">
-  <input id="search" placeholder="Search name, symbol or contract">
-  <button class="btn primary" id="searchBtn">Search</button>
+   <button class="trade-flip" id="swapDirectionBtn" type="button" aria-label="Reverse swap direction">â SWAP DIRECTION Â· SOL â TOKEN</button>
+   <div class="trade-heading"><strong id="tradeTitle">Buy this token with SOL</strong><span class="tag">QX SWAP</span></div>
+   <div class="percent-panel" id="percentPanel">
+    <div class="percent-top"><span class="percent-title">YOU PAY</span><span class="percent-amount" id="percentAmount">Loading wallet balance...</span></div>
+    <div class="amount-entry"><input id="tradeAmountInput" type="number" min="0" step="any" inputmode="decimal" placeholder="0.00" aria-label="Trade amount"><span class="amount-symbol" id="tradeAmountSymbol">SOL</span></div>
+    <div class="percent-available" id="percentAvailable">Available balance: -</div>
+    <div class="percent-buttons">
+     <button class="percent-btn" data-percent="25">25%</button><button class="percent-btn" data-percent="50">50%</button><button class="percent-btn" data-percent="75">75%</button><button class="percent-btn" data-percent="100">MAX</button>
+    </div>
+    <input class="percent-range" id="percentRange" type="range" min="0" max="100" step="1" value="25" aria-label="Trade percentage">
+    <div class="percent-foot"><span>0%</span><span id="percentValue">25%</span><span>100%</span></div>
+   </div>
+   <div class="swap-box">
+    <div class="swap-quote"><span>You pay</span><strong id="swapPay">-</strong></div>
+    <div class="swap-quote"><span>Estimated receive</span><strong id="swapReceive">Enter amount to estimate</strong></div>
+    <div class="swap-quote"><span>QX commission</span><strong id="qxFeeDisplay">1.00% | fee setup required</strong></div>
+    <div class="swap-quote"><span>Route</span><strong id="swapRoute">QX best available route</strong></div>
+    <div class="swap-quote"><span>Wallet</span><strong id="swapWallet">Not connected</strong></div>
+    <button class="swap-action" id="getQuoteBtn">Get live quote Â· Quick trade</button>
+    <button class="swap-action swap-secondary" id="confirmSwapBtn" disabled>Confirm in Phantom</button>
+    <p class="fee-note">QX fee: <strong>1%</strong> per completed swap. The live quote must confirm the full fee before Phantom signing. No fee is charged when a swap is not completed.</p>
+    <p class="swap-status" id="swapStatus">Connect your wallet, enter an amount, get a quote, then confirm in Phantom.</p>
+   </div>
+  </section>
  </div>
- <div class="market-meta">
-  <span class="small" id="categoryTitle">All Solana tokens</span>
-  <span class="small" id="coinCount">Loading...</span>
- </div>
-
- <div class="sort-panel">
-  <div class="sort-title">SORT MARKET <span id="sortLabel">Default order</span></div>
-  <div class="sort-options" id="sortOptions">
-   <div class="sort-option"><span>Price</span><button data-sort="price" aria-label="Sort price"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10l-3-3m3 3-3 3M17 17H7l3 3m-3-3 3-3"/></svg></button></div>
-   <div class="sort-option"><span>Change</span><button data-sort="change" aria-label="Sort change"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10l-3-3m3 3-3 3M17 17H7l3 3m-3-3 3-3"/></svg></button></div>
-   <div class="sort-option"><span>Volume</span><button data-sort="volume" aria-label="Sort volume"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10l-3-3m3 3-3 3M17 17H7l3 3m-3-3 3-3"/></svg></button></div>
-   <div class="sort-option"><span>Market Cap</span><button data-sort="marketcap" aria-label="Sort market cap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10l-3-3m3 3-3 3M17 17H7l3 3m-3-3 3-3"/></svg></button></div>
-   <div class="sort-option"><span>Liquidity</span><button data-sort="liquidity" aria-label="Sort liquidity"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10l-3-3m3 3-3 3M17 17H7l3 3m-3-3 3-3"/></svg></button></div>
-  </div>
- </div>
-
- <div class="list">
-  <div class="market-row" style="color:var(--muted);font-size:11px"><span>Token</span><span class="right">Price USD</span><span class="right">24h</span></div>
-  <div id="tokenResults" class="market-empty">Loading market...</div>
- </div>
- <p class="market-status" id="marketStatus">Connecting to live market data...</p>
 </main>
 
 <footer>QX Exchange | Solana</footer>
@@ -475,7 +506,6 @@ async function loadSolPrice(){
   if(best){canonicalSolPair=best;solPrice=Number(best.priceUsd||0);}
   if(connected)await loadPortfolio();
   if(allPairs.length)renderMarket();
-  updateIndicativeTradeEstimate();
  }catch(e){console.warn("SOL price:",e);}
 }
 
@@ -630,43 +660,56 @@ function profileMints(data){
 function boostMints(data){
  return (data||[]).filter(i=>i.chainId==="solana"&&valid(i.tokenAddress)).map(i=>i.tokenAddress).filter(m=>m!==SOL);
 }
+function timeSince(timestamp){
+ const ms=Number(timestamp||0);
+ if(!ms)return "New";
+ const seconds=Math.max(0,Math.floor((Date.now()-ms)/1000));
+ if(seconds<60)return seconds+"s ago";
+ if(seconds<3600)return Math.floor(seconds/60)+"m ago";
+ if(seconds<86400)return Math.floor(seconds/3600)+"h ago";
+ return Math.floor(seconds/86400)+"d ago";
+}
 async function loadMarket(){
  if(marketBusy)return;
  marketBusy=true;
- $("marketStatus").textContent="Updating Solana market data...";
  try{
   const results=await Promise.allSettled([
    getJSON("https://api.dexscreener.com/latest/dex/search?q=solana"),
    getJSON("https://api.dexscreener.com/token-profiles/latest/v1"),
+   getJSON("https://api.dexscreener.com/token-boosts/latest/v1"),
    getJSON("https://api.dexscreener.com/token-boosts/top/v1"),
    fetchCanonicalSol()
   ]);
   const search=results[0].status==="fulfilled"?results[0].value:{pairs:[]};
   const profiles=results[1].status==="fulfilled"?results[1].value:[];
-  const boosts=results[2].status==="fulfilled"?results[2].value:[];
-  if(results[3].status==="fulfilled")canonicalSolPair=results[3].value;
-  const profileList=await fetchPairsForMints(profileMints(profiles));
-  const boostList=await fetchPairsForMints(boostMints(boosts));
-  newPairs=bestPairsByMint(profileList,false);
+  const latestBoosts=results[2].status==="fulfilled"?results[2].value:[];
+  const topBoosts=results[3].status==="fulfilled"?results[3].value:[];
+  if(results[4].status==="fulfilled")canonicalSolPair=results[4].value;
+  const freshMints=[...new Set([...profileMints(profiles),...boostMints(latestBoosts)])];
+  const profileList=await fetchPairsForMints(freshMints);
+  const boostList=await fetchPairsForMints(boostMints(topBoosts));
+  newPairs=bestPairsByMint([...profileList,...(search.pairs||[]).filter(p=>p.chainId==="solana"&&Number(p.pairCreatedAt||0)>Date.now()-7*86400000)],false)
+   .sort((a,b)=>Number(b.pairCreatedAt||0)-Number(a.pairCreatedAt||0));
   trendingPairs=bestPairsByMint(boostList,false);
   const others=bestPairsByMint([...(search.pairs||[]),...profileList,...boostList],false);
-  allPairs=canonicalSolPair?[canonicalSolPair,...others]:others;
-  if(!allPairs.length)throw new Error("No Solana tokens returned. Try again shortly.");
-  $("marketStatus").textContent="Live data from DexScreener | "+new Date().toLocaleTimeString();
+  const merged=new Map(others.map(p=>[p.baseToken.address,p]));
+  if(canonicalSolPair)merged.set(SOL,canonicalSolPair);
+  allPairs=[...merged.values()];
+  if(!allPairs.length)throw new Error("No Solana market data returned. Try again shortly.");
+  $("marketStatus").textContent="Market data refreshes automatically Â· Last update "+new Date().toLocaleTimeString();
   renderMarket();
   if(selectedToken){
-   const refreshed=allPairs.find(p=>p.baseToken?.address===selectedToken.baseToken?.address);
-   if(refreshed)selectedToken=refreshed;
-   updateIndicativeTradeEstimate();
+   const updated=allPairs.find(p=>p.baseToken.address===selectedToken.baseToken.address);
+   if(updated){selectedToken=updated;refreshSelectedTokenDetails(updated);updateIndicativeEstimate();}
   }
  }catch(e){
-  $("marketStatus").textContent=e.message;
-  $("tokenResults").innerHTML='<div class="market-empty">Market data unavailable. Please try again.</div>';
+  $("marketStatus").textContent="Market feed temporarily unavailable Â· "+(e.message||"Retrying automatically");
+  if(!allPairs.length)$ ("tokenResults").innerHTML='<div class="market-empty">Market data unavailable. Please try again.</div>';
  }finally{marketBusy=false;}
 }
 
 const categoryNames={
- all:"All Solana tokens",new:"New Pairs",gainers:"Top Gainers | 24h",
+ all:"All Solana tokens",new:"New Coins Â· Live",gainers:"Top Gainers | 24h",
  losers:"Top Losers | 24h",trending:"Trending tokens",volume:"Top Volume | 24h"
 };
 function getCategoryPairs(){
@@ -758,8 +801,10 @@ function renderMarket(){
   const image=p.info?.imageUrl||"",mint=escapeHTML(p.baseToken.address);
   const img=image?`<img class="coin-logo" src="${escapeHTML(image)}" alt="${name}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`:"";
   const fallback=`<span class="coin-fallback" style="display:${image?"none":"flex"}">${escapeHTML((p.baseToken?.symbol||"?").slice(0,2))}</span>`;
+  const age=p.pairCreatedAt?timeSince(p.pairCreatedAt):"Recently discovered";
+  const meta=currentCategory==="new"?`<span class="new-coin-meta">${age} Â· MC ${money(p.marketCap||p.fdv)} Â· LIQ ${money(p.liquidity?.usd)} Â· VOL ${money(p.volume?.h24)} Â· TX ${Number(p.txns?.h24?.buys||0)+Number(p.txns?.h24?.sells||0)}</span>`:"";
   return `<div class="market-row">
-   <button class="coin-button" data-mint="${mint}">${img}${fallback}<span class="coin-info"><strong>${name}</strong><small>${symbol}</small></span></button>
+   <button class="coin-button" data-mint="${mint}">${img}${fallback}<span class="coin-info"><strong>${name}</strong><small>${symbol}</small>${meta}</span></button>
    <span class="market-price">${usd(p.priceUsd)}</span><span class="market-change ${cls}">${changeText}</span>
   </div>`;
  }).join("");
@@ -862,9 +907,12 @@ function updateTradePercentUI(){
  const balance=getTradeBalance();
  const amount=balance*tradePercent/100;
  const symbol=tradeDirection==="buy"?"SOL":(selectedToken?.baseToken?.symbol||"TOKEN");
- $("percentAmount").textContent=connected
-  ?formatAmount(amount,tradeDirection==="buy"?9:selectedTokenDecimals)+" "+symbol
-  :"Connect wallet to calculate amount";
+ $("tradeAmountSymbol").textContent=symbol;
+ $("percentAmount").textContent=connected?"Available: "+formatAmount(balance,tradeDirection==="buy"?9:selectedTokenDecimals)+" "+symbol:"Connect wallet";
+ $("percentAvailable").textContent=connected?"Available balance: "+formatAmount(balance,tradeDirection==="buy"?9:selectedTokenDecimals)+" "+symbol:"Connect wallet to see your balance";
+ const input=$("tradeAmountInput");
+ if(document.activeElement!==input)input.value=amount>0?String(Number(formatAmount(amount,tradeDirection==="buy"?9:selectedTokenDecimals))):"";
+ updateIndicativeEstimate();
 }
 function toSmallestUnits(amount,decimals){
  const precision=Math.max(0,Math.min(9,Number(decimals)||0));
@@ -932,6 +980,16 @@ document.querySelectorAll(".percent-btn").forEach(button=>{
  button.addEventListener("click",()=>setTradePercent(button.dataset.percent));
 });
 $("percentRange").addEventListener("input",event=>setTradePercent(event.target.value));
+$("tradeAmountInput").addEventListener("input",()=>{
+ const balance=getTradeBalance(),amount=Number($("tradeAmountInput").value);
+ tradePercent=balance>0&&Number.isFinite(amount)?Math.max(0,Math.min(100,amount/balance*100)):0;
+ $("percentValue").textContent=Math.round(tradePercent)+"%";
+ $("percentRange").value=String(tradePercent);
+ $("percentRange").style.setProperty("--progress",tradePercent+"%");
+ document.querySelectorAll(".percent-btn").forEach(b=>b.classList.toggle("active",Number(b.dataset.percent)===Math.round(tradePercent)));
+ clearPendingSwap("Amount changed. Get a fresh live quote.");
+ updateIndicativeEstimate();
+});
 
 /* QX NATIVE SWAP - Jupiter API runs behind the QX interface */
 const JUPITER_SWAP_API="https://api.jup.ag/swap/v2";
@@ -950,8 +1008,9 @@ const QX_REFERRAL_FEE_BPS=100; // 100 bps = 1.00%
 function clearPendingSwap(message){
  pendingSwapOrder=null;
  $("confirmSwapBtn").disabled=true;
- $("swapReceive").textContent="Get quote to see estimate";
+ $("swapReceive").textContent="Enter amount to estimate";
  if(message)$("swapStatus").textContent=message;
+ updateIndicativeEstimate();
 }
 function base64ToBytes(value){
  const binary=atob(value);
@@ -977,6 +1036,18 @@ async function getMintDecimals(mint){
  const result=await rpc("getTokenSupply",[mint]);
  return Number(result.value.decimals);
 }
+function updateIndicativeEstimate(){
+ const amount=Number($("tradeAmountInput")?.value||0);
+ if(!selectedToken||!amount||!Number.isFinite(amount)||amount<=0)return;
+ const tokenPrice=Number(selectedToken.priceUsd||0),solUsd=Number(solPrice||0);
+ if(!tokenPrice||!solUsd)return;
+ let estimate=tradeDirection==="buy"?(amount*solUsd/tokenPrice):(amount*tokenPrice/solUsd);
+ // Indicative display only. The executable Jupiter quote is authoritative and includes configured referral fees.
+ estimate*=0.99;
+ const outputSymbol=tradeDirection==="buy"?(selectedToken.baseToken.symbol||"TOKEN"):"SOL";
+ $("swapPay").textContent=formatAmount(amount,tradeDirection==="buy"?9:selectedTokenDecimals)+" "+(tradeDirection==="buy"?"SOL":(selectedToken.baseToken.symbol||"TOKEN"));
+ $("swapReceive").textContent="â "+formatAmount(estimate,tradeDirection==="buy"?6:9)+" "+outputSymbol+" Â· indicative";
+}
 function getSwapMints(){
  const mint=selectedToken?.baseToken?.address;
  if(!mint||!valid(mint))throw new Error("Select a valid Solana token first.");
@@ -985,43 +1056,18 @@ function getSwapMints(){
 }
 function getSwapInputAmount(){
  const balance=getTradeBalance();
- const amount=balance*tradePercent/100;
+ const typed=$("tradeAmountInput").value.trim();
+ const amount=typed!==""?Number(typed):balance*tradePercent/100;
  const decimals=tradeDirection==="buy"?9:selectedTokenDecimals;
  if(!connected||!walletAddress)throw new Error("Connect your Phantom wallet first.");
- if(!Number.isFinite(amount)||amount<=0)throw new Error("Your available balance is too low for this trade.");
+ if(!Number.isFinite(amount)||amount<=0)throw new Error("Enter a valid amount greater than zero.");
+ if(amount>balance+1e-10)throw new Error("The amount is higher than your available wallet balance.");
  return {amount,decimals,raw:toSmallestUnits(amount,decimals)};
 }
-/* AUTOMATIC INDICATIVE ESTIMATE — refreshed locally every second.
-   This is not an executable Jupiter quote; BUY/SELL fetches the live executable order. */
-function updateIndicativeTradeEstimate(){
- if(!selectedToken||pendingSwapOrder||quoteBusy||swapBusy)return;
- const tokenPrice=Number(selectedToken.priceUsd||0);
- const balance=getTradeBalance();
- const amount=balance*tradePercent/100;
- const symbol=tradeDirection==="buy"?"SOL":(selectedToken.baseToken?.symbol||"TOKEN");
- if(!connected||!Number.isFinite(amount)||amount<=0||!Number.isFinite(tokenPrice)||tokenPrice<=0||!Number.isFinite(solPrice)||solPrice<=0){
-  $("swapPay").textContent=connected?formatAmount(amount,8)+" "+symbol:"Connect wallet";
-  $("swapReceive").textContent="Select token / check balance";
-  return;
- }
- const payUsd=tradeDirection==="buy"?amount*solPrice:amount*tokenPrice;
- const estimatedUsd=payUsd*0.99; // indicative 1% QX fee estimate
- const receive=tradeDirection==="buy"?estimatedUsd/tokenPrice:estimatedUsd/solPrice;
- $("swapPay").textContent=formatAmount(amount,tradeDirection==="buy"?9:selectedTokenDecimals)+" "+symbol;
- $("swapReceive").textContent="~"+formatAmount(receive,8)+" "+(tradeDirection==="buy"?(selectedToken.baseToken?.symbol||"TOKEN"):"SOL");
- $("qxFeeDisplay").textContent="1.00% | indicative estimate";
- $("swapRoute").textContent="Live market estimate · request order to confirm";
- $("swapWallet").textContent=short(walletAddress);
-}
-
 async function requestQXQuote(){
  if(quoteBusy||swapBusy)return;
  try{
   if(!selectedToken)throw new Error("Select a token from the market first.");
-  if(!JUPITER_API_KEY.trim())throw new Error("Add your full Jupiter publishable API key in JUPITER_API_KEY before requesting swaps.");
-  quoteBusy=true;
-  $("buyBtn").disabled=true;
-  $("sellBtn").disabled=true;
   if(!valid(QX_REFERRAL_ACCOUNT)){
    $("qxFeeDisplay").textContent="1.00% | setup pending";
    throw new Error("QX 1% commission is not activated yet. Add the QX referral account and initialize its SOL fee account before enabling swaps.");
@@ -1029,6 +1075,9 @@ async function requestQXQuote(){
   const pair=getSwapMints();
   const input=getSwapInputAmount();
   if(pair.inputMint===pair.outputMint)throw new Error("Selling and buying assets cannot be the same.");
+  quoteBusy=true;
+  $("getQuoteBtn").disabled=true;
+  $("getQuoteBtn").textContent="Finding best price...";
   clearPendingSwap();
   $("swapPay").textContent=input.amount.toLocaleString("en-US",{maximumFractionDigits:8})+" "+(tradeDirection==="buy"?"SOL":selectedToken.baseToken.symbol);
   $("swapWallet").textContent=short(walletAddress);
@@ -1062,8 +1111,8 @@ async function requestQXQuote(){
   $("swapStatus").textContent=error.message||"Could not get a swap quote.";
  }finally{
   quoteBusy=false;
-  $("buyBtn").disabled=false;
-  $("sellBtn").disabled=false;
+  $("getQuoteBtn").disabled=false;
+  $("getQuoteBtn").textContent="Refresh best price";
  }
 }
 async function executeQXSwap(){
@@ -1079,8 +1128,7 @@ async function executeQXSwap(){
   if(typeof provider?.signTransaction!=="function")throw new Error("Your connected wallet does not expose transaction signing. Reconnect Phantom through QX.");
   swapBusy=true;
   $("confirmSwapBtn").disabled=true;
-  $("buyBtn").disabled=true;
-  $("sellBtn").disabled=true;
+  $("getQuoteBtn").disabled=true;
   $("confirmSwapBtn").textContent="Waiting for Phantom...";
   $("swapStatus").textContent="Approve the swap transaction in Phantom. Check the token and amount before signing.";
   const tx=VersionedTransaction.deserialize(base64ToBytes(pendingSwapOrder.data.transaction));
@@ -1112,65 +1160,63 @@ async function executeQXSwap(){
   $("confirmSwapBtn").disabled=false;
  }finally{
   swapBusy=false;
-  $("buyBtn").disabled=false;
-  $("sellBtn").disabled=false;
+  $("getQuoteBtn").disabled=false;
   if($("confirmSwapBtn").textContent!=="Swap completed")$("confirmSwapBtn").textContent="Confirm in Phantom";
  }
 }
+$("getQuoteBtn").onclick=requestQXQuote;
 $("confirmSwapBtn").onclick=executeQXSwap;
 
-async function changeTradeDirection(direction){
+function changeTradeDirection(direction){
  tradeDirection=direction;
  $("tradeTitle").textContent=direction==="buy"?"Buy this token with SOL":"Sell this token for SOL";
- $("swapDirectionBtn").textContent=direction==="buy"?"↕ SWAP DIRECTION · SOL → TOKEN":"↕ SWAP DIRECTION · TOKEN → SOL";
+ $("swapDirectionBtn").textContent=direction==="buy"?"â SWAP DIRECTION Â· SOL â TOKEN":"â SWAP DIRECTION Â· TOKEN â SOL";
  $("buyBtn").classList.toggle("active",direction==="buy");
  $("sellBtn").classList.toggle("active",direction==="sell");
  updateTradePercentUI();
- clearPendingSwap("Trade direction changed. Preparing your balance...");
- if(selectedToken)await refreshTradeBalance(false);
- updateIndicativeTradeEstimate();
+ clearPendingSwap("Trade direction changed. Get a fresh quote.");
+ if(selectedToken)refreshTradeBalance(false);
 }
-$("buyBtn").onclick=async()=>{
- try{await changeTradeDirection("buy");await requestQXQuote();}
- catch(error){$("swapStatus").textContent=error.message||"Could not prepare BUY quote.";}
-};
-$("sellBtn").onclick=async()=>{
- try{await changeTradeDirection("sell");await requestQXQuote();}
- catch(error){$("swapStatus").textContent=error.message||"Could not prepare SELL quote.";}
-};
+$("buyBtn").onclick=()=>changeTradeDirection("buy");
+$("sellBtn").onclick=()=>changeTradeDirection("sell");
 $("swapDirectionBtn").onclick=()=>changeTradeDirection(tradeDirection==="buy"?"sell":"buy");
 
 /* TOKEN DETAILS + CHART */
-function openToken(token){
- clearPendingSwap("Token selected. Get a fresh quote to trade.");
- selectedToken=token;
+function refreshSelectedTokenDetails(token){
  const mint=token.baseToken.address;
- $("detail").style.display="block";
  $("detailName").textContent=token.baseToken.name||"Token";
  $("detailSymbol").textContent=token.baseToken.symbol||"";
  $("detailAddress").textContent=mint;
  $("detailPrice").textContent=usd(token.priceUsd);
  const change=Number(token.priceChange?.h24);
- $("detailChange").textContent=Number.isFinite(change)
-  ?(change>0?"+":"")+change.toFixed(2)+"% | 24h":"24h change unavailable";
+ $("detailChange").textContent=Number.isFinite(change)?(change>0?"+":"")+change.toFixed(2)+"% | 24h":"24h change unavailable";
  $("detailChange").className="detail-change "+(change>0?"up":change<0?"down":"neutral");
+ $("detailMarketCap").textContent=money(token.marketCap||token.fdv);
  $("detailLiquidity").textContent=money(token.liquidity?.usd);
  $("detailVolume").textContent=money(token.volume?.h24);
+ const buys=Number(token.txns?.h24?.buys||0),sells=Number(token.txns?.h24?.sells||0);
+ $("detailTransactions").textContent=(buys+sells).toLocaleString("en-US")+" Â· "+buys+" buys / "+sells+" sells";
  $("solscanLink").href="https://solscan.io/token/"+mint;
  const image=token.info?.imageUrl||"";
- $("detailImage").src=image;
- $("detailImage").style.display=image?"block":"none";
+ if(image){$("detailImage").src=image;$("detailImage").style.display="block";}else{$("detailImage").removeAttribute("src");$("detailImage").style.display="none";}
  const pairAddress=token.pairAddress;
  if(valid(pairAddress)){
-  $("detailChart").src="https://dexscreener.com/solana/"+encodeURIComponent(pairAddress)+"?embed=1&theme=dark&trades=0&info=0";
+  const chartUrl="https://dexscreener.com/solana/"+encodeURIComponent(pairAddress)+"?embed=1&theme=dark&trades=0&info=0";
+  if(!$("detailChart").src||$("detailChart").dataset.pair!==pairAddress){$("detailChart").src=chartUrl;$("detailChart").dataset.pair=pairAddress;}
   $("detailChartWrap").style.display="block";
- }else{
-  $("detailChart").removeAttribute("src");
-  $("detailChartWrap").style.display="none";
- }
+ }else{$("detailChart").removeAttribute("src");$("detailChartWrap").style.display="none";}
+}
+function openToken(token){
+ clearPendingSwap("Token selected. Enter an amount and get a fresh quote.");
+ selectedToken=token;
+ $("detail").style.display="block";
+ refreshSelectedTokenDetails(token);
  tradePercent=25;
  updateTradePercentUI();
  refreshTradeBalance(true);
+ if(window.matchMedia("(max-width: 760px)").matches){
+  $("detail").scrollIntoView({behavior:"smooth",block:"start"});
+ }
 }
 $("refreshBtn").onclick=async()=>{
  await loadSolPrice();
@@ -1183,8 +1229,8 @@ updateTradePercentUI();
 loadSolPrice();
 loadMarket();
 setInterval(loadSolPrice,60000);
-setInterval(loadMarket,120000);
-setInterval(updateIndicativeTradeEstimate,1000);
+// Public market endpoints are polled every 20 seconds for a near-live new-coin feed.
+setInterval(loadMarket,20000);
 </script>
 </body>
 </html>
