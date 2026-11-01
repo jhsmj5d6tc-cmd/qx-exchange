@@ -208,7 +208,7 @@ footer{text-align:center;color:var(--muted);padding:25px;font-size:11px}
 .detail-stat strong{font-size:12px;overflow-wrap:anywhere}
 @media(max-width:760px){
  .market-layout{display:flex;flex-direction:column;gap:12px}
- #detail{position:relative;top:auto;order:-1;width:100%;max-height:none;overflow:visible;padding:12px}
+ #detail{position:relative;top:auto;order:2;width:100%;max-height:none;overflow:visible;padding:12px}
  .market-list-column{width:100%;order:1}
  #detailChart{height:185px}
  .detail-price{font-size:23px;margin:8px 0 3px}
@@ -458,7 +458,7 @@ input:focus{outline:none;border-color:#43ffad;box-shadow:0 0 0 2px rgba(67,255,1
     <div class="swap-quote"><span>Wallet</span><strong id="swapWallet">Not connected</strong></div>
     <button class="swap-action" id="getQuoteBtn"><span>GET BEST PRICE</span><small>Jupiter route · inside QX</small></button>
     <button class="swap-action swap-secondary" id="confirmSwapBtn" disabled>CONFIRM IN CONNECTED WALLET</button>
-    <p class="fee-note">QX fee: <strong>1%</strong> per completed swap. The live quote must confirm the full fee before wallet approval. No fee is charged when a swap is not completed.</p>
+    <p class="fee-note">QX referral fee setting: <strong>1%</strong> per completed swap. Jupiter retains 20% of referral fees; the amount credited to QX is lower. The live quote must confirm the fee before wallet approval. No fee is charged when a swap is not completed.</p>
     <p class="swap-status" id="swapStatus">Connect your wallet, enter an amount, get a quote, then confirm in your connected wallet.</p>
    </div>
   </section>
@@ -1140,7 +1140,7 @@ $("tradeAmountInput").addEventListener("input",()=>{
 const JUPITER_SWAP_API="https://api.jup.ag/swap/v2";
 // Paste your Jupiter publishable key here for request attribution in your dashboard.
 // Publishable keys are designed for browser use; never put a server/secret key here.
-const JUPITER_API_KEY="PASTE_YOUR_FULL_JUPITER_PUBLISHABLE_KEY_HERE";
+const JUPITER_API_KEY="jup_pub_646a02a3199987e777a62f4df5efaa06aeb0cbb5edc35244c9adce130b998621";
 function jupiterHeaders(extra={}){
  const key=JUPITER_API_KEY.trim();
  if(!key || key==="PASTE_YOUR_FULL_JUPITER_PUBLISHABLE_KEY_HERE" || !key.startsWith("jup_pub_")){
@@ -1251,7 +1251,7 @@ async function requestQXQuote(){
   pendingSwapOrder={data,outputDecimals,inputAmount:input.amount,inputSymbol:tradeDirection==="buy"?"SOL":selectedToken.baseToken.symbol,outputSymbol:tradeDirection==="buy"?selectedToken.baseToken.symbol:"SOL",createdAt:Date.now(),wallet:walletAddress};
   $("swapReceive").textContent=displayRawAmount(data.outAmount,outputDecimals)+" "+pendingSwapOrder.outputSymbol;
   const feeMintLabel=data.feeMint===SOL?"SOL":data.feeMint===USDC?"USDC":short(data.feeMint);
-  $("qxFeeDisplay").textContent="1.00% | included in "+feeMintLabel;
+  $("qxFeeDisplay").textContent="1.00% referral fee | "+feeMintLabel;
   $("swapRoute").textContent="QX / "+(data.router||"Best available route");
   $("confirmSwapBtn").disabled=false;
   $("swapStatus").textContent="Price ready. Review the estimated receive amount, then confirm the swap in your connected wallet. Final output can change with market conditions.";
@@ -1299,7 +1299,7 @@ async function executeQXSwap(){
   const signature=result.signature;
   const completedOrder=pendingSwapOrder;
   pendingSwapOrder=null;
-  $("qxFeeDisplay").textContent="1.00% | included in swap";
+  $("qxFeeDisplay").textContent="1.00% referral fee | charged";
   $("swapReceive").textContent=displayRawAmount(result.totalOutputAmount||result.outputAmountResult,completedOrder.outputDecimals)+" "+completedOrder.outputSymbol;
   await loadPortfolio();
   $("swapReceive").textContent=displayRawAmount(result.totalOutputAmount||result.outputAmountResult,completedOrder.outputDecimals)+" "+completedOrder.outputSymbol;
