@@ -122,8 +122,8 @@ footer{text-align:center;color:var(--muted);padding:25px;font-size:11px}
 .detail-change{font-size:13px;font-weight:bold}
 .chart-wrap{margin:16px 0 12px;overflow:hidden;border-radius:12px;background:#080711}
 #detailChart{display:block;width:100%;height:360px;border:0;background:#080711}
-.trade-buttons{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:13px 0 12px;padding:4px;background:#0c0915;border:1px solid #2b213d;border-radius:12px}
-.trade-flip{width:100%;min-height:34px;margin:-3px 0 12px;border:1px solid #44345d;border-radius:9px;background:#211a30;color:#d9c8f7;font-size:11px;font-weight:800;letter-spacing:.35px}
+.trade-buttons{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 10px;padding:4px;background:#0c0915;border:1px solid #2b213d;border-radius:12px}
+.trade-flip{width:100%;min-height:34px;margin:0 0 12px;border:1px solid #44345d;border-radius:9px;background:#211a30;color:#d9c8f7;font-size:11px;font-weight:800;letter-spacing:.35px}
 .trade-btn{min-height:39px;padding:9px 12px;border:1px solid transparent;border-radius:9px;background:transparent;color:#bcb2cc;font-size:12px;letter-spacing:.55px;font-weight:800;transition:background .16s,color .16s}
 .trade-btn.buy.active{background:var(--green);border-color:var(--green);color:#06150f}
 .trade-btn.sell.active{background:var(--red);border-color:var(--red);color:#23060b}
@@ -252,15 +252,8 @@ footer{text-align:center;color:var(--muted);padding:25px;font-size:11px}
   </div>
   <a id="solscanLink" class="detail-link" target="_blank" rel="noopener">View contract on Solscan -></a>
 
-  <div class="trade-buttons">
-   <button class="trade-btn buy active" id="buyBtn">BUY</button>
-   <button class="trade-btn sell" id="sellBtn">SELL</button>
-  </div>
-
-  <button class="trade-flip" id="swapDirectionBtn" type="button" aria-label="Reverse swap direction">↕ SWAP DIRECTION</button>
-
   <div class="trade-heading">
-   <strong id="tradeTitle">Buy this token</strong><span class="tag">QX SWAP</span>
+   <strong>Trade</strong><span class="tag">QX SWAP</span>
   </div>
 
   <div class="percent-panel" id="percentPanel">
@@ -279,14 +272,21 @@ footer{text-align:center;color:var(--muted);padding:25px;font-size:11px}
   </div>
 
   <div class="swap-box">
+   <div class="trade-buttons">
+    <button class="trade-btn buy active" id="buyBtn" type="button">BUY</button>
+    <button class="trade-btn sell" id="sellBtn" type="button">SELL</button>
+   </div>
+   <button class="trade-flip" id="swapDirectionBtn" type="button" aria-label="Reverse swap direction">↕ SWAP DIRECTION</button>
+   <div class="trade-heading"><strong id="tradeTitle">Buy this token with SOL</strong><span class="small">Choose direction</span></div>
    <div class="swap-quote"><span>You pay</span><strong id="swapPay">-</strong></div>
-   <div class="swap-quote"><span>Estimated receive</span><strong id="swapReceive">Get quote to see estimate</strong></div>
+   <div class="swap-quote"><span>Estimated receive</span><strong id="swapReceive">Select amount for estimate</strong></div>
+   <div class="swap-quote"><span>Market calculation</span><strong id="indicativeReceive">Waiting for token and SOL price</strong></div>
    <div class="swap-quote"><span>QX commission</span><strong id="qxFeeDisplay">1.00% | fee setup required</strong></div>
    <div class="swap-quote"><span>Route</span><strong id="swapRoute">QX best available route</strong></div>
    <div class="swap-quote"><span>Wallet</span><strong id="swapWallet">Not connected</strong></div>
    <button class="swap-action" id="getQuoteBtn">Get best price</button>
    <button class="swap-action swap-secondary" id="confirmSwapBtn" disabled>Confirm in Phantom</button>
-   <p class="fee-note">QX fee: <strong>1%</strong> per completed swap. The quote must confirm the full fee before Phantom signing. No fee is charged when a swap is not completed.</p>
+   <p class="fee-note">Market estimate uses the live token price and SOL/USD price, with an estimated 1% QX fee. The live Jupiter quote replaces this estimate before signing. Final output can change with price impact, liquidity and slippage. QX fee: <strong>1%</strong> per completed swap; no fee is charged when a swap is not completed.</p>
    <p class="swap-status" id="swapStatus">Connect your wallet, get a quote, then confirm the transaction in Phantom. QX is the only trading interface.</p>
   </div>
  </section>
@@ -475,6 +475,7 @@ async function loadSolPrice(){
    .filter(p=>p.chainId==="solana"&&p.baseToken?.address===SOL)
    .sort((a,b)=>Number(b.liquidity?.usd||0)-Number(a.liquidity?.usd||0))[0];
   if(best){canonicalSolPair=best;solPrice=Number(best.priceUsd||0);}
+  if(selectedToken)updateIndicativeTradeEstimate();
   if(connected)await loadPortfolio();
   if(allPairs.length)renderMarket();
  }catch(e){console.warn("SOL price:",e);}
@@ -861,6 +862,7 @@ function updateTradePercentUI(){
  $("percentAmount").textContent=connected
   ?formatAmount(amount,tradeDirection==="buy"?9:selectedTokenDecimals)+" "+symbol
   :"Connect wallet to calculate amount";
+ updateIndicativeTradeEstimate();
 }
 function toSmallestUnits(amount,decimals){
  const precision=Math.max(0,Math.min(9,Number(decimals)||0));
@@ -943,10 +945,43 @@ function jupiterHeaders(extra={}){
 // The matching SOL referral token account must also be initialized before enabling swaps.
 const QX_REFERRAL_ACCOUNT="UMRAMLr2CqNNSUhVJvdB2bbEGHPwL5n6LpFzTxycmBW";
 const QX_REFERRAL_FEE_BPS=100; // 100 bps = 1.00%
+function updateIndicativeTradeEstimate(){
+ const output=$("swapReceive");
+ const detail=$("indicativeReceive");
+ if(!selectedToken||!Number(selectedToken.priceUsd)||!solPrice){
+  output.textContent="Waiting for live market prices";
+  detail.textContent="Token price or SOL price unavailable";
+  return;
+ }
+ const amount=getTradeBalance()*tradePercent/100;
+ if(!connected||amount<=0){
+  output.textContent="Connect wallet / choose amount";
+  detail.textContent="Estimate appears when balance is available";
+  return;
+ }
+ const tokenPrice=Number(selectedToken.priceUsd);
+ const feeFactor=1-(QX_REFERRAL_FEE_BPS/10000);
+ let estimate=0,label="";
+ if(tradeDirection==="buy"){
+  estimate=(amount*solPrice/tokenPrice)*feeFactor;
+  label=(selectedToken.baseToken.symbol||"TOKEN");
+ }else{
+  estimate=(amount*tokenPrice/solPrice)*feeFactor;
+  label="SOL";
+ }
+ if(!Number.isFinite(estimate)||estimate<=0){
+  output.textContent="No indicative estimate";
+  detail.textContent="Check token liquidity and market price";
+  return;
+ }
+ const formatted=estimate.toLocaleString("en-US",{maximumFractionDigits:8});
+ output.textContent="~ "+formatted+" "+label;
+ detail.textContent="~ "+formatted+" "+label+" (includes estimated 1% QX fee)";
+}
 function clearPendingSwap(message){
  pendingSwapOrder=null;
  $("confirmSwapBtn").disabled=true;
- $("swapReceive").textContent="Get quote to see estimate";
+ updateIndicativeTradeEstimate();
  if(message)$("swapStatus").textContent=message;
 }
 function base64ToBytes(value){
@@ -1023,6 +1058,7 @@ async function requestQXQuote(){
   const outputDecimals=await getMintDecimals(pair.outputMint);
   pendingSwapOrder={data,outputDecimals,inputAmount:input.amount,inputSymbol:tradeDirection==="buy"?"SOL":selectedToken.baseToken.symbol,outputSymbol:tradeDirection==="buy"?selectedToken.baseToken.symbol:"SOL",createdAt:Date.now(),wallet:walletAddress};
   $("swapReceive").textContent=displayRawAmount(data.outAmount,outputDecimals)+" "+pendingSwapOrder.outputSymbol;
+  $("indicativeReceive").textContent="Live Jupiter quote · final amount before signing";
   const feeMintLabel=data.feeMint===SOL?"SOL":data.feeMint===USDC?"USDC":short(data.feeMint);
   $("qxFeeDisplay").textContent="1.00% | included in "+feeMintLabel;
   $("swapRoute").textContent="QX / "+(data.router||"Best available route");
