@@ -191,9 +191,9 @@ footer{text-align:center;color:var(--muted);padding:25px;font-size:11px}
 @media(min-width:700px){.qx-social{right:max(22px,calc((100vw - 1000px)/2 + 18px));bottom:95px;width:43px;height:43px}}
 
 /* QX MARKET WORKSPACE */
-.market-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(330px,390px);grid-template-areas:"list detail";gap:14px;align-items:start}
+.market-layout{display:flex;flex-direction:column;gap:12px;align-items:stretch}
 .market-list-column{grid-area:list;min-width:0}
-#detail{grid-area:detail;position:sticky;top:10px;max-height:calc(100vh - 105px);overflow:auto;overscroll-behavior:contain;margin:0;scrollbar-width:thin;scrollbar-color:#49336b transparent}
+#detail{position:relative;order:2;width:100%;max-height:none;overflow:visible;margin:0;scrollbar-width:thin}
 #detail::-webkit-scrollbar{width:5px}#detail::-webkit-scrollbar-thumb{background:#49336b;border-radius:8px}
 .new-coin-meta{display:block;color:#9f94b4;font-size:10px;line-height:1.45;margin-top:4px;white-space:normal}
 .new-live-tag{display:inline-flex;align-items:center;gap:5px;color:var(--green);font-size:10px;font-weight:800;letter-spacing:.5px}
@@ -221,7 +221,7 @@ footer{text-align:center;color:var(--muted);padding:25px;font-size:11px}
  .coin-logo,.coin-fallback{width:32px;height:32px}
  .coin-info strong{max-width:125px;font-size:12px}
 }
-@media(min-width:761px) and (max-width:980px){.market-layout{grid-template-columns:minmax(0,1fr) minmax(300px,350px);gap:10px}.panel{padding:13px}}
+@media(min-width:761px) and (max-width:980px){.market-layout{display:flex;flex-direction:column;gap:10px}.panel{padding:13px}}
 
 
 /* QX NEON PURPLE x GREEN VISUAL SYSTEM */
@@ -231,7 +231,7 @@ body{background:radial-gradient(ellipse at 8% 0%,rgba(132,45,255,.34),transparen
 header{padding:15px 0 25px}
 .brand-lockup{display:flex;align-items:center;gap:11px;min-width:0}
 .brand-mark{width:47px;height:47px;display:grid;place-items:center;border-radius:15px;background:linear-gradient(145deg,#9c42ff 0%,#6c28ed 48%,#19e99a 100%);box-shadow:0 0 24px rgba(155,70,255,.48),inset 0 1px 0 rgba(255,255,255,.35);font-size:23px;font-weight:1000;letter-spacing:-2px;color:#fff}
-.brand-mark{font-family:Arial,sans-serif;letter-spacing:-2px;font-weight:1000;text-shadow:0 1px 2px rgba(0,0,0,.25)}
+.brand-mark{color:#fff!important;text-shadow:0 1px 2px #180b2a}
 .logo{font-size:25px;font-weight:950;letter-spacing:-.8px;text-shadow:0 0 18px rgba(180,92,255,.25)}
 .logo span{color:#43ffad;text-shadow:0 0 15px rgba(67,255,173,.45)}
 .logo .small{font-size:9px;letter-spacing:1.8px;color:#c7b1ed;margin-top:4px}
@@ -268,18 +268,7 @@ input:focus{outline:none;border-color:#43ffad;box-shadow:0 0 0 2px rgba(67,255,1
 .percent-btn{border-color:#67409a;background:#211333;color:#e7d8fb}
 .percent-btn.active{background:linear-gradient(100deg,#a64cff,#43ffad);color:#10091d;border-color:#43ffad;box-shadow:0 0 13px rgba(67,255,173,.2)}
 .percent-range{accent-color:#43ffad}
-.swap-box{background:radial-gradient(circle at 100% 0%,rgba(67,255,173,.08),transparent 35%),linear-gradient(145deg,#211039,#0c0818);border:1px solid #8b50ca;border-radius:14px;padding:10px;margin-top:9px;box-shadow:0 0 18px rgba(133,55,255,.10),inset 0 1px 0 rgba(255,255,255,.05)}
-.swap-box>.trade-buttons{margin:0 0 9px;padding:3px;gap:6px}
-.swap-box>.trade-buttons .trade-btn{min-height:35px;padding:7px 10px;font-size:11px}
-.swap-box .percent-panel{padding:8px;margin:0 0 8px}
-.swap-box .percent-top{margin-bottom:7px}
-.swap-box .amount-entry{margin:6px 0 6px;padding:5px 9px}
-.swap-box .amount-entry input{font-size:18px}
-.swap-box .percent-buttons{margin-bottom:6px}
-.swap-box .percent-btn{padding:6px 3px}
-.swap-box .swap-quote{padding:7px 2px;font-size:10px}
-.swap-box .swap-action{min-height:42px;margin-top:7px}
-.swap-box .swap-status{margin-top:8px;padding:8px;font-size:10px}
+.swap-box{background:radial-gradient(circle at 100% 0%,rgba(67,255,173,.1),transparent 35%),linear-gradient(145deg,#211039,#0c0818);border:1px solid #8b50ca;border-radius:17px;padding:15px;box-shadow:0 0 24px rgba(133,55,255,.14),inset 0 1px 0 rgba(255,255,255,.06)}
 .swap-quote{padding:11px 2px;border-color:rgba(131,83,180,.38);font-size:12px}
 .swap-quote strong{color:#f8f3ff}
 .swap-quote:nth-child(2) strong{color:#43ffad;font-size:14px;text-shadow:0 0 12px rgba(67,255,173,.22)}
@@ -292,7 +281,7 @@ input:focus{outline:none;border-color:#43ffad;box-shadow:0 0 0 2px rgba(67,255,1
 .swap-status{padding:10px 11px;border-radius:10px;background:rgba(7,5,16,.62);border:1px solid rgba(118,71,161,.35);color:#c8b8dd}
 .fee-note{font-size:10px;line-height:1.55;color:#bcaed0}
 .detail-link{color:#43ffad}
-@media(max-width:600px){.wrap{padding-left:11px;padding-right:11px}.brand-mark{width:42px;height:42px;border-radius:13px}.logo{font-size:22px}.swap-box{padding:9px;margin-top:7px}.swap-box .swap-quote{padding:6px 1px}.swap-box .swap-action{min-height:40px}}
+@media(max-width:600px){.wrap{padding-left:11px;padding-right:11px}.brand-mark{width:42px;height:42px;border-radius:13px}.logo{font-size:22px}.qx-swap-head{padding:13px}.qx-swap-head strong{font-size:15px}.swap-box{padding:12px}}
 
 
 /* QX PUBLIC PAID ADS */
@@ -330,6 +319,29 @@ input:focus{outline:none;border-color:#43ffad;box-shadow:0 0 0 2px rgba(67,255,1
 .ad-pay-btn:disabled{opacity:.45}
 .ad-status{font-size:11px;line-height:1.5;color:#d4c5e8;overflow-wrap:anywhere;margin-top:10px;white-space:pre-wrap}
 @media(min-width:700px){.ads-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+
+/* QX MARKET-FIRST COMPACT SWAP EXPERIENCE */
+.market-layout{display:flex!important;flex-direction:column!important;gap:12px!important}
+.market-list-column{order:1;width:100%;min-width:0}
+#detail{order:2;width:100%;position:relative!important;top:auto!important;max-height:none!important;overflow:visible!important;padding:12px;margin:0 0 12px}
+#detail .detail-collapsed-title{font-size:10px;font-weight:900;letter-spacing:1px;color:#cbb5eb;padding:2px 2px 9px}
+#detail.compact-collapsed{padding:9px 11px;border-color:#7a4ab0}
+#detail.compact-collapsed>:not(.detail-collapsed-title):not(.swap-box){display:none!important}
+#detail.compact-collapsed .swap-box{display:block!important;margin:0;padding:0;background:transparent;border:0;box-shadow:none}
+#detail.compact-collapsed .swap-box>:not(.trade-buttons){display:none!important}
+#detail .trade-buttons{display:grid!important;grid-template-columns:1fr 1fr;gap:9px;margin:0;padding:0;background:transparent;border:0;box-shadow:none}
+#detail .trade-btn{min-height:43px;border-radius:11px;font-weight:950;font-size:13px}
+#detail.expanded .qx-swap-head{margin-top:10px}
+#detail.expanded .trade-buttons{margin:8px 0 12px}
+#detail.expanded .swap-box{margin-top:8px}
+#detail .qx-hidden-quote{display:none!important}
+#detail .trade-flip{display:none!important}
+#detail .fee-note{display:none!important}
+#detail .swap-status{font-size:10px;line-height:1.4}
+#detail .swap-quote{padding:7px 9px}
+#detail .amount-entry{margin:6px 0}
+@media(max-width:760px){#detail{padding:10px!important}#detail.expanded .detail-stats{gap:6px}#detail.expanded #detailChart{height:175px}}
 
 </style>
 </head>
@@ -426,7 +438,7 @@ input:focus{outline:none;border-color:#43ffad;box-shadow:0 0 0 2px rgba(67,255,1
    <p class="market-status" id="marketStatus">Connecting to live market data...</p>
   </div>
 
-  <section id="detail" class="panel" style="display:none">
+  <section id="detail" class="panel compact-collapsed">
    <div class="detail-top">
     <img id="detailImage" alt="" src="" style="display:none">
     <div><h2 id="detailName">Token</h2><span class="small" id="detailSymbol"></span></div>
@@ -445,13 +457,8 @@ input:focus{outline:none;border-color:#43ffad;box-shadow:0 0 0 2px rgba(67,255,1
    </div>
    <a id="solscanLink" class="detail-link" target="_blank" rel="noopener">View contract on Solscan -&gt;</a>
 
-   <span id="tradeTitle" hidden>Buy this token with SOL</span>
-   <div class="swap-box">
-    <button class="trade-flip" id="swapDirectionBtn" type="button" hidden aria-hidden="true">SWAP DIRECTION</button>
-    <div class="trade-buttons" aria-label="Choose buy or sell">
-     <button class="trade-btn buy active" id="buyBtn" type="button">BUY</button>
-     <button class="trade-btn sell" id="sellBtn" type="button">SELL</button>
-    </div>
+   <div class="detail-collapsed-title" id="detailCollapsedTitle">SELECT A TOKEN TO TRADE</div>
+   <div class="qx-swap-head"><div><div class="qx-swap-kicker">QX EXCHANGE / INSTANT TRADE</div><strong id="tradeTitle">Buy this token with SOL</strong><p>Trade directly inside QX. No external swap page.</p></div><div class="qx-swap-icon">â</div></div>
    <div class="percent-panel" id="percentPanel">
     <div class="percent-top"><span class="percent-title">YOU PAY</span><span class="percent-amount" id="percentAmount">Loading wallet balance...</span></div>
     <div class="amount-entry"><input id="tradeAmountInput" type="number" min="0" step="any" inputmode="decimal" placeholder="0.00" aria-label="Trade amount"><span class="amount-symbol" id="tradeAmountSymbol">SOL</span></div>
@@ -462,13 +469,19 @@ input:focus{outline:none;border-color:#43ffad;box-shadow:0 0 0 2px rgba(67,255,1
     <input class="percent-range" id="percentRange" type="range" min="0" max="100" step="1" value="25" aria-label="Trade percentage">
     <div class="percent-foot"><span>0%</span><span id="percentValue">25%</span><span>100%</span></div>
    </div>
+   <div class="swap-box">
+    <div class="trade-buttons">
+     <button class="trade-btn buy active" id="buyBtn" type="button">BUY</button>
+     <button class="trade-btn sell" id="sellBtn" type="button">SELL</button>
+    </div>
+    <button class="trade-flip" id="swapDirectionBtn" type="button" aria-label="Reverse swap direction">â SWAP DIRECTION Â· SOL â TOKEN</button>
     <div class="swap-quote"><span>You pay</span><strong id="swapPay">-</strong></div>
     <div class="swap-quote"><span>Estimated receive</span><strong id="swapReceive">Enter amount to estimate</strong></div>
-    <div class="swap-quote"><span>QX commission</span><strong id="qxFeeDisplay">1.00%</strong></div>
+    <div class="swap-quote"><span>QX commission</span><strong id="qxFeeDisplay">1.00% | fee setup required</strong></div>
     <div class="swap-quote"><span>Route</span><strong id="swapRoute">QX best available route</strong></div>
     <div class="swap-quote"><span>Wallet</span><strong id="swapWallet">Not connected</strong></div>
-    <button class="swap-action" id="getQuoteBtn"><span>GET BEST PRICE</span><small>Jupiter route Â· inside QX</small></button>
-    <button class="swap-action swap-secondary" id="confirmSwapBtn" disabled>CONFIRM IN CONNECTED WALLET</button>
+    <button class="swap-action qx-hidden-quote" id="getQuoteBtn" type="button" aria-hidden="true" tabindex="-1">GET QUOTE</button>
+    <button class="swap-action swap-secondary" id="confirmSwapBtn" disabled>CONFIRM IN WALLET</button>
     <p class="swap-status" id="swapStatus">Connect your wallet, enter an amount, get a quote, then confirm in your connected wallet.</p>
    </div>
   </section>
@@ -1242,7 +1255,7 @@ async function requestQXQuote(){
    throw new Error("QX Swap is ready in the interface, but the full Jupiter Publishable API key has not been inserted yet.");
   }
   if(!valid(QX_REFERRAL_ACCOUNT)){
-   $("qxFeeDisplay").textContent="1.00%";
+   $("qxFeeDisplay").textContent="1.00% | setup pending";
    throw new Error("QX 1% commission is not activated yet. Add the QX referral account and initialize its SOL fee account before enabling swaps.");
   }
   const pair=getSwapMints();
@@ -1282,7 +1295,7 @@ async function requestQXQuote(){
   pendingSwapOrder={data,outputDecimals,inputAmount:input.amount,inputSymbol:tradeDirection==="buy"?"SOL":selectedToken.baseToken.symbol,outputSymbol:tradeDirection==="buy"?selectedToken.baseToken.symbol:"SOL",createdAt:Date.now(),wallet:walletAddress};
   $("swapReceive").textContent=displayRawAmount(data.outAmount,outputDecimals)+" "+pendingSwapOrder.outputSymbol;
   const feeMintLabel=data.feeMint===SOL?"SOL":data.feeMint===USDC?"USDC":short(data.feeMint);
-  $("qxFeeDisplay").textContent="1.00%";
+  $("qxFeeDisplay").textContent="1.00% referral fee | "+feeMintLabel;
   $("swapRoute").textContent="QX / "+(data.router||"Best available route");
   $("confirmSwapBtn").disabled=false;
   $("swapStatus").textContent="Price ready. Review the estimated receive amount, then confirm the swap in your connected wallet. Final output can change with market conditions.";
@@ -1330,7 +1343,7 @@ async function executeQXSwap(){
   const signature=result.signature;
   const completedOrder=pendingSwapOrder;
   pendingSwapOrder=null;
-  $("qxFeeDisplay").textContent="1.00%";
+  $("qxFeeDisplay").textContent="1.00% referral fee | charged";
   $("swapReceive").textContent=displayRawAmount(result.totalOutputAmount||result.outputAmountResult,completedOrder.outputDecimals)+" "+completedOrder.outputSymbol;
   await loadPortfolio();
   $("swapReceive").textContent=displayRawAmount(result.totalOutputAmount||result.outputAmountResult,completedOrder.outputDecimals)+" "+completedOrder.outputSymbol;
@@ -1358,8 +1371,16 @@ function changeTradeDirection(direction){
  clearPendingSwap("Trade direction changed. Get a fresh quote.");
  if(selectedToken)refreshTradeBalance(false);
 }
-$("buyBtn").onclick=()=>changeTradeDirection("buy");
-$("sellBtn").onclick=()=>changeTradeDirection("sell");
+$("buyBtn").onclick=async()=>{
+ changeTradeDirection("buy");
+ if(!selectedToken){$("swapStatus").textContent="Choose a token from the market list first.";return;}
+ await requestQXQuote();
+};
+$("sellBtn").onclick=async()=>{
+ changeTradeDirection("sell");
+ if(!selectedToken){$("swapStatus").textContent="Choose a token from the market list first.";return;}
+ await requestQXQuote();
+};
 $("swapDirectionBtn").onclick=()=>changeTradeDirection(tradeDirection==="buy"?"sell":"buy");
 
 /* TOKEN DETAILS + CHART */
@@ -1391,6 +1412,9 @@ function openToken(token){
  clearPendingSwap("Token selected. Enter an amount and get a fresh quote.");
  selectedToken=token;
  $("detail").style.display="block";
+ $("detail").classList.remove("compact-collapsed");
+ $("detail").classList.add("expanded");
+ $("detailCollapsedTitle").textContent=(token.baseToken.symbol||token.baseToken.name||"TOKEN")+" Â· READY TO TRADE";
  refreshSelectedTokenDetails(token);
  tradePercent=25;
  updateTradePercentUI();
