@@ -230,10 +230,12 @@ body{background:radial-gradient(ellipse at 8% 0%,rgba(132,45,255,.34),transparen
 .wrap{max-width:1080px}
 header{padding:15px 0 25px}
 .brand-lockup{display:flex;align-items:center;gap:11px;min-width:0}
-.brand-mark{position:relative;width:49px;height:49px;display:grid;place-items:center;border-radius:16px;background:linear-gradient(145deg,#b65cff 0%,#762dff 48%,#142b36 100%);border:1px solid rgba(210,173,255,.72);box-shadow:0 0 0 3px rgba(166,76,255,.10),0 0 27px rgba(155,70,255,.38),inset 0 1px 0 rgba(255,255,255,.38);font-size:23px;font-weight:1000;letter-spacing:-3px;color:#fff;isolation:isolate;overflow:hidden}
-.brand-mark:before{content:"";position:absolute;inset:5px;border:1px solid rgba(255,255,255,.22);border-radius:11px;z-index:-1}
-.brand-mark:after{content:"";position:absolute;width:31px;height:31px;right:-15px;bottom:-17px;border-radius:50%;background:#43ffad;filter:blur(13px);opacity:.75;z-index:-1}
-.brand-mark span{color:#72ffc4;text-shadow:0 0 12px rgba(67,255,173,.75)}
+.brand-mark{position:relative;width:54px;height:54px;display:grid;place-items:center;flex:0 0 54px;border-radius:17px;background:linear-gradient(145deg,#24113f 0%,#100b20 58%,#08271f 100%);border:1px solid rgba(190,126,255,.9);box-shadow:0 0 0 3px rgba(166,76,255,.12),0 0 28px rgba(155,70,255,.34),0 0 22px rgba(67,255,173,.12),inset 0 1px 0 rgba(255,255,255,.2);overflow:hidden}
+.brand-mark:before{content:"";position:absolute;inset:4px;border:1px solid rgba(255,255,255,.16);border-radius:13px}
+.brand-mark svg{width:43px;height:43px;position:relative;z-index:1;filter:drop-shadow(0 0 7px rgba(67,255,173,.25))}
+.logo{font-size:26px;font-weight:950;letter-spacing:-1px;line-height:1.05;color:#fff}
+.logo span{color:#43ffad;text-shadow:0 0 15px rgba(67,255,173,.45)}
+.logo .small{font-size:9px;letter-spacing:2px;color:#c7b1ed;margin-top:6px;font-weight:700}
 .logo{font-size:25px;font-weight:950;letter-spacing:-.8px;text-shadow:0 0 18px rgba(180,92,255,.25)}
 .logo span{color:#43ffad;text-shadow:0 0 15px rgba(67,255,173,.45)}
 .logo .small{font-size:9px;letter-spacing:1.8px;color:#c7b1ed;margin-top:4px}
@@ -286,7 +288,7 @@ input:focus{outline:none;border-color:#43ffad;box-shadow:0 0 0 2px rgba(67,255,1
 @media(max-width:600px){.wrap{padding-left:11px;padding-right:11px}.brand-mark{width:43px;height:43px;border-radius:14px}.logo{font-size:22px}.qx-swap-head{padding:13px}.qx-swap-head strong{font-size:15px}.swap-box{padding:12px}}
 
 
-/* QX TOKEN TERMINAL â FULL PAGE, INTERNAL CHART */
+/* QX TOKEN TERMINAL - FULL PAGE, INTERNAL CHART */
 .token-back-btn{display:flex;align-items:center;gap:9px;border:1px solid #49336b;background:#171126;color:#e9ddfb;border-radius:10px;padding:10px 13px;font-size:11px;font-weight:900;letter-spacing:.6px;margin:0 0 16px;cursor:pointer}
 .token-back-btn span{font-size:19px;line-height:12px;color:var(--green)}
 body.qx-token-open{overflow:hidden}
@@ -325,7 +327,7 @@ body.qx-token-open #getQuoteBtn{display:none!important}
 <body>
 <div class="wrap">
 <header>
- <div class="brand-lockup"><div class="brand-mark">Q<span>X</span></div><div class="logo">QX <span>EXCHANGE</span><div class="small">SWAP â¢ CREATE â¢ DISCOVER</div></div></div>
+ <div class="brand-lockup"><div class="brand-mark" role="img" aria-label="QX logo"><svg viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="qxGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d9a6ff"/><stop offset=".52" stop-color="#a64cff"/><stop offset="1" stop-color="#43ffad"/></linearGradient></defs><path d="M32 8.5a23.5 23.5 0 1 0 15.9 40.8L57 57" fill="none" stroke="url(#qxGrad)" stroke-width="7" stroke-linecap="round"/><path d="M21 21l22 22M43 21L21 43" fill="none" stroke="#f8f3ff" stroke-width="6.2" stroke-linecap="round"/><path d="M48 12l4 4" stroke="#43ffad" stroke-width="3" stroke-linecap="round"/></svg></div><div class="logo">QX <span>EXCHANGE</span><div class="small">SWAP | CREATE | DISCOVER</div></div></div>
  <button class="btn primary" id="connectBtn">Connect Wallet</button>
 </header>
 
@@ -407,7 +409,7 @@ body.qx-token-open #getQuoteBtn{display:none!important}
   </div>
 
   <section id="detail" class="panel" style="display:none">
-   <button class="token-back-btn" id="tokenBackBtn" type="button" aria-label="Back to Solana markets"><span aria-hidden="true">â</span> BACK TO MARKETS</button>
+   <button class="token-back-btn" id="tokenBackBtn" type="button" aria-label="Back to Solana markets"><span aria-hidden="true"><</span> BACK TO MARKETS</button>
    <div class="detail-top">
     <img id="detailImage" alt="" src="" style="display:none">
     <div><h2 id="detailName">Token</h2><span class="small" id="detailSymbol"></span></div>
@@ -426,12 +428,12 @@ body.qx-token-open #getQuoteBtn{display:none!important}
     <div class="chart-toolbar"><strong>QX LIVE CHART</strong><div class="chart-ranges" id="chartRanges"><button type="button" class="chart-range active" data-chart-range="5m">5M</button><button type="button" class="chart-range" data-chart-range="15m">15M</button><button type="button" class="chart-range" data-chart-range="1H">1H</button><button type="button" class="chart-range" data-chart-range="4H">4H</button><button type="button" class="chart-range" data-chart-range="1D">1D</button></div></div>
     <div id="detailChart" role="img" aria-label="QX native Solana candlestick chart"></div>
     <div id="chartMessage" class="chart-message" style="display:none"></div>
-    <div class="chart-credit">Chart rendered inside QX Â· Solana market data</div>
+    <div class="chart-credit">Chart rendered inside QX | Solana market data</div>
    </div>
    <a id="solscanLink" class="detail-link" target="_blank" rel="noopener">View contract on Solscan -&gt;</a>
 
-   <button class="trade-flip" id="swapDirectionBtn" type="button" aria-label="Reverse swap direction" hidden>â SWAP DIRECTION Â· SOL â TOKEN</button>
-   <div class="qx-swap-head"><div><div class="qx-swap-kicker">QX EXCHANGE / INSTANT TRADE</div><strong id="tradeTitle">Buy this token with SOL</strong><p>Trade directly inside QX. No external swap page.</p></div><div class="qx-swap-icon">â</div></div>
+   <button class="trade-flip" id="swapDirectionBtn" type="button" aria-label="Reverse swap direction" hidden>REVERSE SWAP DIRECTION | SOL TO TOKEN</button>
+   <div class="qx-swap-head"><div><div class="qx-swap-kicker">QX EXCHANGE / INSTANT TRADE</div><strong id="tradeTitle">Buy this token with SOL</strong><p>Trade directly inside QX. No external swap page.</p></div><div class="qx-swap-icon">SWAP</div></div>
    <div class="percent-panel" id="percentPanel">
     <div class="percent-top"><span class="percent-title">YOU PAY</span><span class="percent-amount" id="percentAmount">Loading wallet balance...</span></div>
     <div class="amount-entry"><input id="tradeAmountInput" type="number" min="0" step="any" inputmode="decimal" placeholder="0.00" aria-label="Trade amount"><span class="amount-symbol" id="tradeAmountSymbol">SOL</span></div>
@@ -452,7 +454,7 @@ body.qx-token-open #getQuoteBtn{display:none!important}
     <div class="swap-quote"><span>QX commission</span><strong id="qxFeeDisplay">1.00% | fee setup required</strong></div>
     <div class="swap-quote"><span>Route</span><strong id="swapRoute">QX best available route</strong></div>
     <div class="swap-quote"><span>Wallet</span><strong id="swapWallet">Not connected</strong></div>
-    <button class="swap-action" id="getQuoteBtn"><span>GET BEST PRICE</span><small>Jupiter route Â· inside QX</small></button>
+    <button class="swap-action" id="getQuoteBtn"><span>GET BEST PRICE</span><small>Jupiter route | inside QX</small></button>
     <button class="swap-action swap-secondary" id="confirmSwapBtn" disabled>CONFIRM SWAP IN PHANTOM</button>
     <p class="fee-note">QX fee: <strong>1%</strong> per completed swap. The live quote must confirm the full fee before Phantom signing. No fee is charged when a swap is not completed.</p>
     <p class="swap-status" id="swapStatus">Connect your wallet, enter an amount, get a quote, then confirm in Phantom.</p>
@@ -566,7 +568,7 @@ async function rpc(method,params){
 /* WALLET */
 
 function setBalanceVisibility(){
- $("balanceToggle").textContent=balancesHidden?"â":"â";
+ $("balanceToggle").textContent=balancesHidden?"SHOW":"HIDE";
  $("balanceToggle").setAttribute("aria-label",balancesHidden?"Show balances":"Hide balances");
  $("balanceToggle").title=balancesHidden?"Show balances":"Hide balances";
  $("totalValue").textContent=masked($("totalValue").dataset.realValue||"-");
@@ -793,7 +795,7 @@ async function createQXToken(){
   const saved=JSON.parse(localStorage.getItem("qxCreatedTokens")||"[]");
   saved.unshift({name,symbol,decimals,mint:mintAddress,owner:walletAddress,signature,createdAt:Date.now()});
   localStorage.setItem("qxCreatedTokens",JSON.stringify(saved.slice(0,50)));
-  $("createdTokenMint").textContent=name+" ("+symbol+") Â· Mint: "+mintAddress;
+  $("createdTokenMint").textContent=name+" ("+symbol+") | Mint: "+mintAddress;
   $("createdTokenSolscan").href="https://solscan.io/tx/"+encodeURIComponent(signature);
   resultBox.style.display="block";
   status.textContent="Token mint and initial supply confirmed on Solana Mainnet. The record is saved in this browser.";
@@ -885,20 +887,20 @@ async function loadMarket(){
   if(canonicalSolPair)merged.set(SOL,canonicalSolPair);
   allPairs=[...merged.values()];
   if(!allPairs.length)throw new Error("No Solana market data returned. Try again shortly.");
-  $("marketStatus").textContent="Market data refreshes automatically Â· Last update "+new Date().toLocaleTimeString();
+  $("marketStatus").textContent="Market data refreshes automatically | Last update "+new Date().toLocaleTimeString();
   renderMarket();
   if(selectedToken){
    const updated=allPairs.find(p=>p.baseToken.address===selectedToken.baseToken.address);
    if(updated){selectedToken=updated;refreshSelectedTokenDetails(updated);updateIndicativeEstimate();}
   }
  }catch(e){
-  $("marketStatus").textContent="Market feed temporarily unavailable Â· "+(e.message||"Retrying automatically");
+  $("marketStatus").textContent="Market feed temporarily unavailable | "+(e.message||"Retrying automatically");
   if(!allPairs.length)$ ("tokenResults").innerHTML='<div class="market-empty">Market data unavailable. Please try again.</div>';
  }finally{marketBusy=false;}
 }
 
 const categoryNames={
- all:"All Solana tokens",new:"New Coins Â· Live",gainers:"Top Gainers | 24h",
+ all:"All Solana tokens",new:"New Coins | Live",gainers:"Top Gainers | 24h",
  losers:"Top Losers | 24h",trending:"Trending tokens",volume:"Top Volume | 24h"
 };
 function getCategoryPairs(){
@@ -991,7 +993,7 @@ function renderMarket(){
   const img=image?`<img class="coin-logo" src="${escapeHTML(image)}" alt="${name}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`:"";
   const fallback=`<span class="coin-fallback" style="display:${image?"none":"flex"}">${escapeHTML((p.baseToken?.symbol||"?").slice(0,2))}</span>`;
   const age=p.pairCreatedAt?timeSince(p.pairCreatedAt):"Recently discovered";
-  const meta=currentCategory==="new"?`<span class="new-coin-meta">${age} Â· MC ${money(p.marketCap||p.fdv)} Â· LIQ ${money(p.liquidity?.usd)} Â· VOL ${money(p.volume?.h24)} Â· TX ${Number(p.txns?.h24?.buys||0)+Number(p.txns?.h24?.sells||0)}</span>`:"";
+  const meta=currentCategory==="new"?`<span class="new-coin-meta">${age} | MC ${money(p.marketCap||p.fdv)} | LIQ ${money(p.liquidity?.usd)} | VOL ${money(p.volume?.h24)} | TX ${Number(p.txns?.h24?.buys||0)+Number(p.txns?.h24?.sells||0)}</span>`:"";
   return `<div class="market-row">
    <button class="coin-button" data-mint="${mint}">${img}${fallback}<span class="coin-info"><strong>${name}</strong><small>${symbol}</small>${meta}</span></button>
    <span class="market-price">${usd(p.priceUsd)}</span><span class="market-change ${cls}">${changeText}</span>
@@ -1240,7 +1242,7 @@ function updateIndicativeEstimate(){
  estimate*=0.99;
  const outputSymbol=tradeDirection==="buy"?(selectedToken.baseToken.symbol||"TOKEN"):"SOL";
  $("swapPay").textContent=formatAmount(amount,tradeDirection==="buy"?9:selectedTokenDecimals)+" "+(tradeDirection==="buy"?"SOL":(selectedToken.baseToken.symbol||"TOKEN"));
- $("swapReceive").textContent="â "+formatAmount(estimate,tradeDirection==="buy"?6:9)+" "+outputSymbol+" Â· indicative";
+ $("swapReceive").textContent="~ "+formatAmount(estimate,tradeDirection==="buy"?6:9)+" "+outputSymbol+" | indicative";
 }
 function getSwapMints(){
  const mint=selectedToken?.baseToken?.address;
@@ -1369,7 +1371,7 @@ $("confirmSwapBtn").onclick=executeQXSwap;
 function changeTradeDirection(direction){
  tradeDirection=direction;
  $("tradeTitle").textContent=direction==="buy"?"Buy this token with SOL":"Sell this token for SOL";
- $("swapDirectionBtn").textContent=direction==="buy"?"â SWAP DIRECTION Â· SOL â TOKEN":"â SWAP DIRECTION Â· TOKEN â SOL";
+ $("swapDirectionBtn").textContent=direction==="buy"?"REVERSE SWAP DIRECTION | SOL TO TOKEN":"REVERSE SWAP DIRECTION | TOKEN TO SOL";
  $("buyBtn").classList.toggle("active",direction==="buy");
  $("sellBtn").classList.toggle("active",direction==="sell");
  updateTradePercentUI();
@@ -1380,7 +1382,7 @@ $("buyBtn").onclick=()=>{changeTradeDirection("buy");requestQXQuote();};
 $("sellBtn").onclick=()=>{changeTradeDirection("sell");requestQXQuote();};
 $("swapDirectionBtn").onclick=()=>changeTradeDirection(tradeDirection==="buy"?"sell":"buy");
 
-/* QX NATIVE SOLANA CANDLESTICK CHART â rendered inside QX */
+/* QX NATIVE SOLANA CANDLESTICK CHART - rendered inside QX */
 let qxChart=null,qxCandleSeries=null,qxVolumeSeries=null,qxChartPair="",activeChartRange="5m",qxChartResizeObserver=null,qxChartRequest=0;
 const QX_CHART_RANGES={"5m":{unit:"minute",aggregate:5},"15m":{unit:"minute",aggregate:15},"1H":{unit:"hour",aggregate:1},"4H":{unit:"hour",aggregate:4},"1D":{unit:"day",aggregate:1}};
 function initQXChart(){
@@ -1427,7 +1429,7 @@ function refreshSelectedTokenDetails(token){
  $("detailLiquidity").textContent=money(token.liquidity?.usd);
  $("detailVolume").textContent=money(token.volume?.h24);
  const buys=Number(token.txns?.h24?.buys||0),sells=Number(token.txns?.h24?.sells||0);
- $("detailTransactions").textContent=(buys+sells).toLocaleString("en-US")+" Â· "+buys+" buys / "+sells+" sells";
+ $("detailTransactions").textContent=(buys+sells).toLocaleString("en-US")+" | "+buys+" buys / "+sells+" sells";
  $("solscanLink").href="https://solscan.io/token/"+mint;
  const image=token.info?.imageUrl||"";
  if(image){$("detailImage").src=image;$("detailImage").style.display="block";}else{$("detailImage").removeAttribute("src");$("detailImage").style.display="none";}
@@ -1471,6 +1473,23 @@ setInterval(loadSolPrice,60000);
 setInterval(loadMarket,20000);
 // Refresh the selected token candles while its QX terminal is open.
 setInterval(()=>{if(document.body.classList.contains("qx-token-open")&&selectedToken?.pairAddress)loadQXChart(selectedToken.pairAddress,activeChartRange);},30000);
+
+// Repair common UTF-8-as-Windows-1252 mojibake in dynamic token/API text.
+(function qxInstallTextRepair(){
+ const bad=/(?:Ã.|Ã.|Ã¢â¬|Ã°Å¸|Ã¯Â¿Â½)/;
+ function fix(value){
+  if(typeof value!=="string"||!bad.test(value))return value;
+  try{const cp1252={8364:128,8218:130,402:131,8222:132,8230:133,8224:134,8225:135,710:136,8240:137,352:138,8249:139,338:140,381:142,8216:145,8217:146,8220:147,8221:148,8226:149,8211:150,8212:151,732:152,8482:153,353:154,8250:155,339:156,382:158,376:159};const bytes=Uint8Array.from(Array.from(value,c=>{const n=c.codePointAt(0);return n<=255?n:(cp1252[n]??63);}));const decoded=new TextDecoder("utf-8").decode(bytes);return decoded.includes("ï¿½")?value:decoded;}catch(_){return value;}
+ }
+ function walk(node){
+  if(node.nodeType===Node.TEXT_NODE){const v=fix(node.nodeValue);if(v!==node.nodeValue)node.nodeValue=v;return;}
+  if(node.nodeType!==Node.ELEMENT_NODE&&node.nodeType!==Node.DOCUMENT_NODE)return;
+  if(node.nodeType===Node.ELEMENT_NODE){for(const a of ["title","aria-label","placeholder"])if(node.hasAttribute(a)){const v=fix(node.getAttribute(a));if(v!==node.getAttribute(a))node.setAttribute(a,v);}}
+  for(const child of node.childNodes)walk(child);
+ }
+ walk(document.body);
+ new MutationObserver(records=>records.forEach(r=>{if(r.type==="characterData")walk(r.target);else r.addedNodes.forEach(walk);if(r.type==="attributes")walk(r.target);})).observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:["title","aria-label","placeholder"]});
+})();
 </script>
 </body>
 </html>
