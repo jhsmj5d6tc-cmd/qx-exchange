@@ -282,43 +282,6 @@ input:focus{outline:none;border-color:#43ffad;box-shadow:0 0 0 2px rgba(67,255,1
 .fee-note{font-size:10px;line-height:1.55;color:#bcaed0}
 .detail-link{color:#43ffad}
 @media(max-width:600px){.wrap{padding-left:11px;padding-right:11px}.brand-mark{width:42px;height:42px;border-radius:13px}.logo{font-size:22px}.qx-swap-head{padding:13px}.qx-swap-head strong{font-size:15px}.swap-box{padding:12px}}
-/* QX compact swap workspace */
-.brand-mark{font-size:0;letter-spacing:0;position:relative;overflow:hidden}
-.brand-mark:before{content:"QX";font-size:22px;font-weight:1000;letter-spacing:-1.8px;color:#fff}
-.brand-mark:after{content:"";position:absolute;inset:1px;border:1px solid rgba(255,255,255,.24);border-radius:14px;pointer-events:none}
-.brand-mark span{display:none}
-.logo{white-space:nowrap}
-.qx-swap-head{margin:0 0 10px;padding:10px 12px;border-radius:12px;box-shadow:none}
-.qx-swap-head strong{font-size:14px;margin:2px 0}
-.qx-swap-head p{font-size:10px;margin:3px 0 0}
-.qx-swap-icon{width:36px;height:36px;flex-basis:36px;border-radius:11px;font-size:21px}
-.qx-trade-switch{margin:0 0 10px;padding:3px;gap:6px}
-.qx-trade-switch .trade-btn{min-height:36px;padding:7px 10px}
-.qx-trade-switch .trade-btn.buy.active{background:linear-gradient(100deg,#a64cff,#43ffad)}
-.qx-trade-switch .trade-btn.sell.active{background:linear-gradient(100deg,#a64cff,#ff557e)}
-.swap-box .percent-panel{margin:8px 0 10px}
-.swap-box .swap-quote{padding:8px 2px;font-size:11px}
-.swap-box .swap-action{min-height:43px}
-#detail .detail-top{margin-bottom:7px}
-#detail .detail-top img{width:36px;height:36px}
-@media(max-width:760px){
- #detail{position:fixed;left:10px;right:10px;bottom:calc(78px + env(safe-area-inset-bottom));top:auto;width:auto;max-height:48vh;overflow-y:auto;z-index:800;margin:0;padding:10px 11px;border-radius:16px;box-shadow:0 14px 45px rgba(0,0,0,.72),0 0 24px rgba(143,65,255,.24);overscroll-behavior:contain}
- #detailChartWrap,.detail-stats{display:none!important}
- #detail .detail-price{font-size:19px;margin:4px 0 2px}
- #detail .detail-change{font-size:11px}
- #detail .address{font-size:9px;max-height:28px;overflow:hidden}
- #detail .detail-top h2{font-size:15px}
- #detail .trade-buttons{margin:0 0 9px}
- #detail .swap-box{padding:10px;margin-top:0}
- #detail .percent-panel{padding:8px;margin:7px 0}
- #detail .percent-buttons{margin-bottom:6px}
- #detail .percent-btn{padding:6px 3px}
- #detail .percent-range{margin:5px 0 2px}
- #detail .fee-note{display:none}
- #detail .swap-status{font-size:10px;padding:7px 8px;margin-top:7px}
- #detail .qx-swap-head{display:none}
-}
-
 
 
 /* QX PUBLIC PAID ADS */
@@ -362,7 +325,7 @@ input:focus{outline:none;border-color:#43ffad;box-shadow:0 0 0 2px rgba(67,255,1
 <body>
 <div class="wrap">
 <header>
- <div class="brand-lockup"><div class="brand-mark" aria-label="QX logo"></div><div class="logo">QX <span>EXCHANGE</span><div class="small">SWAP | CREATE | DISCOVER</div></div></div>
+ <div class="brand-lockup"><div class="brand-mark">Q<span>X</span></div><div class="logo">QX <span>EXCHANGE</span><div class="small">SWAP | CREATE | DISCOVER</div></div></div>
  <button class="btn primary" id="connectBtn">Connect Wallet</button>
 </header>
 
@@ -411,8 +374,8 @@ input:focus{outline:none;border-color:#43ffad;box-shadow:0 0 0 2px rgba(67,255,1
   <div class="ads-head">
    <div><div class="ads-title">Sponsored</div><div class="ads-sub">Featured projects</div></div>
    <div class="ads-menu-wrap">
-    <button class="ads-menu-btn" id="adsMenuBtn" aria-label="Advertisement options" aria-expanded="false">â®</button>
-    <div class="ads-menu" id="adsMenu"><button type="button" id="addAdMenuBtn">ï¼ Add advertisement</button></div>
+    <button class="ads-menu-btn" id="adsMenuBtn" aria-label="Advertisement options" aria-expanded="false">⋮</button>
+    <div class="ads-menu" id="adsMenu"><button type="button" id="addAdMenuBtn">＋ Add advertisement</button></div>
    </div>
   </div>
   <div class="ads-list" id="publicAdsList"><div class="ad-empty">No sponsored advertisements yet.</div></div>
@@ -471,12 +434,12 @@ input:focus{outline:none;border-color:#43ffad;box-shadow:0 0 0 2px rgba(67,255,1
    </div>
    <a id="solscanLink" class="detail-link" target="_blank" rel="noopener">View contract on Solscan -&gt;</a>
 
-   <div class="swap-box">
-    <div class="qx-swap-head"><div><div class="qx-swap-kicker">QX EXCHANGE / TOKEN SWAP</div><strong id="tradeTitle">Buy this token with SOL</strong><p>Live quote Â· review before wallet approval</p></div><div class="qx-swap-icon">â</div></div>
-    <div class="trade-buttons qx-trade-switch">
-     <button class="trade-btn buy active" id="buyBtn" type="button">BUY</button>
-     <button class="trade-btn sell" id="sellBtn" type="button">SELL</button>
-    </div>
+   <div class="trade-buttons">
+    <button class="trade-btn buy active" id="buyBtn">BUY</button>
+    <button class="trade-btn sell" id="sellBtn">SELL</button>
+   </div>
+   <button class="trade-flip" id="swapDirectionBtn" type="button" aria-label="Reverse swap direction">↕ SWAP DIRECTION · SOL → TOKEN</button>
+   <div class="qx-swap-head"><div><div class="qx-swap-kicker">QX EXCHANGE / INSTANT TRADE</div><strong id="tradeTitle">Buy this token with SOL</strong><p>Trade directly inside QX. No external swap page.</p></div><div class="qx-swap-icon">⇄</div></div>
    <div class="percent-panel" id="percentPanel">
     <div class="percent-top"><span class="percent-title">YOU PAY</span><span class="percent-amount" id="percentAmount">Loading wallet balance...</span></div>
     <div class="amount-entry"><input id="tradeAmountInput" type="number" min="0" step="any" inputmode="decimal" placeholder="0.00" aria-label="Trade amount"><span class="amount-symbol" id="tradeAmountSymbol">SOL</span></div>
@@ -487,14 +450,15 @@ input:focus{outline:none;border-color:#43ffad;box-shadow:0 0 0 2px rgba(67,255,1
     <input class="percent-range" id="percentRange" type="range" min="0" max="100" step="1" value="25" aria-label="Trade percentage">
     <div class="percent-foot"><span>0%</span><span id="percentValue">25%</span><span>100%</span></div>
    </div>
+   <div class="swap-box">
     <div class="swap-quote"><span>You pay</span><strong id="swapPay">-</strong></div>
     <div class="swap-quote"><span>Estimated receive</span><strong id="swapReceive">Enter amount to estimate</strong></div>
     <div class="swap-quote"><span>QX commission</span><strong id="qxFeeDisplay">1.00% | fee setup required</strong></div>
     <div class="swap-quote"><span>Route</span><strong id="swapRoute">QX best available route</strong></div>
     <div class="swap-quote"><span>Wallet</span><strong id="swapWallet">Not connected</strong></div>
-    <button class="swap-action" id="getQuoteBtn"><span>REFRESH LIVE PRICE</span><small>Jupiter route Â· inside QX</small></button>
+    <button class="swap-action" id="getQuoteBtn"><span>GET BEST PRICE</span><small>Jupiter route · inside QX</small></button>
     <button class="swap-action swap-secondary" id="confirmSwapBtn" disabled>CONFIRM IN CONNECTED WALLET</button>
-    <p class="fee-note">QX referral fee setting: <strong>1%</strong> per completed swap. Jupiter retains 20% of referral fees; the amount credited to QX is lower. The live quote must confirm the fee before wallet approval. No fee is charged when a swap is not completed.</p>
+    <p class="fee-note">QX referral fee setting: <strong>1%</strong> per completed swap. Jupiter retains 20% of referral fees; the amount credited to QX is lower. QX verifies the fee-mint referral token account and Jupiter fee response before wallet approval. No fee is charged when a swap is not completed.</p>
     <p class="swap-status" id="swapStatus">Connect your wallet, enter an amount, get a quote, then confirm in your connected wallet.</p>
    </div>
   </section>
@@ -503,14 +467,14 @@ input:focus{outline:none;border-color:#43ffad;box-shadow:0 0 0 2px rgba(67,255,1
 
 <div class="ad-modal-backdrop" id="adModalBackdrop" role="dialog" aria-modal="true" aria-labelledby="adModalTitle">
  <div class="ad-modal">
-  <div class="ad-modal-head"><h3 id="adModalTitle">Add advertisement</h3><button class="ad-close" id="adCloseBtn" type="button" aria-label="Close">Ã</button></div>
+  <div class="ad-modal-head"><h3 id="adModalTitle">Add advertisement</h3><button class="ad-close" id="adCloseBtn" type="button" aria-label="Close">×</button></div>
   <label class="ad-field" for="adDuration">Advertisement duration</label>
   <select id="adDuration">
-   <option value="1">1 hour â $49.99</option>
-   <option value="3">3 hours â $99.99</option>
-   <option value="9">9 hours â $179.99</option>
-   <option value="24">24 hours â $299.99</option>
-   <option value="72">3 days â $599.99</option>
+   <option value="1">1 hour — $49.99</option>
+   <option value="3">3 hours — $99.99</option>
+   <option value="9">9 hours — $179.99</option>
+   <option value="24">24 hours — $299.99</option>
+   <option value="72">3 days — $599.99</option>
   </select>
   <div class="ad-price-line"><span>Total price</span><strong id="adUsdPrice">$49.99</strong></div>
   <div class="ad-price-line"><span>Estimated SOL payment</span><strong id="adSolPrice">Waiting for SOL price</strong></div>
@@ -584,7 +548,7 @@ let allPairs=[],newPairs=[],trendingPairs=[],currentCategory="all";
 let marketBusy=false,canonicalSolPair=null,selectedToken=null;
 let tradeDirection="buy",balancesHidden=false,lastAssetRows=[];
 let sortMetric="",sortDirection="desc",tradePercent=25;
-let pendingSwapOrder=null,quoteBusy=false,swapBusy=false,autoQuoteTimer=null;
+let pendingSwapOrder=null,quoteBusy=false,swapBusy=false;
 
 const valid=s=>typeof s==="string"&&/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(s);
 const short=s=>s?s.slice(0,6)+"..."+s.slice(-4):"";
@@ -877,20 +841,20 @@ async function loadMarket(){
   if(canonicalSolPair)merged.set(SOL,canonicalSolPair);
   allPairs=[...merged.values()];
   if(!allPairs.length)throw new Error("No Solana market data returned. Try again shortly.");
-  $("marketStatus").textContent="Market data refreshes automatically Â· Last update "+new Date().toLocaleTimeString();
+  $("marketStatus").textContent="Market data refreshes automatically · Last update "+new Date().toLocaleTimeString();
   renderMarket();
   if(selectedToken){
    const updated=allPairs.find(p=>p.baseToken.address===selectedToken.baseToken.address);
    if(updated){selectedToken=updated;refreshSelectedTokenDetails(updated);updateIndicativeEstimate();}
   }
  }catch(e){
-  $("marketStatus").textContent="Market feed temporarily unavailable Â· "+(e.message||"Retrying automatically");
+  $("marketStatus").textContent="Market feed temporarily unavailable · "+(e.message||"Retrying automatically");
   if(!allPairs.length)$ ("tokenResults").innerHTML='<div class="market-empty">Market data unavailable. Please try again.</div>';
  }finally{marketBusy=false;}
 }
 
 const categoryNames={
- all:"All Solana tokens",new:"New Coins Â· Live",gainers:"Top Gainers | 24h",
+ all:"All Solana tokens",new:"New Coins · Live",gainers:"Top Gainers | 24h",
  losers:"Top Losers | 24h",trending:"Trending tokens",volume:"Top Volume | 24h"
 };
 function getCategoryPairs(){
@@ -983,7 +947,7 @@ function renderMarket(){
   const img=image?`<img class="coin-logo" src="${escapeHTML(image)}" alt="${name}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`:"";
   const fallback=`<span class="coin-fallback" style="display:${image?"none":"flex"}">${escapeHTML((p.baseToken?.symbol||"?").slice(0,2))}</span>`;
   const age=p.pairCreatedAt?timeSince(p.pairCreatedAt):"Recently discovered";
-  const meta=currentCategory==="new"?`<span class="new-coin-meta">${age} Â· MC ${money(p.marketCap||p.fdv)} Â· LIQ ${money(p.liquidity?.usd)} Â· VOL ${money(p.volume?.h24)} Â· TX ${Number(p.txns?.h24?.buys||0)+Number(p.txns?.h24?.sells||0)}</span>`:"";
+  const meta=currentCategory==="new"?`<span class="new-coin-meta">${age} · MC ${money(p.marketCap||p.fdv)} · LIQ ${money(p.liquidity?.usd)} · VOL ${money(p.volume?.h24)} · TX ${Number(p.txns?.h24?.buys||0)+Number(p.txns?.h24?.sells||0)}</span>`:"";
   return `<div class="market-row">
    <button class="coin-button" data-mint="${mint}">${img}${fallback}<span class="coin-info"><strong>${name}</strong><small>${symbol}</small>${meta}</span></button>
    <span class="market-price">${usd(p.priceUsd)}</span><span class="market-change ${cls}">${changeText}</span>
@@ -1157,18 +1121,10 @@ function setTradePercent(percent){
  updateTradePercentUI();
  clearPendingSwap("Trade amount changed. Get a new quote.");
 }
-function scheduleAutoQuote(delay=850){
- if(autoQuoteTimer)clearTimeout(autoQuoteTimer);
- autoQuoteTimer=setTimeout(()=>{
-  if(!selectedToken||!connected||swapBusy||quoteBusy)return;
-  const amount=Number($("tradeAmountInput").value||0);
-  if(amount>0)requestQXQuote();
- },delay);
-}
 document.querySelectorAll(".percent-btn").forEach(button=>{
- button.addEventListener("click",()=>{setTradePercent(button.dataset.percent);scheduleAutoQuote(350);});
+ button.addEventListener("click",()=>setTradePercent(button.dataset.percent));
 });
-$("percentRange").addEventListener("input",event=>{setTradePercent(event.target.value);scheduleAutoQuote(450);});
+$("percentRange").addEventListener("input",event=>setTradePercent(event.target.value));
 $("tradeAmountInput").addEventListener("input",()=>{
  const balance=getTradeBalance(),amount=Number($("tradeAmountInput").value);
  tradePercent=balance>0&&Number.isFinite(amount)?Math.max(0,Math.min(100,amount/balance*100)):0;
@@ -1176,9 +1132,8 @@ $("tradeAmountInput").addEventListener("input",()=>{
  $("percentRange").value=String(tradePercent);
  $("percentRange").style.setProperty("--progress",tradePercent+"%");
  document.querySelectorAll(".percent-btn").forEach(b=>b.classList.toggle("active",Number(b.dataset.percent)===Math.round(tradePercent)));
- clearPendingSwap("Amount changed. Updating the live price...");
+ clearPendingSwap("Amount changed. Get a fresh live quote.");
  updateIndicativeEstimate();
- scheduleAutoQuote();
 });
 
 /* QX NATIVE SWAP - Jupiter API runs behind the QX interface */
@@ -1197,6 +1152,33 @@ function jupiterHeaders(extra={}){
 // The matching SOL referral token account must also be initialized before enabling swaps.
 const QX_REFERRAL_ACCOUNT="UMRAMLr2CqNNSUhVJvdB2bbEGHPwL5n6LpFzTxycmBW";
 const QX_REFERRAL_FEE_BPS=100; // 100 bps = 1.00%
+const QX_REFERRAL_PROGRAM_ID=new PublicKey("REFER4ZgmyYx9c6He5XfaTMiGfdLwRnkV4RPp9t9iF3");
+
+// Check the real referral token-account PDA for the exact fee mint returned by Jupiter.
+// Jupiter may still return an order when this account is missing, but then no referral fee is collected.
+async function verifyQXReferralTokenAccount(feeMint){
+ if(!valid(feeMint))throw new Error("Jupiter returned an invalid fee mint. No swap was submitted.");
+ let referral,mint;
+ try{
+  referral=new PublicKey(QX_REFERRAL_ACCOUNT);
+  mint=new PublicKey(feeMint);
+ }catch(e){
+  throw new Error("QX referral account or Jupiter fee mint is invalid. No swap was submitted.");
+ }
+ const [feeTokenAccount]=PublicKey.findProgramAddressSync(
+  [new TextEncoder().encode("referral_ata"),referral.toBytes(),mint.toBytes()],
+  QX_REFERRAL_PROGRAM_ID
+ );
+ const account=await rpc("getAccountInfo",[feeTokenAccount.toBase58(),{encoding:"jsonParsed",commitment:"confirmed"}]);
+ const info=account?.value?.data?.parsed?.info;
+ if(!account?.value||!info){
+  throw new Error("QX referral token account is not initialized for fee mint "+short(feeMint)+". No swap was submitted. Initialize this mint in the Jupiter Referral Dashboard first.");
+ }
+ if(info.mint!==feeMint||info.owner!==QX_REFERRAL_ACCOUNT){
+  throw new Error("QX referral token account does not match the requested fee mint and referral owner. No swap was submitted.");
+ }
+ return feeTokenAccount.toBase58();
+}
 function clearPendingSwap(message){
  pendingSwapOrder=null;
  $("confirmSwapBtn").disabled=true;
@@ -1238,7 +1220,7 @@ function updateIndicativeEstimate(){
  estimate*=0.99;
  const outputSymbol=tradeDirection==="buy"?(selectedToken.baseToken.symbol||"TOKEN"):"SOL";
  $("swapPay").textContent=formatAmount(amount,tradeDirection==="buy"?9:selectedTokenDecimals)+" "+(tradeDirection==="buy"?"SOL":(selectedToken.baseToken.symbol||"TOKEN"));
- $("swapReceive").textContent="â "+formatAmount(estimate,tradeDirection==="buy"?6:9)+" "+outputSymbol+" Â· indicative";
+ $("swapReceive").textContent="≈ "+formatAmount(estimate,tradeDirection==="buy"?6:9)+" "+outputSymbol+" · indicative";
 }
 function getSwapMints(){
  const mint=selectedToken?.baseToken?.address;
@@ -1284,16 +1266,20 @@ async function requestQXQuote(){
    const detail=data.errorMessage||data.error||data.message||"";
    throw new Error("Jupiter quote error ("+response.status+"): "+(detail||"Check the API key and try again."));
   }
-  if(data.referralAccount!==QX_REFERRAL_ACCOUNT||Number(data.feeBps)<QX_REFERRAL_FEE_BPS||!data.feeMint){
-   const returnedFee=Number(data.feeBps)||0;
-   throw new Error("QX 1% fee was not attached to this quote (returned "+(returnedFee/100).toFixed(2)+"%). No swap was submitted. Check the referral token account for the fee mint shown by Jupiter.");
+  const referralAccountMatches=data.referralAccount===QX_REFERRAL_ACCOUNT;
+  const referralRate=Number(data.feeBps)||0;
+  const jupiterPlatformRate=Number(data.platformFee?.feeBps)||0;
+  if(!referralAccountMatches||referralRate<QX_REFERRAL_FEE_BPS||!data.feeMint||jupiterPlatformRate>0){
+   const reason=!referralAccountMatches?"Jupiter did not return the QX referral account.":!data.feeMint?"Jupiter did not return a fee mint.":jupiterPlatformRate>0?"Jupiter returned a separate platform fee instead of the expected referral-fee configuration.":"The returned fee rate is below QX's 1% setting.";
+   throw new Error("QX fee safety check stopped this swap. "+reason+" No transaction was submitted.");
   }
+  const verifiedReferralTokenAccount=await verifyQXReferralTokenAccount(data.feeMint);
   if(!data.transaction){
    if(data.errorMessage)throw new Error(data.errorMessage);
    throw new Error("No executable route is available for this amount. Try a different amount or token.");
   }
   const outputDecimals=await getMintDecimals(pair.outputMint);
-  pendingSwapOrder={data,outputDecimals,inputAmount:input.amount,inputSymbol:tradeDirection==="buy"?"SOL":selectedToken.baseToken.symbol,outputSymbol:tradeDirection==="buy"?selectedToken.baseToken.symbol:"SOL",createdAt:Date.now(),wallet:walletAddress};
+  pendingSwapOrder={data,verifiedReferralTokenAccount,outputDecimals,inputAmount:input.amount,inputSymbol:tradeDirection==="buy"?"SOL":selectedToken.baseToken.symbol,outputSymbol:tradeDirection==="buy"?selectedToken.baseToken.symbol:"SOL",inputMint:pair.inputMint,outputMint:pair.outputMint,createdAt:Date.now(),wallet:walletAddress};
   $("swapReceive").textContent=displayRawAmount(data.outAmount,outputDecimals)+" "+pendingSwapOrder.outputSymbol;
   const feeMintLabel=data.feeMint===SOL?"SOL":data.feeMint===USDC?"USDC":short(data.feeMint);
   $("qxFeeDisplay").textContent="1.00% referral fee | "+feeMintLabel;
@@ -1307,15 +1293,18 @@ async function requestQXQuote(){
  }finally{
   quoteBusy=false;
   $("getQuoteBtn").disabled=false;
-  $("getQuoteBtn").innerHTML="<span>REFRESH LIVE PRICE</span><small>Jupiter route Â· inside QX</small>";
+  $("getQuoteBtn").textContent="Refresh best price";
  }
 }
 async function executeQXSwap(){
  if(swapBusy)return;
  try{
   if(!pendingSwapOrder)throw new Error("Get a fresh quote first.");
-  if(Date.now()-pendingSwapOrder.createdAt>20000){
-   clearPendingSwap("Quote expired. Get a fresh quote before confirming.");
+  const rawExpiry=pendingSwapOrder.data.expireAt;
+  const numericExpiry=Number(rawExpiry);
+  const orderExpiry=Number.isFinite(numericExpiry)&&numericExpiry>0?(numericExpiry<1000000000000?numericExpiry*1000:numericExpiry):Date.parse(rawExpiry||"");
+  if(Number.isFinite(orderExpiry)&&orderExpiry>0&&Date.now()>=orderExpiry){
+   clearPendingSwap("Jupiter quote expired. Get a fresh quote before confirming.");
    return;
   }
   if(!connected||walletAddress!==pendingSwapOrder.wallet)throw new Error("Wallet changed. Reconnect and request a new quote.");
@@ -1326,14 +1315,17 @@ async function executeQXSwap(){
   $("getQuoteBtn").disabled=true;
   $("confirmSwapBtn").textContent="Waiting for wallet approval...";
   $("swapStatus").textContent="Approve the swap transaction in your connected wallet. Check the token and amount before signing.";
-  const tx=VersionedTransaction.deserialize(base64ToBytes(pendingSwapOrder.data.transaction));
+  const orderToExecute=pendingSwapOrder;
+  const tx=VersionedTransaction.deserialize(base64ToBytes(orderToExecute.data.transaction));
   const signed=await provider.signTransaction(tx);
+  // Consume the order immediately after signing: never allow replay of an old requestId.
+  pendingSwapOrder=null;
   const signedTransaction=bytesToBase64(signed.serialize());
   $("confirmSwapBtn").textContent="Processing swap...";
   $("swapStatus").textContent="Transaction signed. QX is submitting it for confirmation.";
   const response=await fetch(JUPITER_SWAP_API+"/execute",{
    method:"POST",headers:jupiterHeaders({"Content-Type":"application/json"}),
-   body:JSON.stringify({signedTransaction,requestId:pendingSwapOrder.data.requestId})
+   body:JSON.stringify({signedTransaction,requestId:orderToExecute.data.requestId})
   });
   const result=await response.json().catch(()=>({}));
   if(!response.ok)throw new Error(result.error||result.errorMessage||("Swap execution error ("+response.status+")"));
@@ -1342,17 +1334,20 @@ async function executeQXSwap(){
    throw new Error((result.error||"Swap failed or was not confirmed.")+suffix);
   }
   const signature=result.signature;
-  const completedOrder=pendingSwapOrder;
-  pendingSwapOrder=null;
-  $("qxFeeDisplay").textContent="1.00% referral fee | charged";
-  $("swapReceive").textContent=displayRawAmount(result.totalOutputAmount||result.outputAmountResult,completedOrder.outputDecimals)+" "+completedOrder.outputSymbol;
+  const completedOrder=orderToExecute;
+  // The execute response confirms the swap, not the referral-account credit.
+  // Never label the QX fee as collected until the referral account is checked on-chain.
+  $("qxFeeDisplay").textContent="1.00% referral configured · verify credit on-chain";
+  $("swapReceive").textContent=displayRawAmount(result.totalOutputAmount,completedOrder.outputDecimals)+" "+completedOrder.outputSymbol;
   await loadPortfolio();
-  $("swapReceive").textContent=displayRawAmount(result.totalOutputAmount||result.outputAmountResult,completedOrder.outputDecimals)+" "+completedOrder.outputSymbol;
+  $("swapReceive").textContent=displayRawAmount(result.totalOutputAmount,completedOrder.outputDecimals)+" "+completedOrder.outputSymbol;
   $("swapStatus").innerHTML='Swap successful. <a class="detail-link" target="_blank" rel="noopener" href="https://solscan.io/tx/'+encodeURIComponent(signature)+'">View transaction on Solscan -></a>';
   $("confirmSwapBtn").textContent="Swap completed";
  }catch(error){
-  $("swapStatus").textContent=error.message||"Swap could not be completed.";
-  $("confirmSwapBtn").disabled=false;
+  // A rejected signature or failed execute always requires a fresh Jupiter order.
+  pendingSwapOrder=null;
+  $("swapStatus").textContent=error.message||"Swap could not be completed. Get a fresh quote before trying again.";
+  $("confirmSwapBtn").disabled=true;
  }finally{
   swapBusy=false;
   $("getQuoteBtn").disabled=false;
@@ -1365,14 +1360,16 @@ $("confirmSwapBtn").onclick=executeQXSwap;
 function changeTradeDirection(direction){
  tradeDirection=direction;
  $("tradeTitle").textContent=direction==="buy"?"Buy this token with SOL":"Sell this token for SOL";
+ $("swapDirectionBtn").textContent=direction==="buy"?"↕ SWAP DIRECTION · SOL → TOKEN":"↕ SWAP DIRECTION · TOKEN → SOL";
  $("buyBtn").classList.toggle("active",direction==="buy");
  $("sellBtn").classList.toggle("active",direction==="sell");
  updateTradePercentUI();
- clearPendingSwap("Trade direction changed. Updating the live price...");
- if(selectedToken)refreshTradeBalance(false).then(()=>scheduleAutoQuote(350));
+ clearPendingSwap("Trade direction changed. Get a fresh quote.");
+ if(selectedToken)refreshTradeBalance(false);
 }
 $("buyBtn").onclick=()=>changeTradeDirection("buy");
 $("sellBtn").onclick=()=>changeTradeDirection("sell");
+$("swapDirectionBtn").onclick=()=>changeTradeDirection(tradeDirection==="buy"?"sell":"buy");
 
 /* TOKEN DETAILS + CHART */
 function refreshSelectedTokenDetails(token){
@@ -1388,7 +1385,7 @@ function refreshSelectedTokenDetails(token){
  $("detailLiquidity").textContent=money(token.liquidity?.usd);
  $("detailVolume").textContent=money(token.volume?.h24);
  const buys=Number(token.txns?.h24?.buys||0),sells=Number(token.txns?.h24?.sells||0);
- $("detailTransactions").textContent=(buys+sells).toLocaleString("en-US")+" Â· "+buys+" buys / "+sells+" sells";
+ $("detailTransactions").textContent=(buys+sells).toLocaleString("en-US")+" · "+buys+" buys / "+sells+" sells";
  $("solscanLink").href="https://solscan.io/token/"+mint;
  const image=token.info?.imageUrl||"";
  if(image){$("detailImage").src=image;$("detailImage").style.display="block";}else{$("detailImage").removeAttribute("src");$("detailImage").style.display="none";}
@@ -1406,15 +1403,17 @@ function openToken(token){
  refreshSelectedTokenDetails(token);
  tradePercent=25;
  updateTradePercentUI();
- refreshTradeBalance(true).then(()=>scheduleAutoQuote(350));
- // Mobile detail stays as a compact bottom sheet so the user can keep browsing market rows.
+ refreshTradeBalance(true);
+ if(window.matchMedia("(max-width: 760px)").matches){
+  $("detail").scrollIntoView({behavior:"smooth",block:"start"});
+ }
 }
 $("refreshBtn").onclick=async()=>{
  await loadSolPrice();
  if(connected)await loadPortfolio();
 };
 
-/* PUBLIC ADVERTISEMENTS â secure activation requires the QX Supabase Edge Function */
+/* PUBLIC ADVERTISEMENTS — secure activation requires the QX Supabase Edge Function */
 const QX_AD_TREASURY="E4x2DiVVDuVQHSUGgzTPjJMDbiJ6jCRwpEvsvAd31Qs4";
 // Fill these two public Supabase values after creating the QX Ads backend.
 // Never place a Supabase service-role key or any private wallet key in this file.
@@ -1471,7 +1470,7 @@ async function loadPublicAds(){
   if(!ads.length){host.innerHTML='<div class="ad-empty">No sponsored advertisements yet.</div>';return;}
   host.innerHTML=ads.map(ad=>{
    const title=escapeHTML(ad.title||"Sponsored project"),body=escapeHTML(ad.body||""),url=safeAdUrl(ad.url),image=ad.image_url?safeAdUrl(ad.image_url):"";
-   return '<article class="ad-card">'+(image?'<img class="ad-image" src="'+escapeHTML(image)+'" alt="" loading="lazy" referrerpolicy="no-referrer">':'')+'<div class="ad-copy"><strong>'+title+'</strong><p>'+body+'</p><a href="'+escapeHTML(url)+'" target="_blank" rel="noopener noreferrer">Visit project â</a></div></article>';
+   return '<article class="ad-card">'+(image?'<img class="ad-image" src="'+escapeHTML(image)+'" alt="" loading="lazy" referrerpolicy="no-referrer">':'')+'<div class="ad-copy"><strong>'+title+'</strong><p>'+body+'</p><a href="'+escapeHTML(url)+'" target="_blank" rel="noopener noreferrer">Visit project ↗</a></div></article>';
   }).join("");
  }catch(e){console.warn("QX ads feed:",e);host.innerHTML='<div class="ad-empty">Advertisements are temporarily unavailable.</div>';}
 }
@@ -1584,12 +1583,6 @@ loadMarket();
 setInterval(loadSolPrice,60000);
 // Public market endpoints are polled every 20 seconds for a near-live new-coin feed.
 setInterval(loadMarket,20000);
-setInterval(()=>{
- if(pendingSwapOrder&&!quoteBusy&&!swapBusy&&connected&&selectedToken){
-  const amount=Number($("tradeAmountInput").value||0);
-  if(amount>0)requestQXQuote();
- }
-},12000);
 </script>
 </body>
 </html>
