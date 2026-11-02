@@ -182,7 +182,8 @@ footer{text-align:center;color:var(--muted);padding:25px;font-size:11px}
  .coin-info strong{max-width:300px}
  #detailChart{height:430px}
 }
-.qx-social{position:fixed;right:15px;bottom:calc(83px + env(safe-area-inset-bottom));z-index:1001;width:39px;height:39px;display:grid;place-items:center;border-radius:50%;background:#f7f4ff;color:#090711;border:1px solid rgba(255,255,255,.3);box-shadow:0 5px 20px rgba(0,0,0,.35);text-decoration:none;transition:transform .16s,box-shadow .16s}
+.qx-social{display:none;position:fixed;right:15px;bottom:calc(83px + env(safe-area-inset-bottom));z-index:1001;width:39px;height:39px;place-items:center;border-radius:50%;background:#f7f4ff;color:#090711;border:1px solid rgba(255,255,255,.3);box-shadow:0 5px 20px rgba(0,0,0,.35);text-decoration:none;transition:transform .16s,box-shadow .16s}
+body.qx-wallet-active .qx-social{display:grid}
 .qx-social:active{transform:scale(.94)}
 .qx-social svg{width:17px;height:17px;fill:currentColor}
 .fee-note{color:#c7b9dc;font-size:10px;line-height:1.45}
@@ -229,8 +230,10 @@ body{background:radial-gradient(ellipse at 8% 0%,rgba(132,45,255,.34),transparen
 .wrap{max-width:1080px}
 header{padding:15px 0 25px}
 .brand-lockup{display:flex;align-items:center;gap:11px;min-width:0}
-.brand-mark{width:47px;height:47px;display:grid;place-items:center;border-radius:15px;background:linear-gradient(145deg,#9c42ff 0%,#6c28ed 48%,#19e99a 100%);box-shadow:0 0 24px rgba(155,70,255,.48),inset 0 1px 0 rgba(255,255,255,.35);font-size:23px;font-weight:1000;letter-spacing:-2px;color:#fff}
-.brand-mark span{color:#43ffad}
+.brand-mark{position:relative;width:49px;height:49px;display:grid;place-items:center;border-radius:16px;background:linear-gradient(145deg,#b65cff 0%,#762dff 48%,#142b36 100%);border:1px solid rgba(210,173,255,.72);box-shadow:0 0 0 3px rgba(166,76,255,.10),0 0 27px rgba(155,70,255,.38),inset 0 1px 0 rgba(255,255,255,.38);font-size:23px;font-weight:1000;letter-spacing:-3px;color:#fff;isolation:isolate;overflow:hidden}
+.brand-mark:before{content:"";position:absolute;inset:5px;border:1px solid rgba(255,255,255,.22);border-radius:11px;z-index:-1}
+.brand-mark:after{content:"";position:absolute;width:31px;height:31px;right:-15px;bottom:-17px;border-radius:50%;background:#43ffad;filter:blur(13px);opacity:.75;z-index:-1}
+.brand-mark span{color:#72ffc4;text-shadow:0 0 12px rgba(67,255,173,.75)}
 .logo{font-size:25px;font-weight:950;letter-spacing:-.8px;text-shadow:0 0 18px rgba(180,92,255,.25)}
 .logo span{color:#43ffad;text-shadow:0 0 15px rgba(67,255,173,.45)}
 .logo .small{font-size:9px;letter-spacing:1.8px;color:#c7b1ed;margin-top:4px}
@@ -280,7 +283,7 @@ input:focus{outline:none;border-color:#43ffad;box-shadow:0 0 0 2px rgba(67,255,1
 .swap-status{padding:10px 11px;border-radius:10px;background:rgba(7,5,16,.62);border:1px solid rgba(118,71,161,.35);color:#c8b8dd}
 .fee-note{font-size:10px;line-height:1.55;color:#bcaed0}
 .detail-link{color:#43ffad}
-@media(max-width:600px){.wrap{padding-left:11px;padding-right:11px}.brand-mark{width:42px;height:42px;border-radius:13px}.logo{font-size:22px}.qx-swap-head{padding:13px}.qx-swap-head strong{font-size:15px}.swap-box{padding:12px}}
+@media(max-width:600px){.wrap{padding-left:11px;padding-right:11px}.brand-mark{width:43px;height:43px;border-radius:14px}.logo{font-size:22px}.qx-swap-head{padding:13px}.qx-swap-head strong{font-size:15px}.swap-box{padding:12px}}
 
 
 /* QX TOKEN TERMINAL â FULL PAGE, INTERNAL CHART */
@@ -478,11 +481,13 @@ body.qx-token-open #getQuoteBtn{display:none!important}
 
 <script>
 function showPage(id){
+ document.body.classList.toggle("qx-wallet-active",id==="walletPage");
  document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active",p.id===id));
  document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.page===id));
  window.scrollTo({top:0,behavior:"smooth"});
 }
 document.querySelectorAll(".nav-btn").forEach(b=>b.addEventListener("click",()=>showPage(b.dataset.page)));
+document.body.classList.remove("qx-wallet-active");
 </script>
 
 <script src="https://unpkg.com/lightweight-charts@4.2.2/dist/lightweight-charts.standalone.production.js"></script>
