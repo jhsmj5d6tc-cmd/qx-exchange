@@ -3,6 +3,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#080711">
 <title>QX Exchange</title>
@@ -552,7 +553,7 @@ body.qx-token-open #getQuoteBtn{display:none!important}
   <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5M4 19h17M7 15l4-4 3 2 6-7"/></svg><span>Markets</span>
  </button>
 </nav>
-<a class="qx-social" href="https://x.com/solana__creator?s=11" target="_blank" rel="noopener noreferrer" aria-label="QX Exchange on X" title="Follow QX on X">
+<a class="qx-social" href="https://x.com/qx_exchange?s=11" target="_blank" rel="noopener noreferrer" aria-label="QX Exchange on X" title="Follow QX on X">
  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.9 2H22l-6.78 7.75L23.2 22h-6.25l-4.9-7.56L5.43 22H2.3l7.25-8.29L1.8 2h6.4l4.43 6.96L18.9 2Zm-1.1 18h1.73L7.28 3.9H5.42L17.8 20Z"/></svg>
 </a>
 
@@ -1662,22 +1663,7 @@ setInterval(loadMarket,20000);
 // Refresh the selected token candles while its QX terminal is open.
 setInterval(()=>{if(document.body.classList.contains("qx-token-open")&&selectedToken?.pairAddress)loadQXChart(selectedToken.pairAddress,activeChartRange);},30000);
 
-// Repair common UTF-8-as-Windows-1252 mojibake in dynamic token/API text.
-(function qxInstallTextRepair(){
- const bad=/(?:Ã.|Ã.|Ã¢â¬|Ã°Å¸|Ã¯Â¿Â½)/;
- function fix(value){
-  if(typeof value!=="string"||!bad.test(value))return value;
-  try{const cp1252={8364:128,8218:130,402:131,8222:132,8230:133,8224:134,8225:135,710:136,8240:137,352:138,8249:139,338:140,381:142,8216:145,8217:146,8220:147,8221:148,8226:149,8211:150,8212:151,732:152,8482:153,353:154,8250:155,339:156,382:158,376:159};const bytes=Uint8Array.from(Array.from(value,c=>{const n=c.codePointAt(0);return n<=255?n:(cp1252[n]??63);}));const decoded=new TextDecoder("utf-8").decode(bytes);return decoded.includes("ï¿½")?value:decoded;}catch(_){return value;}
- }
- function walk(node){
-  if(node.nodeType===Node.TEXT_NODE){const v=fix(node.nodeValue);if(v!==node.nodeValue)node.nodeValue=v;return;}
-  if(node.nodeType!==Node.ELEMENT_NODE&&node.nodeType!==Node.DOCUMENT_NODE)return;
-  if(node.nodeType===Node.ELEMENT_NODE){for(const a of ["title","aria-label","placeholder"])if(node.hasAttribute(a)){const v=fix(node.getAttribute(a));if(v!==node.getAttribute(a))node.setAttribute(a,v);}}
-  for(const child of node.childNodes)walk(child);
- }
- walk(document.body);
- new MutationObserver(records=>records.forEach(r=>{if(r.type==="characterData")walk(r.target);else r.addedNodes.forEach(walk);if(r.type==="attributes")walk(r.target);})).observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:["title","aria-label","placeholder"]});
-})();
+// All page text is served as UTF-8. No runtime text rewriting is applied.
 </script>
 </body>
 </html>
