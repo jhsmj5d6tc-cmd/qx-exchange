@@ -539,9 +539,7 @@ document.body.classList.remove("qx-wallet-active");
   "@reown/appkit/networks":"https://esm.sh/@reown/appkit@1.8.24/networks",
   "@reown/appkit-adapter-solana":"https://esm.sh/@reown/appkit-adapter-solana@1.8.24?external=@reown/appkit",
   "@solana/web3.js":"https://esm.sh/@solana/web3.js@1.98.4",
-  "@solana/spl-token":"https://esm.sh/@solana/spl-token@0.4.13?external=@solana/web3.js",
-  "@solana/wallet-adapter-phantom":"https://esm.sh/@solana/wallet-adapter-phantom@0.9.29?external=@solana/web3.js",
-  "@solana/wallet-adapter-solflare":"https://esm.sh/@solana/wallet-adapter-solflare@0.6.34?external=@solana/web3.js"
+  "@solana/spl-token":"https://esm.sh/@solana/spl-token@0.4.13?external=@solana/web3.js"
  }
 }
 </script>
@@ -577,37 +575,32 @@ document.body.classList.remove("qx-wallet-active");
 <script type="module">
 // Load wallet / Solana libraries independently. A failed wallet CDN must not
 // prevent the public market, search, navigation, or other page buttons from running.
-let createAppKit,SolanaAdapter,solana,PhantomWalletAdapter,SolflareWalletAdapter;
+let createAppKit,SolanaAdapter,solana;
 let Connection,PublicKey,Keypair,SystemProgram,Transaction,VersionedTransaction;
 let MINT_SIZE,TOKEN_PROGRAM_ID,getAssociatedTokenAddress,createInitializeMintInstruction,createAssociatedTokenAccountInstruction,createMintToInstruction;
-// Load wallet libraries independently. AppKit's core must not depend on optional
-// wallet-adapter packages; otherwise one failed CDN import can disable all connections.
+// Load only the three required Reown modules first. Keep the actual CDN error so
+// Safari shows the failing package instead of a misleading generic message.
 const qxLibraryReady = (async()=>{
- const core = await Promise.allSettled([
-  import("@reown/appkit"),
-  import("@reown/appkit-adapter-solana"),
-  import("@reown/appkit/networks")
- ]);
- if(core[0].status==="fulfilled") createAppKit=core[0].value.createAppKit;
- if(core[1].status==="fulfilled") SolanaAdapter=core[1].value.SolanaAdapter;
- if(core[2].status==="fulfilled") solana=core[2].value.solana;
- const coreErrors=core.filter(x=>x.status==="rejected").map(x=>String(x.reason?.message||x.reason));
- if(coreErrors.length) console.warn("QX AppKit load errors:",coreErrors);
- if(!createAppKit||!SolanaAdapter||!solana){
-  throw new Error("The wallet picker could not load. Check your internet connection, Safari content blockers, and Reown project settings, then reload the page.");
+ try{
+  const [appkitModule,solanaAdapterModule,networksModule]=await Promise.all([
+   import("@reown/appkit"),
+   import("@reown/appkit-adapter-solana"),
+   import("@reown/appkit/networks")
+  ]);
+  createAppKit=appkitModule.createAppKit;
+  SolanaAdapter=solanaAdapterModule.SolanaAdapter;
+  solana=networksModule.solana;
+  if(typeof createAppKit!=="function"||typeof SolanaAdapter!=="function"||!solana){
+   throw new Error("Reown modules loaded, but createAppKit, SolanaAdapter, or the Solana mainnet export is missing.");
+  }
+ }catch(error){
+  console.error("QX required Reown module failed:",error);
+  throw new Error("Reown SDK load failed: "+(error?.message||String(error))+". Check Safari content blockers or CDN access, then reload.");
  }
- // Load portfolio/token libraries in the background. They must never block
- // the Reown wallet picker from becoming available.
- Promise.allSettled([
-  import("@solana/web3.js"),
-  import("@solana/spl-token"),
-  import("@solana/wallet-adapter-phantom"),
-  import("@solana/wallet-adapter-solflare")
- ]).then(optional=>{
+ // Portfolio/token libraries load separately and do not block the wallet picker.
+ Promise.allSettled([import("@solana/web3.js"),import("@solana/spl-token")]).then(optional=>{
   if(optional[0].status==="fulfilled") ({Connection,PublicKey,Keypair,SystemProgram,Transaction,VersionedTransaction}=optional[0].value);
   if(optional[1].status==="fulfilled") ({MINT_SIZE,TOKEN_PROGRAM_ID,getAssociatedTokenAddress,createInitializeMintInstruction,createAssociatedTokenAccountInstruction,createMintToInstruction}=optional[1].value);
-  if(optional[2].status==="fulfilled") PhantomWalletAdapter=optional[2].value.PhantomWalletAdapter;
-  if(optional[3].status==="fulfilled") SolflareWalletAdapter=optional[3].value.SolflareWalletAdapter;
   const errors=optional.filter(x=>x.status==="rejected").map(x=>String(x.reason?.message||x.reason));
   if(errors.length) console.warn("QX optional Solana library load errors:",errors);
  }).catch(error=>console.warn("QX optional libraries:",error));
@@ -764,10 +757,12 @@ async function connectQXWallet(){
   if(!appKit)throw qxWalletInitError||new Error("The wallet connection window could not be initialized.");
   $("walletStatus").textContent="Choose Phantom, Solflare, or another Solana wallet.";
   if(feedback)feedback.textContent="Choose your Solana wallet in the window that opens.";
-  await appKit.open({view:"Connect",namespace:"solana"});
+  // Only Solana is configured in this AppKit instance, so open the default
+  // connection view. This avoids passing an unsupported namespace/view combo.
+  await appKit.open();
  }catch(error){
   const detail=String(error?.message||error||"Unknown connection error");
-  const hint=" Check the Reown Dashboard: allow jhsmj5d6tc-cmd.github.io as a project domain and confirm Solana is enabled. If using iPhone Safari, open this site inside Phantom or Solflare.";
+  const hint=" The domain is already allowlisted. If Safari blocks the CDN, allow site content and reload; alternatively open QX inside Phantom or Solflare.";
   $("walletStatus").textContent="Wallet connection failed: "+detail+hint;
   if(feedback)feedback.textContent="Wallet connection failed: "+detail+hint;
   throw new Error(detail+hint);
@@ -778,19 +773,17 @@ window.QXConnectWallet=connectQXWallet;
 
 const qxWalletReady=qxLibraryReady.then(async()=>{
  try{
-  const walletAdapters=[];
-  if(PhantomWalletAdapter)walletAdapters.push(new PhantomWalletAdapter());
-  if(SolflareWalletAdapter)walletAdapters.push(new SolflareWalletAdapter());
-  const solanaAdapter=new SolanaAdapter({wallets:walletAdapters});
+  // Current Reown JavaScript Solana integration uses the default adapter.
+  // It discovers installed Solana wallets and also provides the WalletConnect picker.
+  const solanaAdapter=new SolanaAdapter();
   appKit=createAppKit({
    adapters:[solanaAdapter],
    networks:[solana],
    projectId:PROJECT_ID,
-   allWallets:"SHOW",
-   metadata:{name:"QX Exchange",description:"Solana exchange",url:"https://jhsmj5d6tc-cmd.github.io/qx-exchange/",icons:[]},
+   metadata:{name:"QX Exchange",description:"Solana exchange",url:location.origin,icons:[]},
    themeMode:"dark",
    themeVariables:{"--w3m-accent":"#9b6cff","--w3m-border-radius-master":"10px"},
-   features:{analytics:true,email:false,socials:false}
+   features:{analytics:true,email:false,socials:[]}
   });
   if(typeof appKit.subscribeAccount==="function"){
    appKit.subscribeAccount(async state=>{
@@ -807,9 +800,13 @@ const qxWalletReady=qxLibraryReady.then(async()=>{
  }catch(error){
   qxWalletInitError=error;
   console.error("QX wallet initialization failed:",error);
+  const message=error?.message||"Wallet initialization failed.";
+  if($("walletStatus"))$("walletStatus").textContent=message;
+  if($("connectFeedback"))$("connectFeedback").textContent=message;
   throw error;
  }
 });
+window.QXWalletReady=qxWalletReady;
 
 for(const {provider,name} of getInjectedWallets()){
  if(typeof provider.on==="function"){
