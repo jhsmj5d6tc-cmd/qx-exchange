@@ -20,7 +20,9 @@ body{margin:0;background:radial-gradient(ellipse at 50% -18%,rgba(111,69,217,.18
 button,input{font:inherit}
 button{cursor:pointer}
 .wrap{max-width:1000px;margin:auto;padding:14px 14px 105px}
-header{display:flex;align-items:center;justify-content:space-between;padding:12px 0 25px}
+header{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 0 25px}
+#connectBtn{flex:0 0 auto;max-width:154px;min-height:40px;padding:10px 12px;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:380px){.logo{font-size:22px}#connectBtn{max-width:132px;padding:9px 10px;font-size:11px}}
 .logo{font-size:26px;font-weight:900}
 .logo span{color:var(--green)}
 .small{font-size:12px;color:var(--muted)}
@@ -330,7 +332,7 @@ body.qx-token-open #getQuoteBtn{display:none!important}
   </span>
   <span class="brand-copy"><span class="brand-name">QX <b>EXCHANGE</b></span><span class="brand-tagline">GLOBAL CRYPTO EXCHANGE</span></span>
  </a>
- <button class="btn primary" id="connectBtn" type="button">Connect Any Solana Wallet</button>
+ <button class="btn primary" id="connectBtn" type="button">Connect Wallet</button>
 </header>
 
 <main id="walletPage" class="page">
@@ -683,7 +685,7 @@ try{
   }else{
    connected=false;walletAddress="";activeWalletProvider=null;walletSolBalance=0;
    selectedTokenBalance=0;
-   $("connectBtn").textContent="Connect Any Solana Wallet";
+   $("connectBtn").textContent="Connect Wallet";
    $("walletAddress").textContent="";
    $("walletStatus").textContent="Wallet disconnected.";
    $("swapWallet").textContent="Not connected";
@@ -702,31 +704,21 @@ try{
 }
 $("connectBtn").onclick=async()=>{
  const button=$("connectBtn");
+ if(!appKit||typeof appKit.open!=="function"){
+  $("walletStatus").textContent="Wallet connection is unavailable because the secure wallet service did not load. Refresh the page and try again.";
+  return;
+ }
  button.disabled=true;
  $("walletStatus").textContent="Opening secure Solana wallet picker...";
  try{
-  if(appKit&&typeof appKit.open==="function"){
-   // AppKit shows supported Solana wallets and uses wallet deep links on mobile.
-   await appKit.open({view:"Connect"});
-   $("walletStatus").textContent="Choose your wallet in the secure connection window and approve the connection there.";
-   return;
-  }
-  const candidates=[window.phantom?.solana,window.solflare,window.backpack?.solana,window.solana];
-  const provider=candidates.find(p=>p&&typeof p.connect==="function");
-  if(!provider)throw new Error("Universal wallet picker could not load. Open this page in Safari and try again, or open the site from your Solana wallet's browser.");
-  const result=await provider.connect();
-  const address=result?.publicKey?.toString?.()||provider.publicKey?.toString?.();
-  if(!address||!valid(address))throw new Error("Wallet did not return a valid Solana address.");
-  activeWalletProvider=provider;connected=true;walletAddress=address;
-  button.textContent=short(address);
-  $("walletAddress").textContent=address;
-  $("walletStatus").textContent="Wallet connected securely. Approve each transaction inside your wallet.";
-  $("swapWallet").textContent=short(address);
-  $("swapStatus").textContent="Wallet connected. Select a Solana token and request a fresh quote.";
-  updateTradePercentUI();await loadPortfolio();
+  // Use AppKit's default connect view; it handles WalletConnect deep links on mobile.
+  appKit.open();
+  $("walletStatus").textContent="Choose a Solana wallet in the secure window and approve the connection there.";
  }catch(error){
-  $("walletStatus").textContent=error?.message||"Could not connect wallet. No transaction was sent.";
- }finally{button.disabled=false;}
+  $("walletStatus").textContent=error?.message||"Could not open the wallet picker. No transaction was sent.";
+ }finally{
+  button.disabled=false;
+ }
 };
 
 async function loadSolPrice(){
