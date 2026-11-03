@@ -330,7 +330,7 @@ body.qx-token-open #getQuoteBtn{display:none!important}
   </span>
   <span class="brand-copy"><span class="brand-name">QX <b>EXCHANGE</b></span><span class="brand-tagline">GLOBAL CRYPTO EXCHANGE</span></span>
  </a>
- <button class="btn primary" id="connectBtn">Connect Wallet</button>
+ <button class="btn primary" id="connectBtn" type="button">Connect Wallet</button>
 </header>
 
 <main id="walletPage" class="page">
@@ -357,7 +357,7 @@ body.qx-token-open #getQuoteBtn{display:none!important}
  <section class="panel" style="max-width:720px;margin:0 auto 24px">
   <div class="tag">QX TOKEN CREATOR</div>
   <h2 style="margin-top:10px">Launch an SPL token</h2>
-  <p class="small">Create the token mint and initial supply directly from your connected Solana wallet. Phantom will ask you to approve the transaction.</p>
+  <p class="small">Create the token mint and initial supply directly from your connected Solana wallet. Your connected wallet will ask you to approve the transaction.</p>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px">
    <label class="small">Token name<input id="tokenName" maxlength="32" placeholder="e.g. QX Token" style="display:block;width:100%;margin-top:6px;padding:13px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--text)"></label>
    <label class="small">Symbol<input id="tokenSymbol" maxlength="10" placeholder="e.g. QXT" style="display:block;width:100%;margin-top:6px;padding:13px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--text);text-transform:uppercase"></label>
@@ -380,7 +380,7 @@ body.qx-token-open #getQuoteBtn{display:none!important}
    <div><div class="ads-title">Sponsored</div><div class="ads-sub">Featured projects</div></div>
    <div class="ads-menu-wrap">
     <button class="ads-menu-btn" id="adsMenuBtn" aria-label="Advertisement options" aria-expanded="false">&#8942;</button>
-    <div class="ads-menu" id="adsMenu"><button type="button" id="addAdMenuBtn">Ã¯Â¼Â Add advertisement</button></div>
+    <div class="ads-menu" id="adsMenu"><button type="button" id="addAdMenuBtn">+ Add advertisement</button></div>
    </div>
   </div>
   <div class="ads-list" id="publicAdsList"><div class="ad-empty">No sponsored advertisements yet.</div></div>
@@ -467,9 +467,9 @@ body.qx-token-open #getQuoteBtn{display:none!important}
     <div class="swap-quote"><span>Route</span><strong id="swapRoute">QX best available route</strong></div>
     <div class="swap-quote"><span>Wallet</span><strong id="swapWallet">Not connected</strong></div>
     <button class="swap-action" id="getQuoteBtn"><span>GET BEST PRICE</span><small>Jupiter route | inside QX</small></button>
-    <button class="swap-action swap-secondary" id="confirmSwapBtn" disabled>CONFIRM SWAP IN PHANTOM</button>
-    <p class="fee-note">QX fee: <strong>1%</strong> per completed swap. The live quote must confirm the full fee before Phantom signing. No fee is charged when a swap is not completed.</p>
-    <p class="swap-status" id="swapStatus">Connect your wallet, enter an amount, get a quote, then confirm in Phantom.</p>
+    <button class="swap-action swap-secondary" id="confirmSwapBtn" disabled>CONFIRM SWAP</button>
+    <p class="fee-note">QX fee: <strong>1%</strong> per completed swap. The live quote must confirm the full fee before wallet signing. No fee is charged when a swap is not completed.</p>
+    <p class="swap-status" id="swapStatus">Connect your wallet, enter an amount, get a quote, then confirm in your connected wallet.</p>
    </div>
   </section>
  </div>
@@ -477,14 +477,14 @@ body.qx-token-open #getQuoteBtn{display:none!important}
 
 <div class="ad-modal-backdrop" id="adModalBackdrop" role="dialog" aria-modal="true" aria-labelledby="adModalTitle">
  <div class="ad-modal">
-  <div class="ad-modal-head"><h3 id="adModalTitle">Add advertisement</h3><button class="ad-close" id="adCloseBtn" type="button" aria-label="Close">ÃÂ</button></div>
+  <div class="ad-modal-head"><h3 id="adModalTitle">Add advertisement</h3><button class="ad-close" id="adCloseBtn" type="button" aria-label="Close">Ã</button></div>
   <label class="ad-field" for="adDuration">Advertisement duration</label>
   <select id="adDuration">
-   <option value="1">1 hour Ã¢ÂÂ $49.99</option>
-   <option value="3">3 hours Ã¢ÂÂ $99.99</option>
-   <option value="9">9 hours Ã¢ÂÂ $179.99</option>
-   <option value="24">24 hours Ã¢ÂÂ $299.99</option>
-   <option value="72">3 days Ã¢ÂÂ $599.99</option>
+   <option value="1">1 hour â $49.99</option>
+   <option value="3">3 hours â $99.99</option>
+   <option value="9">9 hours â $179.99</option>
+   <option value="24">24 hours â $299.99</option>
+   <option value="72">3 days â $599.99</option>
   </select>
   <div class="ad-price-line"><span>Total price</span><strong id="adUsdPrice">$49.99</strong></div>
   <div class="ad-price-line"><span>Estimated SOL payment</span><strong id="adSolPrice">Waiting for SOL price</strong></div>
@@ -544,11 +544,29 @@ document.body.classList.remove("qx-wallet-active");
 </script>
 
 <script type="module">
-import {createAppKit} from "@reown/appkit";
-import {SolanaAdapter} from "@reown/appkit-adapter-solana";
-import {solana} from "@reown/appkit/networks";
-import {Connection,PublicKey,Keypair,SystemProgram,Transaction,VersionedTransaction} from "@solana/web3.js";
-import {MINT_SIZE,TOKEN_PROGRAM_ID, getAssociatedTokenAddress, createInitializeMintInstruction, createAssociatedTokenAccountInstruction, createMintToInstruction} from "@solana/spl-token";
+// Load each dependency independently. A wallet UI CDN failure must not disable
+// the Solana market, search, sorting, navigation, or other page controls.
+const dependencyErrors=[];
+async function safeImport(name){
+ try{return await import(name)}
+ catch(error){dependencyErrors.push(name+": "+(error?.message||String(error)));console.error("QX dependency failed:",name,error);return {}}
+}
+const [appkitModule,solanaAdapterModule,networksModule,web3Module,splTokenModule]=await Promise.all([
+ safeImport("@reown/appkit"),
+ safeImport("@reown/appkit-adapter-solana"),
+ safeImport("@reown/appkit/networks"),
+ safeImport("@solana/web3.js"),
+ safeImport("@solana/spl-token")
+]);
+
+// Guard the full app startup so a failed optional dependency is reported
+// without leaving an unmatched catch that prevents the entire module parsing.
+try {
+const {createAppKit}=appkitModule;
+const {SolanaAdapter}=solanaAdapterModule;
+const {solana}=networksModule;
+const {Connection,PublicKey,Keypair,SystemProgram,Transaction,VersionedTransaction}=web3Module;
+const {MINT_SIZE,TOKEN_PROGRAM_ID,getAssociatedTokenAddress,createInitializeMintInstruction,createAssociatedTokenAccountInstruction,createMintToInstruction}=splTokenModule;
 
 const $=id=>document.getElementById(id);
 const PROJECT_ID="bd6faec63fbd0865f57da576a550ef09";
@@ -583,9 +601,16 @@ function escapeHTML(v){
  return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 }
 async function getJSON(url){
- const r=await fetch(url);
- if(!r.ok)throw new Error("Market data request failed");
- return r.json();
+ const controller=new AbortController();
+ const timeout=setTimeout(()=>controller.abort(),12000);
+ try{
+  const r=await fetch(url,{signal:controller.signal,cache:"no-store"});
+  if(!r.ok)throw new Error("Market data request failed (HTTP "+r.status+")");
+  return await r.json();
+ }catch(e){
+  if(e?.name==="AbortError")throw new Error("Market data request timed out after 12 seconds");
+  throw e;
+ }finally{clearTimeout(timeout);}
 }
 async function rpc(method,params){
  let lastError;
@@ -660,7 +685,23 @@ try{
 }catch(error){
  $("walletStatus").textContent="Wallet setup error: "+error.message;
 }
-$("connectBtn").onclick=()=>appKit?.open();
+$("connectBtn").onclick=async()=>{
+ try{
+  if(appKit){appKit.open();return;}
+  const provider=window.phantom?.solana||window.solana;
+  if(!provider?.connect)throw new Error("Wallet connector library is unavailable. Open this site inside Phantom or another Solana wallet browser.");
+  const result=await provider.connect();
+  const address=result?.publicKey?.toString?.()||provider.publicKey?.toString?.();
+  if(!address)throw new Error("Wallet did not return a Solana address.");
+  connected=true;walletAddress=address;
+  $("connectBtn").textContent=short(address);
+  $("walletAddress").textContent=address;
+  $("walletStatus").textContent="Wallet connected.";
+  $("swapWallet").textContent=short(address);
+  $("swapStatus").textContent="Wallet connected. Select a Solana token and request a fresh quote.";
+  updateTradePercentUI();await loadPortfolio();
+ }catch(error){$("walletStatus").textContent=error.message||"Could not connect wallet.";}
+};
 
 async function loadSolPrice(){
  try{
@@ -782,7 +823,7 @@ function renderAssetRows(){
  }).join("");
 }
 
-/* PUBLIC ADVERTISEMENTS Ã¢ÂÂ secure activation requires the QX Supabase Edge Function */
+/* PUBLIC ADVERTISEMENTS â secure activation requires the QX Supabase Edge Function */
 const QX_AD_TREASURY="E4x2DiVVDuVQHSUGgzTPjJMDbiJ6jCRwpEvsvAd31Qs4";
 // Fill these two public Supabase values after creating the QX Ads backend.
 // Never place a Supabase service-role key or any private wallet key in this file.
@@ -839,7 +880,7 @@ async function loadPublicAds(){
   if(!ads.length){host.innerHTML='<div class="ad-empty">No sponsored advertisements yet.</div>';return;}
   host.innerHTML=ads.map(ad=>{
    const title=escapeHTML(ad.title||"Sponsored project"),body=escapeHTML(ad.body||""),url=safeAdUrl(ad.url),image=ad.image_url?safeAdUrl(ad.image_url):"";
-   return '<article class="ad-card">'+(image?'<img class="ad-image" src="'+escapeHTML(image)+'" alt="" loading="lazy" referrerpolicy="no-referrer">':'')+'<div class="ad-copy"><strong>'+title+'</strong><p>'+body+'</p><a href="'+escapeHTML(url)+'" target="_blank" rel="noopener noreferrer">Visit project Ã¢ÂÂ</a></div></article>';
+   return '<article class="ad-card">'+(image?'<img class="ad-image" src="'+escapeHTML(image)+'" alt="" loading="lazy" referrerpolicy="no-referrer">':'')+'<div class="ad-copy"><strong>'+title+'</strong><p>'+body+'</p><a href="'+escapeHTML(url)+'" target="_blank" rel="noopener noreferrer">Visit project â</a></div></article>';
   }).join("");
  }catch(e){console.warn("QX ads feed:",e);host.innerHTML='<div class="ad-empty">Advertisements are temporarily unavailable.</div>';}
 }
@@ -921,7 +962,7 @@ async function createQXToken(){
   const appProvider=appKit?.getWalletProvider?.();
   const phantom=window.phantom?.solana||window.solana;
   const signer=(phantom?.publicKey?.toString()===walletAddress&&typeof phantom.signTransaction==="function")?phantom:appProvider;
-  if(typeof signer?.signTransaction!=="function")throw new Error("Your connected wallet does not support transaction signing in this browser. Reconnect Phantom and retry.");
+  if(typeof signer?.signTransaction!=="function")throw new Error("Your connected wallet does not support transaction signing in this browser. Reconnect your wallet and retry.");
   button.disabled=true;button.textContent="Preparing token transaction...";
   status.textContent="Creating mint account and initial supply. Review the transaction in your wallet.";
   resultBox.style.display="none";
@@ -1023,6 +1064,8 @@ async function loadMarket(){
    fetchCanonicalSol()
   ]);
   const search=results[0].status==="fulfilled"?results[0].value:{pairs:[]};
+  // This exchange intentionally lists Solana-chain tokens only.
+  const solanaSearchPairs=(search.pairs||[]).filter(p=>p?.chainId==="solana"&&valid(p.baseToken?.address));
   const profiles=results[1].status==="fulfilled"?results[1].value:[];
   const latestBoosts=results[2].status==="fulfilled"?results[2].value:[];
   const topBoosts=results[3].status==="fulfilled"?results[3].value:[];
@@ -1030,10 +1073,10 @@ async function loadMarket(){
   const freshMints=[...new Set([...profileMints(profiles),...boostMints(latestBoosts)])];
   const profileList=await fetchPairsForMints(freshMints);
   const boostList=await fetchPairsForMints(boostMints(topBoosts));
-  newPairs=bestPairsByMint([...profileList,...(search.pairs||[]).filter(p=>p.chainId==="solana"&&Number(p.pairCreatedAt||0)>Date.now()-7*86400000)],false)
+  newPairs=bestPairsByMint([...profileList,...solanaSearchPairs.filter(p=>Number(p.pairCreatedAt||0)>Date.now()-7*86400000)],false)
    .sort((a,b)=>Number(b.pairCreatedAt||0)-Number(a.pairCreatedAt||0));
   trendingPairs=bestPairsByMint(boostList,false);
-  const others=bestPairsByMint([...(search.pairs||[]),...profileList,...boostList],false);
+  const others=bestPairsByMint([...solanaSearchPairs,...profileList,...boostList].filter(p=>p?.chainId==="solana"&&valid(p.baseToken?.address)),false);
   const merged=new Map(others.map(p=>[p.baseToken.address,p]));
   if(canonicalSolPair)merged.set(SOL,canonicalSolPair);
   allPairs=[...merged.values()];
@@ -1406,7 +1449,7 @@ function getSwapInputAmount(){
  const typed=$("tradeAmountInput").value.trim();
  const amount=typed!==""?Number(typed):balance*tradePercent/100;
  const decimals=tradeDirection==="buy"?9:selectedTokenDecimals;
- if(!connected||!walletAddress)throw new Error("Connect your Phantom wallet first.");
+ if(!connected||!walletAddress)throw new Error("Connect your Solana wallet first.");
  if(!Number.isFinite(amount)||amount<=0)throw new Error("Enter a valid amount greater than zero.");
  if(amount>balance+1e-10)throw new Error("The amount is higher than your available wallet balance.");
  return {amount,decimals,raw:toSmallestUnits(amount,decimals)};
@@ -1431,7 +1474,7 @@ async function requestQXQuote(){
   clearPendingSwap();
   $("swapPay").textContent=input.amount.toLocaleString("en-US",{maximumFractionDigits:8})+" "+(tradeDirection==="buy"?"SOL":selectedToken.baseToken.symbol);
   $("swapWallet").textContent=short(walletAddress);
-  $("swapStatus").textContent="QX is finding the best available market route. Nothing moves until you approve in Phantom.";
+  $("swapStatus").textContent="QX is finding the best available market route. Nothing moves until you approve in your connected wallet.";
   const params=new URLSearchParams({inputMint:pair.inputMint,outputMint:pair.outputMint,amount:input.raw,taker:walletAddress,referralAccount:QX_REFERRAL_ACCOUNT,referralFee:String(QX_REFERRAL_FEE_BPS)});
   const response=await fetch(JUPITER_SWAP_API+"/order?"+params.toString(),{headers:jupiterHeaders()});
   const data=await response.json().catch(()=>({}));
@@ -1454,7 +1497,7 @@ async function requestQXQuote(){
   $("qxFeeDisplay").textContent="1.00% | included in "+feeMintLabel;
   $("swapRoute").textContent="QX / "+(data.router||"Best available route");
   $("confirmSwapBtn").disabled=false;
-  $("swapStatus").textContent="Price ready. Review the estimated receive amount, then confirm the swap in Phantom. Final output can change with market conditions.";
+  $("swapStatus").textContent="Price ready. Review the estimated receive amount, then confirm the swap in your connected wallet. Final output can change with market conditions.";
  }catch(error){
   pendingSwapOrder=null;
   $("confirmSwapBtn").disabled=true;
@@ -1477,12 +1520,12 @@ async function executeQXSwap(){
   const appProvider=appKit?.getWalletProvider?.();
   const phantom=window.phantom?.solana||window.solana;
   const provider=(phantom?.publicKey?.toString()===walletAddress&&typeof phantom.signTransaction==="function")?phantom:appProvider;
-  if(typeof provider?.signTransaction!=="function")throw new Error("The connected wallet did not provide signTransaction. Reconnect Phantom from QX and try again.");
+  if(typeof provider?.signTransaction!=="function")throw new Error("The connected wallet did not provide signTransaction. Reconnect your wallet from QX and try again.");
   swapBusy=true;
   $("confirmSwapBtn").disabled=true;
   $("getQuoteBtn").disabled=true;
-  $("confirmSwapBtn").textContent="Waiting for Phantom...";
-  $("swapStatus").textContent="Approve the swap transaction in Phantom. Check the token and amount before signing.";
+  $("confirmSwapBtn").textContent="Waiting for wallet approval...";
+  $("swapStatus").textContent="Approve the swap transaction in your connected wallet. Check the token and amount before signing.";
   const tx=VersionedTransaction.deserialize(base64ToBytes(pendingSwapOrder.data.transaction));
   const signed=await provider.signTransaction(tx);
   const signedTransaction=bytesToBase64(signed.serialize());
@@ -1513,7 +1556,7 @@ async function executeQXSwap(){
  }finally{
   swapBusy=false;
   $("getQuoteBtn").disabled=false;
-  if($("confirmSwapBtn").textContent!=="Swap completed")$("confirmSwapBtn").textContent="Confirm in Phantom";
+  if($("confirmSwapBtn").textContent!=="Swap completed")$("confirmSwapBtn").textContent="Confirm swap";
  }
 }
 $("getQuoteBtn").onclick=requestQXQuote;
@@ -1619,6 +1662,12 @@ changeTradeDirection("buy");
 updateTradePercentUI();
 loadSolPrice();
 loadMarket();
+if(dependencyErrors.length){
+ const walletOnly=dependencyErrors.filter(x=>x.includes("@reown/")||x.includes("@solana/spl-token"));
+ if(walletOnly.length){
+  const el=$("walletStatus");if(el)el.textContent="Some optional wallet/token tools did not load. Solana markets remain available; wallet browser connection may still work.";
+ }
+}
 setInterval(loadSolPrice,60000);
 // Public market endpoints are polled every 20 seconds for a near-live new-coin feed.
 setInterval(loadMarket,20000);
@@ -1626,6 +1675,14 @@ setInterval(loadMarket,20000);
 setInterval(()=>{if(document.body.classList.contains("qx-token-open")&&selectedToken?.pairAddress)loadQXChart(selectedToken.pairAddress,activeChartRange);},30000);
 
 // All page text is served as UTF-8. No runtime text rewriting is applied.
+} catch (error) {
+ const message = error && error.message ? error.message : String(error || "Unknown module loading error");
+ const status = document.getElementById("marketStatus");
+ const results = document.getElementById("tokenResults");
+ if (status) status.textContent = "QX startup error: " + message;
+ if (results) results.textContent = "Market unavailable: a required library failed to load. Refresh the page or check the library error above.";
+ console.error("QX module initialization failed:", error);
+}
 </script>
 </body>
 </html>
