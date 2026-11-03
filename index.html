@@ -571,7 +571,7 @@ const USDC="EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
 const RPCS=["https://solana-rpc.publicnode.com","https://api.mainnet-beta.solana.com"];
 const SOL_RESERVE=0.002;
 
-let appKit,walletAddress="",connected=false,solPrice=0;
+let appKit,activeWalletProvider=null,walletAddress="",connected=false,solPrice=0;
 let walletSolBalance=0,selectedTokenBalance=0,selectedTokenDecimals=0;
 let allPairs=[],newPairs=[],trendingPairs=[],currentCategory="all";
 let marketBusy=false,canonicalSolPair=null,selectedToken=null;
@@ -596,6 +596,12 @@ const money=n=>{
 const masked=v=>balancesHidden?"******":v;
 function escapeHTML(v){
  return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+function cleanTokenText(value,fallback="Unknown Token"){
+ let text=String(value??"").normalize("NFC").replace(/[\u0000-\u001F\u007F]/g,"").trim();
+ // Reject common UTF-8/Windows-1252 mojibake rather than showing corrupted labels.
+ if(!text||/[ï¿½]|(?:Ã.|Ã.|Ã¢â¬|Ã°Å¸|Ã.|Ã.)/.test(text))return fallback;
+ return text.slice(0,72);
 }
 async function getJSON(url){
  const r=await fetch(url);
@@ -632,54 +638,88 @@ $("balanceToggle").onclick=()=>{
  setBalanceVisibility();
 };
 
-try{
- if(!createAppKit||!SolanaAdapter||!solana)throw new Error("Wallet connection libraries could not load. Market browsing remains available; reload the page or try again later.");
- appKit=createAppKit({
-  adapters:[new SolanaAdapter()],
-  networks:[solana],
-  projectId:PROJECT_ID,
-  metadata:{
-   name:"QX Exchange",description:"Solana exchange",
-   url:"https://jhsmj5d6tc-cmd.github.io/qx-exchange/",icons:[]
-  },
-  themeMode:"dark",
-  themeVariables:{"--w3m-accent":"#9b6cff","--w3m-border-radius-master":"10px"},
-  features:{analytics:true,email:false,socials:false}
- });
- appKit.subscribeAccount(async state=>{
-  if(state?.isConnected&&valid(state.address)){
-   connected=true;walletAddress=state.address;
-   $("connectBtn").textContent=short(walletAddress);
-   $("walletAddress").textContent=walletAddress;
-   $("walletStatus").textContent="Wallet connected.";
-   $("swapWallet").textContent=short(walletAddress);
-   $("swapStatus").textContent="Wallet connected. Select a token and request a fresh quote.";
-   updateTradePercentUI();
-   await loadPortfolio();
-  }else{
-   connected=false;walletAddress="";walletSolBalance=0;
-   selectedTokenBalance=0;
-   $("connectBtn").textContent="Connect Wallet";
-   $("walletAddress").textContent="";
-   $("walletStatus").textContent="Wallet disconnected.";
-   $("swapWallet").textContent="Not connected";
-   $("swapStatus").textContent="Connect your wallet before requesting a swap.";
-   clearPendingSwap("Wallet disconnected.");
-   $("totalValue").dataset.realValue="-";
-   $("totalValue").textContent="-";
-   lastAssetRows=[];
-   $("assetsList").className="empty";
-   $("assetsList").textContent="Connect wallet first.";
-   updateTradePercentUI();
-  }
- });
-}catch(error){
- $("walletStatus").textContent="Wallet setup error: "+error.message;
+function getInjectedWallets(){
+ const list=[];
+ const candidates=[
+  [window.phantom?.solana,"Phantom"],
+  [window.solflare,"Solflare"],
+  [window.backpack?.solana||window.backpack,"Backpack"]
+ ];
+ for(const [provider,name] of candidates){
+  if(provider&&typeof provider.connect==="function"&&!list.some(x=>x.provider===provider))list.push({provider,name});
+ }
+ return list;
 }
-$("connectBtn").onclick=()=>{
- if(appKit)appKit.open();
- else $("walletStatus").textContent="Wallet connection is unavailable because its required libraries did not load. Check your connection and reload QX.";
+function getActiveWalletProvider(){
+ if(activeWalletProvider)return activeWalletProvider;
+ const injected=getInjectedWallets().find(x=>x.provider.publicKey?.toString()===walletAddress);
+ if(injected)return injected.provider;
+ try{return appKit?.getWalletProvider?.()||null;}catch(_){return null;}
+}
+async function setConnectedWallet(provider,address,name="Wallet"){
+ if(!valid(address))throw new Error("Wallet returned an invalid Solana address.");
+ activeWalletProvider=provider||null;walletAddress=address;connected=true;
+ $("connectBtn").textContent=short(walletAddress);
+ $("walletAddress").textContent=walletAddress;
+ $("walletStatus").textContent=name+" connected.";
+ $("swapWallet").textContent=short(walletAddress);
+ $("swapStatus").textContent="Wallet connected. Select a token and request a fresh quote.";
+ updateTradePercentUI();
+ await loadPortfolio();
+}
+function clearConnectedWallet(message="Wallet disconnected."){
+ connected=false;walletAddress="";activeWalletProvider=null;walletSolBalance=0;selectedTokenBalance=0;
+ $("connectBtn").textContent="Connect Wallet";
+ $("walletAddress").textContent="";
+ $("walletStatus").textContent=message;
+ $("swapWallet").textContent="Not connected";
+ $("swapStatus").textContent="Connect your wallet before requesting a swap.";
+ clearPendingSwap(message);
+ $("totalValue").dataset.realValue="-";$("totalValue").textContent="-";
+ lastAssetRows=[];$("assetsList").className="empty";$("assetsList").textContent="Connect wallet first.";
+ updateTradePercentUI();
+}
+async function connectQXWallet(){
+ const injected=getInjectedWallets();
+ if(injected.length){
+  const choice=injected.length===1?injected[0]:injected.find(x=>x.name==="Phantom")||injected[0];
+  const response=await choice.provider.connect();
+  const address=response?.publicKey?.toString?.()||choice.provider.publicKey?.toString?.();
+  await setConnectedWallet(choice.provider,address,choice.name);
+  return;
+ }
+ if(appKit){appKit.open();return;}
+ throw new Error("No Solana wallet was detected. Open QX inside Phantom or Solflare's in-app browser, or install a wallet extension and reload.");
+}
+try{
+ if(createAppKit&&SolanaAdapter&&solana){
+  appKit=createAppKit({
+   adapters:[new SolanaAdapter()],networks:[solana],projectId:PROJECT_ID,
+   metadata:{name:"QX Exchange",description:"Solana exchange",url:"https://jhsmj5d6tc-cmd.github.io/qx-exchange/",icons:[]},
+   themeMode:"dark",themeVariables:{"--w3m-accent":"#9b6cff","--w3m-border-radius-master":"10px"},
+   features:{analytics:true,email:false,socials:false}
+  });
+  appKit.subscribeAccount(async state=>{
+   if(state?.isConnected&&valid(state.address)){
+    try{await setConnectedWallet(appKit?.getWalletProvider?.(),state.address,"Wallet");}catch(e){$("walletStatus").textContent="Wallet connected, but portfolio loading failed: "+e.message;}
+   }else if(!getInjectedWallets().some(x=>x.provider.publicKey?.toString()===walletAddress))clearConnectedWallet();
+  });
+ }else console.warn("QX: Reown wallet modal unavailable; injected wallets remain supported.");
+}catch(error){console.warn("QX wallet modal setup issue:",error);}
+$("connectBtn").onclick=async()=>{
+ try{await connectQXWallet();}
+ catch(error){$("walletStatus").textContent=error?.message||"Wallet connection failed.";}
 };
+for(const {provider,name} of getInjectedWallets()){
+ if(typeof provider.on==="function"){
+  provider.on("disconnect",()=>{if(activeWalletProvider===provider)clearConnectedWallet(name+" disconnected.");});
+  provider.on("accountChanged",async key=>{
+   const address=key?.toString?.();
+   if(address&&valid(address)){try{await setConnectedWallet(provider,address,name);}catch(e){$("walletStatus").textContent=e.message;}}
+   else if(activeWalletProvider===provider)clearConnectedWallet(name+" account disconnected.");
+  });
+ }
+}
 
 async function loadSolPrice(){
  try{
@@ -883,7 +923,7 @@ async function payForAdvertisement(){
   const url=safeAdUrl(adEl("adUrl").value),imageUrl=safeAdUrl(adEl("adImageUrl").value,true);
   if(title.length<3)throw new Error("Enter an advertisement title.");
   if(body.length<8)throw new Error("Paste your advertisement text.");
-  const provider=appKit?.getWalletProvider?.();
+  const provider=getActiveWalletProvider();
   if(typeof provider?.signTransaction!=="function")throw new Error("The connected wallet does not support transaction signing. Reconnect a Solana wallet.");
   const lamports=Math.ceil(sol*1e9);
   if(!Number.isSafeInteger(lamports)||lamports<=0)throw new Error("Invalid SOL payment amount.");
@@ -938,9 +978,7 @@ async function createQXToken(){
    throw new Error("Choose your Solana wallet in the connection window, then tap Create Token again.");
   }
   const owner=new PublicKey(walletAddress),connection=new Connection(RPCS[0],"confirmed");
-  const appProvider=appKit?.getWalletProvider?.();
-  const phantom=window.phantom?.solana||window.solana;
-  const signer=(phantom?.publicKey?.toString()===walletAddress&&typeof phantom.signTransaction==="function")?phantom:appProvider;
+  const signer=getActiveWalletProvider();
   if(typeof signer?.signTransaction!=="function")throw new Error("Your connected wallet does not support transaction signing in this browser. Reconnect Phantom and retry.");
   button.disabled=true;button.textContent="Preparing token transaction...";
   status.textContent="Creating mint account and initial supply. Review the transaction in your wallet.";
@@ -1063,7 +1101,8 @@ async function loadMarket(){
   const others=bestPairsByMint([...(search.pairs||[]),...profileList,...boostList],false);
   const merged=new Map(others.map(p=>[p.baseToken.address,p]));
   if(canonicalSolPair)merged.set(SOL,canonicalSolPair);
-  allPairs=[...merged.values()];
+  // Final guard: one displayed row per unique mint, preferring the deepest pool.
+  allPairs=bestPairsByMint([...merged.values()],true);
   if(!allPairs.length)throw new Error("Live market providers returned no token pairs. Check your connection or try again shortly.");
   $("marketStatus").textContent="Market data refreshes automatically | Last update "+new Date().toLocaleTimeString();
   renderMarket();
@@ -1162,14 +1201,14 @@ function renderMarket(){
   return;
  }
  $("tokenResults").innerHTML=list.map(p=>{
-  const name=escapeHTML(p.baseToken?.name||"Unknown Token");
-  const symbol=escapeHTML(p.baseToken?.symbol||"TOKEN");
+  const name=escapeHTML(cleanTokenText(p.baseToken?.name,"Unknown Token"));
+  const symbol=escapeHTML(cleanTokenText(p.baseToken?.symbol,"TOKEN"));
   const change=Number(p.priceChange?.h24),has=Number.isFinite(change);
   const changeText=has?(change>0?"+":"")+change.toFixed(2)+"%":"-";
   const cls=!has?"neutral":change>0?"up":change<0?"down":"neutral";
   const image=p.info?.imageUrl||"",mint=escapeHTML(p.baseToken.address);
   const img=image?`<img class="coin-logo" src="${escapeHTML(image)}" alt="${name}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`:"";
-  const fallback=`<span class="coin-fallback" style="display:${image?"none":"flex"}">${escapeHTML((p.baseToken?.symbol||"?").slice(0,2))}</span>`;
+  const fallback=`<span class="coin-fallback" style="display:${image?"none":"flex"}">${escapeHTML(cleanTokenText(p.baseToken?.symbol,"?").slice(0,2))}</span>`;
   const age=p.pairCreatedAt?timeSince(p.pairCreatedAt):"Recently discovered";
   const meta=currentCategory==="new"?`<span class="new-coin-meta">${age} | MC ${money(p.marketCap||p.fdv)} | LIQ ${money(p.liquidity?.usd)} | VOL ${money(p.volume?.h24)} | TX ${Number(p.txns?.h24?.buys||0)+Number(p.txns?.h24?.sells||0)}</span>`:"";
   return `<div class="market-row">
@@ -1209,8 +1248,12 @@ async function searchMarket(){
    $("coinCount").textContent="0 tokens";return;
   }
   const existing=new Map(allPairs.map(p=>[p.baseToken.address,p]));
-  results.forEach(p=>existing.set(p.baseToken.address,p));
-  allPairs=[...existing.values()];
+  results.forEach(p=>{
+   const key=p.baseToken.address,old=existing.get(key);
+   if(!old||Number(p.liquidity?.usd||0)>Number(old.liquidity?.usd||0))existing.set(key,p);
+  });
+  allPairs=bestPairsByMint([...existing.values()],true);
+  results=bestPairsByMint(results,true);
   currentCategory="all";
   document.querySelectorAll(".market-tab").forEach(t=>t.classList.toggle("active",t.dataset.category==="all"));
   $("categoryTitle").textContent="Search results";
@@ -1231,14 +1274,14 @@ function renderSearchResults(list){
   $("tokenResults").innerHTML='<div class="market-empty">No matching tokens found.</div>';return;
  }
  $("tokenResults").innerHTML=filtered.map(p=>{
-  const name=escapeHTML(p.baseToken?.name||"Unknown Token");
-  const symbol=escapeHTML(p.baseToken?.symbol||"TOKEN");
+  const name=escapeHTML(cleanTokenText(p.baseToken?.name,"Unknown Token"));
+  const symbol=escapeHTML(cleanTokenText(p.baseToken?.symbol,"TOKEN"));
   const change=Number(p.priceChange?.h24);
   const changeText=Number.isFinite(change)?(change>0?"+":"")+change.toFixed(2)+"%":"-";
   const cls=!Number.isFinite(change)?"neutral":change>0?"up":change<0?"down":"neutral";
   const image=p.info?.imageUrl||"";
   const img=image?`<img class="coin-logo" src="${escapeHTML(image)}" alt="${name}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`:"";
-  const fallback=`<span class="coin-fallback" style="display:${image?"none":"flex"}">${escapeHTML((p.baseToken?.symbol||"?").slice(0,2))}</span>`;
+  const fallback=`<span class="coin-fallback" style="display:${image?"none":"flex"}">${escapeHTML(cleanTokenText(p.baseToken?.symbol,"?").slice(0,2))}</span>`;
   return `<div class="market-row">
    <button class="coin-button" data-mint="${escapeHTML(p.baseToken.address)}">${img}${fallback}<span class="coin-info"><strong>${name}</strong><small>${symbol}</small></span></button>
    <span class="market-price">${usd(p.priceUsd)}</span><span class="market-change ${cls}">${changeText}</span>
@@ -1504,9 +1547,7 @@ async function executeQXSwap(){
    return;
   }
   if(!connected||walletAddress!==pendingSwapOrder.wallet)throw new Error("Wallet changed. Reconnect and request a new quote.");
-  const appProvider=appKit?.getWalletProvider?.();
-  const phantom=window.phantom?.solana||window.solana;
-  const provider=(phantom?.publicKey?.toString()===walletAddress&&typeof phantom.signTransaction==="function")?phantom:appProvider;
+  const provider=getActiveWalletProvider();
   if(typeof provider?.signTransaction!=="function")throw new Error("The connected wallet did not provide signTransaction. Reconnect Phantom from QX and try again.");
   swapBusy=true;
   $("confirmSwapBtn").disabled=true;
@@ -1560,7 +1601,11 @@ function changeTradeDirection(direction){
  $("sellBtn").classList.toggle("active",direction==="sell");
  updateTradePercentUI();
  clearPendingSwap("Trade direction changed. Get a fresh quote.");
- if(selectedToken)refreshTradeBalance(false);
+ if(selectedToken){
+  refreshTradeBalance(false).then(()=>{
+   if($("tradeAmount")?.value&&Number($("tradeAmount").value)>0)requestQXQuote();
+  }).catch(error=>{$("swapStatus").textContent=error.message||"Could not refresh token balance.";});
+ }
 }
 $("buyBtn").onclick=()=>changeTradeDirection("buy");
 $("sellBtn").onclick=()=>changeTradeDirection("sell");
