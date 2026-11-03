@@ -535,9 +535,9 @@ document.body.classList.remove("qx-wallet-active");
 <script type="importmap">
 {
  "imports":{
-  "@reown/appkit":"https://esm.sh/@reown/appkit@1.8.24",
-  "@reown/appkit/networks":"https://esm.sh/@reown/appkit@1.8.24/networks",
-  "@reown/appkit-adapter-solana":"https://esm.sh/@reown/appkit-adapter-solana@1.8.24?external=@reown/appkit",
+  "@reown/appkit":"https://esm.sh/@reown/appkit@1.8.24?bundle",
+  "@reown/appkit/networks":"https://esm.sh/@reown/appkit@1.8.24/networks?bundle&external=@reown/appkit",
+  "@reown/appkit-adapter-solana":"https://esm.sh/@reown/appkit-adapter-solana@1.8.24?bundle&external=@reown/appkit",
   "@solana/web3.js":"https://esm.sh/@solana/web3.js@1.98.4",
   "@solana/spl-token":"https://esm.sh/@solana/spl-token@0.4.13?external=@solana/web3.js"
  }
@@ -582,11 +582,15 @@ let MINT_SIZE,TOKEN_PROGRAM_ID,getAssociatedTokenAddress,createInitializeMintIns
 // Safari shows the failing package instead of a misleading generic message.
 const qxLibraryReady = (async()=>{
  try{
-  const [appkitModule,solanaAdapterModule,networksModule]=await Promise.all([
-   import("@reown/appkit"),
-   import("@reown/appkit-adapter-solana"),
-   import("@reown/appkit/networks")
-  ]);
+  // Load sequentially so Safari reports which CDN package actually failed.
+  // The import map uses esm.sh bundle mode to reduce fragile nested module requests.
+  let appkitModule,solanaAdapterModule,networksModule;
+  try{appkitModule=await import("@reown/appkit");}
+  catch(error){throw new Error("@reown/appkit could not load: "+(error?.message||String(error)));}
+  try{solanaAdapterModule=await import("@reown/appkit-adapter-solana");}
+  catch(error){throw new Error("@reown/appkit-adapter-solana could not load: "+(error?.message||String(error)));}
+  try{networksModule=await import("@reown/appkit/networks");}
+  catch(error){throw new Error("@reown/appkit/networks could not load: "+(error?.message||String(error)));}
   createAppKit=appkitModule.createAppKit;
   SolanaAdapter=solanaAdapterModule.SolanaAdapter;
   solana=networksModule.solana;
@@ -595,7 +599,7 @@ const qxLibraryReady = (async()=>{
   }
  }catch(error){
   console.error("QX required Reown module failed:",error);
-  throw new Error("Reown SDK load failed: "+(error?.message||String(error))+". Check Safari content blockers or CDN access, then reload.");
+  throw new Error("Reown SDK load failed: "+(error?.message||String(error))+". Check the named package URL and Safari CDN access, then reload.");
  }
  // Portfolio/token libraries load separately and do not block the wallet picker.
  Promise.allSettled([import("@solana/web3.js"),import("@solana/spl-token")]).then(optional=>{
