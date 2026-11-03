@@ -543,12 +543,89 @@ document.body.classList.remove("qx-wallet-active");
 }
 </script>
 
+<script>
+(function(){
+ const $=id=>document.getElementById(id);
+ const status=(msg)=>{const el=$("marketStatus");if(el)el.textContent=msg;};
+ function showPageSafe(id){
+  document.body.classList.toggle("qx-wallet-active",id==="walletPage");
+  document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active",p.id===id));
+  document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.page===id));
+  window.scrollTo({top:0,behavior:"smooth"});
+ }
+ document.addEventListener("click",e=>{
+  const nav=e.target.closest(".nav-btn[data-page]"); if(nav){showPageSafe(nav.dataset.page);return;}
+  if(window.__QX_MAIN_OK)return;
+  const connect=e.target.closest("#connectBtn");
+  if(connect){status("Loading wallet connectionâ¦");import("@reown/appkit").then(async m=>{
+    const a=await import("@reown/appkit-adapter-solana"),n=await import("@reown/appkit/networks");
+    const kit=m.createAppKit({adapters:[new a.SolanaAdapter()],networks:[n.solana],projectId:"bd6faec63fbd0865f57da576a550ef09",metadata:{name:"QX Exchange",description:"Solana exchange",url:location.href,icons:[]},themeMode:"dark"});
+    await kit.open();
+   }).catch(err=>{const w=$("walletStatus");if(w)w.textContent="Wallet connection could not load: "+err.message;});return;}
+  const refresh=e.target.closest("#refreshBtn");if(refresh){fallbackMarket(true);return;}
+  const tab=e.target.closest(".market-tab[data-category]");if(tab){document.querySelectorAll(".market-tab").forEach(x=>x.classList.toggle("active",x===tab));window.__QX_FALLBACK_CATEGORY=tab.dataset.category;fallbackMarket();return;}
+  const search=e.target.closest("#searchBtn");if(search){fallbackMarket();return;}
+  const add=e.target.closest("#addAdMenuBtn");if(add){$("adModalBackdrop")?.classList.add("open");return;}
+  const close=e.target.closest("#adCloseBtn");if(close){$("adModalBackdrop")?.classList.remove("open");return;}
+ });
+ let fallbackPairs=[]; window.__QX_FALLBACK_CATEGORY="all";
+ async function fallbackMarket(manual){
+  const result=$("tokenResults");if(!result)return;
+  if(manual)status("Refreshing live Solana marketâ¦");
+  try{
+   const urls=["https://api.dexscreener.com/latest/dex/search?q=solana","https://api.dexscreener.com/token-profiles/latest/v1","https://api.dexscreener.com/token-boosts/latest/v1"];
+   const responses=await Promise.all(urls.map(u=>fetch(u,{cache:"no-store"}).then(r=>{if(!r.ok)throw Error("HTTP "+r.status);return r.json();})));
+   const candidates=[...(responses[0].pairs||[]),...responses[1],...responses[2]];
+   const pairs=candidates.filter(p=>p&&p.chainId==="solana"&&p.baseToken&&p.baseToken.address&&Number(p.priceUsd)>0);
+   const best=new Map();
+   for(const p of pairs){const k=p.baseToken.address,old=best.get(k);if(!old||Number(p.liquidity?.usd||0)>Number(old.liquidity?.usd||0))best.set(k,p);}
+   fallbackPairs=[...best.values()].sort((a,b)=>Number(b.liquidity?.usd||0)-Number(a.liquidity?.usd||0));
+   const q=($("search")?.value||"").trim().toLowerCase();
+   let shown=fallbackPairs.filter(p=>!q||[p.baseToken.name,p.baseToken.symbol,p.baseToken.address].some(v=>String(v||"").toLowerCase().includes(q)));
+   const cat=window.__QX_FALLBACK_CATEGORY;
+   if(cat==="gainers")shown=shown.filter(p=>Number(p.priceChange?.h24)>0).sort((a,b)=>Number(b.priceChange.h24)-Number(a.priceChange.h24));
+   if(cat==="losers")shown=shown.filter(p=>Number(p.priceChange?.h24)<0).sort((a,b)=>Number(a.priceChange.h24)-Number(b.priceChange.h24));
+   if(cat==="volume")shown.sort((a,b)=>Number(b.volume?.h24||0)-Number(a.volume?.h24||0));
+   if(cat==="trending"||cat==="new")shown=shown.slice(0,50);
+   $("coinCount").textContent=shown.length+" tokens";
+   if($("categoryTitle"))$("categoryTitle").textContent="All Solana tokens";
+   result.innerHTML=shown.slice(0,100).map(p=>{
+    const n=String(p.baseToken.name||"Token").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+    const sym=String(p.baseToken.symbol||"").replace(/[&<>"']/g,"");
+    const change=Number(p.priceChange?.h24);const pct=Number.isFinite(change)?(change>0?"+":"")+change.toFixed(2)+"%":"-";
+    return `<div class="market-row"><button class="coin-button" type="button" data-fallback-mint="${p.baseToken.address}"><span class="coin-fallback">${sym.slice(0,2)}</span><span class="coin-info"><strong>${n}</strong><small>${sym}</small></span></button><span class="market-price">$${Number(p.priceUsd).toLocaleString("en-US",{maximumFractionDigits:8})}</span><span class="market-change">${pct}</span></div>`;
+   }).join("")||'<div class="market-empty">No matching Solana tokens.</div>';
+   status("Live Solana market loaded | "+new Date().toLocaleTimeString());
+  }catch(err){status("Market data could not load: "+err.message+". Check connection and refresh.");if(!fallbackPairs.length)result.innerHTML='<div class="market-empty">Live market data unavailable. Try again.</div>';}
+ }
+ document.addEventListener("click",e=>{
+  if(window.__QX_MAIN_OK)return;
+  const coin=e.target.closest("[data-fallback-mint]");if(coin){const p=fallbackPairs.find(x=>x.baseToken.address===coin.dataset.fallbackMint);if(p){const d=$("detail");if(d){d.style.display="block";const name=$("detailName");if(name)name.textContent=p.baseToken.name+" ("+p.baseToken.symbol+")";const price=$("detailPrice");if(price)price.textContent="$"+p.priceUsd;window.scrollTo({top:0,behavior:"smooth"});}}}
+ });
+ window.__QX_BOOT_FAIL=function(error){
+  status("Core module unavailable; safe market mode active. "+(error?.message||""));
+  fallbackMarket();
+  if(!window.__QX_FALLBACK_TIMER)window.__QX_FALLBACK_TIMER=setInterval(()=>fallbackMarket(),30000);
+ };
+ // Fallback handlers for search on Enter and close controls.
+ $("search")?.addEventListener("keydown",e=>{if(e.key==="Enter"&&!window.__QX_MAIN_OK)fallbackMarket();});
+})();
+</script>
 <script type="module">
-import {createAppKit} from "@reown/appkit";
-import {SolanaAdapter} from "@reown/appkit-adapter-solana";
-import {solana} from "@reown/appkit/networks";
-import {Connection,PublicKey,Keypair,SystemProgram,Transaction,VersionedTransaction} from "@solana/web3.js";
-import {MINT_SIZE,TOKEN_PROGRAM_ID, getAssociatedTokenAddress, createInitializeMintInstruction, createAssociatedTokenAccountInstruction, createMintToInstruction} from "@solana/spl-token";
+(async()=>{
+ try{
+  const [appkitMod,adapterMod,networkMod,web3Mod,splMod]=await Promise.all([
+   import("@reown/appkit"),
+   import("@reown/appkit-adapter-solana"),
+   import("@reown/appkit/networks"),
+   import("@solana/web3.js"),
+   import("@solana/spl-token")
+  ]);
+  const {createAppKit}=appkitMod;
+  const {SolanaAdapter}=adapterMod;
+  const {solana}=networkMod;
+  const {Connection,PublicKey,Keypair,SystemProgram,Transaction,VersionedTransaction}=web3Mod;
+  const {MINT_SIZE,TOKEN_PROGRAM_ID,getAssociatedTokenAddress,createInitializeMintInstruction,createAssociatedTokenAccountInstruction,createMintToInstruction}=splMod;
 
 const $=id=>document.getElementById(id);
 const PROJECT_ID="bd6faec63fbd0865f57da576a550ef09";
@@ -1059,7 +1136,7 @@ async function loadMarket(){
   }
  }catch(e){
   $("marketStatus").textContent="Market feed temporarily unavailable | "+(e.message||"Retrying automatically");
-  if(!allPairs.length)$ ("tokenResults").innerHTML='<div class="market-empty">Market data unavailable. Please try again.</div>';
+  if(!allPairs.length)$("tokenResults").innerHTML='<div class="market-empty">Market data unavailable. Please try again.</div>';
  }finally{marketBusy=false;}
 }
 
@@ -1639,6 +1716,12 @@ setInterval(loadMarket,20000);
 setInterval(()=>{if(document.body.classList.contains("qx-token-open")&&selectedToken?.pairAddress)loadQXChart(selectedToken.pairAddress,activeChartRange);},30000);
 
 // All page text is served as UTF-8. No runtime text rewriting is applied.
+  window.__QX_MAIN_OK=true;
+ }catch(error){
+  console.error("QX main module failed:",error);
+  if(window.__QX_BOOT_FAIL)window.__QX_BOOT_FAIL(error);
+ }
+})();
 </script>
 </body>
 </html>
