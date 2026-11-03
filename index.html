@@ -330,7 +330,7 @@ body.qx-token-open #getQuoteBtn{display:none!important}
   </span>
   <span class="brand-copy"><span class="brand-name">QX <b>EXCHANGE</b></span><span class="brand-tagline">GLOBAL CRYPTO EXCHANGE</span></span>
  </a>
- <button class="btn primary" id="connectBtn">Connect Wallet</button>
+ <button class="btn primary" id="connectBtn" type="button">Connect Wallet</button>
 </header>
 
 <main id="walletPage" class="page">
@@ -467,7 +467,7 @@ body.qx-token-open #getQuoteBtn{display:none!important}
     <div class="swap-quote"><span>Route</span><strong id="swapRoute">QX best available route</strong></div>
     <div class="swap-quote"><span>Wallet</span><strong id="swapWallet">Not connected</strong></div>
     <button class="swap-action" id="getQuoteBtn"><span>GET BEST PRICE</span><small>Jupiter route | inside QX</small></button>
-    <button class="swap-action swap-secondary" id="confirmSwapBtn" disabled>CONFIRM SWAP IN PHANTOM</button>
+    <button class="swap-action swap-secondary" id="confirmSwapBtn" disabled>CONFIRM SWAP</button>
     <p class="fee-note">QX fee: <strong>1%</strong> per completed swap. The live quote must confirm the full fee before Phantom signing. No fee is charged when a swap is not completed.</p>
     <p class="swap-status" id="swapStatus">Connect your wallet, enter an amount, get a quote, then confirm in Phantom.</p>
    </div>
@@ -579,7 +579,7 @@ const USDC="EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
 const RPCS=["https://solana-rpc.publicnode.com","https://api.mainnet-beta.solana.com"];
 const SOL_RESERVE=0.002;
 
-let appKit,activeWalletProvider=null,walletAddress="",connected=false,solPrice=0;
+let appKit,activeWalletProvider=null,walletAddress="",connected=false,solPrice=0,qxWalletInitError=null;
 let walletSolBalance=0,selectedTokenBalance=0,selectedTokenDecimals=0;
 let allPairs=[],newPairs=[],trendingPairs=[],currentCategory="all";
 let marketBusy=false,canonicalSolPair=null,selectedToken=null;
@@ -704,22 +704,20 @@ async function connectQXWallet(){
   $("walletStatus").textContent="Requesting approval from "+choice.name+"...";
   const response=await choice.provider.connect();
   const address=response?.publicKey?.toString?.()||choice.provider.publicKey?.toString?.();
+  if(!valid(address))throw new Error("The wallet did not return a valid Solana address. Unlock it and try again.");
   await setConnectedWallet(choice.provider,address,choice.name);
   return;
  }
- $("walletStatus").textContent="Loading secure wallet connection...";
+ $("walletStatus").textContent="Preparing secure wallet connection...";
  await qxWalletReady;
  if(appKit){
-  $("walletStatus").textContent="Choose Phantom, Solflare, or another Solana wallet in the connection window.";
+  $("walletStatus").textContent="Choose a Solana wallet in the connection window.";
   await appKit.open({view:"Connect"});
   return;
  }
- const isMobile=/iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
- if(isMobile){
-  $("walletStatus").textContent="No wallet is injected in this browser. Open this page inside Phantom or connect using a wallet connection app.";
-  throw new Error("Wallet not detected. Open Phantom, choose its browser, and visit the QX website there. If you are using Safari, the wallet may not be injected.");
- }
- throw new Error("No Solana wallet was detected. Install Phantom or Solflare, enable its browser extension, then reload QX.");
+ const reason=qxWalletInitError?.message||"Wallet connection service is unavailable.";
+ $("walletStatus").textContent=reason+" Reload the page or open QX inside your wallet app.";
+ throw new Error(reason+" If you are using Safari on iPhone, open the QX website from your wallet app's browser, or retry after the wallet connection service loads.");
 }
 const qxWalletReady=qxLibraryReady.then(async()=>{
  try{
@@ -740,12 +738,17 @@ const qxWalletReady=qxLibraryReady.then(async()=>{
      catch(e){$("walletStatus").textContent="Wallet connected, but portfolio loading failed: "+e.message;}
     }else if(!getInjectedWallets().some(x=>x.provider.publicKey?.toString()===walletAddress))clearConnectedWallet();
    });
-  }else console.warn("QX: Reown wallet modal unavailable; injected wallets remain supported.");
- }catch(error){console.warn("QX wallet modal setup issue:",error);}
+  }else { qxWalletInitError=new Error("Secure wallet connection could not load. Check your internet connection and reload QX."); console.warn("QX: Reown wallet modal unavailable; injected wallets remain supported."); }
+ }catch(error){qxWalletInitError=error;console.warn("QX wallet modal setup issue:",error);}
 });
 $("connectBtn").onclick=async()=>{
+ const button=$("connectBtn");
+ if(button.dataset.busy==="1")return;
+ button.dataset.busy="1";button.disabled=true;
+ $("walletStatus").textContent="Connecting to your wallet...";
  try{await connectQXWallet();}
  catch(error){$("walletStatus").textContent=error?.message||"Wallet connection failed.";}
+ finally{button.dataset.busy="0";button.disabled=false;}
 };
 for(const {provider,name} of getInjectedWallets()){
  if(typeof provider.on==="function"){
@@ -915,6 +918,9 @@ adEl("addAdMenuBtn").addEventListener("click",openAdModal);
 adEl("adCloseBtn").addEventListener("click",closeAdModal);
 adEl("adModalBackdrop").addEventListener("click",e=>{if(e.target===adEl("adModalBackdrop"))closeAdModal();});
 adEl("adDuration").addEventListener("change",updateAdPrice);
+for(const id of ["adHeadline","adText"]){
+ adEl(id).addEventListener("blur",()=>{adEl(id).value=repairMojibake(adEl(id).value).normalize("NFC");});
+}
 function safeAdUrl(value,optional=false){
  const v=String(value||"").trim();if(!v&&optional)return "";
  let u;try{u=new URL(v);}catch(e){throw new Error("Enter a valid https:// link.");}
@@ -956,7 +962,8 @@ async function payForAdvertisement(){
   if(!adsBackendReady())throw new Error("QX Ads backend is not configured yet. Payment is disabled until the secure verification service is connected.");
   const hours=Number(adEl("adDuration").value),pkg=QX_AD_PACKAGES[hours],sol=adSolAmount(hours);
   if(!pkg||!sol||!Number.isFinite(sol))throw new Error("Live SOL price is unavailable. Try again shortly.");
-  const title=adEl("adHeadline").value.trim(),body=adEl("adText").value.trim();
+  const title=repairMojibake(adEl("adHeadline").value).normalize("NFC").trim();
+  const body=repairMojibake(adEl("adText").value).normalize("NFC").trim();
   const url=safeAdUrl(adEl("adUrl").value),imageUrl=safeAdUrl(adEl("adImageUrl").value,true);
   if(title.length<3)throw new Error("Enter an advertisement title.");
   if(body.length<8)throw new Error("Paste your advertisement text.");
