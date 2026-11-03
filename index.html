@@ -557,11 +557,37 @@ document.body.classList.remove("qx-wallet-active");
   const nav=e.target.closest(".nav-btn[data-page]"); if(nav){showPageSafe(nav.dataset.page);return;}
   if(window.__QX_MAIN_OK)return;
   const connect=e.target.closest("#connectBtn");
-  if(connect){status("Loading wallet connectionâ¦");import("@reown/appkit").then(async m=>{
+  if(connect){
+   status("Opening Solana wallet connectionâ¦");
+   const walletStatus=$("walletStatus");
+   const injected=window.phantom?.solana||window.solflare||window.solana;
+   if(injected && typeof injected.connect==="function"){
+    injected.connect().then(result=>{
+     const address=result?.publicKey?.toString?.()||injected.publicKey?.toString?.()||"";
+     if(address){
+      if(walletStatus)walletStatus.textContent="Wallet connected: "+address;
+      $("connectBtn").textContent=address.slice(0,6)+"â¦"+address.slice(-4);
+      $("walletAddress").textContent=address;
+     }else if(walletStatus)walletStatus.textContent="Wallet connection was not completed.";
+    }).catch(err=>{if(walletStatus)walletStatus.textContent="Wallet connection cancelled or failed: "+(err?.message||err);});
+    return;
+   }
+   import("@reown/appkit").then(async m=>{
     const a=await import("@reown/appkit-adapter-solana"),n=await import("@reown/appkit/networks");
     const kit=m.createAppKit({adapters:[new a.SolanaAdapter()],networks:[n.solana],projectId:"bd6faec63fbd0865f57da576a550ef09",metadata:{name:"QX Exchange",description:"Solana exchange",url:location.href,icons:[]},themeMode:"dark"});
+    window.__QX_FALLBACK_APPKIT=kit;
+    if(typeof kit.subscribeAccount==="function")kit.subscribeAccount(state=>{
+     const address=state?.address||"";
+     if(state?.isConnected&&address){
+      if(walletStatus)walletStatus.textContent="Wallet connected: "+address;
+      $("connectBtn").textContent=address.slice(0,6)+"â¦"+address.slice(-4);
+      $("walletAddress").textContent=address;
+     }
+    });
     await kit.open();
-   }).catch(err=>{const w=$("walletStatus");if(w)w.textContent="Wallet connection could not load: "+err.message;});return;}
+   }).catch(err=>{if(walletStatus)walletStatus.textContent="Wallet connection could not load: "+(err?.message||err);status("Wallet module failed to load. Check network access and browser console.");});
+   return;
+  }
   const refresh=e.target.closest("#refreshBtn");if(refresh){fallbackMarket(true);return;}
   const tab=e.target.closest(".market-tab[data-category]");if(tab){document.querySelectorAll(".market-tab").forEach(x=>x.classList.toggle("active",x===tab));window.__QX_FALLBACK_CATEGORY=tab.dataset.category;fallbackMarket();return;}
   const search=e.target.closest("#searchBtn");if(search){fallbackMarket();return;}
@@ -571,14 +597,32 @@ document.body.classList.remove("qx-wallet-active");
  let fallbackPairs=[]; window.__QX_FALLBACK_CATEGORY="all";
  async function fallbackMarket(manual){
   const result=$("tokenResults");if(!result)return;
-  if(manual)status("Refreshing live Solana marketâ¦");
+  if(manual)status("Refreshing live Solana token marketâ¦");
   try{
-   const urls=["https://api.dexscreener.com/latest/dex/search?q=solana","https://api.dexscreener.com/token-profiles/latest/v1","https://api.dexscreener.com/token-boosts/latest/v1"];
+   const urls=[
+    "https://api.dexscreener.com/token-profiles/latest/v1",
+    "https://api.dexscreener.com/token-boosts/latest/v1",
+    "https://api.dexscreener.com/token-boosts/top/v1",
+    "https://api.dexscreener.com/latest/dex/search?q=sol"
+   ];
    const responses=await Promise.all(urls.map(u=>fetch(u,{cache:"no-store"}).then(r=>{if(!r.ok)throw Error("HTTP "+r.status);return r.json();})));
-   const candidates=[...(responses[0].pairs||[]),...responses[1],...responses[2]];
-   const pairs=candidates.filter(p=>p&&p.chainId==="solana"&&p.baseToken&&p.baseToken.address&&Number(p.priceUsd)>0);
+   const SOL_MINT="So11111111111111111111111111111111111111112";
+   const mints=[...new Set(responses.slice(0,3).flat().filter(x=>x?.chainId==="solana"&&x.tokenAddress&&x.tokenAddress!==SOL_MINT).map(x=>x.tokenAddress))].slice(0,25);
+   const pairRequests=[];
+   for(let i=0;i<mints.length;i+=25){
+    pairRequests.push(fetch("https://api.dexscreener.com/tokens/v1/solana/"+mints.slice(i,i+25).join(","),{cache:"no-store"}).then(r=>{if(!r.ok)throw Error("HTTP "+r.status);return r.json();}));
+   }
+   const pairResults=await Promise.allSettled(pairRequests);
+   const fromMints=pairResults.filter(x=>x.status==="fulfilled").flatMap(x=>x.value||[]);
+   const fromSearch=(responses[3]?.pairs||[]).filter(p=>p?.chainId==="solana"&&p.baseToken?.address!==SOL_MINT);
+   const candidates=[...fromMints,...fromSearch].filter(p=>
+    p?.chainId==="solana"&&p.baseToken?.address&&p.baseToken.address!==SOL_MINT&&Number(p.priceUsd)>0
+   );
    const best=new Map();
-   for(const p of pairs){const k=p.baseToken.address,old=best.get(k);if(!old||Number(p.liquidity?.usd||0)>Number(old.liquidity?.usd||0))best.set(k,p);}
+   for(const p of candidates){
+    const key=p.baseToken.address,old=best.get(key);
+    if(!old||Number(p.liquidity?.usd||0)>Number(old.liquidity?.usd||0))best.set(key,p);
+   }
    fallbackPairs=[...best.values()].sort((a,b)=>Number(b.liquidity?.usd||0)-Number(a.liquidity?.usd||0));
    const q=($("search")?.value||"").trim().toLowerCase();
    let shown=fallbackPairs.filter(p=>!q||[p.baseToken.name,p.baseToken.symbol,p.baseToken.address].some(v=>String(v||"").toLowerCase().includes(q)));
@@ -593,17 +637,24 @@ document.body.classList.remove("qx-wallet-active");
     const n=String(p.baseToken.name||"Token").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
     const sym=String(p.baseToken.symbol||"").replace(/[&<>"']/g,"");
     const change=Number(p.priceChange?.h24);const pct=Number.isFinite(change)?(change>0?"+":"")+change.toFixed(2)+"%":"-";
-    return `<div class="market-row"><button class="coin-button" type="button" data-fallback-mint="${p.baseToken.address}"><span class="coin-fallback">${sym.slice(0,2)}</span><span class="coin-info"><strong>${n}</strong><small>${sym}</small></span></button><span class="market-price">$${Number(p.priceUsd).toLocaleString("en-US",{maximumFractionDigits:8})}</span><span class="market-change">${pct}</span></div>`;
-   }).join("")||'<div class="market-empty">No matching Solana tokens.</div>';
-   status("Live Solana market loaded | "+new Date().toLocaleTimeString());
-  }catch(err){status("Market data could not load: "+err.message+". Check connection and refresh.");if(!fallbackPairs.length)result.innerHTML='<div class="market-empty">Live market data unavailable. Try again.</div>';}
+    const mint=String(p.baseToken.address).replace(/[&<>"']/g,"");
+    return `<div class="market-row"><button class="coin-button" type="button" data-fallback-mint="${mint}"><span class="coin-fallback">${sym.slice(0,2)}</span><span class="coin-info"><strong>${n}</strong><small>${sym}</small></span></button><span class="market-price">$${Number(p.priceUsd).toLocaleString("en-US",{maximumFractionDigits:8})}</span><span class="market-change">${pct}</span></div>`;
+   }).join("")||'<div class="market-empty">No matching Solana tokens were found.</div>';
+   status("Live token market loaded | "+new Date().toLocaleTimeString());
+  }catch(err){
+   status("Live market request failed: "+(err?.message||err)+". Retrying automatically.");
+   if(!fallbackPairs.length)result.innerHTML='<div class="market-empty">Could not load live Solana tokens. Check internet access and refresh.</div>';
+  }
  }
  document.addEventListener("click",e=>{
   if(window.__QX_MAIN_OK)return;
   const coin=e.target.closest("[data-fallback-mint]");if(coin){const p=fallbackPairs.find(x=>x.baseToken.address===coin.dataset.fallbackMint);if(p){const d=$("detail");if(d){d.style.display="block";const name=$("detailName");if(name)name.textContent=p.baseToken.name+" ("+p.baseToken.symbol+")";const price=$("detailPrice");if(price)price.textContent="$"+p.priceUsd;window.scrollTo({top:0,behavior:"smooth"});}}}
  });
  window.__QX_BOOT_FAIL=function(error){
-  status("Core module unavailable; safe market mode active. "+(error?.message||""));
+  const message=error?.message||String(error||"Unknown module error");
+  status("Main app module failed to start: "+message+" | Loading live market fallback.");
+  const walletStatus=$("walletStatus");
+  if(walletStatus)walletStatus.textContent="Some wallet/trading features are unavailable because the main app module failed: "+message;
   fallbackMarket();
   if(!window.__QX_FALLBACK_TIMER)window.__QX_FALLBACK_TIMER=setInterval(()=>fallbackMarket(),30000);
  };
