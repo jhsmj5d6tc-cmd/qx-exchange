@@ -357,7 +357,7 @@ body.qx-token-open #getQuoteBtn{display:none!important}
  <section class="panel" style="max-width:720px;margin:0 auto 24px">
   <div class="tag">QX TOKEN CREATOR</div>
   <h2 style="margin-top:10px">Launch an SPL token</h2>
-  <p class="small">Create the token mint and initial supply directly from your connected Solana wallet. Your connected wallet will ask you to approve the transaction.</p>
+  <p class="small">Create the token mint and initial supply directly from your connected Solana wallet. Phantom will ask you to approve the transaction.</p>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px">
    <label class="small">Token name<input id="tokenName" maxlength="32" placeholder="e.g. QX Token" style="display:block;width:100%;margin-top:6px;padding:13px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--text)"></label>
    <label class="small">Symbol<input id="tokenSymbol" maxlength="10" placeholder="e.g. QXT" style="display:block;width:100%;margin-top:6px;padding:13px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--text);text-transform:uppercase"></label>
@@ -369,9 +369,7 @@ body.qx-token-open #getQuoteBtn{display:none!important}
   <div id="createdTokenResult" style="display:none;margin-top:16px;padding:14px;border:1px solid var(--line);border-radius:12px;overflow-wrap:anywhere">
    <strong>Token created</strong><p class="small" id="createdTokenMint"></p><a id="createdTokenSolscan" class="detail-link" target="_blank" rel="noopener">View transaction on Solscan</a>
   </div>
-  <div class="market-heading" style="margin-top:22px"><h3>My Created Tokens</h3><span class="tag">SHARED DIRECTORY</span></div>
-  <div id="createdTokensCloud" class="list"><div class="empty">Connect the wallet that created your tokens to load its shared history.</div></div>
-  <p class="small" style="margin-top:16px">Token mint and initial supply are created on Solana. After on-chain verification, the token name, symbol and mint are saved to the shared QX directory. Logo and rich on-chain metadata are not published by this build.</p>
+  <p class="small" style="margin-top:16px">Important: this creates an on-chain SPL mint and initial supply. Name, symbol, logo metadata and a global QX token directory require a metadata-storage and indexing service; this browser-only build does not claim to publish those globally.</p>
  </section>
 </main>
 
@@ -470,8 +468,8 @@ body.qx-token-open #getQuoteBtn{display:none!important}
     <div class="swap-quote"><span>Wallet</span><strong id="swapWallet">Not connected</strong></div>
     <button class="swap-action" id="getQuoteBtn"><span>GET BEST PRICE</span><small>Jupiter route | inside QX</small></button>
     <button class="swap-action swap-secondary" id="confirmSwapBtn" disabled>CONFIRM SWAP IN PHANTOM</button>
-    <p class="fee-note">QX fee: <strong>1%</strong> per completed swap. The live quote must confirm the full fee before wallet signing. No fee is charged when a swap is not completed.</p>
-    <p class="swap-status" id="swapStatus">Connect your wallet, enter an amount, get a quote, then confirm in your connected wallet.</p>
+    <p class="fee-note">QX fee: <strong>1%</strong> per completed swap. The live quote must confirm the full fee before Phantom signing. No fee is charged when a swap is not completed.</p>
+    <p class="swap-status" id="swapStatus">Connect your wallet, enter an amount, get a quote, then confirm in Phantom.</p>
    </div>
   </section>
  </div>
@@ -642,7 +640,6 @@ try{
    $("swapStatus").textContent="Wallet connected. Select a token and request a fresh quote.";
    updateTradePercentUI();
    await loadPortfolio();
-   await loadCreatedTokenHistory();
   }else{
    connected=false;walletAddress="";walletSolBalance=0;
    selectedTokenBalance=0;
@@ -657,7 +654,6 @@ try{
    lastAssetRows=[];
    $("assetsList").className="empty";
    $("assetsList").textContent="Connect wallet first.";
-   if($("createdTokensCloud"))$("createdTokensCloud").innerHTML='<div class="empty">Connect the wallet that created your tokens to load its shared history.</div>';
    updateTradePercentUI();
   }
  });
@@ -796,7 +792,7 @@ const QX_AD_FUNCTION="qx-ads";
 const QX_AD_PACKAGES={1:{usd:49.99,label:"1 hour"},3:{usd:99.99,label:"3 hours"},9:{usd:179.99,label:"9 hours"},24:{usd:299.99,label:"24 hours"},72:{usd:599.99,label:"3 days"}};
 const adEl=id=>document.getElementById(id);
 let adBusy=false;
-function adsBackendReady(){return /^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(QX_ADS_SUPABASE_URL)&&/^(sb_publishable_[A-Za-z0-9_-]+|eyJ[A-Za-z0-9_-]+\.)/.test(QX_ADS_SUPABASE_ANON_KEY);}
+function adsBackendReady(){return /^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(QX_ADS_SUPABASE_URL)&&(QX_ADS_SUPABASE_ANON_KEY.startsWith("eyJ")||QX_ADS_SUPABASE_ANON_KEY.startsWith("sb_publishable_"));}
 function adSolAmount(hours){
  const price=QX_AD_PACKAGES[Number(hours)]?.usd;
  if(!price||!solPrice||solPrice<=0)return null;
@@ -899,20 +895,6 @@ adEl("adPayBtn").addEventListener("click",payForAdvertisement);
 loadPublicAds();
 
 
-async function loadCreatedTokenHistory(){
- const host=$("createdTokensCloud");
- if(!host||!connected||!walletAddress||!adsBackendReady())return;
- host.innerHTML='<div class="empty">Loading your verified token history...</div>';
- try{
-  const query="/rest/v1/qx_tokens?select=name,symbol,mint,decimals,tx_signature,created_at&creator_wallet=eq."+encodeURIComponent(walletAddress)+"&order=created_at.desc&limit=100";
-  const response=await fetch(QX_ADS_SUPABASE_URL+query,{headers:{"apikey":QX_ADS_SUPABASE_ANON_KEY,"Authorization":"Bearer "+QX_ADS_SUPABASE_ANON_KEY}});
-  if(!response.ok)throw new Error("Could not load shared token history.");
-  const tokens=await response.json();
-  if(!Array.isArray(tokens)||!tokens.length){host.innerHTML='<div class="empty">No verified tokens registered for this wallet yet.</div>';return;}
-  host.innerHTML=tokens.map(t=>'<div class="asset-row" style="display:block;padding:12px 14px"><strong>'+escapeHTML(t.name)+' ('+escapeHTML(t.symbol)+')</strong><div class="small" style="overflow-wrap:anywhere">Mint: '+escapeHTML(t.mint)+'</div><a class="detail-link" target="_blank" rel="noopener noreferrer" href="https://solscan.io/tx/'+encodeURIComponent(t.tx_signature)+'">View verified transaction on Solscan</a></div>').join("");
- }catch(error){host.innerHTML='<div class="empty">Shared token history is temporarily unavailable.</div>';console.warn("QX token directory:",error);}
-}
-
 /* QX TOKEN CREATOR - creates a real SPL mint on Solana Mainnet */
 function parseTokenUnits(value,decimals){
  const text=String(value||"").trim();
@@ -939,7 +921,7 @@ async function createQXToken(){
   const appProvider=appKit?.getWalletProvider?.();
   const phantom=window.phantom?.solana||window.solana;
   const signer=(phantom?.publicKey?.toString()===walletAddress&&typeof phantom.signTransaction==="function")?phantom:appProvider;
-  if(typeof signer?.signTransaction!=="function")throw new Error("Your connected wallet does not support transaction signing in this browser. Reconnect your Solana wallet and retry.");
+  if(typeof signer?.signTransaction!=="function")throw new Error("Your connected wallet does not support transaction signing in this browser. Reconnect Phantom and retry.");
   button.disabled=true;button.textContent="Preparing token transaction...";
   status.textContent="Creating mint account and initial supply. Review the transaction in your wallet.";
   resultBox.style.display="none";
@@ -964,23 +946,24 @@ async function createQXToken(){
   const saved=JSON.parse(localStorage.getItem("qxCreatedTokens")||"[]");
   saved.unshift({name,symbol,decimals,mint:mintAddress,owner:walletAddress,signature,createdAt:Date.now()});
   localStorage.setItem("qxCreatedTokens",JSON.stringify(saved.slice(0,50)));
+  let cloudRegistered=false;
+  if(adsBackendReady()){
+   try{
+    const registryResponse=await fetch(QX_ADS_SUPABASE_URL+"/functions/v1/"+QX_AD_FUNCTION,{
+     method:"POST",
+     headers:{"Content-Type":"application/json","apikey":QX_ADS_SUPABASE_ANON_KEY,"Authorization":"Bearer "+QX_ADS_SUPABASE_ANON_KEY},
+     body:JSON.stringify({action:"register-token",wallet:walletAddress,signature,mint:mintAddress,name,symbol,decimals})
+    });
+    const registryResult=await registryResponse.json().catch(()=>({}));
+    if(!registryResponse.ok||!registryResult.ok)throw new Error(registryResult.error||"Cloud token registration failed.");
+    cloudRegistered=true;
+   }catch(registryError){console.warn("QX token cloud registry:",registryError);}
+  }
   $("createdTokenMint").textContent=name+" ("+symbol+") | Mint: "+mintAddress;
   $("createdTokenSolscan").href="https://solscan.io/tx/"+encodeURIComponent(signature);
   resultBox.style.display="block";
-  status.textContent="Token confirmed on Solana. Saving its verified record to the QX public directory...";
-  try{
-   const response=await fetch(QX_ADS_SUPABASE_URL+"/functions/v1/"+QX_AD_FUNCTION,{
-    method:"POST",headers:{"Content-Type":"application/json","apikey":QX_ADS_SUPABASE_ANON_KEY,"Authorization":"Bearer "+QX_ADS_SUPABASE_ANON_KEY},
-    body:JSON.stringify({action:"register-token",wallet:walletAddress,signature,mint:mintAddress,name,symbol,decimals})
-   });
-   const result=await response.json().catch(()=>({}));
-   if(!response.ok||!result.ok)throw new Error(result.error||"Cloud directory registration failed.");
-   status.textContent="Token mint and initial supply confirmed on Solana Mainnet. Its transaction was verified and the token is saved in the shared QX directory.";
-  }catch(saveError){
-   status.textContent="Token was created successfully on Solana, but its shared QX directory record could not be saved: "+(saveError.message||"unknown error")+". Your mint address and transaction are shown above; do not create it again.";
-  }
+  status.textContent=cloudRegistered?"Token created on Solana Mainnet and saved in the shared QX token directory.":"Token created on Solana Mainnet and saved in this browser. Cloud directory registration could not be completed; the token itself is on-chain.";
   button.textContent="Create another token";
-  await loadCreatedTokenHistory();
   await loadPortfolio();
  }catch(error){
   status.textContent=error?.message||"Token creation failed. No success was recorded.";
@@ -1436,7 +1419,7 @@ function getSwapInputAmount(){
  const typed=$("tradeAmountInput").value.trim();
  const amount=typed!==""?Number(typed):balance*tradePercent/100;
  const decimals=tradeDirection==="buy"?9:selectedTokenDecimals;
- if(!connected||!walletAddress)throw new Error("Connect a Solana wallet first.");
+ if(!connected||!walletAddress)throw new Error("Connect your Phantom wallet first.");
  if(!Number.isFinite(amount)||amount<=0)throw new Error("Enter a valid amount greater than zero.");
  if(amount>balance+1e-10)throw new Error("The amount is higher than your available wallet balance.");
  return {amount,decimals,raw:toSmallestUnits(amount,decimals)};
@@ -1461,7 +1444,7 @@ async function requestQXQuote(){
   clearPendingSwap();
   $("swapPay").textContent=input.amount.toLocaleString("en-US",{maximumFractionDigits:8})+" "+(tradeDirection==="buy"?"SOL":selectedToken.baseToken.symbol);
   $("swapWallet").textContent=short(walletAddress);
-  $("swapStatus").textContent="QX is finding the best available market route. Nothing moves until you approve in your connected wallet.";
+  $("swapStatus").textContent="QX is finding the best available market route. Nothing moves until you approve in Phantom.";
   const params=new URLSearchParams({inputMint:pair.inputMint,outputMint:pair.outputMint,amount:input.raw,taker:walletAddress,referralAccount:QX_REFERRAL_ACCOUNT,referralFee:String(QX_REFERRAL_FEE_BPS)});
   const response=await fetch(JUPITER_SWAP_API+"/order?"+params.toString(),{headers:jupiterHeaders()});
   const data=await response.json().catch(()=>({}));
@@ -1484,7 +1467,7 @@ async function requestQXQuote(){
   $("qxFeeDisplay").textContent="1.00% | included in "+feeMintLabel;
   $("swapRoute").textContent="QX / "+(data.router||"Best available route");
   $("confirmSwapBtn").disabled=false;
-  $("swapStatus").textContent="Price ready. Review the estimated receive amount, then confirm the swap in your connected wallet. Final output can change with market conditions.";
+  $("swapStatus").textContent="Price ready. Review the estimated receive amount, then confirm the swap in Phantom. Final output can change with market conditions.";
  }catch(error){
   pendingSwapOrder=null;
   $("confirmSwapBtn").disabled=true;
@@ -1507,12 +1490,12 @@ async function executeQXSwap(){
   const appProvider=appKit?.getWalletProvider?.();
   const phantom=window.phantom?.solana||window.solana;
   const provider=(phantom?.publicKey?.toString()===walletAddress&&typeof phantom.signTransaction==="function")?phantom:appProvider;
-  if(typeof provider?.signTransaction!=="function")throw new Error("The connected wallet did not provide signTransaction. Reconnect your Solana wallet from QX and try again.");
+  if(typeof provider?.signTransaction!=="function")throw new Error("The connected wallet did not provide signTransaction. Reconnect Phantom from QX and try again.");
   swapBusy=true;
   $("confirmSwapBtn").disabled=true;
   $("getQuoteBtn").disabled=true;
-  $("confirmSwapBtn").textContent="Waiting for wallet approval...";
-  $("swapStatus").textContent="Approve the swap transaction in your connected wallet. Check the token and amount before signing.";
+  $("confirmSwapBtn").textContent="Waiting for Phantom...";
+  $("swapStatus").textContent="Approve the swap transaction in Phantom. Check the token and amount before signing.";
   const tx=VersionedTransaction.deserialize(base64ToBytes(pendingSwapOrder.data.transaction));
   const signed=await provider.signTransaction(tx);
   const signedTransaction=bytesToBase64(signed.serialize());
@@ -1543,7 +1526,7 @@ async function executeQXSwap(){
  }finally{
   swapBusy=false;
   $("getQuoteBtn").disabled=false;
-  if($("confirmSwapBtn").textContent!=="Swap completed")$("confirmSwapBtn").textContent="Confirm in wallet";
+  if($("confirmSwapBtn").textContent!=="Swap completed")$("confirmSwapBtn").textContent="Confirm in Phantom";
  }
 }
 $("getQuoteBtn").onclick=requestQXQuote;
