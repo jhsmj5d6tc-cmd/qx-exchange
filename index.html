@@ -332,6 +332,7 @@ body.qx-token-open #getQuoteBtn{display:none!important}
  </a>
  <button class="btn primary" id="connectBtn" type="button">Connect Wallet</button>
 </header>
+<p id="connectFeedback" role="status" aria-live="polite" class="small" style="min-height:16px;margin:-15px 0 12px;text-align:right"></p>
 
 <main id="walletPage" class="page">
  <div class="hero">
@@ -553,14 +554,18 @@ document.body.classList.remove("qx-wallet-active");
   if(button.dataset.busy==="1")return;
   button.dataset.busy="1";button.disabled=true;
   const status=document.getElementById("walletStatus");
+  const feedback=document.getElementById("connectFeedback");
   if(status)status.textContent="Starting wallet selection...";
+  if(feedback)feedback.textContent="Starting wallet selection...";
   try{
    if(typeof window.QXConnectWallet!=="function"){
     throw new Error("Wallet module did not finish loading. Check your internet connection, then reload the page.");
    }
    await window.QXConnectWallet();
   }catch(error){
-   if(status)status.textContent=error&&error.message?error.message:"Wallet connection failed. Reload QX and try again.";
+   const message=error&&error.message?error.message:"Wallet connection failed. Reload QX and try again.";
+   if(status)status.textContent=message;
+   if(feedback)feedback.textContent=message;
    console.error("QX wallet button:",error);
   }finally{
    button.dataset.busy="0";button.disabled=false;
@@ -586,21 +591,26 @@ const qxLibraryReady = (async()=>{
  if(core[0].status==="fulfilled") createAppKit=core[0].value.createAppKit;
  if(core[1].status==="fulfilled") SolanaAdapter=core[1].value.SolanaAdapter;
  if(core[2].status==="fulfilled") solana=core[2].value.solana;
- const optional = await Promise.allSettled([
+ const coreErrors=core.filter(x=>x.status==="rejected").map(x=>String(x.reason?.message||x.reason));
+ if(coreErrors.length) console.warn("QX AppKit load errors:",coreErrors);
+ if(!createAppKit||!SolanaAdapter||!solana){
+  throw new Error("The wallet picker could not load. Check your internet connection, Safari content blockers, and Reown project settings, then reload the page.");
+ }
+ // Load portfolio/token libraries in the background. They must never block
+ // the Reown wallet picker from becoming available.
+ Promise.allSettled([
   import("@solana/web3.js"),
   import("@solana/spl-token"),
   import("@solana/wallet-adapter-phantom"),
   import("@solana/wallet-adapter-solflare")
- ]);
- if(optional[0].status==="fulfilled") ({Connection,PublicKey,Keypair,SystemProgram,Transaction,VersionedTransaction}=optional[0].value);
- if(optional[1].status==="fulfilled") ({MINT_SIZE,TOKEN_PROGRAM_ID,getAssociatedTokenAddress,createInitializeMintInstruction,createAssociatedTokenAccountInstruction,createMintToInstruction}=optional[1].value);
- if(optional[2].status==="fulfilled") PhantomWalletAdapter=optional[2].value.PhantomWalletAdapter;
- if(optional[3].status==="fulfilled") SolflareWalletAdapter=optional[3].value.SolflareWalletAdapter;
- const errors=[...core,...optional].filter(x=>x.status==="rejected").map(x=>String(x.reason?.message||x.reason));
- if(errors.length) console.warn("QX wallet library load errors:",errors);
- if(!createAppKit||!SolanaAdapter||!solana){
-  throw new Error("Wallet connection libraries did not load. Check your internet connection, content blockers, and the Reown project settings, then reload the page.");
- }
+ ]).then(optional=>{
+  if(optional[0].status==="fulfilled") ({Connection,PublicKey,Keypair,SystemProgram,Transaction,VersionedTransaction}=optional[0].value);
+  if(optional[1].status==="fulfilled") ({MINT_SIZE,TOKEN_PROGRAM_ID,getAssociatedTokenAddress,createInitializeMintInstruction,createAssociatedTokenAccountInstruction,createMintToInstruction}=optional[1].value);
+  if(optional[2].status==="fulfilled") PhantomWalletAdapter=optional[2].value.PhantomWalletAdapter;
+  if(optional[3].status==="fulfilled") SolflareWalletAdapter=optional[3].value.SolflareWalletAdapter;
+  const errors=optional.filter(x=>x.status==="rejected").map(x=>String(x.reason?.message||x.reason));
+  if(errors.length) console.warn("QX optional Solana library load errors:",errors);
+ }).catch(error=>console.warn("QX optional libraries:",error));
 })();
 
 const $=id=>document.getElementById(id);
@@ -711,6 +721,7 @@ async function setConnectedWallet(provider,address,name="Wallet"){
  $("connectBtn").textContent=short(walletAddress);
  $("walletAddress").textContent=walletAddress;
  $("walletStatus").textContent=name+" connected.";
+ const feedback=$("connectFeedback");if(feedback)feedback.textContent=name+" connected successfully.";
  $("swapWallet").textContent=short(walletAddress);
  $("swapStatus").textContent="Wallet connected. Select a token and request a fresh quote.";
  updateTradePercentUI();
@@ -730,6 +741,8 @@ function clearConnectedWallet(message="Wallet disconnected."){
 }
 async function connectQXWallet(){
  $("walletStatus").textContent="Looking for available Solana wallets...";
+ const feedback=$("connectFeedback");
+ if(feedback)feedback.textContent="Looking for available Solana wallets...";
  // In Phantom/Solflare's in-app browser, use the injected provider directly.
  // This avoids an unnecessary WalletConnect round-trip and exposes signing methods.
  const injected=getInjectedWallets();
@@ -750,11 +763,13 @@ async function connectQXWallet(){
   await qxWalletReady;
   if(!appKit)throw qxWalletInitError||new Error("The wallet connection window could not be initialized.");
   $("walletStatus").textContent="Choose Phantom, Solflare, or another Solana wallet.";
+  if(feedback)feedback.textContent="Choose your Solana wallet in the window that opens.";
   await appKit.open({view:"Connect",namespace:"solana"});
  }catch(error){
   const detail=String(error?.message||error||"Unknown connection error");
   const hint=" Check the Reown Dashboard: allow jhsmj5d6tc-cmd.github.io as a project domain and confirm Solana is enabled. If using iPhone Safari, open this site inside Phantom or Solflare.";
   $("walletStatus").textContent="Wallet connection failed: "+detail+hint;
+  if(feedback)feedback.textContent="Wallet connection failed: "+detail+hint;
   throw new Error(detail+hint);
  }
 }
