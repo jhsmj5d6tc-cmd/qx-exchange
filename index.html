@@ -544,11 +544,25 @@ document.body.classList.remove("qx-wallet-active");
 </script>
 
 <script type="module">
-import {createAppKit} from "@reown/appkit";
-import {SolanaAdapter} from "@reown/appkit-adapter-solana";
-import {solana} from "@reown/appkit/networks";
-import {Connection,PublicKey,Keypair,SystemProgram,Transaction,VersionedTransaction} from "@solana/web3.js";
-import {MINT_SIZE,TOKEN_PROGRAM_ID, getAssociatedTokenAddress, createInitializeMintInstruction, createAssociatedTokenAccountInstruction, createMintToInstruction} from "@solana/spl-token";
+// Load wallet / Solana libraries independently. A failed wallet CDN must not
+// prevent the public market, search, navigation, or other page buttons from running.
+let createAppKit,SolanaAdapter,solana;
+let Connection,PublicKey,Keypair,SystemProgram,Transaction,VersionedTransaction;
+let MINT_SIZE,TOKEN_PROGRAM_ID,getAssociatedTokenAddress,createInitializeMintInstruction,createAssociatedTokenAccountInstruction,createMintToInstruction;
+const qxLibraryLoads = await Promise.allSettled([
+ import("@reown/appkit"),
+ import("@reown/appkit-adapter-solana"),
+ import("@reown/appkit/networks"),
+ import("@solana/web3.js"),
+ import("@solana/spl-token")
+]);
+if(qxLibraryLoads[0].status==="fulfilled") createAppKit=qxLibraryLoads[0].value.createAppKit;
+if(qxLibraryLoads[1].status==="fulfilled") SolanaAdapter=qxLibraryLoads[1].value.SolanaAdapter;
+if(qxLibraryLoads[2].status==="fulfilled") solana=qxLibraryLoads[2].value.solana;
+if(qxLibraryLoads[3].status==="fulfilled") ({Connection,PublicKey,Keypair,SystemProgram,Transaction,VersionedTransaction}=qxLibraryLoads[3].value);
+if(qxLibraryLoads[4].status==="fulfilled") ({MINT_SIZE,TOKEN_PROGRAM_ID,getAssociatedTokenAddress,createInitializeMintInstruction,createAssociatedTokenAccountInstruction,createMintToInstruction}=qxLibraryLoads[4].value);
+const qxLibraryErrors=qxLibraryLoads.filter(x=>x.status==="rejected").map(x=>String(x.reason?.message||x.reason));
+if(qxLibraryErrors.length) console.warn("QX optional wallet library issue:",qxLibraryErrors);
 
 const $=id=>document.getElementById(id);
 const PROJECT_ID="bd6faec63fbd0865f57da576a550ef09";
@@ -562,7 +576,8 @@ let walletSolBalance=0,selectedTokenBalance=0,selectedTokenDecimals=0;
 let allPairs=[],newPairs=[],trendingPairs=[],currentCategory="all";
 let marketBusy=false,canonicalSolPair=null,selectedToken=null;
 let tradeDirection="buy",balancesHidden=false,lastAssetRows=[];
-let sortMetric="",sortDirection="desc",tradePercent=25;
+let sortMetric="",sortDirection="desc",tradePercent=0;
+let tradeBalanceLoading=false;
 let pendingSwapOrder=null,quoteBusy=false,swapBusy=false;
 
 const valid=s=>typeof s==="string"&&/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(s);
@@ -618,6 +633,7 @@ $("balanceToggle").onclick=()=>{
 };
 
 try{
+ if(!createAppKit||!SolanaAdapter||!solana)throw new Error("Wallet connection libraries could not load. Market browsing remains available; reload the page or try again later.");
  appKit=createAppKit({
   adapters:[new SolanaAdapter()],
   networks:[solana],
@@ -660,7 +676,10 @@ try{
 }catch(error){
  $("walletStatus").textContent="Wallet setup error: "+error.message;
 }
-$("connectBtn").onclick=()=>appKit?.open();
+$("connectBtn").onclick=()=>{
+ if(appKit)appKit.open();
+ else $("walletStatus").textContent="Wallet connection is unavailable because its required libraries did not load. Check your connection and reload QX.";
+};
 
 async function loadSolPrice(){
  try{
@@ -828,7 +847,7 @@ function safeAdUrl(value,optional=false){
 async function loadPublicAds(){
  const host=adEl("publicAdsList");
  if(!adsBackendReady()){
-  host.innerHTML='<div class="ad-empty">Sponsored advertisements will appear here.</div>';
+  host.innerHTML='<div class="ad-empty">Ads feed is not connected yet. Configure the QX Supabase Ads backend to publish and verify paid advertisements.</div>';
   return;
  }
  try{
@@ -908,6 +927,7 @@ function parseTokenUnits(value,decimals){
 async function createQXToken(){
  const button=$("createTokenBtn"),status=$("createTokenStatus"),resultBox=$("createdTokenResult");
  if(button.disabled)return;
+ if(!Connection||!PublicKey||!Keypair||!SystemProgram||!Transaction||!MINT_SIZE||!TOKEN_PROGRAM_ID){status.textContent="Solana libraries could not load. Reload the page and try again.";return;}
  try{
   const name=$("tokenName").value.trim(),symbol=$("tokenSymbol").value.trim().toUpperCase();
   const decimals=Number($("tokenDecimals").value),supply=parseTokenUnits($("tokenSupply").value,decimals);
@@ -1017,16 +1037,20 @@ async function loadMarket(){
  try{
   const results=await Promise.allSettled([
    getJSON("https://api.dexscreener.com/latest/dex/search?q=solana"),
+   getJSON("https://api.dexscreener.com/latest/dex/search?q=SOL"),
+   getJSON("https://api.dexscreener.com/latest/dex/search?q=USDC"),
+   getJSON("https://api.dexscreener.com/latest/dex/search?q=BONK"),
    getJSON("https://api.dexscreener.com/token-profiles/latest/v1"),
    getJSON("https://api.dexscreener.com/token-boosts/latest/v1"),
    getJSON("https://api.dexscreener.com/token-boosts/top/v1"),
    fetchCanonicalSol()
   ]);
-  const search=results[0].status==="fulfilled"?results[0].value:{pairs:[]};
-  const profiles=results[1].status==="fulfilled"?results[1].value:[];
-  const latestBoosts=results[2].status==="fulfilled"?results[2].value:[];
-  const topBoosts=results[3].status==="fulfilled"?results[3].value:[];
-  if(results[4].status==="fulfilled")canonicalSolPair=results[4].value;
+  const searchPairs=results.slice(0,4).flatMap(r=>r.status==="fulfilled"?(r.value?.pairs||[]):[]);
+  const search={pairs:searchPairs};
+  const profiles=results[4].status==="fulfilled"?results[4].value:[];
+  const latestBoosts=results[5].status==="fulfilled"?results[5].value:[];
+  const topBoosts=results[6].status==="fulfilled"?results[6].value:[];
+  if(results[7].status==="fulfilled")canonicalSolPair=results[7].value;
   const freshMints=[...new Set([...profileMints(profiles),...boostMints(latestBoosts)])];
   const profileList=await fetchPairsForMints(freshMints);
   const boostList=await fetchPairsForMints(boostMints(topBoosts));
@@ -1037,7 +1061,7 @@ async function loadMarket(){
   const merged=new Map(others.map(p=>[p.baseToken.address,p]));
   if(canonicalSolPair)merged.set(SOL,canonicalSolPair);
   allPairs=[...merged.values()];
-  if(!allPairs.length)throw new Error("No Solana market data returned. Try again shortly.");
+  if(!allPairs.length)throw new Error("Live market providers returned no token pairs. Check your connection or try again shortly.");
   $("marketStatus").textContent="Market data refreshes automatically | Last update "+new Date().toLocaleTimeString();
   renderMarket();
   if(selectedToken){
@@ -1266,7 +1290,9 @@ function toSmallestUnits(amount,decimals){
  catch(e){return "0";}
 }
 async function refreshTradeBalance(restart=true){
+ tradeBalanceLoading=true;
  if(!connected||!walletAddress){
+  tradeBalanceLoading=false;
   selectedTokenBalance=0;selectedTokenDecimals=0;walletSolBalance=0;
   updateTradePercentUI();return;
  }
@@ -1310,6 +1336,7 @@ async function refreshTradeBalance(restart=true){
    selectedTokenDecimals=decimals;
   }
  }catch(e){console.warn("Trade balance:",e);}
+ tradeBalanceLoading=false;
  updateTradePercentUI();
  clearPendingSwap("Balance updated. Get a fresh quote before trading.");
 }
@@ -1390,7 +1417,6 @@ function updateIndicativeEstimate(){
  if(!tokenPrice||!solUsd)return;
  let estimate=tradeDirection==="buy"?(amount*solUsd/tokenPrice):(amount*tokenPrice/solUsd);
  // Indicative display only. The executable Jupiter quote is authoritative and includes configured referral fees.
- estimate*=0.99;
  const outputSymbol=tradeDirection==="buy"?(selectedToken.baseToken.symbol||"TOKEN"):"SOL";
  $("swapPay").textContent=formatAmount(amount,tradeDirection==="buy"?9:selectedTokenDecimals)+" "+(tradeDirection==="buy"?"SOL":(selectedToken.baseToken.symbol||"TOKEN"));
  $("swapReceive").textContent="~ "+formatAmount(estimate,tradeDirection==="buy"?6:9)+" "+outputSymbol+" | indicative";
@@ -1402,6 +1428,7 @@ function getSwapMints(){
  return tradeDirection==="buy"?{inputMint:SOL,outputMint:mint,inputDecimals:9}:{inputMint:mint,outputMint:SOL,inputDecimals:selectedTokenDecimals};
 }
 function getSwapInputAmount(){
+ if(tradeBalanceLoading)throw new Error("Refreshing your wallet balance. Please wait a moment and try again.");
  const balance=getTradeBalance();
  const typed=$("tradeAmountInput").value.trim();
  const amount=typed!==""?Number(typed):balance*tradePercent/100;
@@ -1486,11 +1513,15 @@ async function executeQXSwap(){
   const tx=VersionedTransaction.deserialize(base64ToBytes(pendingSwapOrder.data.transaction));
   const signed=await provider.signTransaction(tx);
   const signedTransaction=bytesToBase64(signed.serialize());
+  // A signed order is single-use. Clear it before network submission so a timeout
+  // cannot cause the same signed transaction to be submitted again accidentally.
+  const submittedOrder=pendingSwapOrder;
+  pendingSwapOrder=null;
   $("confirmSwapBtn").textContent="Processing swap...";
-  $("swapStatus").textContent="Transaction signed. QX is submitting it for confirmation.";
+  $("swapStatus").textContent="Transaction signed. QX is submitting it for confirmation. Do not retry this order.";
   const response=await fetch(JUPITER_SWAP_API+"/execute",{
    method:"POST",headers:jupiterHeaders({"Content-Type":"application/json"}),
-   body:JSON.stringify({signedTransaction,requestId:pendingSwapOrder.data.requestId})
+   body:JSON.stringify({signedTransaction,requestId:submittedOrder.data.requestId})
   });
   const result=await response.json().catch(()=>({}));
   if(!response.ok)throw new Error(result.error||result.errorMessage||("Swap execution error ("+response.status+")"));
@@ -1499,8 +1530,7 @@ async function executeQXSwap(){
    throw new Error((result.error||"Swap failed or was not confirmed.")+suffix);
   }
   const signature=result.signature;
-  const completedOrder=pendingSwapOrder;
-  pendingSwapOrder=null;
+  const completedOrder=submittedOrder;
   $("qxFeeDisplay").textContent="1.00% | included in swap";
   $("swapReceive").textContent=displayRawAmount(result.totalOutputAmount||result.outputAmountResult,completedOrder.outputDecimals)+" "+completedOrder.outputSymbol;
   await loadPortfolio();
@@ -1508,8 +1538,8 @@ async function executeQXSwap(){
   $("swapStatus").innerHTML='Swap successful. <a class="detail-link" target="_blank" rel="noopener" href="https://solscan.io/tx/'+encodeURIComponent(signature)+'">View transaction on Solscan -></a>';
   $("confirmSwapBtn").textContent="Swap completed";
  }catch(error){
-  $("swapStatus").textContent=error.message||"Swap could not be completed.";
-  $("confirmSwapBtn").disabled=false;
+  $("swapStatus").textContent=(pendingSwapOrder?"":"The signed order cannot be retried. Check your wallet activity and Solscan before requesting a new quote. ")+(error.message||"Swap could not be completed.");
+  $("confirmSwapBtn").disabled=true;
  }finally{
   swapBusy=false;
   $("getQuoteBtn").disabled=false;
@@ -1529,8 +1559,8 @@ function changeTradeDirection(direction){
  clearPendingSwap("Trade direction changed. Get a fresh quote.");
  if(selectedToken)refreshTradeBalance(false);
 }
-$("buyBtn").onclick=()=>{changeTradeDirection("buy");requestQXQuote();};
-$("sellBtn").onclick=()=>{changeTradeDirection("sell");requestQXQuote();};
+$("buyBtn").onclick=()=>changeTradeDirection("buy");
+$("sellBtn").onclick=()=>changeTradeDirection("sell");
 $("swapDirectionBtn").onclick=()=>changeTradeDirection(tradeDirection==="buy"?"sell":"buy");
 
 /* QX NATIVE SOLANA CANDLESTICK CHART - rendered inside QX */
