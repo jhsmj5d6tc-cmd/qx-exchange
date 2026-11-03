@@ -546,38 +546,11 @@ document.body.classList.remove("qx-wallet-active");
 </script>
 
 <script type="module">
-// Load wallet / Solana libraries independently. A failed wallet CDN must not
-// prevent the public market, search, navigation, or other page buttons from running.
-let createAppKit,SolanaAdapter,solana,PhantomWalletAdapter,SolflareWalletAdapter;
-let Connection,PublicKey,Keypair,SystemProgram,Transaction,VersionedTransaction;
-let MINT_SIZE,TOKEN_PROGRAM_ID,getAssociatedTokenAddress,createInitializeMintInstruction,createAssociatedTokenAccountInstruction,createMintToInstruction;
-// Load wallet libraries independently. AppKit's core must not depend on optional
-// wallet-adapter packages; otherwise one failed CDN import can disable all connections.
-const qxLibraryReady = (async()=>{
- const core = await Promise.allSettled([
-  import("@reown/appkit"),
-  import("@reown/appkit-adapter-solana"),
-  import("@reown/appkit/networks")
- ]);
- if(core[0].status==="fulfilled") createAppKit=core[0].value.createAppKit;
- if(core[1].status==="fulfilled") SolanaAdapter=core[1].value.SolanaAdapter;
- if(core[2].status==="fulfilled") solana=core[2].value.solana;
- const optional = await Promise.allSettled([
-  import("@solana/web3.js"),
-  import("@solana/spl-token"),
-  import("@solana/wallet-adapter-phantom"),
-  import("@solana/wallet-adapter-solflare")
- ]);
- if(optional[0].status==="fulfilled") ({Connection,PublicKey,Keypair,SystemProgram,Transaction,VersionedTransaction}=optional[0].value);
- if(optional[1].status==="fulfilled") ({MINT_SIZE,TOKEN_PROGRAM_ID,getAssociatedTokenAddress,createInitializeMintInstruction,createAssociatedTokenAccountInstruction,createMintToInstruction}=optional[1].value);
- if(optional[2].status==="fulfilled") PhantomWalletAdapter=optional[2].value.PhantomWalletAdapter;
- if(optional[3].status==="fulfilled") SolflareWalletAdapter=optional[3].value.SolflareWalletAdapter;
- const errors=[...core,...optional].filter(x=>x.status==="rejected").map(x=>String(x.reason?.message||x.reason));
- if(errors.length) console.warn("QX wallet library load errors:",errors);
- if(!createAppKit||!SolanaAdapter||!solana){
-  throw new Error("Wallet connection libraries did not load. Check your internet connection, content blockers, and the Reown project settings, then reload the page.");
- }
-})();
+import {createAppKit} from "@reown/appkit";
+import {SolanaAdapter} from "@reown/appkit-adapter-solana";
+import {solana} from "@reown/appkit/networks";
+import {Connection,PublicKey,Keypair,SystemProgram,Transaction,VersionedTransaction} from "@solana/web3.js";
+import {MINT_SIZE,TOKEN_PROGRAM_ID,getAssociatedTokenAddress,createInitializeMintInstruction,createAssociatedTokenAccountInstruction,createMintToInstruction} from "@solana/spl-token";
 
 const $=id=>document.getElementById(id);
 const PROJECT_ID="bd6faec63fbd0865f57da576a550ef09";
@@ -663,127 +636,65 @@ $("balanceToggle").onclick=()=>{
  setBalanceVisibility();
 };
 
-function getInjectedWallets(){
- const list=[];
- const candidates=[
-  [window.phantom?.solana,"Phantom"],
-  [window.solflare,"Solflare"],
-  [window.backpack?.solana||window.backpack,"Backpack"]
- ];
- for(const [provider,name] of candidates){
-  if(provider&&typeof provider.connect==="function"&&!list.some(x=>x.provider===provider))list.push({provider,name});
- }
- return list;
-}
 function getActiveWalletProvider(){
- if(activeWalletProvider)return activeWalletProvider;
- const injected=getInjectedWallets().find(x=>x.provider.publicKey?.toString()===walletAddress);
- if(injected)return injected.provider;
- try{return appKit?.getWalletProvider?.()||null;}catch(_){return null;}
-}
-async function setConnectedWallet(provider,address,name="Wallet"){
- if(!valid(address))throw new Error("Wallet returned an invalid Solana address.");
- activeWalletProvider=provider||null;walletAddress=address;connected=true;
- $("connectBtn").textContent=short(walletAddress);
- $("walletAddress").textContent=walletAddress;
- $("walletStatus").textContent=name+" connected.";
- $("swapWallet").textContent=short(walletAddress);
- $("swapStatus").textContent="Wallet connected. Select a token and request a fresh quote.";
- updateTradePercentUI();
- await loadPortfolio();
-}
-function clearConnectedWallet(message="Wallet disconnected."){
- connected=false;walletAddress="";activeWalletProvider=null;walletSolBalance=0;selectedTokenBalance=0;
- $("connectBtn").textContent="Connect Wallet";
- $("walletAddress").textContent="";
- $("walletStatus").textContent=message;
- $("swapWallet").textContent="Not connected";
- $("swapStatus").textContent="Connect your wallet before requesting a swap.";
- clearPendingSwap(message);
- $("totalValue").dataset.realValue="-";$("totalValue").textContent="-";
- lastAssetRows=[];$("assetsList").className="empty";$("assetsList").textContent="Connect wallet first.";
- updateTradePercentUI();
-}
-async function connectQXWallet(){
- // Re-check injected providers at click time (wallet apps/extensions may inject late).
- const injected=getInjectedWallets();
- if(injected.length){
-  const choice=injected.find(x=>x.name==="Phantom")||injected.find(x=>x.name==="Solflare")||injected[0];
-  $("walletStatus").textContent="Requesting approval from "+choice.name+"...";
-  const response=await choice.provider.connect();
-  const address=response?.publicKey?.toString?.()||choice.provider.publicKey?.toString?.();
-  if(!valid(address))throw new Error("The wallet did not return a valid Solana address. Unlock the wallet and try again.");
-  await setConnectedWallet(choice.provider,address,choice.name);
-  return;
- }
- $("walletStatus").textContent="Preparing WalletConnect for Safari...";
- try{
-  await qxWalletReady;
-  if(!appKit)throw qxWalletInitError||new Error("The wallet connection window could not be initialized.");
-  $("walletStatus").textContent="Opening wallet selection. Choose a Solana wallet and approve the connection.";
-  await appKit.open({view:"Connect",namespace:"solana"});
- }catch(error){
-  const detail=String(error?.message||error||"Unknown connection error");
-  const hint=" QX is intended to connect directly from Safari through Reown WalletConnect. Check the Reown Dashboard and add jhsmj5d6tc-cmd.github.io to the allowed domains (without https://), and make sure the project supports AppKit on Solana. Then reload Safari.";
-  $("walletStatus").textContent="Wallet connection failed: "+detail+hint;
-  throw new Error(detail+hint);
- }
+ try{return activeWalletProvider||appKit?.getWalletProvider?.()||null;}catch(_){return null;}
 }
 
-const qxWalletReady=qxLibraryReady.then(async()=>{
- try{
-  const walletAdapters=[];
-  if(PhantomWalletAdapter)walletAdapters.push(new PhantomWalletAdapter());
-  if(SolflareWalletAdapter)walletAdapters.push(new SolflareWalletAdapter());
-  const solanaAdapter=new SolanaAdapter({wallets:walletAdapters});
-  appKit=createAppKit({
-   adapters:[solanaAdapter],
-   networks:[solana],
-   projectId:PROJECT_ID,
-   allWallets:"SHOW",
-   metadata:{name:"QX Exchange",description:"Solana exchange",url:"https://jhsmj5d6tc-cmd.github.io/qx-exchange/",icons:[]},
-   themeMode:"dark",
-   themeVariables:{"--w3m-accent":"#9b6cff","--w3m-border-radius-master":"10px"},
-   features:{analytics:true,email:false,socials:false}
-  });
-  if(typeof appKit.subscribeAccount==="function"){
-   appKit.subscribeAccount(async state=>{
-    const address=state?.address||state?.account?.address||"";
-    if(state?.isConnected&&valid(address)){
-     try{await setConnectedWallet(appKit.getWalletProvider?.()||null,address,"Wallet");}
-     catch(e){$("walletStatus").textContent="Wallet connected, but portfolio loading failed: "+e.message;}
-    }else if(connected&&!getInjectedWallets().some(x=>x.provider.publicKey?.toString()===walletAddress)){
-     clearConnectedWallet();
-    }
-   });
+try{
+ appKit=createAppKit({
+  adapters:[new SolanaAdapter()],
+  networks:[solana],
+  projectId:PROJECT_ID,
+  metadata:{
+   name:"QX Exchange",description:"Solana exchange",
+   url:"https://jhsmj5d6tc-cmd.github.io/qx-exchange/",icons:[]
+  },
+  themeMode:"dark",
+  themeVariables:{"--w3m-accent":"#9b6cff","--w3m-border-radius-master":"10px"},
+  features:{analytics:true,email:false,socials:false}
+ });
+ appKit.subscribeAccount(async state=>{
+  if(state?.isConnected&&valid(state.address)){
+   activeWalletProvider=appKit?.getWalletProvider?.()||null;
+   connected=true;walletAddress=state.address;
+   $("connectBtn").textContent=short(walletAddress);
+   $("walletAddress").textContent=walletAddress;
+   $("walletStatus").textContent="Wallet connected.";
+   $("swapWallet").textContent=short(walletAddress);
+   $("swapStatus").textContent="Wallet connected. Select a token and request a fresh quote.";
+   updateTradePercentUI();
+   await loadPortfolio();
+  }else{
+   activeWalletProvider=null;
+   connected=false;walletAddress="";walletSolBalance=0;
+   selectedTokenBalance=0;
+   $("connectBtn").textContent="Connect Wallet";
+   $("walletAddress").textContent="";
+   $("walletStatus").textContent="Wallet disconnected.";
+   $("swapWallet").textContent="Not connected";
+   $("swapStatus").textContent="Connect your wallet before requesting a swap.";
+   clearPendingSwap("Wallet disconnected.");
+   $("totalValue").dataset.realValue="-";
+   $("totalValue").textContent="-";
+   lastAssetRows=[];
+   $("assetsList").className="empty";
+   $("assetsList").textContent="Connect wallet first.";
+   updateTradePercentUI();
   }
-  console.info("QX wallet connection initialized for",location.origin,"with Solana WalletConnect; all wallets are shown.");
- }catch(error){
-  qxWalletInitError=error;
-  console.error("QX wallet initialization failed:",error);
-  throw error;
- }
-});
-
-$("connectBtn").onclick=async()=>{
- const button=$("connectBtn");
- if(button.dataset.busy==="1")return;
- button.dataset.busy="1";button.disabled=true;
- $("walletStatus").textContent="Connecting to your wallet...";
- try{await connectQXWallet();}
- catch(error){$("walletStatus").textContent=error?.message||"Wallet connection failed. See browser console for details.";}
- finally{button.dataset.busy="0";button.disabled=false;}
-};
-for(const {provider,name} of getInjectedWallets()){
- if(typeof provider.on==="function"){
-  provider.on("disconnect",()=>{if(activeWalletProvider===provider)clearConnectedWallet(name+" disconnected.");});
-  provider.on("accountChanged",async key=>{
-   const address=key?.toString?.();
-   if(address&&valid(address)){try{await setConnectedWallet(provider,address,name);}catch(e){$("walletStatus").textContent=e.message;}}
-   else if(activeWalletProvider===provider)clearConnectedWallet(name+" account disconnected.");
-  });
- }
+ });
+}catch(error){
+ $("walletStatus").textContent="Wallet setup error: "+error.message;
+ console.error("QX AppKit setup failed:",error);
 }
+$("connectBtn").onclick=async()=>{
+ try{
+  if(!appKit)throw new Error("Wallet connection is not initialized. Reload the page and try again.");
+  await appKit.open({view:"Connect"});
+ }catch(error){
+  $("walletStatus").textContent="Wallet connection failed: "+(error?.message||error);
+  console.error("QX wallet connect failed:",error);
+ }
+};
 
 async function loadSolPrice(){
  try{
@@ -1047,7 +958,7 @@ async function createQXToken(){
   }
   const owner=new PublicKey(walletAddress),connection=new Connection(RPCS[0],"confirmed");
   const signer=getActiveWalletProvider();
-  if(typeof signer?.signTransaction!=="function")throw new Error("Your connected wallet does not support transaction signing in this browser. Reconnect Phantom and retry.");
+  if(typeof signer?.signTransaction!=="function")throw new Error("Your connected wallet does not support transaction signing in this browser. Reconnect your wallet and retry.");
   button.disabled=true;button.textContent="Preparing token transaction...";
   status.textContent="Creating mint account and initial supply. Review the transaction in your wallet.";
   resultBox.style.display="none";
@@ -1636,12 +1547,12 @@ async function executeQXSwap(){
   }
   if(!connected||walletAddress!==pendingSwapOrder.wallet)throw new Error("Wallet changed. Reconnect and request a new quote.");
   const provider=getActiveWalletProvider();
-  if(typeof provider?.signTransaction!=="function")throw new Error("The connected wallet did not provide signTransaction. Reconnect Phantom from QX and try again.");
+  if(typeof provider?.signTransaction!=="function")throw new Error("The connected wallet did not provide signTransaction. Reconnect your wallet from QX and try again.");
   swapBusy=true;
   $("confirmSwapBtn").disabled=true;
   $("getQuoteBtn").disabled=true;
-  $("confirmSwapBtn").textContent="Waiting for Phantom...";
-  $("swapStatus").textContent="Approve the swap transaction in Phantom. Check the token and amount before signing.";
+  $("confirmSwapBtn").textContent="Waiting for wallet approval...";
+  $("swapStatus").textContent="Approve the swap transaction in your connected wallet. Check the token and amount before signing.";
   const tx=VersionedTransaction.deserialize(base64ToBytes(pendingSwapOrder.data.transaction));
   const signed=await provider.signTransaction(tx);
   const signedTransaction=bytesToBase64(signed.serialize());
