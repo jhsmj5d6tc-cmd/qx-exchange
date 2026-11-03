@@ -477,14 +477,14 @@ body.qx-token-open #getQuoteBtn{display:none!important}
 
 <div class="ad-modal-backdrop" id="adModalBackdrop" role="dialog" aria-modal="true" aria-labelledby="adModalTitle">
  <div class="ad-modal">
-  <div class="ad-modal-head"><h3 id="adModalTitle">Add advertisement</h3><button class="ad-close" id="adCloseBtn" type="button" aria-label="Close">Ã</button></div>
+  <div class="ad-modal-head"><h3 id="adModalTitle">Add advertisement</h3><button class="ad-close" id="adCloseBtn" type="button" aria-label="Close">ÃÂ</button></div>
   <label class="ad-field" for="adDuration">Advertisement duration</label>
   <select id="adDuration">
-   <option value="1">1 hour â $49.99</option>
-   <option value="3">3 hours â $99.99</option>
-   <option value="9">9 hours â $179.99</option>
-   <option value="24">24 hours â $299.99</option>
-   <option value="72">3 days â $599.99</option>
+   <option value="1">1 hour Ã¢ÂÂ $49.99</option>
+   <option value="3">3 hours Ã¢ÂÂ $99.99</option>
+   <option value="9">9 hours Ã¢ÂÂ $179.99</option>
+   <option value="24">24 hours Ã¢ÂÂ $299.99</option>
+   <option value="72">3 days Ã¢ÂÂ $599.99</option>
   </select>
   <div class="ad-price-line"><span>Total price</span><strong id="adUsdPrice">$49.99</strong></div>
   <div class="ad-price-line"><span>Estimated SOL payment</span><strong id="adSolPrice">Waiting for SOL price</strong></div>
@@ -638,18 +638,18 @@ function escapeHTML(v){
 }
 function repairMojibake(value){
  let text=String(value??"");
- if(!/(?:Ã.|Ã.|Ã¢â¬|Ã°Å¸|Ã.|Ã.|ï¿½)/.test(text))return text;
+ if(!/(?:ÃÂ.|ÃÂ.|ÃÂ¢Ã¢ÂÂ¬|ÃÂ°ÃÂ¸|ÃÂ.|ÃÂ.|Ã¯Â¿Â½)/.test(text))return text;
  try{
   const values=[...text].map(ch=>ch.codePointAt(0));
   if(values.some(n=>n>255))return text;
   const repaired=new TextDecoder("utf-8",{fatal:false}).decode(new Uint8Array(values));
-  if(repaired && !repaired.includes("ï¿½") && repaired.length<=text.length+4)return repaired;
+  if(repaired && !repaired.includes("Ã¯Â¿Â½") && repaired.length<=text.length+4)return repaired;
  }catch(_){}
  return text;
 }
 function cleanTokenText(value,fallback="Unknown Token"){
  let text=repairMojibake(value).normalize("NFC").replace(/[\u0000-\u001F\u007F]/g,"").trim();
- if(!text||text.includes("ï¿½")||/(?:Ã.|Ã.|Ã¢â¬|Ã°Å¸)/.test(text))return fallback;
+ if(!text||text.includes("Ã¯Â¿Â½")||/(?:ÃÂ.|ÃÂ.|ÃÂ¢Ã¢ÂÂ¬|ÃÂ°ÃÂ¸)/.test(text))return fallback;
  return text.slice(0,72);
 }
 async function getJSON(url){
@@ -729,17 +729,31 @@ function clearConnectedWallet(message="Wallet disconnected."){
  updateTradePercentUI();
 }
 async function connectQXWallet(){
- // Always open the wallet picker, even when this browser detects an injected wallet.
- // This lets each QX visitor choose their preferred Solana wallet.
- $("walletStatus").textContent="Loading available Solana wallets...";
+ $("walletStatus").textContent="Looking for available Solana wallets...";
+ // In Phantom/Solflare's in-app browser, use the injected provider directly.
+ // This avoids an unnecessary WalletConnect round-trip and exposes signing methods.
+ const injected=getInjectedWallets();
+ if(injected.length===1){
+  const {provider,name}=injected[0];
+  try{
+   const result=await provider.connect({onlyIfTrusted:false});
+   const address=result?.publicKey?.toString?.()||provider.publicKey?.toString?.();
+   if(!valid(address))throw new Error(name+" did not return a valid Solana address.");
+   await setConnectedWallet(provider,address,name);
+   return;
+  }catch(error){
+   if(error?.code===4001||/reject|cancel/i.test(String(error?.message||"")))throw error;
+   console.warn(name+" direct connection failed; trying wallet picker:",error);
+  }
+ }
  try{
   await qxWalletReady;
   if(!appKit)throw qxWalletInitError||new Error("The wallet connection window could not be initialized.");
-  $("walletStatus").textContent="Choose your preferred wallet from the list.";
+  $("walletStatus").textContent="Choose Phantom, Solflare, or another Solana wallet.";
   await appKit.open({view:"Connect",namespace:"solana"});
  }catch(error){
   const detail=String(error?.message||error||"Unknown connection error");
-  const hint=" Check the Reown Dashboard: allow jhsmj5d6tc-cmd.github.io as a project domain and confirm Solana is enabled. Then reload QX.";
+  const hint=" Check the Reown Dashboard: allow jhsmj5d6tc-cmd.github.io as a project domain and confirm Solana is enabled. If using iPhone Safari, open this site inside Phantom or Solflare.";
   $("walletStatus").textContent="Wallet connection failed: "+detail+hint;
   throw new Error(detail+hint);
  }
@@ -839,6 +853,16 @@ async function loadPortfolio(){
    }catch(e){console.warn("Token account lookup:",e);}
   }
 
+  const uniqueRows=new Map();
+  for(const row of rows){
+   const previous=uniqueRows.get(row.mint);
+   if(!previous)uniqueRows.set(row.mint,{...row});
+   else{
+    previous.amount=Number(previous.amount||0)+Number(row.amount||0);
+    if(previous.value===null)previous.value=row.value;
+   }
+  }
+  rows.splice(0,rows.length,...uniqueRows.values());
   const mints=[...new Set(rows.filter(t=>t.mint!==SOL).map(t=>t.mint))].slice(0,30);
   if(mints.length){
    try{
@@ -846,10 +870,13 @@ async function loadPortfolio(){
     const map=new Map();
     for(const p of metadata||[]){
      const mint=p.baseToken?.address;
-     if(mint&&!map.has(mint))map.set(mint,{
+     if(p.chainId!=="solana"||!mint)continue;
+     const previous=map.get(mint);
+     if(!previous||Number(p.liquidity?.usd||0)>Number(previous.liquidity||0))map.set(mint,{
       name:p.baseToken?.name||"Token",
       symbol:p.baseToken?.symbol||short(mint),
-      logo:p.info?.imageUrl||""
+      logo:p.info?.imageUrl||"",
+      liquidity:Number(p.liquidity?.usd||0)
      });
     }
     rows.forEach(t=>{
@@ -913,7 +940,7 @@ function renderAssetRows(){
  }).join("");
 }
 
-/* PUBLIC ADVERTISEMENTS â secure activation requires the QX Supabase Edge Function */
+/* PUBLIC ADVERTISEMENTS Ã¢ÂÂ secure activation requires the QX Supabase Edge Function */
 const QX_AD_TREASURY="E4x2DiVVDuVQHSUGgzTPjJMDbiJ6jCRwpEvsvAd31Qs4";
 // Fill these two public Supabase values after creating the QX Ads backend.
 // Never place a Supabase service-role key or any private wallet key in this file.
@@ -973,7 +1000,7 @@ async function loadPublicAds(){
   if(!ads.length){host.innerHTML='<div class="ad-empty">No sponsored advertisements yet.</div>';return;}
   host.innerHTML=ads.map(ad=>{
    const title=escapeHTML(ad.title||"Sponsored project"),body=escapeHTML(ad.body||""),url=safeAdUrl(ad.url),image=ad.image_url?safeAdUrl(ad.image_url):"";
-   return '<article class="ad-card">'+(image?'<img class="ad-image" src="'+escapeHTML(image)+'" alt="" loading="lazy" referrerpolicy="no-referrer">':'')+'<div class="ad-copy"><strong>'+title+'</strong><p>'+body+'</p><a href="'+escapeHTML(url)+'" target="_blank" rel="noopener noreferrer">Visit project â</a></div></article>';
+   return '<article class="ad-card">'+(image?'<img class="ad-image" src="'+escapeHTML(image)+'" alt="" loading="lazy" referrerpolicy="no-referrer">':'')+'<div class="ad-copy"><strong>'+title+'</strong><p>'+body+'</p><a href="'+escapeHTML(url)+'" target="_blank" rel="noopener noreferrer">Visit project Ã¢ÂÂ</a></div></article>';
   }).join("");
  }catch(e){console.warn("QX ads feed:",e);host.innerHTML='<div class="ad-empty">Advertisements are temporarily unavailable.</div>';}
 }
@@ -1208,7 +1235,7 @@ function dedupeVisibleTokenLabels(input){
  for(const pair of byMint.values()){
   const name=cleanTokenText(pair?.baseToken?.name,"").normalize("NFKC").toLocaleLowerCase().replace(/\s+/g," ").trim();
   const symbol=cleanTokenText(pair?.baseToken?.symbol,"").normalize("NFKC").toLocaleLowerCase().replace(/\s+/g," ").trim();
-  if(!name||!symbol){byLabel.set(pair.baseToken.address,pair);continue;}
+  if(!name||!symbol){byLabel.set("mint:"+pair.baseToken.address,pair);continue;}
   const key=name+"|"+symbol;
   const previous=byLabel.get(key);
   if(!previous||Number(pair.liquidity?.usd||0)>Number(previous.liquidity?.usd||0))byLabel.set(key,pair);
@@ -1216,7 +1243,8 @@ function dedupeVisibleTokenLabels(input){
  return [...byLabel.values()];
 }
 function getCategoryPairs(){
- let list=allPairs.slice();
+ // Final network guard: only Solana pools and valid Solana mint addresses enter any tab.
+ let list=bestPairsByMint(allPairs.filter(p=>p?.chainId==="solana"&&valid(String(p?.baseToken?.address||""))),true);
  if(currentCategory==="new"){
   list=newPairs.slice().sort((a,b)=>Number(b.pairCreatedAt||0)-Number(a.pairCreatedAt||0));
  }else if(currentCategory==="trending"){
