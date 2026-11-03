@@ -357,7 +357,7 @@ body.qx-token-open #getQuoteBtn{display:none!important}
  <section class="panel" style="max-width:720px;margin:0 auto 24px">
   <div class="tag">QX TOKEN CREATOR</div>
   <h2 style="margin-top:10px">Launch an SPL token</h2>
-  <p class="small">Create the token mint and initial supply directly from your connected Solana wallet. Phantom will ask you to approve the transaction.</p>
+  <p class="small">Create the token mint and initial supply directly from your connected Solana wallet. Your connected Solana wallet will ask you to approve the transaction.</p>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px">
    <label class="small">Token name<input id="tokenName" maxlength="32" placeholder="e.g. QX Token" style="display:block;width:100%;margin-top:6px;padding:13px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--text)"></label>
    <label class="small">Symbol<input id="tokenSymbol" maxlength="10" placeholder="e.g. QXT" style="display:block;width:100%;margin-top:6px;padding:13px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--text);text-transform:uppercase"></label>
@@ -380,7 +380,7 @@ body.qx-token-open #getQuoteBtn{display:none!important}
    <div><div class="ads-title">Sponsored</div><div class="ads-sub">Featured projects</div></div>
    <div class="ads-menu-wrap">
     <button class="ads-menu-btn" id="adsMenuBtn" aria-label="Advertisement options" aria-expanded="false">&#8942;</button>
-    <div class="ads-menu" id="adsMenu"><button type="button" id="addAdMenuBtn">ï¼ Add advertisement</button></div>
+    <div class="ads-menu" id="adsMenu"><button type="button" id="addAdMenuBtn">Ã¯Â¼Â Add advertisement</button></div>
    </div>
   </div>
   <div class="ads-list" id="publicAdsList"><div class="ad-empty">No sponsored advertisements yet.</div></div>
@@ -467,9 +467,9 @@ body.qx-token-open #getQuoteBtn{display:none!important}
     <div class="swap-quote"><span>Route</span><strong id="swapRoute">QX best available route</strong></div>
     <div class="swap-quote"><span>Wallet</span><strong id="swapWallet">Not connected</strong></div>
     <button class="swap-action" id="getQuoteBtn"><span>GET BEST PRICE</span><small>Jupiter route | inside QX</small></button>
-    <button class="swap-action swap-secondary" id="confirmSwapBtn" disabled>CONFIRM SWAP IN PHANTOM</button>
-    <p class="fee-note">QX fee: <strong>1%</strong> per completed swap. The live quote must confirm the full fee before Phantom signing. No fee is charged when a swap is not completed.</p>
-    <p class="swap-status" id="swapStatus">Connect your wallet, enter an amount, get a quote, then confirm in Phantom.</p>
+    <button class="swap-action swap-secondary" id="confirmSwapBtn" disabled>CONFIRM SWAP</button>
+    <p class="fee-note">QX fee: <strong>1%</strong> per completed swap. The live quote must confirm the full fee before wallet signing. No fee is charged when a swap is not completed.</p>
+    <p class="swap-status" id="swapStatus">Connect your wallet, enter an amount, get a quote, then confirm in your wallet.</p>
    </div>
   </section>
  </div>
@@ -477,14 +477,14 @@ body.qx-token-open #getQuoteBtn{display:none!important}
 
 <div class="ad-modal-backdrop" id="adModalBackdrop" role="dialog" aria-modal="true" aria-labelledby="adModalTitle">
  <div class="ad-modal">
-  <div class="ad-modal-head"><h3 id="adModalTitle">Add advertisement</h3><button class="ad-close" id="adCloseBtn" type="button" aria-label="Close">Ã</button></div>
+  <div class="ad-modal-head"><h3 id="adModalTitle">Add advertisement</h3><button class="ad-close" id="adCloseBtn" type="button" aria-label="Close">ÃÂ</button></div>
   <label class="ad-field" for="adDuration">Advertisement duration</label>
   <select id="adDuration">
-   <option value="1">1 hour â $49.99</option>
-   <option value="3">3 hours â $99.99</option>
-   <option value="9">9 hours â $179.99</option>
-   <option value="24">24 hours â $299.99</option>
-   <option value="72">3 days â $599.99</option>
+   <option value="1">1 hour Ã¢ÂÂ $49.99</option>
+   <option value="3">3 hours Ã¢ÂÂ $99.99</option>
+   <option value="9">9 hours Ã¢ÂÂ $179.99</option>
+   <option value="24">24 hours Ã¢ÂÂ $299.99</option>
+   <option value="72">3 days Ã¢ÂÂ $599.99</option>
   </select>
   <div class="ad-price-line"><span>Total price</span><strong id="adUsdPrice">$49.99</strong></div>
   <div class="ad-price-line"><span>Estimated SOL payment</span><strong id="adSolPrice">Waiting for SOL price</strong></div>
@@ -566,6 +566,20 @@ let sortMetric="",sortDirection="desc",tradePercent=25;
 let pendingSwapOrder=null,quoteBusy=false,swapBusy=false;
 
 const valid=s=>typeof s==="string"&&/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(s);
+// Always sign through the wallet selected in Reown AppKit (Wallet Standard compatible).
+// Never silently switch to an unrelated injected wallet from a different injected wallet.
+async function getConnectedSolanaProvider(){
+ if(!connected||!walletAddress)throw new Error("Connect a Solana wallet first.");
+ const provider=await appKit?.getWalletProvider?.();
+ if(!provider||typeof provider.signTransaction!=="function"){
+  throw new Error("The selected wallet does not expose Solana transaction signing. Reconnect using a Solana-compatible wallet.");
+ }
+ const providerAddress=provider.publicKey?.toString?.()||provider.account?.address||provider.address;
+ if(providerAddress&&providerAddress!==walletAddress){
+  throw new Error("The selected wallet account changed. Reconnect and try again.");
+ }
+ return provider;
+}
 const short=s=>s?s.slice(0,6)+"..."+s.slice(-4):"";
 const usd=n=>{
  const v=Number(n);
@@ -782,7 +796,7 @@ function renderAssetRows(){
  }).join("");
 }
 
-/* PUBLIC ADVERTISEMENTS â secure activation requires the QX Supabase Edge Function */
+/* PUBLIC ADVERTISEMENTS Ã¢ÂÂ secure activation requires the QX Supabase Edge Function */
 const QX_AD_TREASURY="E4x2DiVVDuVQHSUGgzTPjJMDbiJ6jCRwpEvsvAd31Qs4";
 // Fill these two public Supabase values after creating the QX Ads backend.
 // Never place a Supabase service-role key or any private wallet key in this file.
@@ -839,7 +853,7 @@ async function loadPublicAds(){
   if(!ads.length){host.innerHTML='<div class="ad-empty">No sponsored advertisements yet.</div>';return;}
   host.innerHTML=ads.map(ad=>{
    const title=escapeHTML(ad.title||"Sponsored project"),body=escapeHTML(ad.body||""),url=safeAdUrl(ad.url),image=ad.image_url?safeAdUrl(ad.image_url):"";
-   return '<article class="ad-card">'+(image?'<img class="ad-image" src="'+escapeHTML(image)+'" alt="" loading="lazy" referrerpolicy="no-referrer">':'')+'<div class="ad-copy"><strong>'+title+'</strong><p>'+body+'</p><a href="'+escapeHTML(url)+'" target="_blank" rel="noopener noreferrer">Visit project â</a></div></article>';
+   return '<article class="ad-card">'+(image?'<img class="ad-image" src="'+escapeHTML(image)+'" alt="" loading="lazy" referrerpolicy="no-referrer">':'')+'<div class="ad-copy"><strong>'+title+'</strong><p>'+body+'</p><a href="'+escapeHTML(url)+'" target="_blank" rel="noopener noreferrer">Visit project Ã¢ÂÂ</a></div></article>';
   }).join("");
  }catch(e){console.warn("QX ads feed:",e);host.innerHTML='<div class="ad-empty">Advertisements are temporarily unavailable.</div>';}
 }
@@ -864,8 +878,7 @@ async function payForAdvertisement(){
   const url=safeAdUrl(adEl("adUrl").value),imageUrl=safeAdUrl(adEl("adImageUrl").value,true);
   if(title.length<3)throw new Error("Enter an advertisement title.");
   if(body.length<8)throw new Error("Paste your advertisement text.");
-  const provider=appKit?.getWalletProvider?.();
-  if(typeof provider?.signTransaction!=="function")throw new Error("The connected wallet does not support transaction signing. Reconnect a Solana wallet.");
+  const provider=await getConnectedSolanaProvider();
   const lamports=Math.ceil(sol*1e9);
   if(!Number.isSafeInteger(lamports)||lamports<=0)throw new Error("Invalid SOL payment amount.");
   adBusy=true;adEl("adPayBtn").disabled=true;adEl("adPayBtn").textContent="WAITING FOR WALLET APPROVAL...";
@@ -918,10 +931,7 @@ async function createQXToken(){
    throw new Error("Choose your Solana wallet in the connection window, then tap Create Token again.");
   }
   const owner=new PublicKey(walletAddress),connection=new Connection(RPCS[0],"confirmed");
-  const appProvider=appKit?.getWalletProvider?.();
-  const phantom=window.phantom?.solana||window.solana;
-  const signer=(phantom?.publicKey?.toString()===walletAddress&&typeof phantom.signTransaction==="function")?phantom:appProvider;
-  if(typeof signer?.signTransaction!=="function")throw new Error("Your connected wallet does not support transaction signing in this browser. Reconnect Phantom and retry.");
+  const signer=await getConnectedSolanaProvider();
   button.disabled=true;button.textContent="Preparing token transaction...";
   status.textContent="Creating mint account and initial supply. Review the transaction in your wallet.";
   resultBox.style.display="none";
@@ -1406,7 +1416,7 @@ function getSwapInputAmount(){
  const typed=$("tradeAmountInput").value.trim();
  const amount=typed!==""?Number(typed):balance*tradePercent/100;
  const decimals=tradeDirection==="buy"?9:selectedTokenDecimals;
- if(!connected||!walletAddress)throw new Error("Connect your Phantom wallet first.");
+ if(!connected||!walletAddress)throw new Error("Connect your Solana wallet first.");
  if(!Number.isFinite(amount)||amount<=0)throw new Error("Enter a valid amount greater than zero.");
  if(amount>balance+1e-10)throw new Error("The amount is higher than your available wallet balance.");
  return {amount,decimals,raw:toSmallestUnits(amount,decimals)};
@@ -1431,7 +1441,7 @@ async function requestQXQuote(){
   clearPendingSwap();
   $("swapPay").textContent=input.amount.toLocaleString("en-US",{maximumFractionDigits:8})+" "+(tradeDirection==="buy"?"SOL":selectedToken.baseToken.symbol);
   $("swapWallet").textContent=short(walletAddress);
-  $("swapStatus").textContent="QX is finding the best available market route. Nothing moves until you approve in Phantom.";
+  $("swapStatus").textContent="QX is finding the best available market route. Nothing moves until you approve in your wallet.";
   const params=new URLSearchParams({inputMint:pair.inputMint,outputMint:pair.outputMint,amount:input.raw,taker:walletAddress,referralAccount:QX_REFERRAL_ACCOUNT,referralFee:String(QX_REFERRAL_FEE_BPS)});
   const response=await fetch(JUPITER_SWAP_API+"/order?"+params.toString(),{headers:jupiterHeaders()});
   const data=await response.json().catch(()=>({}));
@@ -1454,7 +1464,7 @@ async function requestQXQuote(){
   $("qxFeeDisplay").textContent="1.00% | included in "+feeMintLabel;
   $("swapRoute").textContent="QX / "+(data.router||"Best available route");
   $("confirmSwapBtn").disabled=false;
-  $("swapStatus").textContent="Price ready. Review the estimated receive amount, then confirm the swap in Phantom. Final output can change with market conditions.";
+  $("swapStatus").textContent="Price ready. Review the estimated receive amount, then confirm the swap in your wallet. Final output can change with market conditions.";
  }catch(error){
   pendingSwapOrder=null;
   $("confirmSwapBtn").disabled=true;
@@ -1474,15 +1484,12 @@ async function executeQXSwap(){
    return;
   }
   if(!connected||walletAddress!==pendingSwapOrder.wallet)throw new Error("Wallet changed. Reconnect and request a new quote.");
-  const appProvider=appKit?.getWalletProvider?.();
-  const phantom=window.phantom?.solana||window.solana;
-  const provider=(phantom?.publicKey?.toString()===walletAddress&&typeof phantom.signTransaction==="function")?phantom:appProvider;
-  if(typeof provider?.signTransaction!=="function")throw new Error("The connected wallet did not provide signTransaction. Reconnect Phantom from QX and try again.");
+  const provider=await getConnectedSolanaProvider();
   swapBusy=true;
   $("confirmSwapBtn").disabled=true;
   $("getQuoteBtn").disabled=true;
-  $("confirmSwapBtn").textContent="Waiting for Phantom...";
-  $("swapStatus").textContent="Approve the swap transaction in Phantom. Check the token and amount before signing.";
+  $("confirmSwapBtn").textContent="Waiting for wallet approval...";
+  $("swapStatus").textContent="Approve the swap transaction in your connected wallet. Check the token and amount before signing.";
   const tx=VersionedTransaction.deserialize(base64ToBytes(pendingSwapOrder.data.transaction));
   const signed=await provider.signTransaction(tx);
   const signedTransaction=bytesToBase64(signed.serialize());
@@ -1513,7 +1520,7 @@ async function executeQXSwap(){
  }finally{
   swapBusy=false;
   $("getQuoteBtn").disabled=false;
-  if($("confirmSwapBtn").textContent!=="Swap completed")$("confirmSwapBtn").textContent="Confirm in Phantom";
+  if($("confirmSwapBtn").textContent!=="Swap completed")$("confirmSwapBtn").textContent="Confirm swap";
  }
 }
 $("getQuoteBtn").onclick=requestQXQuote;
@@ -1529,8 +1536,8 @@ function changeTradeDirection(direction){
  clearPendingSwap("Trade direction changed. Get a fresh quote.");
  if(selectedToken)refreshTradeBalance(false);
 }
-$("buyBtn").onclick=()=>{changeTradeDirection("buy");requestQXQuote();};
-$("sellBtn").onclick=()=>{changeTradeDirection("sell");requestQXQuote();};
+$("buyBtn").onclick=()=>changeTradeDirection("buy");
+$("sellBtn").onclick=()=>changeTradeDirection("sell");
 $("swapDirectionBtn").onclick=()=>changeTradeDirection(tradeDirection==="buy"?"sell":"buy");
 
 /* QX NATIVE SOLANA CANDLESTICK CHART - rendered inside QX */
