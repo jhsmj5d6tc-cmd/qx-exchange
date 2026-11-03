@@ -477,7 +477,7 @@ body.qx-token-open #getQuoteBtn{display:none!important}
 
 <div class="ad-modal-backdrop" id="adModalBackdrop" role="dialog" aria-modal="true" aria-labelledby="adModalTitle">
  <div class="ad-modal">
-  <div class="ad-modal-head"><h3 id="adModalTitle">Add advertisement</h3><button class="ad-close" id="adCloseBtn" type="button" aria-label="Close">ÃÂ</button></div>
+  <div class="ad-modal-head"><h3 id="adModalTitle">Add advertisement</h3><button class="ad-close" id="adCloseBtn" type="button" aria-label="Close">Ã</button></div>
   <label class="ad-field" for="adDuration">Advertisement duration</label>
   <select id="adDuration">
    <option value="1">1 hour Ã¢ÂÂ $49.99</option>
@@ -981,10 +981,13 @@ $("createTokenBtn").addEventListener("click",createQXToken);
 
 /* MARKET DATA */
 function bestPairsByMint(input,includeSol=false){
+ // DexScreener can return several pools for the same token mint.
+ // Keep exactly one market row per mint: the pool with the greatest USD liquidity.
  const map=new Map();
- for(const p of input||[]){
-  if(p.chainId!=="solana"||!valid(p.baseToken?.address))continue;
-  const mint=p.baseToken.address,symbol=(p.baseToken.symbol||"").toUpperCase();
+ for(const p of Array.isArray(input)?input:[]){
+  const mint=String(p?.baseToken?.address||"").trim();
+  if(p?.chainId!=="solana"||!valid(mint))continue;
+  const symbol=String(p.baseToken?.symbol||"").trim().toUpperCase();
   if(mint===SOL){
    if(includeSol){
     const old=map.get(SOL);
