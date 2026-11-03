@@ -544,11 +544,21 @@ document.body.classList.remove("qx-wallet-active");
 </script>
 
 <script type="module">
-import {createAppKit} from "@reown/appkit";
-import {SolanaAdapter} from "@reown/appkit-adapter-solana";
-import {solana} from "@reown/appkit/networks";
-import {Connection,PublicKey,Keypair,SystemProgram,Transaction,VersionedTransaction} from "@solana/web3.js";
-import {MINT_SIZE,TOKEN_PROGRAM_ID, getAssociatedTokenAddress, createInitializeMintInstruction, createAssociatedTokenAccountInstruction, createMintToInstruction} from "@solana/spl-token";
+// Load dependencies dynamically so a failed CDN import is shown on-screen instead of
+// silently leaving every module-powered control stuck in its initial state.
+try {
+const [appkitModule, solanaAdapterModule, networksModule, web3Module, splTokenModule] = await Promise.all([
+ import("@reown/appkit"),
+ import("@reown/appkit-adapter-solana"),
+ import("@reown/appkit/networks"),
+ import("@solana/web3.js"),
+ import("@solana/spl-token")
+]);
+const {createAppKit}=appkitModule;
+const {SolanaAdapter}=solanaAdapterModule;
+const {solana}=networksModule;
+const {Connection,PublicKey,Keypair,SystemProgram,Transaction,VersionedTransaction}=web3Module;
+const {MINT_SIZE,TOKEN_PROGRAM_ID,getAssociatedTokenAddress,createInitializeMintInstruction,createAssociatedTokenAccountInstruction,createMintToInstruction}=splTokenModule;
 
 const $=id=>document.getElementById(id);
 const PROJECT_ID="bd6faec63fbd0865f57da576a550ef09";
@@ -583,9 +593,16 @@ function escapeHTML(v){
  return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 }
 async function getJSON(url){
- const r=await fetch(url);
- if(!r.ok)throw new Error("Market data request failed");
- return r.json();
+ const controller=new AbortController();
+ const timeout=setTimeout(()=>controller.abort(),12000);
+ try{
+  const r=await fetch(url,{signal:controller.signal,cache:"no-store"});
+  if(!r.ok)throw new Error("Market data request failed (HTTP "+r.status+")");
+  return await r.json();
+ }catch(e){
+  if(e?.name==="AbortError")throw new Error("Market data request timed out after 12 seconds");
+  throw e;
+ }finally{clearTimeout(timeout);}
 }
 async function rpc(method,params){
  let lastError;
@@ -1626,6 +1643,14 @@ setInterval(loadMarket,20000);
 setInterval(()=>{if(document.body.classList.contains("qx-token-open")&&selectedToken?.pairAddress)loadQXChart(selectedToken.pairAddress,activeChartRange);},30000);
 
 // All page text is served as UTF-8. No runtime text rewriting is applied.
+} catch (error) {
+ const message = error && error.message ? error.message : String(error || "Unknown module loading error");
+ const status = document.getElementById("marketStatus");
+ const results = document.getElementById("tokenResults");
+ if (status) status.textContent = "QX could not load a required JavaScript library: " + message;
+ if (results) results.textContent = "Market unavailable: a required library failed to load. Refresh the page or check the library error above.";
+ console.error("QX module initialization failed:", error);
+}
 </script>
 </body>
 </html>
