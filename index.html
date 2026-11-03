@@ -546,8 +546,30 @@ document.body.classList.remove("qx-wallet-active");
 </script>
 
 <script type="module">
-// Load each dependency independently. A wallet UI CDN failure must not disable
-// the Solana market, search, sorting, navigation, or other page controls.
+// Register the wallet button immediately. It waits for AppKit initialization
+// instead of appearing dead while remote Solana libraries are downloading.
+let appKit=null;
+let resolveWalletUiReady;
+const walletUiReady=new Promise(resolve=>{resolveWalletUiReady=resolve;});
+const walletButton=document.getElementById("connectBtn");
+if(walletButton){
+ walletButton.addEventListener("click",async()=>{
+  const status=document.getElementById("walletStatus");
+  walletButton.disabled=true;
+  if(status)status.textContent="Loading secure wallet connectionâ¦";
+  try{
+   await Promise.race([walletUiReady,new Promise((_,reject)=>setTimeout(()=>reject(new Error("Wallet service is taking too long to load. Check your connection and refresh.")),25000))]);
+   if(!appKit||typeof appKit.open!=="function")throw new Error("Solana wallet service did not initialize. Refresh the page and try again.");
+   appKit.open();
+   if(status)status.textContent="Choose a Solana wallet and approve the connection in its official window.";
+  }catch(error){
+   if(status)status.textContent=error?.message||"Could not open wallet picker. No transaction was sent.";
+  }finally{walletButton.disabled=false;}
+ });
+}
+
+// Load independent modules; the wallet button above remains responsive while
+// these downloads are in progress.
 const dependencyErrors=[];
 async function safeImport(name){
  try{return await import(name)}
@@ -561,8 +583,7 @@ const [appkitModule,solanaAdapterModule,networksModule,web3Module,splTokenModule
  safeImport("@solana/spl-token")
 ]);
 
-// Guard the full app startup so a failed optional dependency is reported
-// without leaving an unmatched catch that prevents the entire module parsing.
+// Guard the full app startup so a failed optional dependency is reported.
 try {
 const {createAppKit}=appkitModule;
 const {SolanaAdapter}=solanaAdapterModule;
@@ -577,7 +598,7 @@ const USDC="EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
 const RPCS=["https://solana-rpc.publicnode.com","https://api.mainnet-beta.solana.com"];
 const SOL_RESERVE=0.002;
 
-let appKit,activeWalletProvider=null,walletAddress="",connected=false,solPrice=0;
+let activeWalletProvider=null,walletAddress="",connected=false,solPrice=0;
 let walletSolBalance=0,selectedTokenBalance=0,selectedTokenDecimals=0;
 let allPairs=[],newPairs=[],trendingPairs=[],currentCategory="all";
 let marketBusy=false,canonicalSolPair=null,selectedToken=null;
@@ -701,25 +722,9 @@ try{
  });
 }catch(error){
  $("walletStatus").textContent="Wallet setup error: "+error.message;
+}finally{
+ resolveWalletUiReady();
 }
-$("connectBtn").onclick=async()=>{
- const button=$("connectBtn");
- if(!appKit||typeof appKit.open!=="function"){
-  $("walletStatus").textContent="Wallet connection is unavailable because the secure wallet service did not load. Refresh the page and try again.";
-  return;
- }
- button.disabled=true;
- $("walletStatus").textContent="Opening secure Solana wallet picker...";
- try{
-  // Use AppKit's default connect view; it handles WalletConnect deep links on mobile.
-  appKit.open();
-  $("walletStatus").textContent="Choose a Solana wallet in the secure window and approve the connection there.";
- }catch(error){
-  $("walletStatus").textContent=error?.message||"Could not open the wallet picker. No transaction was sent.";
- }finally{
-  button.disabled=false;
- }
-};
 
 async function loadSolPrice(){
  try{
