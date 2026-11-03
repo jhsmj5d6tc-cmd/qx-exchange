@@ -113,6 +113,10 @@ footer{text-align:center;color:var(--muted);padding:25px;font-size:11px}
 .coin-info small{display:block;color:var(--muted);font-size:11px;margin-top:4px}
 .market-price{text-align:right;font-size:12px;overflow-wrap:anywhere}
 .market-change{text-align:right;font-size:12px;font-weight:bold}
+.token-warning{display:inline-block;margin-top:4px;padding:3px 6px;border:1px solid rgba(255,190,85,.45);border-radius:6px;color:#ffd18a;background:rgba(150,93,22,.16);font-size:9px;line-height:1.25;white-space:normal}
+.token-warning.verified{border-color:rgba(67,255,173,.35);color:var(--green);background:rgba(67,255,173,.08)}
+.detail-warning{display:none;margin:8px 0;padding:9px 10px;border:1px solid rgba(255,190,85,.45);border-radius:9px;color:#ffd18a;background:rgba(150,93,22,.13);font-size:11px;line-height:1.45;overflow-wrap:anywhere}
+.detail-warning.verified{border-color:rgba(67,255,173,.35);color:var(--green);background:rgba(67,255,173,.08)}
 .up{color:var(--green)}.down{color:var(--red)}.neutral{color:var(--muted)}
 .market-empty{padding:28px 15px;text-align:center;color:var(--muted);font-size:13px}
 .market-status{font-size:11px;color:var(--muted);margin:10px 2px 20px}
@@ -430,6 +434,7 @@ body.qx-token-open #getQuoteBtn{display:none!important}
    <div class="detail-price" id="detailPrice">-</div>
    <div id="detailChange" class="detail-change neutral">-</div>
    <p class="address" id="detailAddress"></p>
+   <div class="detail-warning" id="detailTokenWarning" role="status"></div>
    <div class="detail-stats">
     <div class="detail-stat"><small>Market Cap / FDV</small><strong id="detailMarketCap">-</strong></div>
     <div class="detail-stat"><small>Liquidity</small><strong id="detailLiquidity">-</strong></div>
@@ -1223,7 +1228,7 @@ async function loadMarket(){
   // Final guard: one displayed row per unique mint, preferring the deepest pool.
   allPairs=bestPairsByMint([...merged.values()],true);
   if(!allPairs.length)throw new Error("Live market providers returned no token pairs. Check your connection or try again shortly.");
-  $("marketStatus").textContent="Market data refreshes automatically | Last update "+new Date().toLocaleTimeString();
+  $("marketStatus").textContent="Solana-only market | Duplicate mints removed | Last update "+new Date().toLocaleTimeString();
   renderMarket();
   if(selectedToken){
    const updated=allPairs.find(p=>p.baseToken.address===selectedToken.baseToken.address);
@@ -1240,24 +1245,43 @@ const categoryNames={
  losers:"Top Losers | 24h",trending:"Trending tokens",volume:"Top Volume | 24h"
 };
 function dedupeVisibleTokenLabels(input){
+ // A token's identity is its mint, not its display name or symbol.
+ // Different mints can legitimately share a name/symbol, so never hide them as duplicates.
  const byMint=new Map();
  for(const pair of input||[]){
   const mint=String(pair?.baseToken?.address||"").trim();
-  if(!valid(mint))continue;
+  if(!valid(mint)||pair?.chainId!=="solana")continue;
   const previous=byMint.get(mint);
   if(!previous||Number(pair.liquidity?.usd||0)>Number(previous.liquidity?.usd||0))byMint.set(mint,pair);
  }
- const byLabel=new Map();
- for(const pair of byMint.values()){
-  const name=cleanTokenText(pair?.baseToken?.name,"").normalize("NFKC").toLocaleLowerCase().replace(/\s+/g," ").trim();
-  const symbol=cleanTokenText(pair?.baseToken?.symbol,"").normalize("NFKC").toLocaleLowerCase().replace(/\s+/g," ").trim();
-  if(!name||!symbol){byLabel.set("mint:"+pair.baseToken.address,pair);continue;}
-  const key=name+"|"+symbol;
-  const previous=byLabel.get(key);
-  if(!previous||Number(pair.liquidity?.usd||0)>Number(previous.liquidity?.usd||0))byLabel.set(key,pair);
- }
- return [...byLabel.values()];
+ return [...byMint.values()];
 }
+function normalizedTokenLabel(value){
+ return cleanTokenText(value,"").normalize("NFKC").toLocaleLowerCase().replace(/\s+/g," ").trim();
+}
+function getTokenIdentityNotice(pair,universe){
+ const mint=String(pair?.baseToken?.address||"");
+ const name=normalizedTokenLabel(pair?.baseToken?.name);
+ const symbol=normalizedTokenLabel(pair?.baseToken?.symbol);
+ const isUsdcLike=name.includes("usd coin")||symbol==="usdc"||symbol==="erc20-usdc";
+ if(mint===USDC)return {text:"Official USDC mint",verified:true};
+ if(isUsdcLike)return {text:"USDC-like token Â· NOT official USDC Â· verify mint",verified:false};
+ const collision=(universe||[]).some(other=>{
+  const otherMint=String(other?.baseToken?.address||"");
+  if(!otherMint||otherMint===mint)return false;
+  const otherName=normalizedTokenLabel(other?.baseToken?.name);
+  const otherSymbol=normalizedTokenLabel(other?.baseToken?.symbol);
+  return (name&&otherName&&name===otherName)||(symbol&&otherSymbol&&symbol===otherSymbol);
+ });
+ if(collision)return {text:"Similar name or symbol Â· different mint",verified:false};
+ return null;
+}
+function tokenWarningHTML(pair,universe){
+ const notice=getTokenIdentityNotice(pair,universe);
+ if(!notice)return "";
+ return `<span class="token-warning${notice.verified?" verified":""}">${escapeHTML(notice.text)}</span>`;
+}
+
 function getCategoryPairs(){
  // Final network guard: only Solana pools and valid Solana mint addresses enter any tab.
  let list=bestPairsByMint(allPairs.filter(p=>p?.chainId==="solana"&&valid(String(p?.baseToken?.address||""))),true);
@@ -1350,8 +1374,9 @@ function renderMarket(){
   const fallback=`<span class="coin-fallback" style="display:${image?"none":"flex"}">${escapeHTML(cleanTokenText(p.baseToken?.symbol,"?").slice(0,2))}</span>`;
   const age=p.pairCreatedAt?timeSince(p.pairCreatedAt):"Recently discovered";
   const meta=currentCategory==="new"?`<span class="new-coin-meta">${age} | MC ${money(p.marketCap||p.fdv)} | LIQ ${money(p.liquidity?.usd)} | VOL ${money(p.volume?.h24)} | TX ${Number(p.txns?.h24?.buys||0)+Number(p.txns?.h24?.sells||0)}</span>`:"";
+  const identityNotice=tokenWarningHTML(p,list);
   return `<div class="market-row">
-   <button class="coin-button" data-mint="${mint}">${img}${fallback}<span class="coin-info"><strong>${name}</strong><small>${symbol}</small>${meta}</span></button>
+   <button class="coin-button" data-mint="${mint}">${img}${fallback}<span class="coin-info"><strong>${name}</strong><small>${symbol}</small>${identityNotice}${meta}</span></button>
    <span class="market-price">${usd(p.priceUsd)}</span><span class="market-change ${cls}">${changeText}</span>
   </div>`;
  }).join("");
@@ -1422,8 +1447,9 @@ function renderSearchResults(list){
   const image=p.info?.imageUrl||"";
   const img=image?`<img class="coin-logo" src="${escapeHTML(image)}" alt="${name}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`:"";
   const fallback=`<span class="coin-fallback" style="display:${image?"none":"flex"}">${escapeHTML(cleanTokenText(p.baseToken?.symbol,"?").slice(0,2))}</span>`;
+  const identityNotice=tokenWarningHTML(p,filtered);
   return `<div class="market-row">
-   <button class="coin-button" data-mint="${escapeHTML(p.baseToken.address)}">${img}${fallback}<span class="coin-info"><strong>${name}</strong><small>${symbol}</small></span></button>
+   <button class="coin-button" data-mint="${escapeHTML(p.baseToken.address)}">${img}${fallback}<span class="coin-info"><strong>${name}</strong><small>${symbol}</small>${identityNotice}</span></button>
    <span class="market-price">${usd(p.priceUsd)}</span><span class="market-change ${cls}">${changeText}</span>
   </div>`;
  }).join("");
@@ -1790,6 +1816,17 @@ function refreshSelectedTokenDetails(token){
  $("detailName").textContent=token.baseToken.name||"Token";
  $("detailSymbol").textContent=token.baseToken.symbol||"";
  $("detailAddress").textContent=mint;
+ const identityNotice=getTokenIdentityNotice(token,allPairs);
+ const warningEl=$("detailTokenWarning");
+ if(identityNotice){
+  warningEl.textContent=identityNotice.text;
+  warningEl.classList.toggle("verified",!!identityNotice.verified);
+  warningEl.style.display="block";
+ }else{
+  warningEl.textContent="";
+  warningEl.classList.remove("verified");
+  warningEl.style.display="none";
+ }
  $("detailPrice").textContent=usd(token.priceUsd);
  const change=Number(token.priceChange?.h24);
  $("detailChange").textContent=Number.isFinite(change)?(change>0?"+":"")+change.toFixed(2)+"% | 24h":"24h change unavailable";
