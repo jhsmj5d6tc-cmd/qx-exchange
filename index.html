@@ -24,6 +24,10 @@ header{display:flex;align-items:center;justify-content:space-between;padding:12p
 .logo{font-size:26px;font-weight:900}
 .logo span{color:var(--green)}
 .small{font-size:12px;color:var(--muted)}
+.qx-global-settings{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:wrap}
+.qx-global-settings select{width:auto;min-width:74px;padding:9px 7px;background:#140d27;color:#fff;border:1px solid var(--line);border-radius:9px;font-size:11px}
+.qx-global-settings label{font-size:10px}
+@media(max-width:560px){header{align-items:flex-start;gap:10px;flex-wrap:wrap}.qx-global-settings{width:100%;justify-content:flex-start}.qx-global-settings label{display:none}.qx-global-settings select{flex:1;min-width:0}}
 .btn{background:#241936;color:white;border:1px solid var(--line);padding:12px 15px;border-radius:10px}
 .primary{background:var(--green);color:#06150f;border:0;font-weight:bold}
 .panel{background:linear-gradient(160deg,rgba(26,19,42,.98),rgba(15,12,25,.98));border:1px solid var(--line);border-radius:17px;padding:16px;margin-bottom:16px;box-shadow:0 12px 34px rgba(0,0,0,.12)}
@@ -315,22 +319,8 @@ body.qx-token-open #getQuoteBtn{display:none!important}
 .ad-pay-btn:disabled{opacity:.45}
 .ad-status{font-size:11px;line-height:1.5;color:#d4c5e8;overflow-wrap:anywhere;margin-top:10px;white-space:pre-wrap}
 @media(min-width:700px){.ads-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
-.qx-extra-panel{margin-top:13px;padding:12px;border:1px solid rgba(101,60,160,.65);border-radius:13px;background:rgba(12,9,23,.72)}
-.qx-detail-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:12px 0}
-.qx-security-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}
-.qx-security-grid>div{padding:9px;border:1px solid rgba(101,60,160,.35);border-radius:9px;background:#0d0a18;min-width:0}
-.qx-security-grid small{display:block;color:var(--muted);font-size:10px;margin-bottom:5px}
-.qx-security-grid strong{display:block;font-size:11px;overflow-wrap:anywhere}
-.qx-social-links{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-.qx-social-links a{color:var(--green);font-size:11px;text-decoration:none;padding:7px 9px;border:1px solid rgba(67,255,173,.25);border-radius:8px}
-.qx-alert-controls{display:grid;grid-template-columns:1fr 1fr auto;gap:7px;margin:10px 0}
-.qx-alert-controls input,.qx-alert-controls select{min-width:0;background:#0c0915;color:white;border:1px solid var(--line);border-radius:9px;padding:10px;font-size:12px}
-.qx-alert-list,.qx-activity-list{display:grid;gap:7px;margin-top:9px}
-.qx-alert-item,.qx-activity-item{display:flex;justify-content:space-between;align-items:center;gap:9px;padding:9px;border:1px solid rgba(101,60,160,.35);border-radius:9px;background:#0d0a18;font-size:11px;overflow-wrap:anywhere}
-.qx-alert-item button{background:#29172a;color:#ff9caf;border:1px solid #673347;border-radius:7px;padding:6px 8px}
-.qx-activity-item a{color:var(--green);text-decoration:none;white-space:nowrap}
-.qx-activity-item small{display:block;color:var(--muted);margin-top:3px}
-@media(max-width:600px){.qx-alert-controls{grid-template-columns:1fr 1fr}.qx-alert-controls button{grid-column:1/-1}.qx-security-grid{grid-template-columns:1fr 1fr}.qx-detail-actions{align-items:stretch}.qx-detail-actions .btn{flex:1}}
+
+
 
 </style>
 </head>
@@ -348,7 +338,13 @@ body.qx-token-open #getQuoteBtn{display:none!important}
   </span>
   <span class="brand-copy"><span class="brand-name">QX <b>EXCHANGE</b></span><span class="brand-tagline">GLOBAL CRYPTO EXCHANGE</span></span>
  </a>
- <button class="btn primary" id="connectBtn" type="button">Connect Wallet</button>
+ <div class="qx-global-settings" aria-label="Global preferences">
+  <label class="small" for="qxLanguage">Language</label>
+  <select id="qxLanguage" aria-label="Language"><option value="en">English</option><option value="ar">Ø§ÙØ¹Ø±Ø¨ÙØ©</option></select>
+  <label class="small" for="qxCurrency">Currency</label>
+  <select id="qxCurrency" aria-label="Display currency"><option value="USD">USD $</option><option value="AED">AED Ø¯.Ø¥</option><option value="EUR">EUR â¬</option><option value="GBP">GBP Â£</option><option value="JPY">JPY Â¥</option></select>
+  <button class="btn primary" id="connectBtn" type="button">Connect Wallet</button>
+ </div>
 </header>
 <p id="connectFeedback" role="status" aria-live="polite" class="small" style="min-height:16px;margin:-15px 0 12px;text-align:right"></p>
 
@@ -369,13 +365,6 @@ body.qx-token-open #getQuoteBtn{display:none!important}
   <div class="row head"><span>Asset</span><span class="right">Balance</span><span class="right">Value</span></div>
   <div id="assetsList" class="empty">Connect wallet first.</div>
  </div>
- <section class="panel qx-extra-panel" style="margin-top:16px">
-  <div class="market-heading"><h2>Wallet Activity</h2><button class="btn" id="refreshActivityBtn" type="button">Refresh</button></div>
-  <p class="small">Recent confirmed on-chain transactions for your connected wallet.</p>
-  <div id="walletActivity" class="qx-activity-list"><div class="empty">Connect your wallet to load activity.</div></div>
-  <div class="market-heading" style="margin-top:16px"><h3>QX Swap History</h3></div>
-  <div id="qxTradeHistory" class="qx-activity-list"><div class="empty">Completed QX swaps will appear here.</div></div>
- </section>
 </main>
 
 <main id="createPage" class="page">
@@ -420,7 +409,6 @@ body.qx-token-open #getQuoteBtn{display:none!important}
     <button class="market-tab" data-category="losers">Top Losers</button>
     <button class="market-tab" data-category="trending">Trending</button>
     <button class="market-tab" data-category="volume">Top Volume</button>
-    <button class="market-tab" data-category="favorites">â Favorites</button>
    </div>
    <div class="toolbar">
     <input id="search" placeholder="Search name, symbol or contract">
@@ -444,7 +432,7 @@ body.qx-token-open #getQuoteBtn{display:none!important}
     <div class="market-row" style="color:var(--muted);font-size:11px"><span>Token</span><span class="right">Price USD</span><span class="right">24h</span></div>
     <div id="tokenResults" class="market-empty">Loading market...</div>
    </div>
-   <p class="market-status" id="marketStatus">Connecting to live market data...</p>
+   <p class="market-status" id="marketStatus">Connecting to live market data...</p><p class="small" style="margin-top:-12px">Holder totals require a dedicated Solana indexing API. QX does not display estimated or fabricated holder counts.</p>
   </div>
 
   <section id="detail" class="panel" style="display:none">
@@ -462,7 +450,7 @@ body.qx-token-open #getQuoteBtn{display:none!important}
     <div class="detail-stat"><small>Liquidity</small><strong id="detailLiquidity">-</strong></div>
     <div class="detail-stat"><small>24h Volume</small><strong id="detailVolume">-</strong></div>
     <div class="detail-stat"><small>24h Transactions</small><strong id="detailTransactions">-</strong></div>
-    <div class="detail-stat"><small>Holders</small><strong id="detailHolders">Not available</strong></div>
+    <div class="detail-stat"><small>Holders</small><strong id="detailHolders" title="A token-holder indexer/API is required for a reliable total">Indexer required</strong></div>
    </div>
    <div class="chart-section" id="detailChartWrap" style="display:none">
     <div class="chart-toolbar"><strong>QX LIVE CHART</strong><div class="chart-ranges" id="chartRanges"><button type="button" class="chart-range active" data-chart-range="5m">5M</button><button type="button" class="chart-range" data-chart-range="15m">15M</button><button type="button" class="chart-range" data-chart-range="1H">1H</button><button type="button" class="chart-range" data-chart-range="4H">4H</button><button type="button" class="chart-range" data-chart-range="1D">1D</button></div></div>
@@ -470,29 +458,7 @@ body.qx-token-open #getQuoteBtn{display:none!important}
     <div id="chartMessage" class="chart-message" style="display:none"></div>
     <div class="chart-credit">Chart rendered inside QX | Solana market data</div>
    </div>
-   <div class="qx-detail-actions">
-    <button class="btn" id="favoriteTokenBtn" type="button">â Add to Favorites</button>
-    <a id="solscanLink" class="detail-link" target="_blank" rel="noopener">View contract on Solscan -&gt;</a>
-   </div>
-   <section class="qx-extra-panel">
-    <div class="market-heading"><strong>Token information</strong><span class="small" id="tokenSecurityStatus">Checking mint data...</span></div>
-    <div class="qx-security-grid">
-     <div><small>Mint authority</small><strong id="mintAuthorityValue">Checking...</strong></div>
-     <div><small>Freeze authority</small><strong id="freezeAuthorityValue">Checking...</strong></div>
-     <div><small>Supply / Decimals</small><strong id="tokenSupplyValue">Checking...</strong></div>
-    </div>
-    <div id="tokenSocialLinks" class="qx-social-links"></div>
-   </section>
-   <section class="qx-extra-panel qx-alert-panel">
-    <div class="market-heading"><strong>Price alerts</strong><span class="small">This device only</span></div>
-    <div class="qx-alert-controls">
-     <select id="priceAlertDirection" aria-label="Alert direction"><option value="above">Price goes above</option><option value="below">Price goes below</option></select>
-     <input id="priceAlertTarget" type="number" min="0" step="any" inputmode="decimal" placeholder="Target price USD" aria-label="Target price USD">
-     <button class="btn primary" id="addPriceAlertBtn" type="button">Add alert</button>
-    </div>
-    <button class="btn" id="enableBrowserAlertsBtn" type="button">Enable browser notifications</button>
-    <div id="priceAlertList" class="qx-alert-list"><span class="small">No alerts for this token.</span></div>
-   </section>
+   <a id="solscanLink" class="detail-link" target="_blank" rel="noopener">View contract on Solscan -&gt;</a>
 
    <button class="trade-flip" id="swapDirectionBtn" type="button" aria-label="Reverse swap direction" hidden>REVERSE SWAP DIRECTION | SOL TO TOKEN</button>
    <div class="qx-swap-head"><div><div class="qx-swap-kicker">QX EXCHANGE / INSTANT TRADE</div><strong id="tradeTitle">Buy this token with SOL</strong><p>Trade directly inside QX. No external swap page.</p></div><div class="qx-swap-icon">SWAP</div></div>
@@ -675,25 +641,46 @@ let sortMetric="",sortDirection="desc",tradePercent=0;
 let tradeBalanceLoading=false;
 let pendingSwapOrder=null,quoteBusy=false,swapBusy=false;
 
+let qxCurrency="USD",qxCurrencyRates={USD:1},qxLanguage="en";
+const qxCurrencySymbols={USD:"$",AED:"Ø¯.Ø¥",EUR:"â¬",GBP:"Â£",JPY:"Â¥"};
+function qxFormatMoney(value,compact=false){
+ const n=Number(value);if(!Number.isFinite(n))return "-";
+ const hasRate=Number.isFinite(Number(qxCurrencyRates[qxCurrency]));const rate=hasRate?Number(qxCurrencyRates[qxCurrency]):1,converted=n*rate;
+ const digits=compact?2:(Math.abs(converted)<0.01?6:2);
+ const formatted=compact&&Math.abs(converted)>=1e9?(converted/1e9).toFixed(2)+"B":compact&&Math.abs(converted)>=1e6?(converted/1e6).toFixed(2)+"M":compact&&Math.abs(converted)>=1e3?(converted/1e3).toFixed(2)+"K":converted.toLocaleString("en-US",{maximumFractionDigits:digits});
+ return (hasRate?qxCurrencySymbols[qxCurrency]:"$")+formatted+(hasRate?"":" USD");
+}
+async function qxLoadCurrencyRates(){
+ try{const response=await fetch("https://open.er-api.com/v6/latest/USD");if(!response.ok)throw Error("rate unavailable");const data=await response.json();if(data.result==="success"&&data.rates){qxCurrencyRates={...qxCurrencyRates,...data.rates};qxCurrencyRates.USD=1;}}
+ catch(error){console.warn("QX currency rates unavailable; showing USD-equivalent values with selected currency rate fallback.",error);}
+}
+function qxApplyLanguage(){
+ const ar=qxLanguage==="ar";document.documentElement.lang=ar?"ar":"en";document.documentElement.dir=ar?"rtl":"ltr";
+ const labels=ar?{connect:"Ø±Ø¨Ø· Ø§ÙÙØ­ÙØ¸Ø©",wallet:"Ø§ÙÙØ­ÙØ¸Ø©",assets:"Ø£ØµÙÙÙ",create:"Ø¥ÙØ´Ø§Ø¡ Ø¹ÙÙØ©",markets:"Ø£Ø³ÙØ§Ù Ø³ÙÙØ§ÙØ§",search:"Ø¨Ø­Ø«",sponsored:"Ø¥Ø¹ÙØ§ÙØ§Øª ÙÙÙÙØ©",language:"Ø§ÙÙØºØ©",currency:"Ø§ÙØ¹ÙÙØ©"}:{connect:"Connect Wallet",wallet:"Wallet",assets:"My Assets",create:"Create Token",markets:"Solana Markets",search:"Search",sponsored:"Sponsored",language:"Language",currency:"Currency"};
+ const connect=document.getElementById("connectBtn");if(connect&&!document.body.classList.contains("qx-wallet-active"))connect.textContent=labels.connect;
+ const walletTitle=document.querySelector("#walletPage .market-heading h2");if(walletTitle)walletTitle.textContent=labels.assets;
+ const createTitle=document.querySelector("#createPage .market-heading h2");if(createTitle)createTitle.textContent=labels.create;
+ const marketTitle=document.querySelector("#marketsPage > .market-heading h2");if(marketTitle)marketTitle.textContent=labels.markets;
+ const search=document.getElementById("search");if(search)search.placeholder=ar?"Ø§Ø¨Ø­Ø« Ø¨Ø§ÙØ§Ø³Ù Ø£Ù Ø§ÙØ±ÙØ² Ø£Ù Ø¹ÙÙØ§Ù Ø§ÙØ¹ÙØ¯":"Search name, symbol or contract";
+ const sponsored=document.querySelector(".ads-title");if(sponsored)sponsored.textContent=labels.sponsored;
+ document.querySelectorAll(".qx-global-settings label").forEach((el,i)=>el.textContent=i===0?labels.language:labels.currency);
+}
+function qxRefreshDisplayedPrices(){
+ if(typeof renderMarket==="function"&&Array.isArray(allPairs)&&allPairs.length)renderMarket();
+ if(selectedToken&&typeof refreshSelectedTokenDetails==="function")refreshSelectedTokenDetails(selectedToken);
+ if(typeof loadPortfolio==="function"&&connected)loadPortfolio();
+}
+document.addEventListener("DOMContentLoaded",()=>{
+ const language=document.getElementById("qxLanguage"),currency=document.getElementById("qxCurrency");
+ if(language){language.value=localStorage.getItem("qxLanguage")||"en";qxLanguage=language.value;language.addEventListener("change",()=>{qxLanguage=language.value;localStorage.setItem("qxLanguage",qxLanguage);qxApplyLanguage();});}
+ if(currency){currency.value=localStorage.getItem("qxCurrency")||"USD";qxCurrency=currency.value;currency.addEventListener("change",async()=>{qxCurrency=currency.value;localStorage.setItem("qxCurrency",qxCurrency);await qxLoadCurrencyRates();qxRefreshDisplayedPrices();});}
+ qxApplyLanguage();qxLoadCurrencyRates().then(qxRefreshDisplayedPrices);
+});
+
 const valid=s=>typeof s==="string"&&/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(s);
-const QX_FAVORITES_KEY="qxFavoritesV1",QX_ALERTS_KEY="qxPriceAlertsV1",QX_MARKET_CACHE_KEY="qxMarketCacheV1";
-function readLocalArray(key){try{const value=JSON.parse(localStorage.getItem(key)||"[]");return Array.isArray(value)?value:[];}catch(_){return [];}}
-function writeLocalArray(key,value){try{localStorage.setItem(key,JSON.stringify(value));}catch(error){console.warn("QX local storage is full or unavailable:",error);}}
-let favoriteMints=new Set(readLocalArray(QX_FAVORITES_KEY).filter(valid));
-let priceAlerts=readLocalArray(QX_ALERTS_KEY).filter(a=>a&&valid(a.mint)&&Number(a.target)>0);
-try{const cached=JSON.parse(localStorage.getItem(QX_MARKET_CACHE_KEY)||"[]");if(Array.isArray(cached)&&cached.length)allPairs=cached.filter(p=>p?.chainId==="solana"&&valid(p?.baseToken?.address)).slice(0,800);}catch(_){allPairs=[];}
 const short=s=>s?s.slice(0,6)+"..."+s.slice(-4):"";
-const usd=n=>{
- const v=Number(n);
- return Number.isFinite(v)?"$"+v.toLocaleString("en-US",{maximumFractionDigits:6}):"-";
-};
-const money=n=>{
- const v=Number(n||0);
- if(v>=1e9)return "$"+(v/1e9).toFixed(2)+"B";
- if(v>=1e6)return "$"+(v/1e6).toFixed(2)+"M";
- if(v>=1e3)return "$"+(v/1e3).toFixed(2)+"K";
- return "$"+v.toFixed(2);
-};
+const usd=n=>qxFormatMoney(n,false);
+const money=n=>qxFormatMoney(n,true);
 const masked=v=>balancesHidden?"******":v;
 function escapeHTML(v){
  return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -778,7 +765,6 @@ async function setConnectedWallet(provider,address,name="Wallet"){
  $("swapStatus").textContent="Wallet connected. Select a token and request a fresh quote.";
  updateTradePercentUI();
  await loadPortfolio();
- await loadWalletActivity();
 }
 function clearConnectedWallet(message="Wallet disconnected."){
  connected=false;walletAddress="";activeWalletProvider=null;walletSolBalance=0;selectedTokenBalance=0;
@@ -790,7 +776,6 @@ function clearConnectedWallet(message="Wallet disconnected."){
  clearPendingSwap(message);
  $("totalValue").dataset.realValue="-";$("totalValue").textContent="-";
  lastAssetRows=[];$("assetsList").className="empty";$("assetsList").textContent="Connect wallet first.";
- $("walletActivity").innerHTML='<div class="empty">Connect your wallet to load activity.</div>';
  updateTradePercentUI();
 }
 async function connectQXWallet(){
@@ -1013,49 +998,17 @@ function renderAssetRows(){
  }).join("");
 }
 
-/* WALLET ACTIVITY: read-only on-chain signature history */
-function formatActivityTime(seconds){
- if(!seconds)return "Time unavailable";
- try{return new Date(Number(seconds)*1000).toLocaleString();}catch(_){return "Time unavailable";}
-}
-function loadQXTradeHistory(){
- const host=$("qxTradeHistory");if(!host)return;
- const rows=readLocalArray("qxTradeHistoryV1").filter(x=>x&&x.signature);
- if(!rows.length){host.innerHTML='<div class="empty">Completed QX swaps will appear here.</div>';return;}
- host.innerHTML=rows.slice(0,25).map(row=>`<div class="qx-activity-item"><span><strong>${escapeHTML(row.direction||"Swap")} Â· ${escapeHTML(row.inputAmount||"-")} ${escapeHTML(row.inputSymbol||"")} â ${escapeHTML(row.outputAmount||"-")} ${escapeHTML(row.outputSymbol||"")}</strong><small>${escapeHTML(formatActivityTime(Math.floor(Number(row.createdAt||Date.now())/1000)))}</small></span><a href="https://solscan.io/tx/${encodeURIComponent(row.signature)}" target="_blank" rel="noopener noreferrer">View on Solscan</a></div>`).join("");
-}
-function recordQXTrade(order,signature,outputRaw){
- const rows=readLocalArray("qxTradeHistoryV1");
- rows.unshift({signature,direction:tradeDirection.toUpperCase(),inputAmount:String(order.inputAmount),inputSymbol:order.inputSymbol,outputAmount:displayRawAmount(outputRaw,order.outputDecimals),outputSymbol:order.outputSymbol,mint:selectedToken?.baseToken?.address||"",createdAt:Date.now(),wallet:walletAddress});
- writeLocalArray("qxTradeHistoryV1",rows.slice(0,100));loadQXTradeHistory();
-}
-async function loadWalletActivity(){
- const host=$("walletActivity");if(!host)return;
- if(!connected||!walletAddress){host.innerHTML='<div class="empty">Connect your wallet to load activity.</div>';return;}
- host.innerHTML='<div class="empty">Loading recent on-chain activity...</div>';
- try{
-  const rows=await rpc("getSignaturesForAddress",[walletAddress,{limit:15,commitment:"confirmed"}]);
-  if(!Array.isArray(rows)||!rows.length){host.innerHTML='<div class="empty">No recent transactions found.</div>';return;}
-  host.innerHTML=rows.map(row=>{
-   const signature=escapeHTML(row.signature||""),state=row.err?"Failed":"Confirmed";
-   return `<div class="qx-activity-item"><span><strong>${state}</strong><small>${escapeHTML(formatActivityTime(row.blockTime))}</small><small>${escapeHTML(short(row.signature||""))}</small></span><a href="https://solscan.io/tx/${encodeURIComponent(row.signature||"")}" target="_blank" rel="noopener noreferrer">View on Solscan</a></div>`;
-  }).join("");
- }catch(error){host.innerHTML='<div class="empty">Could not load wallet activity: '+escapeHTML(error.message||"RPC unavailable")+'</div>';}
-}
-$("refreshActivityBtn").addEventListener("click",()=>{loadWalletActivity();loadQXTradeHistory();});
-loadQXTradeHistory();
-
 /* PUBLIC ADVERTISEMENTS ÃÂ¢ÃÂÃÂ secure activation requires the QX Supabase Edge Function */
 const QX_AD_TREASURY="E4x2DiVVDuVQHSUGgzTPjJMDbiJ6jCRwpEvsvAd31Qs4";
-// Public Supabase publishable key for the existing QX backend. Never put a secret/service-role key or wallet private key in this file.
-const QX_ADS_SUPABASE_URL="https://qkazosqvnmknnzkukggj.supabase.co";
-const QX_ADS_SUPABASE_ANON_KEY="sb_publishable_GTQFfhodqE5XgMHM__tFWQ_Y0Xdyyhf";
+// Fill these two public Supabase values after creating the QX Ads backend.
+// Never place a Supabase service-role key or any private wallet key in this file.
+const QX_ADS_SUPABASE_URL="PASTE_YOUR_SUPABASE_PROJECT_URL_HERE";
+const QX_ADS_SUPABASE_ANON_KEY="PASTE_YOUR_SUPABASE_ANON_KEY_HERE";
 const QX_AD_FUNCTION="qx-ads";
 const QX_AD_PACKAGES={1:{usd:49.99,label:"1 hour"},3:{usd:99.99,label:"3 hours"},9:{usd:179.99,label:"9 hours"},24:{usd:299.99,label:"24 hours"},72:{usd:599.99,label:"3 days"}};
 const adEl=id=>document.getElementById(id);
 let adBusy=false;
-function adsBackendReady(){return /^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(QX_ADS_SUPABASE_URL)&&(QX_ADS_SUPABASE_ANON_KEY.startsWith("eyJ")||QX_ADS_SUPABASE_ANON_KEY.startsWith("sb_publishable_"));}
-function qxBackendHeaders(extra={}){return Object.assign({"apikey":QX_ADS_SUPABASE_ANON_KEY},extra);}
+function adsBackendReady(){return /^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(QX_ADS_SUPABASE_URL)&&QX_ADS_SUPABASE_ANON_KEY.startsWith("eyJ");}
 function adSolAmount(hours){
  const price=QX_AD_PACKAGES[Number(hours)]?.usd;
  if(!price||!solPrice||solPrice<=0)return null;
@@ -1098,7 +1051,7 @@ async function loadPublicAds(){
   return;
  }
  try{
-  const response=await fetch(QX_ADS_SUPABASE_URL+"/functions/v1/"+QX_AD_FUNCTION,{headers:qxBackendHeaders()});
+  const response=await fetch(QX_ADS_SUPABASE_URL+"/functions/v1/"+QX_AD_FUNCTION,{headers:{"apikey":QX_ADS_SUPABASE_ANON_KEY,"Authorization":"Bearer "+QX_ADS_SUPABASE_ANON_KEY}});
   const data=await response.json();
   if(!response.ok)throw new Error(data.error||"Could not load advertisements.");
   const ads=Array.isArray(data.ads)?data.ads:[];
@@ -1147,7 +1100,7 @@ async function payForAdvertisement(){
   await waitForSolanaConfirmation(signature);
   adEl("adStatus").textContent="Payment confirmed. QX is verifying the transaction and publishing your advertisement...";
   const response=await fetch(QX_ADS_SUPABASE_URL+"/functions/v1/"+QX_AD_FUNCTION,{
-   method:"POST",headers:qxBackendHeaders({"Content-Type":"application/json"}),
+   method:"POST",headers:{"Content-Type":"application/json","apikey":QX_ADS_SUPABASE_ANON_KEY,"Authorization":"Bearer "+QX_ADS_SUPABASE_ANON_KEY},
    body:JSON.stringify({action:"publish",wallet:walletAddress,signature,duration_hours:hours,price_usd:pkg.usd,sol_amount:sol,title,body,url,image_url:imageUrl})
   });
   const result=await response.json().catch(()=>({}));
@@ -1212,19 +1165,10 @@ async function createQXToken(){
   const saved=JSON.parse(localStorage.getItem("qxCreatedTokens")||"[]");
   saved.unshift({name,symbol,decimals,mint:mintAddress,owner:walletAddress,signature,createdAt:Date.now()});
   localStorage.setItem("qxCreatedTokens",JSON.stringify(saved.slice(0,50)));
-  let directoryStatus="The token is saved in this browser only.";
-  if(adsBackendReady()){
-   try{
-    const registration=await fetch(QX_ADS_SUPABASE_URL+"/functions/v1/"+QX_AD_FUNCTION,{method:"POST",headers:qxBackendHeaders({"Content-Type":"application/json"}),body:JSON.stringify({action:"register-token",wallet:walletAddress,signature,mint:mintAddress,name,symbol,decimals})});
-    const registrationResult=await registration.json().catch(()=>({}));
-    if(!registration.ok||!registrationResult.ok)throw new Error(registrationResult.error||"QX token directory registration failed.");
-    directoryStatus="The token was also registered in the QX public directory.";
-   }catch(registrationError){directoryStatus="The on-chain token was created successfully, but QX directory registration did not complete: "+(registrationError.message||"try again later");}
-  }
   $("createdTokenMint").textContent=name+" ("+symbol+") | Mint: "+mintAddress;
   $("createdTokenSolscan").href="https://solscan.io/tx/"+encodeURIComponent(signature);
   resultBox.style.display="block";
-  status.textContent="Token mint and initial supply confirmed on Solana Mainnet. "+directoryStatus;
+  status.textContent="Token mint and initial supply confirmed on Solana Mainnet. The record is saved in this browser.";
   button.textContent="Create another token";
   await loadPortfolio();
  }catch(error){
@@ -1267,48 +1211,12 @@ async function fetchCanonicalSol(){
  }catch(e){console.warn("Canonical SOL lookup:",e);return canonicalSolPair;}
 }
 async function fetchPairsForMints(mints){
- // DexScreener accepts at most 30 token addresses per request. Fetch every
- // discovered mint in safe batches instead of silently truncating at 30.
- const unique=[...new Set((mints||[]).filter(valid))].filter(m=>m!==SOL);
+ const unique=[...new Set((mints||[]).filter(valid))].filter(m=>m!==SOL).slice(0,30);
  if(!unique.length)return [];
- const output=[];
- for(let i=0;i<unique.length;i+=30){
-  const batch=unique.slice(i,i+30);
-  try{
-   const data=await getJSON("https://api.dexscreener.com/tokens/v1/solana/"+batch.join(","));
-   output.push(...(Array.isArray(data)?data:[]));
-  }catch(e){console.warn("Token pair batch lookup:",e);}
- }
- return bestPairsByMint(output,false);
-}
-
-// GeckoTerminal exposes paginated Solana new-pool discovery. Walk one page
-// per market refresh and accumulate unique base-token mints over time.
-let geckoPoolPage=Math.max(1,Math.min(100,Number(localStorage.getItem("qxGeckoPoolPage")||1)));
-const geckoMintQueue=new Set();
-const geckoSeenMints=new Set(readLocalArray("qxGeckoSeenMintsV1").filter(valid));
-async function discoverGeckoSolanaMints(){
- const url="https://api.geckoterminal.com/api/v2/networks/solana/new_pools?page="+geckoPoolPage+"&include=base_token,quote_token,dex";
  try{
-  const data=await getJSON(url);
-  const included=new Map((data?.included||[]).map(item=>[item.id,item.attributes||{}]));
-  for(const pool of data?.data||[]){
-   const relation=pool?.relationships?.base_token?.data;
-   const token=included.get(relation?.id);
-   const address=String(token?.address||String(relation?.id||"").replace(/^solana_/,""));
-   if(valid(address)&&address!==SOL&&!geckoSeenMints.has(address)){
-    geckoSeenMints.add(address);geckoMintQueue.add(address);
-   }
-  }
-  // Keep cycling through pages so the browser progressively discovers a
-  // wider portion of the indexed new-pool feed without a burst of requests.
-  geckoPoolPage=geckoPoolPage>=100?1:geckoPoolPage+1;
-  localStorage.setItem("qxGeckoPoolPage",String(geckoPoolPage));
-  writeLocalArray("qxGeckoSeenMintsV1",[...geckoSeenMints].slice(-5000));
- }catch(e){console.warn("GeckoTerminal new-pool discovery:",e);}
- const batch=[...geckoMintQueue].slice(0,30);
- batch.forEach(m=>geckoMintQueue.delete(m));
- return batch;
+  const data=await getJSON("https://api.dexscreener.com/tokens/v1/solana/"+unique.join(","));
+  return bestPairsByMint(data,false);
+ }catch(e){console.warn("Token pair lookup:",e);return [];}
 }
 function profileMints(data){
  return (data||[]).filter(i=>i.chainId==="solana"&&valid(i.tokenAddress)).map(i=>i.tokenAddress).filter(m=>m!==SOL);
@@ -1345,29 +1253,19 @@ async function loadMarket(){
   const latestBoosts=results[5].status==="fulfilled"?results[5].value:[];
   const topBoosts=results[6].status==="fulfilled"?results[6].value:[];
   if(results[7].status==="fulfilled")canonicalSolPair=results[7].value;
-  const geckoMints=await discoverGeckoSolanaMints();
   const freshMints=[...new Set([...profileMints(profiles),...boostMints(latestBoosts)])];
   const profileList=await fetchPairsForMints(freshMints);
   const boostList=await fetchPairsForMints(boostMints(topBoosts));
-  const geckoList=await fetchPairsForMints(geckoMints);
-  newPairs=bestPairsByMint([...geckoList,...profileList,...(search.pairs||[]).filter(p=>p.chainId==="solana"&&Number(p.pairCreatedAt||0)>Date.now()-7*86400000)],false)
+  newPairs=bestPairsByMint([...profileList,...(search.pairs||[]).filter(p=>p.chainId==="solana"&&Number(p.pairCreatedAt||0)>Date.now()-7*86400000)],false)
    .sort((a,b)=>Number(b.pairCreatedAt||0)-Number(a.pairCreatedAt||0));
   trendingPairs=bestPairsByMint(boostList,false);
-  const others=bestPairsByMint([...(search.pairs||[]),...profileList,...boostList,...geckoList],false);
-  // Retain previously discovered markets while later pages are being scanned;
-  // overwrite them whenever a fresher pair snapshot is received.
-  const merged=new Map(allPairs.map(p=>[p.baseToken.address,p]));
-  for(const pair of others){
-   const old=merged.get(pair.baseToken.address);
-   if(!old||Number(pair.liquidity?.usd||0)>=Number(old.liquidity?.usd||0))merged.set(pair.baseToken.address,pair);
-  }
+  const others=bestPairsByMint([...(search.pairs||[]),...profileList,...boostList],false);
+  const merged=new Map(others.map(p=>[p.baseToken.address,p]));
   if(canonicalSolPair)merged.set(SOL,canonicalSolPair);
   // Final guard: one displayed row per unique mint, preferring the deepest pool.
   allPairs=bestPairsByMint([...merged.values()],true);
-  try{localStorage.setItem(QX_MARKET_CACHE_KEY,JSON.stringify(allPairs.slice(0,800)));}catch(error){console.warn("QX market cache:",error);}
   if(!allPairs.length)throw new Error("Live market providers returned no token pairs. Check your connection or try again shortly.");
-  evaluatePriceAlerts();
-  $("marketStatus").textContent="Solana-only market | "+allPairs.length.toLocaleString()+" tokens loaded | Progressive page "+geckoPoolPage+" discovery | Last update "+new Date().toLocaleTimeString();
+  $("marketStatus").textContent="Solana-only market | Duplicate mints removed | Last update "+new Date().toLocaleTimeString();
   renderMarket();
   if(selectedToken){
    const updated=allPairs.find(p=>p.baseToken.address===selectedToken.baseToken.address);
@@ -1381,7 +1279,7 @@ async function loadMarket(){
 
 const categoryNames={
  all:"All Solana tokens",new:"New Coins | Live",gainers:"Top Gainers | 24h",
- losers:"Top Losers | 24h",trending:"Trending tokens",volume:"Top Volume | 24h",favorites:"Your Favorites"
+ losers:"Top Losers | 24h",trending:"Trending tokens",volume:"Top Volume | 24h"
 };
 function dedupeVisibleTokenLabels(input){
  // A token's identity is its mint, not its display name or symbol.
@@ -1434,8 +1332,6 @@ function getCategoryPairs(){
   list=list.filter(p=>Number(p.priceChange?.h24)<0).sort((a,b)=>Number(a.priceChange.h24)-Number(b.priceChange.h24));
  }else if(currentCategory==="volume"){
   list.sort((a,b)=>Number(b.volume?.h24||0)-Number(a.volume?.h24||0));
- }else if(currentCategory==="favorites"){
-  list=list.filter(p=>favoriteMints.has(p.baseToken.address));
  }else{
   list.sort((a,b)=>Number(b.liquidity?.usd||0)-Number(a.liquidity?.usd||0));
  }
@@ -1489,20 +1385,6 @@ $("sortOptions").addEventListener("click",event=>{
  if($("search").value.trim())searchMarket();else renderMarket();
 });
 
-function toggleFavorite(mint){
- if(!valid(mint))return;
- if(favoriteMints.has(mint))favoriteMints.delete(mint);else favoriteMints.add(mint);
- writeLocalArray(QX_FAVORITES_KEY,[...favoriteMints]);
- updateFavoriteButton();
- if(currentCategory==="favorites")renderMarket();
-}
-function updateFavoriteButton(){
- const button=$("favoriteTokenBtn");if(!button||!selectedToken)return;
- const saved=favoriteMints.has(selectedToken.baseToken.address);
- button.textContent=saved?"â Remove from Favorites":"â Add to Favorites";
- button.setAttribute("aria-pressed",String(saved));
-}
-$("favoriteTokenBtn").addEventListener("click",()=>{if(selectedToken)toggleFavorite(selectedToken.baseToken.address);});
 function renderMarket(){
  let list=getCategoryPairs();
  const query=$("search").value.trim().toLowerCase();
@@ -1896,11 +1778,9 @@ async function executeQXSwap(){
   }
   const signature=result.signature;
   const completedOrder=submittedOrder;
-  recordQXTrade(completedOrder,signature,result.totalOutputAmount||result.outputAmountResult);
   $("qxFeeDisplay").textContent="1.00% | included in swap";
   $("swapReceive").textContent=displayRawAmount(result.totalOutputAmount||result.outputAmountResult,completedOrder.outputDecimals)+" "+completedOrder.outputSymbol;
   await loadPortfolio();
-  await loadWalletActivity();
   $("swapReceive").textContent=displayRawAmount(result.totalOutputAmount||result.outputAmountResult,completedOrder.outputDecimals)+" "+completedOrder.outputSymbol;
   $("swapStatus").innerHTML='Swap successful. <a class="detail-link" target="_blank" rel="noopener" href="https://solscan.io/tx/'+encodeURIComponent(signature)+'">View transaction on Solscan -></a>';
   $("confirmSwapBtn").textContent="Swap completed";
@@ -1967,72 +1847,9 @@ async function loadQXChart(pair,range){
 }
 $("chartRanges").addEventListener("click",e=>{const b=e.target.closest("[data-chart-range]");if(!b||!selectedToken?.pairAddress)return;activeChartRange=b.dataset.chartRange;loadQXChart(selectedToken.pairAddress,activeChartRange)});
 
-/* TOKEN DETAILS: links and public mint-account metadata */
-function renderTokenSocialLinks(token){
- const host=$("tokenSocialLinks");if(!host)return;
- const items=[];
- for(const site of token?.info?.websites||[]){if(site?.url)items.push({label:site.label||"Website",url:site.url});}
- for(const social of token?.info?.socials||[]){if(social?.url)items.push({label:social.type||social.platform||"Social",url:social.url});}
- const unique=new Set();
- host.innerHTML=items.filter(item=>{try{const u=new URL(item.url);if(u.protocol!=="https:"||unique.has(u.href))return false;unique.add(u.href);return true;}catch(_){return false;}}).slice(0,8).map(item=>`<a href="${escapeHTML(item.url)}" target="_blank" rel="noopener noreferrer">${escapeHTML(item.label)}</a>`).join("")||'<span class="small">No verified social links supplied by market data.</span>';
-}
-let qxSecurityRequest=0;
-async function loadTokenSecurity(mint){
- const request=++qxSecurityRequest;
- const status=$("tokenSecurityStatus");
- $("mintAuthorityValue").textContent="Checking...";$("freezeAuthorityValue").textContent="Checking...";$("tokenSupplyValue").textContent="Checking...";
- try{
-  const result=await rpc("getAccountInfo",[mint,{encoding:"jsonParsed",commitment:"confirmed"}]);
-  if(request!==qxSecurityRequest)return;
-  const info=result?.value?.data?.parsed?.info;
-  if(!info){status.textContent="Mint details unavailable";$("mintAuthorityValue").textContent="Not available";$("freezeAuthorityValue").textContent="Not available";$("tokenSupplyValue").textContent="Not available";return;}
-  $("mintAuthorityValue").textContent=info.mintAuthority?short(info.mintAuthority):"Revoked";
-  $("freezeAuthorityValue").textContent=info.freezeAuthority?short(info.freezeAuthority):"Revoked";
-  const supply=Number(info.supply||0)/Math.pow(10,Number(info.decimals||0));
-  $("tokenSupplyValue").textContent=supply.toLocaleString("en-US",{maximumFractionDigits:6})+" / "+Number(info.decimals||0)+" decimals";
-  status.textContent="On-chain mint data";
- }catch(error){if(request!==qxSecurityRequest)return;status.textContent="Mint data unavailable";$("mintAuthorityValue").textContent="Not available";$("freezeAuthorityValue").textContent="Not available";$("tokenSupplyValue").textContent="Not available";}
-}
-function renderPriceAlertList(){
- const host=$("priceAlertList");if(!host||!selectedToken)return;
- const mint=selectedToken.baseToken.address,items=priceAlerts.filter(a=>a.mint===mint);
- host.innerHTML=items.length?items.map(a=>`<div class="qx-alert-item"><span>${a.direction==="above"?"Above":"Below"} ${usd(a.target)}${a.triggered?" Â· Triggered":" Â· Active"}</span><button type="button" data-alert-id="${escapeHTML(a.id)}">Remove</button></div>`).join(""):'<span class="small">No alerts for this token.</span>';
- host.querySelectorAll("button[data-alert-id]").forEach(button=>button.addEventListener("click",()=>{priceAlerts=priceAlerts.filter(a=>a.id!==button.dataset.alertId);writeLocalArray(QX_ALERTS_KEY,priceAlerts);renderPriceAlertList();}));
-}
-function addSelectedPriceAlert(){
- if(!selectedToken)return;
- const target=Number($("priceAlertTarget").value),direction=$("priceAlertDirection").value;
- if(!Number.isFinite(target)||target<=0){$("swapStatus").textContent="Enter a valid USD target price for the alert.";return;}
- priceAlerts.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,7),mint:selectedToken.baseToken.address,symbol:selectedToken.baseToken.symbol||"TOKEN",direction,target,createdAt:Date.now(),triggered:false});
- writeLocalArray(QX_ALERTS_KEY,priceAlerts);$("priceAlertTarget").value="";renderPriceAlertList();
-}
-function evaluatePriceAlerts(){
- let changed=false;
- for(const alert of priceAlerts){
-  if(alert.triggered)continue;
-  const pair=allPairs.find(p=>p.baseToken?.address===alert.mint),price=Number(pair?.priceUsd||0);
-  if(!price)continue;
-  const hit=alert.direction==="above"?price>=alert.target:price<=alert.target;
-  if(hit){alert.triggered=true;alert.triggeredAt=Date.now();changed=true;
-   const message=(alert.symbol||"Token")+" reached "+usd(price);
-   if("Notification" in window&&Notification.permission==="granted")new Notification("QX price alert",{body:message});
-  }
- }
- if(changed){writeLocalArray(QX_ALERTS_KEY,priceAlerts);if(selectedToken)renderPriceAlertList();}
-}
-$("addPriceAlertBtn").addEventListener("click",addSelectedPriceAlert);
-$("enableBrowserAlertsBtn").addEventListener("click",async()=>{
- if(!("Notification" in window)){$("tokenSecurityStatus").textContent="Browser notifications are not supported.";return;}
- try{const permission=await Notification.requestPermission();$("tokenSecurityStatus").textContent=permission==="granted"?"Browser notifications enabled":"Notifications not enabled";}catch(_){$("tokenSecurityStatus").textContent="Could not enable notifications";}
-});
-
 /* TOKEN DETAILS + CHART */
 function refreshSelectedTokenDetails(token){
  const mint=token.baseToken.address;
- updateFavoriteButton();
- renderPriceAlertList();
- renderTokenSocialLinks(token);
- loadTokenSecurity(mint);
  $("detailName").textContent=token.baseToken.name||"Token";
  $("detailSymbol").textContent=token.baseToken.symbol||"";
  $("detailAddress").textContent=mint;
@@ -2090,7 +1907,6 @@ $("refreshBtn").onclick=async()=>{
 };
 
 updateSortUI();
-if(allPairs.length){$("marketStatus").textContent="Showing saved Solana markets while live data refreshes...";renderMarket();}
 changeTradeDirection("buy");
 updateTradePercentUI();
 loadSolPrice();
