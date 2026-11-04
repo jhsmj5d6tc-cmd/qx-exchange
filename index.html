@@ -1082,8 +1082,8 @@ function renderAssetRows(){
 const QX_AD_TREASURY="E4x2DiVVDuVQHSUGgzTPjJMDbiJ6jCRwpEvsvAd31Qs4";
 // Fill these two public Supabase values after creating the QX Ads backend.
 // Never place a Supabase service-role key or any private wallet key in this file.
-const QX_ADS_SUPABASE_URL="PASTE_YOUR_SUPABASE_PROJECT_URL_HERE";
-const QX_ADS_SUPABASE_ANON_KEY="PASTE_YOUR_SUPABASE_ANON_KEY_HERE";
+const QX_ADS_SUPABASE_URL="https://qkazosqvnmknnzkukggj.supabase.co";
+const QX_ADS_SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrYXpvc3F2bm1rbnprdWtnZ2oiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTc5MzYzODQ2MSwiZXhwIjoyMTA5MjE0NDYxfQ.HDZyq99QqTo6kFEm5msYF7CbTOj3QSQfW6PohVixpyg";
 const QX_AD_FUNCTION="qx-ads";
 const QX_AD_PACKAGES={1:{usd:49.99,label:"1 hour"},3:{usd:99.99,label:"3 hours"},9:{usd:179.99,label:"9 hours"},24:{usd:299.99,label:"24 hours"},72:{usd:599.99,label:"3 days"}};
 const adEl=id=>document.getElementById(id);
@@ -1139,7 +1139,7 @@ async function loadPublicAds(){
   if(!ads.length){host.innerHTML='<div class="ad-empty">'+qxLangText("No sponsored advertisements yet.","\u0644\u0627 \u062A\u0648\u062C\u062F \u0625\u0639\u0644\u0627\u0646\u0627\u062A \u0645\u0645\u0648\u0644\u0629 \u062D\u0627\u0644\u064A\u0627\u064B.")+'</div>';return;}
   host.innerHTML=ads.map(ad=>{
    const title=escapeHTML(ad.title||"Sponsored project"),body=escapeHTML(ad.body||""),url=safeAdUrl(ad.url),image=ad.image_url?safeAdUrl(ad.image_url):"";
-   return '<article class="ad-card">'+(image?'<img class="ad-image" src="'+escapeHTML(image)+'" alt="" loading="lazy" referrerpolicy="no-referrer">':'')+'<div class="ad-copy"><strong>'+title+'</strong><p>'+body+'</p><a href="'+escapeHTML(url)+'" target="_blank" rel="noopener noreferrer">Visit project \u2197</a></div></article>';
+   return '<article class="ad-card">'+(image?'<img class="ad-image" src="'+escapeHTML(image)+'" alt="" loading="lazy" referrerpolicy="no-referrer">':'')+'<div class="ad-copy"><strong>'+title+'</strong><p>'+body+'</p><a href="'+escapeHTML(url)+'" target="_blank" rel="noopener noreferrer">'+qxLangText("Visit project","زيارة المشروع")+' \u2197</a></div></article>';
   }).join("");
  }catch(e){console.warn("QX ads feed:",e);host.innerHTML='<div class="ad-empty">'+qxLangText("Advertisements are temporarily unavailable.","\u0627\u0644\u0625\u0639\u0644\u0627\u0646\u0627\u062A \u063A\u064A\u0631 \u0645\u062A\u0627\u062D\u0629 \u0645\u0624\u0642\u062A\u0627\u064B.")+'</div>';}
 }
@@ -1190,7 +1190,7 @@ async function payForAdvertisement(){
   await loadPublicAds();
   setTimeout(()=>adEl("adModalBackdrop").classList.remove("open"),1100);
  }catch(e){adEl("adStatus").textContent=e.message||qxLangText("Advertisement payment could not be completed.","\u062A\u0639\u0630\u0631 \u0625\u0643\u0645\u0627\u0644 \u062F\u0641\u0639 \u0627\u0644\u0625\u0639\u0644\u0627\u0646.");}
- finally{adBusy=false;adEl("adPayBtn").disabled=false;adEl("adPayBtn").textContent="PAY WITH CONNECTED WALLET";}
+ finally{adBusy=false;adEl("adPayBtn").disabled=false;adEl("adPayBtn").textContent=qxLangText("PAY WITH CONNECTED WALLET","ادفع بالمحفظة المتصلة");}
 }
 adEl("adPayBtn").addEventListener("click",payForAdvertisement);
 loadPublicAds();
