@@ -484,14 +484,14 @@ body.qx-token-open #getQuoteBtn{display:none!important}
 
 <div class="ad-modal-backdrop" id="adModalBackdrop" role="dialog" aria-modal="true" aria-labelledby="adModalTitle">
  <div class="ad-modal">
-  <div class="ad-modal-head"><h3 id="adModalTitle">Add advertisement</h3><button class="ad-close" id="adCloseBtn" type="button" aria-label="Close">ÃÂÃÂ</button></div>
+  <div class="ad-modal-head"><h3 id="adModalTitle">Add advertisement</h3><button class="ad-close" id="adCloseBtn" type="button" aria-label="Close">ÃÂÃÂÃÂÃÂ</button></div>
   <label class="ad-field" for="adDuration">Advertisement duration</label>
   <select id="adDuration">
-   <option value="1">1 hour ÃÂ¢ÃÂÃÂ $49.99</option>
-   <option value="3">3 hours ÃÂ¢ÃÂÃÂ $99.99</option>
-   <option value="9">9 hours ÃÂ¢ÃÂÃÂ $179.99</option>
-   <option value="24">24 hours ÃÂ¢ÃÂÃÂ $299.99</option>
-   <option value="72">3 days ÃÂ¢ÃÂÃÂ $599.99</option>
+   <option value="1">1 hour ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ $49.99</option>
+   <option value="3">3 hours ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ $99.99</option>
+   <option value="9">9 hours ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ $179.99</option>
+   <option value="24">24 hours ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ $299.99</option>
+   <option value="72">3 days ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ $599.99</option>
   </select>
   <div class="ad-price-line"><span>Total price</span><strong id="adUsdPrice">$49.99</strong></div>
   <div class="ad-price-line"><span>Estimated SOL payment</span><strong id="adSolPrice">Waiting for SOL price</strong></div>
@@ -651,18 +651,18 @@ function escapeHTML(v){
 }
 function repairMojibake(value){
  let text=String(value??"");
- if(!/(?:ÃÂÃÂ.|ÃÂÃÂ.|ÃÂÃÂ¢ÃÂ¢ÃÂÃÂ¬|ÃÂÃÂ°ÃÂÃÂ¸|ÃÂÃÂ.|ÃÂÃÂ.|ÃÂ¯ÃÂ¿ÃÂ½)/.test(text))return text;
+ if(!/(?:ÃÂÃÂÃÂÃÂ.|ÃÂÃÂÃÂÃÂ.|ÃÂÃÂÃÂÃÂ¢ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ¬|ÃÂÃÂÃÂÃÂ°ÃÂÃÂÃÂÃÂ¸|ÃÂÃÂÃÂÃÂ.|ÃÂÃÂÃÂÃÂ.|ÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½)/.test(text))return text;
  try{
   const values=[...text].map(ch=>ch.codePointAt(0));
   if(values.some(n=>n>255))return text;
   const repaired=new TextDecoder("utf-8",{fatal:false}).decode(new Uint8Array(values));
-  if(repaired && !repaired.includes("ÃÂ¯ÃÂ¿ÃÂ½") && repaired.length<=text.length+4)return repaired;
+  if(repaired && !repaired.includes("ÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½") && repaired.length<=text.length+4)return repaired;
  }catch(_){}
  return text;
 }
 function cleanTokenText(value,fallback="Unknown Token"){
  let text=repairMojibake(value).normalize("NFC").replace(/[\u0000-\u001F\u007F]/g,"").trim();
- if(!text||text.includes("ÃÂ¯ÃÂ¿ÃÂ½")||/(?:ÃÂÃÂ.|ÃÂÃÂ.|ÃÂÃÂ¢ÃÂ¢ÃÂÃÂ¬|ÃÂÃÂ°ÃÂÃÂ¸)/.test(text))return fallback;
+ if(!text||text.includes("ÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½")||/(?:ÃÂÃÂÃÂÃÂ.|ÃÂÃÂÃÂÃÂ.|ÃÂÃÂÃÂÃÂ¢ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ¬|ÃÂÃÂÃÂÃÂ°ÃÂÃÂÃÂÃÂ¸)/.test(text))return fallback;
  return text.slice(0,72);
 }
 async function getJSON(url){
@@ -962,7 +962,7 @@ function renderAssetRows(){
  }).join("");
 }
 
-/* PUBLIC ADVERTISEMENTS ÃÂ¢ÃÂÃÂ secure activation requires the QX Supabase Edge Function */
+/* PUBLIC ADVERTISEMENTS ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ secure activation requires the QX Supabase Edge Function */
 const QX_AD_TREASURY="E4x2DiVVDuVQHSUGgzTPjJMDbiJ6jCRwpEvsvAd31Qs4";
 // QX Ads public project settings. The legacy anon key is intentionally public; never use a service-role or secret key here.
 const QX_ADS_SUPABASE_URL="https://qkazosqvnmknnzkukggj.supabase.co";
@@ -1021,7 +1021,7 @@ async function loadPublicAds(){
   if(!ads.length){host.innerHTML='<div class="ad-empty">No sponsored advertisements yet.</div>';return;}
   host.innerHTML=ads.map(ad=>{
    const title=escapeHTML(ad.title||"Sponsored project"),body=escapeHTML(ad.body||""),url=safeAdUrl(ad.url),image=ad.image_url?safeAdUrl(ad.image_url):"";
-   return '<article class="ad-card">'+(image?'<img class="ad-image" src="'+escapeHTML(image)+'" alt="" loading="lazy" referrerpolicy="no-referrer">':'')+'<div class="ad-copy"><strong>'+title+'</strong><p>'+body+'</p><a href="'+escapeHTML(url)+'" target="_blank" rel="noopener noreferrer">Visit project ÃÂ¢ÃÂÃÂ</a></div></article>';
+   return '<article class="ad-card">'+(image?'<img class="ad-image" src="'+escapeHTML(image)+'" alt="" loading="lazy" referrerpolicy="no-referrer">':'')+'<div class="ad-copy"><strong>'+title+'</strong><p>'+body+'</p><a href="'+escapeHTML(url)+'" target="_blank" rel="noopener noreferrer">Visit project ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ</a></div></article>';
   }).join("");
  }catch(e){console.warn("QX ads feed:",e);host.innerHTML='<div class="ad-empty">Advertisements are temporarily unavailable.</div>';}
 }
@@ -1267,7 +1267,7 @@ function getTokenIdentityNotice(pair,universe){
  const symbol=normalizedTokenLabel(pair?.baseToken?.symbol);
  const isUsdcLike=name.includes("usd coin")||symbol==="usdc"||symbol==="erc20-usdc";
  if(mint===USDC)return {text:"Official USDC mint",verified:true};
- if(isUsdcLike)return {text:"USDC-like token ÃÂ· NOT official USDC ÃÂ· verify mint",verified:false};
+ if(isUsdcLike)return {text:"USDC-like token ÃÂÃÂ· NOT official USDC ÃÂÃÂ· verify mint",verified:false};
  const collision=(universe||[]).some(other=>{
   const otherMint=String(other?.baseToken?.address||"");
   if(!otherMint||otherMint===mint)return false;
@@ -1275,7 +1275,7 @@ function getTokenIdentityNotice(pair,universe){
   const otherSymbol=normalizedTokenLabel(other?.baseToken?.symbol);
   return (name&&otherName&&name===otherName)||(symbol&&otherSymbol&&symbol===otherSymbol);
  });
- if(collision)return {text:"Similar name or symbol ÃÂ· different mint",verified:false};
+ if(collision)return {text:"Similar name or symbol ÃÂÃÂ· different mint",verified:false};
  return null;
 }
 function tokenWarningHTML(pair,universe){
