@@ -25,9 +25,11 @@ header{display:flex;align-items:center;justify-content:space-between;padding:12p
 .logo span{color:var(--green)}
 .small{font-size:12px;color:var(--muted)}
 .qx-global-settings{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:wrap}
-.qx-global-settings select{width:auto;min-width:74px;padding:9px 7px;background:#140d27;color:#fff;border:1px solid var(--line);border-radius:9px;font-size:11px}
+.qx-global-settings select{width:auto;min-width:142px;max-width:100%;padding:10px 11px;background:#140d27;color:#fff;border:1px solid var(--line);border-radius:9px;font-size:13px;font-family:Arial,sans-serif;line-height:1.4;direction:ltr;text-align:left;unicode-bidi:plaintext;appearance:auto}
+.qx-global-settings select option{background:#140d27;color:#fff;font-size:14px}
+.qx-global-settings label{font-size:11px;white-space:nowrap}
 .qx-global-settings label{font-size:10px}
-@media(max-width:560px){header{align-items:flex-start;gap:10px;flex-wrap:wrap}.qx-global-settings{width:100%;justify-content:flex-start}.qx-global-settings label{display:none}.qx-global-settings select{flex:1;min-width:0}}
+@media(max-width:560px){header{align-items:flex-start;gap:10px;flex-wrap:wrap}.qx-global-settings{width:100%;justify-content:flex-start;gap:8px}.qx-global-settings label{display:block;flex:0 0 auto}.qx-global-settings select{flex:1 1 42%;min-width:125px;width:calc(50% - 8px);font-size:13px;padding:11px 8px}.qx-global-settings #connectBtn{flex:1 1 100%}}
 .btn{background:#241936;color:white;border:1px solid var(--line);padding:12px 15px;border-radius:10px}
 .primary{background:var(--green);color:#06150f;border:0;font-weight:bold}
 .panel{background:linear-gradient(160deg,rgba(26,19,42,.98),rgba(15,12,25,.98));border:1px solid var(--line);border-radius:17px;padding:16px;margin-bottom:16px;box-shadow:0 12px 34px rgba(0,0,0,.12)}
@@ -339,10 +341,10 @@ body.qx-token-open #getQuoteBtn{display:none!important}
   <span class="brand-copy"><span class="brand-name">QX <b>EXCHANGE</b></span><span class="brand-tagline">GLOBAL CRYPTO EXCHANGE</span></span>
  </a>
  <div class="qx-global-settings" aria-label="Global preferences">
-  <label class="small" for="qxLanguage">Language</label>
-  <select id="qxLanguage" aria-label="Language"><option value="en">English</option><option value="ar">Ø§ÙØ¹Ø±Ø¨ÙØ©</option></select>
-  <label class="small" for="qxCurrency">Currency</label>
-  <select id="qxCurrency" aria-label="Display currency"><option value="USD">USD $</option><option value="AED">AED Ø¯.Ø¥</option><option value="EUR">EUR â¬</option><option value="GBP">GBP Â£</option><option value="JPY">JPY Â¥</option></select>
+  <label class="small" for="qxLanguage">Language / اللغة</label>
+  <select id="qxLanguage" aria-label="Language / اللغة"><option value="en">English (EN)</option><option value="ar">العربية (AR)</option></select>
+  <label class="small" for="qxCurrency">Currency / العملة</label>
+  <select id="qxCurrency" aria-label="Display currency / العملة"><option value="USD">USD — US Dollar ($)</option><option value="AED">AED — UAE Dirham (د.إ)</option><option value="EUR">EUR — Euro (€)</option><option value="GBP">GBP — British Pound (£)</option><option value="JPY">JPY — Japanese Yen (¥)</option></select>
   <button class="btn primary" id="connectBtn" type="button">Connect Wallet</button>
  </div>
 </header>
@@ -493,14 +495,14 @@ body.qx-token-open #getQuoteBtn{display:none!important}
 
 <div class="ad-modal-backdrop" id="adModalBackdrop" role="dialog" aria-modal="true" aria-labelledby="adModalTitle">
  <div class="ad-modal">
-  <div class="ad-modal-head"><h3 id="adModalTitle">Add advertisement</h3><button class="ad-close" id="adCloseBtn" type="button" aria-label="Close">ÃÂÃÂ</button></div>
+  <div class="ad-modal-head"><h3 id="adModalTitle">Add advertisement</h3><button class="ad-close" id="adCloseBtn" type="button" aria-label="Close">×</button></div>
   <label class="ad-field" for="adDuration">Advertisement duration</label>
   <select id="adDuration">
-   <option value="1">1 hour ÃÂ¢ÃÂÃÂ $49.99</option>
-   <option value="3">3 hours ÃÂ¢ÃÂÃÂ $99.99</option>
-   <option value="9">9 hours ÃÂ¢ÃÂÃÂ $179.99</option>
-   <option value="24">24 hours ÃÂ¢ÃÂÃÂ $299.99</option>
-   <option value="72">3 days ÃÂ¢ÃÂÃÂ $599.99</option>
+   <option value="1">1 hour — $49.99</option>
+   <option value="3">3 hours — $99.99</option>
+   <option value="9">9 hours — $179.99</option>
+   <option value="24">24 hours — $299.99</option>
+   <option value="72">3 days — $599.99</option>
   </select>
   <div class="ad-price-line"><span>Total price</span><strong id="adUsdPrice">$49.99</strong></div>
   <div class="ad-price-line"><span>Estimated SOL payment</span><strong id="adSolPrice">Waiting for SOL price</strong></div>
@@ -642,13 +644,19 @@ let tradeBalanceLoading=false;
 let pendingSwapOrder=null,quoteBusy=false,swapBusy=false;
 
 let qxCurrency="USD",qxCurrencyRates={USD:1},qxLanguage="en";
-const qxCurrencySymbols={USD:"$",AED:"Ø¯.Ø¥",EUR:"â¬",GBP:"Â£",JPY:"Â¥"};
+const qxCurrencySymbols={USD:"$",AED:"د.إ",EUR:"€",GBP:"£",JPY:"¥"};
 function qxFormatMoney(value,compact=false){
  const n=Number(value);if(!Number.isFinite(n))return "-";
- const hasRate=Number.isFinite(Number(qxCurrencyRates[qxCurrency]));const rate=hasRate?Number(qxCurrencyRates[qxCurrency]):1,converted=n*rate;
- const digits=compact?2:(Math.abs(converted)<0.01?6:2);
- const formatted=compact&&Math.abs(converted)>=1e9?(converted/1e9).toFixed(2)+"B":compact&&Math.abs(converted)>=1e6?(converted/1e6).toFixed(2)+"M":compact&&Math.abs(converted)>=1e3?(converted/1e3).toFixed(2)+"K":converted.toLocaleString("en-US",{maximumFractionDigits:digits});
- return (hasRate?qxCurrencySymbols[qxCurrency]:"$")+formatted+(hasRate?"":" USD");
+ const rate=Number(qxCurrencyRates[qxCurrency]);
+ const converted=n*(Number.isFinite(rate)&&rate>0?rate:1);
+ const abs=Math.abs(converted);
+ const compactValue=compact&&abs>=1e9?converted/1e9:compact&&abs>=1e6?converted/1e6:compact&&abs>=1e3?converted/1e3:converted;
+ const suffix=compact&&abs>=1e9?"B":compact&&abs>=1e6?"M":compact&&abs>=1e3?"K":"";
+ const locale=qxLanguage==="ar"?"ar": "en";
+ try{
+  const formatted=new Intl.NumberFormat(locale,{style:"currency",currency:qxCurrency,minimumFractionDigits:compact?2:(Math.abs(compactValue)<0.01?4:2),maximumFractionDigits:compact?2:(Math.abs(compactValue)<0.01?6:2)}).format(compactValue);
+  return formatted+suffix;
+ }catch(_){return (qxCurrencySymbols[qxCurrency]||"$")+compactValue.toLocaleString(locale,{maximumFractionDigits:2})+suffix;}
 }
 async function qxLoadCurrencyRates(){
  try{const response=await fetch("https://open.er-api.com/v6/latest/USD");if(!response.ok)throw Error("rate unavailable");const data=await response.json();if(data.result==="success"&&data.rates){qxCurrencyRates={...qxCurrencyRates,...data.rates};qxCurrencyRates.USD=1;}}
@@ -656,12 +664,12 @@ async function qxLoadCurrencyRates(){
 }
 function qxApplyLanguage(){
  const ar=qxLanguage==="ar";document.documentElement.lang=ar?"ar":"en";document.documentElement.dir=ar?"rtl":"ltr";
- const labels=ar?{connect:"Ø±Ø¨Ø· Ø§ÙÙØ­ÙØ¸Ø©",wallet:"Ø§ÙÙØ­ÙØ¸Ø©",assets:"Ø£ØµÙÙÙ",create:"Ø¥ÙØ´Ø§Ø¡ Ø¹ÙÙØ©",markets:"Ø£Ø³ÙØ§Ù Ø³ÙÙØ§ÙØ§",search:"Ø¨Ø­Ø«",sponsored:"Ø¥Ø¹ÙØ§ÙØ§Øª ÙÙÙÙØ©",language:"Ø§ÙÙØºØ©",currency:"Ø§ÙØ¹ÙÙØ©"}:{connect:"Connect Wallet",wallet:"Wallet",assets:"My Assets",create:"Create Token",markets:"Solana Markets",search:"Search",sponsored:"Sponsored",language:"Language",currency:"Currency"};
+ const labels=ar?{connect:"ربط المحفظة",wallet:"المحفظة",assets:"أصولي",create:"إنشاء عملة",markets:"أسواق سولانا",search:"بحث",sponsored:"إعلانات ممولة",language:"اللغة",currency:"العملة"}:{connect:"Connect Wallet",wallet:"Wallet",assets:"My Assets",create:"Create Token",markets:"Solana Markets",search:"Search",sponsored:"Sponsored",language:"Language",currency:"Currency"};
  const connect=document.getElementById("connectBtn");if(connect&&!document.body.classList.contains("qx-wallet-active"))connect.textContent=labels.connect;
  const walletTitle=document.querySelector("#walletPage .market-heading h2");if(walletTitle)walletTitle.textContent=labels.assets;
  const createTitle=document.querySelector("#createPage .market-heading h2");if(createTitle)createTitle.textContent=labels.create;
  const marketTitle=document.querySelector("#marketsPage > .market-heading h2");if(marketTitle)marketTitle.textContent=labels.markets;
- const search=document.getElementById("search");if(search)search.placeholder=ar?"Ø§Ø¨Ø­Ø« Ø¨Ø§ÙØ§Ø³Ù Ø£Ù Ø§ÙØ±ÙØ² Ø£Ù Ø¹ÙÙØ§Ù Ø§ÙØ¹ÙØ¯":"Search name, symbol or contract";
+ const search=document.getElementById("search");if(search)search.placeholder=ar?"ابحث بالاسم أو الرمز أو عنوان العقد":"Search name, symbol or contract";
  const sponsored=document.querySelector(".ads-title");if(sponsored)sponsored.textContent=labels.sponsored;
  document.querySelectorAll(".qx-global-settings label").forEach((el,i)=>el.textContent=i===0?labels.language:labels.currency);
 }
@@ -687,18 +695,18 @@ function escapeHTML(v){
 }
 function repairMojibake(value){
  let text=String(value??"");
- if(!/(?:ÃÂÃÂ.|ÃÂÃÂ.|ÃÂÃÂ¢ÃÂ¢ÃÂÃÂ¬|ÃÂÃÂ°ÃÂÃÂ¸|ÃÂÃÂ.|ÃÂÃÂ.|ÃÂ¯ÃÂ¿ÃÂ½)/.test(text))return text;
+ if(!/(?:ÃÂ.|ÃÂ.|ÃÂ¢Ã¢ÂÂ¬|ÃÂ°ÃÂ¸|ÃÂ.|ÃÂ.|Ã¯Â¿Â½)/.test(text))return text;
  try{
   const values=[...text].map(ch=>ch.codePointAt(0));
   if(values.some(n=>n>255))return text;
   const repaired=new TextDecoder("utf-8",{fatal:false}).decode(new Uint8Array(values));
-  if(repaired && !repaired.includes("ÃÂ¯ÃÂ¿ÃÂ½") && repaired.length<=text.length+4)return repaired;
+  if(repaired && !repaired.includes("Ã¯Â¿Â½") && repaired.length<=text.length+4)return repaired;
  }catch(_){}
  return text;
 }
 function cleanTokenText(value,fallback="Unknown Token"){
  let text=repairMojibake(value).normalize("NFC").replace(/[\u0000-\u001F\u007F]/g,"").trim();
- if(!text||text.includes("ÃÂ¯ÃÂ¿ÃÂ½")||/(?:ÃÂÃÂ.|ÃÂÃÂ.|ÃÂÃÂ¢ÃÂ¢ÃÂÃÂ¬|ÃÂÃÂ°ÃÂÃÂ¸)/.test(text))return fallback;
+ if(!text||text.includes("Ã¯Â¿Â½")||/(?:ÃÂ.|ÃÂ.|ÃÂ¢Ã¢ÂÂ¬|ÃÂ°ÃÂ¸)/.test(text))return fallback;
  return text.slice(0,72);
 }
 async function getJSON(url){
@@ -998,7 +1006,7 @@ function renderAssetRows(){
  }).join("");
 }
 
-/* PUBLIC ADVERTISEMENTS ÃÂ¢ÃÂÃÂ secure activation requires the QX Supabase Edge Function */
+/* PUBLIC ADVERTISEMENTS — secure activation requires the QX Supabase Edge Function */
 const QX_AD_TREASURY="E4x2DiVVDuVQHSUGgzTPjJMDbiJ6jCRwpEvsvAd31Qs4";
 // Fill these two public Supabase values after creating the QX Ads backend.
 // Never place a Supabase service-role key or any private wallet key in this file.
@@ -1058,7 +1066,7 @@ async function loadPublicAds(){
   if(!ads.length){host.innerHTML='<div class="ad-empty">No sponsored advertisements yet.</div>';return;}
   host.innerHTML=ads.map(ad=>{
    const title=escapeHTML(ad.title||"Sponsored project"),body=escapeHTML(ad.body||""),url=safeAdUrl(ad.url),image=ad.image_url?safeAdUrl(ad.image_url):"";
-   return '<article class="ad-card">'+(image?'<img class="ad-image" src="'+escapeHTML(image)+'" alt="" loading="lazy" referrerpolicy="no-referrer">':'')+'<div class="ad-copy"><strong>'+title+'</strong><p>'+body+'</p><a href="'+escapeHTML(url)+'" target="_blank" rel="noopener noreferrer">Visit project ÃÂ¢ÃÂÃÂ</a></div></article>';
+   return '<article class="ad-card">'+(image?'<img class="ad-image" src="'+escapeHTML(image)+'" alt="" loading="lazy" referrerpolicy="no-referrer">':'')+'<div class="ad-copy"><strong>'+title+'</strong><p>'+body+'</p><a href="'+escapeHTML(url)+'" target="_blank" rel="noopener noreferrer">Visit project ↗</a></div></article>';
   }).join("");
  }catch(e){console.warn("QX ads feed:",e);host.innerHTML='<div class="ad-empty">Advertisements are temporarily unavailable.</div>';}
 }
@@ -1302,7 +1310,7 @@ function getTokenIdentityNotice(pair,universe){
  const symbol=normalizedTokenLabel(pair?.baseToken?.symbol);
  const isUsdcLike=name.includes("usd coin")||symbol==="usdc"||symbol==="erc20-usdc";
  if(mint===USDC)return {text:"Official USDC mint",verified:true};
- if(isUsdcLike)return {text:"USDC-like token ÃÂ· NOT official USDC ÃÂ· verify mint",verified:false};
+ if(isUsdcLike)return {text:"USDC-like token · NOT official USDC · verify mint",verified:false};
  const collision=(universe||[]).some(other=>{
   const otherMint=String(other?.baseToken?.address||"");
   if(!otherMint||otherMint===mint)return false;
@@ -1310,7 +1318,7 @@ function getTokenIdentityNotice(pair,universe){
   const otherSymbol=normalizedTokenLabel(other?.baseToken?.symbol);
   return (name&&otherName&&name===otherName)||(symbol&&otherSymbol&&symbol===otherSymbol);
  });
- if(collision)return {text:"Similar name or symbol ÃÂ· different mint",verified:false};
+ if(collision)return {text:"Similar name or symbol · different mint",verified:false};
  return null;
 }
 function tokenWarningHTML(pair,universe){
