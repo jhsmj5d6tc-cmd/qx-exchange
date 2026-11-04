@@ -340,10 +340,10 @@ body.qx-token-open #getQuoteBtn{display:none!important}
   <span class="brand-copy"><span class="brand-name">QX <b>EXCHANGE</b></span><span class="brand-tagline">GLOBAL CRYPTO EXCHANGE</span></span>
  </a>
  <div class="qx-global-settings" aria-label="Global preferences">
-  <label class="small" for="qxLanguage">Language / Ø§ÙÙØºØ©</label>
-  <select id="qxLanguage" aria-label="Language / Ø§ÙÙØºØ©"><option value="en">English (EN)</option><option value="ar">Ø§ÙØ¹Ø±Ø¨ÙØ© (AR)</option></select>
-  <label class="small" for="qxCurrency">Currency / Ø§ÙØ¹ÙÙØ©</label>
-  <select id="qxCurrency" aria-label="Display currency / Ø§ÙØ¹ÙÙØ©"><option value="USD">USD â US Dollar ($)</option><option value="AED">AED â UAE Dirham (Ø¯.Ø¥)</option><option value="EUR">EUR â Euro (â¬)</option><option value="GBP">GBP â British Pound (Â£)</option><option value="JPY">JPY â Japanese Yen (Â¥)</option></select>
+  <label class="small" for="qxLanguage">Language / &#x627;&#x644;&#x644;&#x63A;&#x629;</label>
+  <select id="qxLanguage" aria-label="Language / &#x627;&#x644;&#x644;&#x63A;&#x629;"><option value="en">English (EN)</option><option value="ar">&#x627;&#x644;&#x639;&#x631;&#x628;&#x64A;&#x629; (AR)</option></select>
+  <label class="small" for="qxCurrency">Currency / &#x627;&#x644;&#x639;&#x645;&#x644;&#x629;</label>
+  <select id="qxCurrency" aria-label="Display currency / &#x627;&#x644;&#x639;&#x645;&#x644;&#x629;"><option value="USD">USD &#x2014; US Dollar ($)</option><option value="AED">AED &#x2014; UAE Dirham (&#x62F;.&#x625;)</option><option value="EUR">EUR &#x2014; Euro (&#x20AC;)</option><option value="GBP">GBP &#x2014; British Pound (&#xA3;)</option><option value="JPY">JPY &#x2014; Japanese Yen (&#xA5;)</option></select>
   <button class="btn primary" id="connectBtn" type="button">Connect Wallet</button>
  </div>
 </header>
@@ -498,14 +498,14 @@ body.qx-token-open #getQuoteBtn{display:none!important}
 
 <div class="ad-modal-backdrop" id="adModalBackdrop" role="dialog" aria-modal="true" aria-labelledby="adModalTitle">
  <div class="ad-modal">
-  <div class="ad-modal-head"><h3 id="adModalTitle">Add advertisement</h3><button class="ad-close" id="adCloseBtn" type="button" aria-label="Close">Ã</button></div>
+  <div class="ad-modal-head"><h3 id="adModalTitle">Add advertisement</h3><button class="ad-close" id="adCloseBtn" type="button" aria-label="Close">&#xD7;</button></div>
   <label class="ad-field" for="adDuration">Advertisement duration</label>
   <select id="adDuration">
-   <option value="1">1 hour â $49.99</option>
-   <option value="3">3 hours â $99.99</option>
-   <option value="9">9 hours â $179.99</option>
-   <option value="24">24 hours â $299.99</option>
-   <option value="72">3 days â $599.99</option>
+   <option value="1">1 hour &#x2014; $49.99</option>
+   <option value="3">3 hours &#x2014; $99.99</option>
+   <option value="9">9 hours &#x2014; $179.99</option>
+   <option value="24">24 hours &#x2014; $299.99</option>
+   <option value="72">3 days &#x2014; $599.99</option>
   </select>
   <div class="ad-price-line"><span>Total price</span><strong id="adUsdPrice">$49.99</strong></div>
   <div class="ad-price-line"><span>Estimated SOL payment</span><strong id="adSolPrice">Waiting for SOL price</strong></div>
@@ -650,7 +650,7 @@ let tradeBalanceLoading=false;
 let pendingSwapOrder=null,quoteBusy=false,swapBusy=false;
 
 let qxCurrency="USD",qxCurrencyRates={USD:1},qxLanguage="en";
-const qxCurrencySymbols={USD:"$",AED:"Ø¯.Ø¥",EUR:"â¬",GBP:"Â£",JPY:"Â¥"};
+const qxCurrencySymbols={USD:"$",AED:"\u062F.\u0625",EUR:"\u20AC",GBP:"\u00A3",JPY:"\u00A5"};
 function qxFormatMoney(value,compact=false){
  const n=Number(value);if(!Number.isFinite(n))return "-";
  const rate=Number(qxCurrencyRates[qxCurrency]);
@@ -676,27 +676,27 @@ function qxApplyLanguage(){
  const ph=(id,en,arabic)=>{const el=$(id);if(el)el.placeholder=ar?arabic:en;};
  const attr=(selector,name,en,arabic)=>{document.querySelectorAll(selector).forEach(el=>el.setAttribute(name,ar?arabic:en));};
  const L=ar?{
-  connect:"Ø±Ø¨Ø· Ø§ÙÙØ­ÙØ¸Ø©",wallet:"Ø§ÙÙØ­ÙØ¸Ø©",create:"Ø¥ÙØ´Ø§Ø¡ Ø¹ÙÙØ©",markets:"Ø§ÙØ£Ø³ÙØ§Ù",ads:"Ø§ÙØ¥Ø¹ÙØ§ÙØ§Øª",
-  assets:"Ø£ØµÙÙÙ",portfolio:"Ø¥Ø¬ÙØ§ÙÙ ÙÙÙØ© Ø§ÙÙØ­ÙØ¸Ø© | ØªÙØ¯ÙØ± Ø¨Ø§ÙØ¯ÙÙØ§Ø±",liveBalance:"Ø§ÙØ±ØµÙØ¯ Ø§ÙÙØ¨Ø§Ø´Ø±",refresh:"ØªØ­Ø¯ÙØ«",onchain:"Ø¹ÙÙ Ø§ÙØ´Ø¨ÙØ©",asset:"Ø§ÙØ£ØµÙ",balance:"Ø§ÙØ±ØµÙØ¯",value:"Ø§ÙÙÙÙØ©",connectAssets:"Ø§Ø±Ø¨Ø· ÙØ­ÙØ¸ØªÙ ÙØ¹Ø±Ø¶ Ø§ÙØ£ØµÙÙ.",
-  createTitle:"Ø£ÙØ´Ø¦ Ø¹ÙÙØªÙ",launch:"Ø¥Ø·ÙØ§Ù Ø¹ÙÙØ© SPL",createDesc:"Ø£ÙØ´Ø¦ Ø§ÙØ¹ÙÙØ© ÙØ§ÙÙÙÙØ© Ø§ÙØ£ÙÙÙØ© ÙØ¨Ø§Ø´Ø±Ø© ÙÙ ÙØ­ÙØ¸Ø© Ø³ÙÙØ§ÙØ§ Ø§ÙÙØªØµÙØ©. Ø³ØªØ·ÙØ¨ ÙÙÙ Ø§ÙÙØ­ÙØ¸Ø© Ø§ÙÙÙØ§ÙÙØ© Ø¹ÙÙ Ø§ÙÙØ¹Ø§ÙÙØ©.",tokenName:"Ø§Ø³Ù Ø§ÙØ¹ÙÙØ©",symbol:"Ø§ÙØ±ÙØ²",supply:"Ø§ÙÙÙÙØ© Ø§ÙØ£ÙÙÙØ©",decimals:"Ø§ÙØ®Ø§ÙØ§Øª Ø§ÙØ¹Ø´Ø±ÙØ©",createButton:"Ø§Ø±Ø¨Ø· Ø§ÙÙØ­ÙØ¸Ø© ÙØ£ÙØ´Ø¦ Ø§ÙØ¹ÙÙØ©",createHint:"Ø§Ø±Ø¨Ø· ÙØ­ÙØ¸ØªÙ Ø£ÙÙØ§Ù. ØªÙØ¯ÙØ¹ Ø±Ø³ÙÙ Ø§ÙØ´Ø¨ÙØ© ÙØ­Ø¬Ø² Ø­Ø³Ø§Ø¨ Ø§ÙØ¥ØµØ¯Ø§Ø± Ø¨Ø¹ÙÙØ© SOL.",created:"ØªÙ Ø¥ÙØ´Ø§Ø¡ Ø§ÙØ¹ÙÙØ©",viewTx:"Ø¹Ø±Ø¶ Ø§ÙÙØ¹Ø§ÙÙØ© Ø¹ÙÙ Solscan",createNote:"ÙÙØ§Ø­Ø¸Ø©: ÙØ°Ø§ Ø§ÙØ¥Ø¬Ø±Ø§Ø¡ ÙÙØ´Ø¦ Ø¥ØµØ¯Ø§Ø± SPL ÙØ§ÙÙÙÙØ© Ø§ÙØ£ÙÙÙØ© Ø¹ÙÙ Ø§ÙØ´Ø¨ÙØ©. ÙØ´Ø± Ø§ÙØ§Ø³Ù ÙØ§ÙØ±ÙØ² ÙØ§ÙØ´Ø¹Ø§Ø± ÙÙ Ø¯ÙÙÙ Ø¹Ø§ÙÙÙ ÙØªØ·ÙØ¨ Ø®Ø¯ÙØ© Ø¨ÙØ§ÙØ§Øª ÙØµÙÙØ© ÙÙÙØ±Ø³Ø©.",
-  marketTitle:"Ø£Ø³ÙØ§Ù Ø³ÙÙØ§ÙØ§",liveMarket:"Ø§ÙØ³ÙÙ Ø§ÙÙØ¨Ø§Ø´Ø±",all:"ÙÙ Ø§ÙØ¹ÙÙØ§Øª",new:"Ø¹ÙÙØ§Øª Ø¬Ø¯ÙØ¯Ø©",gainers:"Ø§ÙØ£Ø¹ÙÙ Ø§Ø±ØªÙØ§Ø¹Ø§Ù",losers:"Ø§ÙØ£Ø¹ÙÙ Ø§ÙØ®ÙØ§Ø¶Ø§Ù",trending:"Ø§ÙØ±Ø§Ø¦Ø¬Ø©",volume:"Ø§ÙØ£Ø¹ÙÙ ØªØ¯Ø§ÙÙØ§Ù",search:"Ø¨Ø­Ø«",searchPlaceholder:"Ø§Ø¨Ø­Ø« Ø¨Ø§ÙØ§Ø³Ù Ø£Ù Ø§ÙØ±ÙØ² Ø£Ù Ø¹ÙÙØ§Ù Ø§ÙØ¹ÙØ¯",allSol:"ÙÙ Ø¹ÙÙØ§Øª Ø³ÙÙØ§ÙØ§",loading:"Ø¬Ø§Ø±Ù Ø§ÙØªØ­ÙÙÙ...",sort:"ØªØ±ØªÙØ¨ Ø§ÙØ³ÙÙ",defaultSort:"Ø§ÙØªØ±ØªÙØ¨ Ø§ÙØ§ÙØªØ±Ø§Ø¶Ù",price:"Ø§ÙØ³Ø¹Ø±",change:"Ø§ÙØªØºÙØ±",marketCap:"Ø§ÙÙÙÙØ© Ø§ÙØ³ÙÙÙØ©",liquidity:"Ø§ÙØ³ÙÙÙØ©",token:"Ø§ÙØ¹ÙÙØ©",priceUsd:"Ø§ÙØ³Ø¹Ø±",day:"24 Ø³Ø§Ø¹Ø©",marketLoading:"Ø¬Ø§Ø±Ù ØªØ­ÙÙÙ Ø§ÙØ³ÙÙ...",marketConnecting:"Ø¬Ø§Ø±Ù Ø§ÙØ§ØªØµØ§Ù Ø¨Ø¨ÙØ§ÙØ§Øª Ø§ÙØ³ÙÙ Ø§ÙÙØ¨Ø§Ø´Ø±Ø©...",holdersNote:"ÙØªØ·ÙØ¨ Ø¹Ø±Ø¶ Ø¹Ø¯Ø¯ Ø§ÙÙØ§ÙÙÙÙ Ø±Ø¨Ø· Ø®Ø¯ÙØ© ÙÙØ±Ø³Ø© ÙØªØ®ØµØµØ© ÙØ´Ø¨ÙØ© Ø³ÙÙØ§ÙØ§. ÙØ§ ØªØ¹Ø±Ø¶ QX Ø£Ø±ÙØ§ÙØ§Ù ØªÙØ¯ÙØ±ÙØ© Ø£Ù ØºÙØ± Ø­ÙÙÙÙØ©.",
-  adsTitle:"Ø§ÙØ¥Ø¹ÙØ§ÙØ§Øª",sponsored:"Ø¥Ø¹ÙØ§ÙØ§Øª ÙÙÙÙØ©",featured:"ÙØ´Ø§Ø±ÙØ¹ ÙÙÙØ²Ø©",addAd:"+ Ø£Ø¶Ù Ø¥Ø¹ÙØ§ÙØ§Ù",noAds:"ÙØ§ ØªÙØ¬Ø¯ Ø¥Ø¹ÙØ§ÙØ§Øª ÙÙÙÙØ© Ø­Ø§ÙÙØ§Ù.",adsHelp:"Ø±ÙÙØ¬ ÙÙØ´Ø±ÙØ¹Ù Ø£ÙØ§Ù ÙØ¬ØªÙØ¹ QX.",
-  backMarkets:"Ø§ÙØ¹ÙØ¯Ø© Ø¥ÙÙ Ø§ÙØ£Ø³ÙØ§Ù",marketCapFdv:"Ø§ÙÙÙÙØ© Ø§ÙØ³ÙÙÙØ© / Ø§ÙØªÙÙÙÙ Ø§ÙÙØ®ÙÙ",transactions:"ÙØ¹Ø§ÙÙØ§Øª 24 Ø³Ø§Ø¹Ø©",holders:"Ø§ÙÙØ§ÙÙÙÙ",indexer:"ÙØªØ·ÙØ¨ ÙÙÙØ±Ø³ Ø¨ÙØ§ÙØ§Øª",chart:"Ø§ÙØ±Ø³Ù Ø§ÙØ¨ÙØ§ÙÙ Ø§ÙÙØ¨Ø§Ø´Ø± ÙÙ QX",solscan:"Ø¹Ø±Ø¶ Ø§ÙØ¹ÙØ¯ Ø¹ÙÙ Solscan",buy:"Ø´Ø±Ø§Ø¡",sell:"Ø¨ÙØ¹",youPay:"Ø£ÙØª ØªØ¯ÙØ¹",receive:"Ø§ÙÙÙÙØ© Ø§ÙÙØªÙÙØ¹Ø©",fee:"Ø¹ÙÙÙØ© QX",route:"ÙØ³Ø§Ø± Ø§ÙØªØ¯Ø§ÙÙ",notConnected:"ØºÙØ± ÙØªØµÙ",bestPrice:"Ø£ÙØ¶Ù Ø³Ø¹Ø±",getQuote:"Ø§Ø­ØµÙ Ø¹ÙÙ Ø£ÙØ¶Ù Ø³Ø¹Ø±",confirm:"ØªØ£ÙÙØ¯ Ø§ÙÙØ¨Ø§Ø¯ÙØ©",feeNote:"Ø±Ø³ÙÙ QX: â1% Ø¹ÙÙ ÙÙ Ø¹ÙÙÙØ© ÙØ¨Ø§Ø¯ÙØ© ÙÙØªÙÙØ©. ÙØ¬Ø¨ Ø£Ù ÙØ¤ÙØ¯ Ø¹Ø±Ø¶ Ø§ÙØ³Ø¹Ø± Ø§ÙÙØ¨Ø§Ø´Ø± Ø§ÙØ±Ø³ÙÙ ÙØ§ÙÙØ© ÙØ¨Ù ØªÙÙÙØ¹ Ø§ÙÙØ­ÙØ¸Ø©. ÙØ§ ØªÙÙØ±Ø¶ Ø±Ø³ÙÙ Ø¥Ø°Ø§ ÙÙ ØªÙØªÙÙ Ø§ÙØ¹ÙÙÙØ©.",
-  adDuration:"ÙØ¯Ø© Ø§ÙØ¥Ø¹ÙØ§Ù",totalPrice:"Ø§ÙØ³Ø¹Ø± Ø§ÙØ¥Ø¬ÙØ§ÙÙ",solPayment:"Ø§ÙØ¯ÙØ¹ Ø§ÙØªÙØ¯ÙØ±Ù Ø¨Ø¹ÙÙØ© SOL",adHeadline:"Ø¹ÙÙØ§Ù Ø§ÙØ¥Ø¹ÙØ§Ù",adText:"Ø§ÙØªØ¨ ÙØµ Ø§ÙØ¥Ø¹ÙØ§Ù",adLink:"Ø±Ø§Ø¨Ø· Ø§ÙÙÙÙØ¹ Ø£Ù Ø§ÙÙØ´Ø±ÙØ¹",adImage:"Ø±Ø§Ø¨Ø· Ø§ÙØµÙØ±Ø© (Ø§Ø®ØªÙØ§Ø±Ù)",adNote:"Ø³ÙÙØ·ÙØ¨ Ø§ÙØ¯ÙØ¹ ÙÙ Ø§ÙÙØ­ÙØ¸Ø© Ø§ÙÙØªØµÙØ© Ø¨Ù QX. ÙÙ ÙÙÙØ´Ø± Ø§ÙØ¥Ø¹ÙØ§Ù Ø¥ÙØ§ Ø¨Ø¹Ø¯ Ø£Ù ØªØªØ­ÙÙ QX ÙÙ Ø§ÙØ¯ÙØ¹.",payAd:"Ø§Ø¯ÙØ¹ Ø¨Ø§ÙÙØ­ÙØ¸Ø© Ø§ÙÙØªØµÙØ©",close:"Ø¥ØºÙØ§Ù",language:"Ø§ÙÙØºØ©",currency:"Ø§ÙØ¹ÙÙØ©"
+  connect:"\u0631\u0628\u0637 \u0627\u0644\u0645\u062D\u0641\u0638\u0629",wallet:"\u0627\u0644\u0645\u062D\u0641\u0638\u0629",create:"\u0625\u0646\u0634\u0627\u0621 \u0639\u0645\u0644\u0629",markets:"\u0627\u0644\u0623\u0633\u0648\u0627\u0642",ads:"\u0627\u0644\u0625\u0639\u0644\u0627\u0646\u0627\u062A",
+  assets:"\u0623\u0635\u0648\u0644\u064A",portfolio:"\u0625\u062C\u0645\u0627\u0644\u064A \u0642\u064A\u0645\u0629 \u0627\u0644\u0645\u062D\u0641\u0638\u0629 | \u062A\u0642\u062F\u064A\u0631 \u0628\u0627\u0644\u062F\u0648\u0644\u0627\u0631",liveBalance:"\u0627\u0644\u0631\u0635\u064A\u062F \u0627\u0644\u0645\u0628\u0627\u0634\u0631",refresh:"\u062A\u062D\u062F\u064A\u062B",onchain:"\u0639\u0644\u0649 \u0627\u0644\u0634\u0628\u0643\u0629",asset:"\u0627\u0644\u0623\u0635\u0644",balance:"\u0627\u0644\u0631\u0635\u064A\u062F",value:"\u0627\u0644\u0642\u064A\u0645\u0629",connectAssets:"\u0627\u0631\u0628\u0637 \u0645\u062D\u0641\u0638\u062A\u0643 \u0644\u0639\u0631\u0636 \u0627\u0644\u0623\u0635\u0648\u0644.",
+  createTitle:"\u0623\u0646\u0634\u0626 \u0639\u0645\u0644\u062A\u0643",launch:"\u0625\u0637\u0644\u0627\u0642 \u0639\u0645\u0644\u0629 SPL",createDesc:"\u0623\u0646\u0634\u0626 \u0627\u0644\u0639\u0645\u0644\u0629 \u0648\u0627\u0644\u0643\u0645\u064A\u0629 \u0627\u0644\u0623\u0648\u0644\u064A\u0629 \u0645\u0628\u0627\u0634\u0631\u0629 \u0645\u0646 \u0645\u062D\u0641\u0638\u0629 \u0633\u0648\u0644\u0627\u0646\u0627 \u0627\u0644\u0645\u062A\u0635\u0644\u0629. \u0633\u062A\u0637\u0644\u0628 \u0645\u0646\u0643 \u0627\u0644\u0645\u062D\u0641\u0638\u0629 \u0627\u0644\u0645\u0648\u0627\u0641\u0642\u0629 \u0639\u0644\u0649 \u0627\u0644\u0645\u0639\u0627\u0645\u0644\u0629.",tokenName:"\u0627\u0633\u0645 \u0627\u0644\u0639\u0645\u0644\u0629",symbol:"\u0627\u0644\u0631\u0645\u0632",supply:"\u0627\u0644\u0643\u0645\u064A\u0629 \u0627\u0644\u0623\u0648\u0644\u064A\u0629",decimals:"\u0627\u0644\u062E\u0627\u0646\u0627\u062A \u0627\u0644\u0639\u0634\u0631\u064A\u0629",createButton:"\u0627\u0631\u0628\u0637 \u0627\u0644\u0645\u062D\u0641\u0638\u0629 \u0648\u0623\u0646\u0634\u0626 \u0627\u0644\u0639\u0645\u0644\u0629",createHint:"\u0627\u0631\u0628\u0637 \u0645\u062D\u0641\u0638\u062A\u0643 \u0623\u0648\u0644\u0627\u064B. \u062A\u064F\u062F\u0641\u0639 \u0631\u0633\u0648\u0645 \u0627\u0644\u0634\u0628\u0643\u0629 \u0648\u062D\u062C\u0632 \u062D\u0633\u0627\u0628 \u0627\u0644\u0625\u0635\u062F\u0627\u0631 \u0628\u0639\u0645\u0644\u0629 SOL.",created:"\u062A\u0645 \u0625\u0646\u0634\u0627\u0621 \u0627\u0644\u0639\u0645\u0644\u0629",viewTx:"\u0639\u0631\u0636 \u0627\u0644\u0645\u0639\u0627\u0645\u0644\u0629 \u0639\u0644\u0649 Solscan",createNote:"\u0645\u0644\u0627\u062D\u0638\u0629: \u0647\u0630\u0627 \u0627\u0644\u0625\u062C\u0631\u0627\u0621 \u064A\u0646\u0634\u0626 \u0625\u0635\u062F\u0627\u0631 SPL \u0648\u0627\u0644\u0643\u0645\u064A\u0629 \u0627\u0644\u0623\u0648\u0644\u064A\u0629 \u0639\u0644\u0649 \u0627\u0644\u0634\u0628\u0643\u0629. \u0646\u0634\u0631 \u0627\u0644\u0627\u0633\u0645 \u0648\u0627\u0644\u0631\u0645\u0632 \u0648\u0627\u0644\u0634\u0639\u0627\u0631 \u0641\u064A \u062F\u0644\u064A\u0644 \u0639\u0627\u0644\u0645\u064A \u064A\u062A\u0637\u0644\u0628 \u062E\u062F\u0645\u0629 \u0628\u064A\u0627\u0646\u0627\u062A \u0648\u0635\u0641\u064A\u0629 \u0648\u0641\u0647\u0631\u0633\u0629.",
+  marketTitle:"\u0623\u0633\u0648\u0627\u0642 \u0633\u0648\u0644\u0627\u0646\u0627",liveMarket:"\u0627\u0644\u0633\u0648\u0642 \u0627\u0644\u0645\u0628\u0627\u0634\u0631",all:"\u0643\u0644 \u0627\u0644\u0639\u0645\u0644\u0627\u062A",new:"\u0639\u0645\u0644\u0627\u062A \u062C\u062F\u064A\u062F\u0629",gainers:"\u0627\u0644\u0623\u0639\u0644\u0649 \u0627\u0631\u062A\u0641\u0627\u0639\u0627\u064B",losers:"\u0627\u0644\u0623\u0639\u0644\u0649 \u0627\u0646\u062E\u0641\u0627\u0636\u0627\u064B",trending:"\u0627\u0644\u0631\u0627\u0626\u062C\u0629",volume:"\u0627\u0644\u0623\u0639\u0644\u0649 \u062A\u062F\u0627\u0648\u0644\u0627\u064B",search:"\u0628\u062D\u062B",searchPlaceholder:"\u0627\u0628\u062D\u062B \u0628\u0627\u0644\u0627\u0633\u0645 \u0623\u0648 \u0627\u0644\u0631\u0645\u0632 \u0623\u0648 \u0639\u0646\u0648\u0627\u0646 \u0627\u0644\u0639\u0642\u062F",allSol:"\u0643\u0644 \u0639\u0645\u0644\u0627\u062A \u0633\u0648\u0644\u0627\u0646\u0627",loading:"\u062C\u0627\u0631\u064D \u0627\u0644\u062A\u062D\u0645\u064A\u0644...",sort:"\u062A\u0631\u062A\u064A\u0628 \u0627\u0644\u0633\u0648\u0642",defaultSort:"\u0627\u0644\u062A\u0631\u062A\u064A\u0628 \u0627\u0644\u0627\u0641\u062A\u0631\u0627\u0636\u064A",price:"\u0627\u0644\u0633\u0639\u0631",change:"\u0627\u0644\u062A\u063A\u064A\u0631",marketCap:"\u0627\u0644\u0642\u064A\u0645\u0629 \u0627\u0644\u0633\u0648\u0642\u064A\u0629",liquidity:"\u0627\u0644\u0633\u064A\u0648\u0644\u0629",token:"\u0627\u0644\u0639\u0645\u0644\u0629",priceUsd:"\u0627\u0644\u0633\u0639\u0631",day:"24 \u0633\u0627\u0639\u0629",marketLoading:"\u062C\u0627\u0631\u064D \u062A\u062D\u0645\u064A\u0644 \u0627\u0644\u0633\u0648\u0642...",marketConnecting:"\u062C\u0627\u0631\u064D \u0627\u0644\u0627\u062A\u0635\u0627\u0644 \u0628\u0628\u064A\u0627\u0646\u0627\u062A \u0627\u0644\u0633\u0648\u0642 \u0627\u0644\u0645\u0628\u0627\u0634\u0631\u0629...",holdersNote:"\u064A\u062A\u0637\u0644\u0628 \u0639\u0631\u0636 \u0639\u062F\u062F \u0627\u0644\u0645\u0627\u0644\u0643\u064A\u0646 \u0631\u0628\u0637 \u062E\u062F\u0645\u0629 \u0641\u0647\u0631\u0633\u0629 \u0645\u062A\u062E\u0635\u0635\u0629 \u0644\u0634\u0628\u0643\u0629 \u0633\u0648\u0644\u0627\u0646\u0627. \u0644\u0627 \u062A\u0639\u0631\u0636 QX \u0623\u0631\u0642\u0627\u0645\u0627\u064B \u062A\u0642\u062F\u064A\u0631\u064A\u0629 \u0623\u0648 \u063A\u064A\u0631 \u062D\u0642\u064A\u0642\u064A\u0629.",
+  adsTitle:"\u0627\u0644\u0625\u0639\u0644\u0627\u0646\u0627\u062A",sponsored:"\u0625\u0639\u0644\u0627\u0646\u0627\u062A \u0645\u0645\u0648\u0644\u0629",featured:"\u0645\u0634\u0627\u0631\u064A\u0639 \u0645\u0645\u064A\u0632\u0629",addAd:"+ \u0623\u0636\u0641 \u0625\u0639\u0644\u0627\u0646\u0627\u064B",noAds:"\u0644\u0627 \u062A\u0648\u062C\u062F \u0625\u0639\u0644\u0627\u0646\u0627\u062A \u0645\u0645\u0648\u0644\u0629 \u062D\u0627\u0644\u064A\u0627\u064B.",adsHelp:"\u0631\u0648\u0651\u062C \u0644\u0645\u0634\u0631\u0648\u0639\u0643 \u0623\u0645\u0627\u0645 \u0645\u062C\u062A\u0645\u0639 QX.",
+  backMarkets:"\u0627\u0644\u0639\u0648\u062F\u0629 \u0625\u0644\u0649 \u0627\u0644\u0623\u0633\u0648\u0627\u0642",marketCapFdv:"\u0627\u0644\u0642\u064A\u0645\u0629 \u0627\u0644\u0633\u0648\u0642\u064A\u0629 / \u0627\u0644\u062A\u0642\u064A\u064A\u0645 \u0627\u0644\u0645\u062E\u0641\u0641",transactions:"\u0645\u0639\u0627\u0645\u0644\u0627\u062A 24 \u0633\u0627\u0639\u0629",holders:"\u0627\u0644\u0645\u0627\u0644\u0643\u0648\u0646",indexer:"\u064A\u062A\u0637\u0644\u0628 \u0645\u0641\u0647\u0631\u0633 \u0628\u064A\u0627\u0646\u0627\u062A",chart:"\u0627\u0644\u0631\u0633\u0645 \u0627\u0644\u0628\u064A\u0627\u0646\u064A \u0627\u0644\u0645\u0628\u0627\u0634\u0631 \u0645\u0646 QX",solscan:"\u0639\u0631\u0636 \u0627\u0644\u0639\u0642\u062F \u0639\u0644\u0649 Solscan",buy:"\u0634\u0631\u0627\u0621",sell:"\u0628\u064A\u0639",youPay:"\u0623\u0646\u062A \u062A\u062F\u0641\u0639",receive:"\u0627\u0644\u0643\u0645\u064A\u0629 \u0627\u0644\u0645\u062A\u0648\u0642\u0639\u0629",fee:"\u0639\u0645\u0648\u0644\u0629 QX",route:"\u0645\u0633\u0627\u0631 \u0627\u0644\u062A\u062F\u0627\u0648\u0644",notConnected:"\u063A\u064A\u0631 \u0645\u062A\u0635\u0644",bestPrice:"\u0623\u0641\u0636\u0644 \u0633\u0639\u0631",getQuote:"\u0627\u062D\u0635\u0644 \u0639\u0644\u0649 \u0623\u0641\u0636\u0644 \u0633\u0639\u0631",confirm:"\u062A\u0623\u0643\u064A\u062F \u0627\u0644\u0645\u0628\u0627\u062F\u0644\u0629",feeNote:"\u0631\u0633\u0648\u0645 QX: \u200F1% \u0639\u0644\u0649 \u0643\u0644 \u0639\u0645\u0644\u064A\u0629 \u0645\u0628\u0627\u062F\u0644\u0629 \u0645\u0643\u062A\u0645\u0644\u0629. \u064A\u062C\u0628 \u0623\u0646 \u064A\u0624\u0643\u062F \u0639\u0631\u0636 \u0627\u0644\u0633\u0639\u0631 \u0627\u0644\u0645\u0628\u0627\u0634\u0631 \u0627\u0644\u0631\u0633\u0648\u0645 \u0643\u0627\u0645\u0644\u0629 \u0642\u0628\u0644 \u062A\u0648\u0642\u064A\u0639 \u0627\u0644\u0645\u062D\u0641\u0638\u0629. \u0644\u0627 \u062A\u064F\u0641\u0631\u0636 \u0631\u0633\u0648\u0645 \u0625\u0630\u0627 \u0644\u0645 \u062A\u0643\u062A\u0645\u0644 \u0627\u0644\u0639\u0645\u0644\u064A\u0629.",
+  adDuration:"\u0645\u062F\u0629 \u0627\u0644\u0625\u0639\u0644\u0627\u0646",totalPrice:"\u0627\u0644\u0633\u0639\u0631 \u0627\u0644\u0625\u062C\u0645\u0627\u0644\u064A",solPayment:"\u0627\u0644\u062F\u0641\u0639 \u0627\u0644\u062A\u0642\u062F\u064A\u0631\u064A \u0628\u0639\u0645\u0644\u0629 SOL",adHeadline:"\u0639\u0646\u0648\u0627\u0646 \u0627\u0644\u0625\u0639\u0644\u0627\u0646",adText:"\u0627\u0643\u062A\u0628 \u0646\u0635 \u0627\u0644\u0625\u0639\u0644\u0627\u0646",adLink:"\u0631\u0627\u0628\u0637 \u0627\u0644\u0645\u0648\u0642\u0639 \u0623\u0648 \u0627\u0644\u0645\u0634\u0631\u0648\u0639",adImage:"\u0631\u0627\u0628\u0637 \u0627\u0644\u0635\u0648\u0631\u0629 (\u0627\u062E\u062A\u064A\u0627\u0631\u064A)",adNote:"\u0633\u064A\u064F\u0637\u0644\u0628 \u0627\u0644\u062F\u0641\u0639 \u0645\u0646 \u0627\u0644\u0645\u062D\u0641\u0638\u0629 \u0627\u0644\u0645\u062A\u0635\u0644\u0629 \u0628\u0640 QX. \u0644\u0646 \u064A\u064F\u0646\u0634\u0631 \u0627\u0644\u0625\u0639\u0644\u0627\u0646 \u0625\u0644\u0627 \u0628\u0639\u062F \u0623\u0646 \u062A\u062A\u062D\u0642\u0642 QX \u0645\u0646 \u0627\u0644\u062F\u0641\u0639.",payAd:"\u0627\u062F\u0641\u0639 \u0628\u0627\u0644\u0645\u062D\u0641\u0638\u0629 \u0627\u0644\u0645\u062A\u0635\u0644\u0629",close:"\u0625\u063A\u0644\u0627\u0642",language:"\u0627\u0644\u0644\u063A\u0629",currency:"\u0627\u0644\u0639\u0645\u0644\u0629"
  }:{
   connect:"Connect Wallet",wallet:"Wallet",create:"Create Token",markets:"Markets",ads:"Advertisements",assets:"My Assets",portfolio:"TOTAL PORTFOLIO VALUE | USD ESTIMATE",liveBalance:"Live balance",refresh:"Refresh",onchain:"ON-CHAIN",asset:"Asset",balance:"Balance",value:"Value",connectAssets:"Connect your wallet to view assets.",createTitle:"Create Your Token",launch:"Launch an SPL token",createDesc:"Create the token mint and initial supply directly from your connected Solana wallet. Your wallet will ask you to approve the transaction.",tokenName:"Token name",symbol:"Symbol",supply:"Initial supply",decimals:"Decimals",createButton:"Connect wallet & create token",createHint:"Connect your wallet first. Network fees and mint-account rent are paid in SOL.",created:"Token created",viewTx:"View transaction on Solscan",createNote:"Note: this creates an on-chain SPL mint and initial supply. Publishing the name, symbol and logo in a global directory requires a metadata and indexing service.",marketTitle:"Solana Markets",liveMarket:"LIVE MARKET",all:"All Coins",new:"New Coins",gainers:"Top Gainers",losers:"Top Losers",trending:"Trending",volume:"Top Volume",search:"Search",searchPlaceholder:"Search name, symbol or contract",allSol:"All Solana tokens",loading:"Loading...",sort:"SORT MARKET",defaultSort:"Default order",price:"Price",change:"Change",marketCap:"Market Cap",liquidity:"Liquidity",token:"Token",priceUsd:"Price USD",day:"24h",marketLoading:"Loading market...",marketConnecting:"Connecting to live market data...",holdersNote:"Holder totals require a dedicated Solana indexing API. QX does not display estimated or fabricated holder counts.",adsTitle:"Advertisements",sponsored:"Sponsored",featured:"Featured projects",addAd:"+ Add advertisement",noAds:"No sponsored advertisements yet.",adsHelp:"Promote your project to the QX community.",backMarkets:"BACK TO MARKETS",marketCapFdv:"Market Cap / FDV",transactions:"24h Transactions",holders:"Holders",indexer:"Indexer required",chart:"QX LIVE CHART",solscan:"View contract on Solscan",buy:"BUY",sell:"SELL",youPay:"YOU PAY",receive:"Estimated receive",fee:"QX commission",route:"Route",notConnected:"Not connected",bestPrice:"GET BEST PRICE",getQuote:"GET BEST PRICE",confirm:"CONFIRM SWAP",feeNote:"QX fee: 1% per completed swap. The live quote must confirm the full fee before wallet signing. No fee is charged when a swap is not completed.",adDuration:"Advertisement duration",totalPrice:"Total price",solPayment:"Estimated SOL payment",adHeadline:"Advertisement title",adText:"Paste your advertisement",adLink:"Website or project link",adImage:"Image URL (optional)",adNote:"Payment is requested from the wallet already connected to QX. The advertisement is published only after payment is verified by QX.",payAd:"PAY WITH CONNECTED WALLET",close:"Close",language:"Language",currency:"Currency"
  };
  const connect=$("connectBtn");if(connect&&!document.body.classList.contains("qx-wallet-active"))connect.textContent=L.connect;
  t("#walletPage .hero > .small", "TOTAL PORTFOLIO VALUE | USD ESTIMATE", L.portfolio);
- t("#walletPage .wallet-badge","* SOLANA WALLET","* ÙØ­ÙØ¸Ø© Ø³ÙÙØ§ÙØ§");
+ t("#walletPage .wallet-badge","* SOLANA WALLET","* \u0645\u062D\u0641\u0638\u0629 \u0633\u0648\u0644\u0627\u0646\u0627");
  t("#walletPage .wallet-badges .small","Live balance",L.liveBalance);
  t("#refreshBtn","Refresh",L.refresh);t("#walletPage .market-heading h2","My Assets",L.assets);
  t("#walletPage .market-heading .tag","ON-CHAIN",L.onchain);
  t("#walletPage .row.head span:nth-child(1)","Asset",L.asset);t("#walletPage .row.head span:nth-child(2)","Balance",L.balance);t("#walletPage .row.head span:nth-child(3)","Value",L.value);
  const assetsBox=$("assetsList");if(assetsBox&&assetsBox.classList.contains("empty"))assetsBox.textContent=L.connectAssets;
  t("#createPage .market-heading h2","Create Your Token",L.createTitle);
- t("#createPage .market-heading .tag","SOLANA MAINNET","Ø´Ø¨ÙØ© Ø³ÙÙØ§ÙØ§ Ø§ÙØ±Ø¦ÙØ³ÙØ©");
- t("#createPage .panel > .tag","QX TOKEN CREATOR","ÙÙØ´Ø¦ Ø¹ÙÙØ§Øª QX");
+ t("#createPage .market-heading .tag","SOLANA MAINNET","\u0634\u0628\u0643\u0629 \u0633\u0648\u0644\u0627\u0646\u0627 \u0627\u0644\u0631\u0626\u064A\u0633\u064A\u0629");
+ t("#createPage .panel > .tag","QX TOKEN CREATOR","\u0645\u0646\u0634\u0626 \u0639\u0645\u0644\u0627\u062A QX");
  t("#createPage .panel h2","Launch an SPL token",L.launch);
  t("#createPage .panel > p:nth-of-type(1)","Create the token mint and initial supply directly from your connected Solana wallet. Phantom will ask you to approve the transaction.",L.createDesc);
  const createLabels=[L.tokenName,L.symbol,L.supply,L.decimals];document.querySelectorAll("#createPage .panel label").forEach((el,i)=>{if(createLabels[i])el.childNodes[0].textContent=createLabels[i];});
@@ -706,43 +706,43 @@ function qxApplyLanguage(){
  const note=document.querySelector("#createPage .panel > p:last-child");if(note)note.textContent=L.createNote;
  t("#marketsPage > .market-heading h2","Solana Markets",L.marketTitle);t("#marketsPage > .market-heading .tag","LIVE MARKET",L.liveMarket);
  const cats=[["all","All Coins",L.all],["new","New Coins",L.new],["gainers","Top Gainers",L.gainers],["losers","Top Losers",L.losers],["trending","Trending",L.trending],["volume","Top Volume",L.volume]];
- cats.forEach(([key,en,arText])=>{const b=document.querySelector(`#marketTabs [data-category="${key}"]`);if(b){const live=b.querySelector(".new-live-tag");b.textContent=ar?arText:en;if(live){live.textContent="ÙØ¨Ø§Ø´Ø±";b.appendChild(live);}}});
+ cats.forEach(([key,en,arText])=>{const b=document.querySelector(`#marketTabs [data-category="${key}"]`);if(b){const live=b.querySelector(".new-live-tag");b.textContent=ar?arText:en;if(live){live.textContent="\u0645\u0628\u0627\u0634\u0631";b.appendChild(live);}}});
  ph("search","Search name, symbol or contract",L.searchPlaceholder);t("#searchBtn","Search",L.search);
- t("#categoryTitle","All Solana tokens",L.allSol);t("#sortOptions .sort-option:nth-child(1) span","Price",L.price);t("#sortOptions .sort-option:nth-child(2) span","Change",L.change);t("#sortOptions .sort-option:nth-child(3) span","Volume","Ø­Ø¬Ù Ø§ÙØªØ¯Ø§ÙÙ");t("#sortOptions .sort-option:nth-child(4) span","Market Cap",L.marketCap);t("#sortOptions .sort-option:nth-child(5) span","Liquidity",L.liquidity);
+ t("#categoryTitle","All Solana tokens",L.allSol);t("#sortOptions .sort-option:nth-child(1) span","Price",L.price);t("#sortOptions .sort-option:nth-child(2) span","Change",L.change);t("#sortOptions .sort-option:nth-child(3) span","Volume","\u062D\u062C\u0645 \u0627\u0644\u062A\u062F\u0627\u0648\u0644");t("#sortOptions .sort-option:nth-child(4) span","Market Cap",L.marketCap);t("#sortOptions .sort-option:nth-child(5) span","Liquidity",L.liquidity);
  const sortTitle=document.querySelector(".sort-title");if(sortTitle&&sortTitle.firstChild)sortTitle.firstChild.textContent=L.sort+" ";t("#sortLabel","Default order",L.defaultSort);
  t("#marketsPage .list .market-row:first-child span:nth-child(1)","Token",L.token);t("#marketsPage .list .market-row:first-child span:nth-child(2)","Price USD",L.priceUsd);t("#marketsPage .list .market-row:first-child span:nth-child(3)","24h",L.day);
  const marketResults=$("tokenResults");if(marketResults&&marketResults.classList.contains("market-empty")&&/Loading market/.test(marketResults.textContent))marketResults.textContent=L.marketLoading;
  const marketStatus=$("marketStatus");if(marketStatus&&/Connecting to live market/.test(marketStatus.textContent))marketStatus.textContent=L.marketConnecting;
  const holdersNote=document.querySelector("#marketsPage .market-list-column > p.small");if(holdersNote)holdersNote.textContent=L.holdersNote;
  t("#adsPageTitle","Advertisements",L.ads);t(".ads-title","Sponsored",L.sponsored);t(".ads-sub","Featured projects",L.featured);t("#addAdMenuBtn","+ Add advertisement",L.addAd);t("#publicAdsList .ad-empty","No sponsored advertisements yet.",L.noAds);t("#adsPageHelp","Promote your project to the QX community.",L.adsHelp);
- t("#tokenBackBtn","BACK TO MARKETS",L.backMarkets);t(".detail-stat:nth-child(1) small","Market Cap / FDV",L.marketCapFdv);t(".detail-stat:nth-child(2) small","Liquidity",L.liquidity);t(".detail-stat:nth-child(3) small","24h Volume", "Ø­Ø¬Ù Ø§ÙØªØ¯Ø§ÙÙ Ø®ÙØ§Ù 24 Ø³Ø§Ø¹Ø©");t(".detail-stat:nth-child(4) small","24h Transactions",L.transactions);t(".detail-stat:nth-child(5) small","Holders",L.holders);
+ t("#tokenBackBtn","BACK TO MARKETS",L.backMarkets);t(".detail-stat:nth-child(1) small","Market Cap / FDV",L.marketCapFdv);t(".detail-stat:nth-child(2) small","Liquidity",L.liquidity);t(".detail-stat:nth-child(3) small","24h Volume", "\u062D\u062C\u0645 \u0627\u0644\u062A\u062F\u0627\u0648\u0644 \u062E\u0644\u0627\u0644 24 \u0633\u0627\u0639\u0629");t(".detail-stat:nth-child(4) small","24h Transactions",L.transactions);t(".detail-stat:nth-child(5) small","Holders",L.holders);
  const chartTitle=document.querySelector(".chart-toolbar > strong");if(chartTitle)chartTitle.textContent=L.chart;t("#solscanLink","View contract on Solscan ->",L.solscan);
- const swapKicker=document.querySelector(".qx-swap-kicker");if(swapKicker)swapKicker.textContent=ar?"QX EXCHANGE / ØªØ¯Ø§ÙÙ ÙÙØ±Ù":"QX EXCHANGE / INSTANT TRADE";
- const swapTitle=$("tradeTitle");if(swapTitle&&!selectedToken)swapTitle.textContent=ar?"Ø§Ø´ØªØ±Ù ÙØ°Ù Ø§ÙØ¹ÙÙØ© Ø¨Ø§Ø³ØªØ®Ø¯Ø§Ù SOL":"Buy this token with SOL";
- const swapDesc=document.querySelector(".qx-swap-head p");if(swapDesc)swapDesc.textContent=ar?"ØªØ¯Ø§ÙÙ ÙØ¨Ø§Ø´Ø±Ø© ÙÙ Ø¯Ø§Ø®Ù QX Ø¯ÙÙ Ø§ÙØ§ÙØªÙØ§Ù Ø¥ÙÙ ÙÙÙØ¹ Ø®Ø§Ø±Ø¬Ù.":"Trade directly inside QX. No external swap page.";
- const chartCredit=document.querySelector(".chart-credit");if(chartCredit)chartCredit.textContent=ar?"Ø§ÙØ±Ø³Ù Ø§ÙØ¨ÙØ§ÙÙ Ø¯Ø§Ø®Ù QX | Ø¨ÙØ§ÙØ§Øª Ø³ÙÙ Ø³ÙÙØ§ÙØ§":"Chart rendered inside QX | Solana market data";
+ const swapKicker=document.querySelector(".qx-swap-kicker");if(swapKicker)swapKicker.textContent=ar?"QX EXCHANGE / \u062A\u062F\u0627\u0648\u0644 \u0641\u0648\u0631\u064A":"QX EXCHANGE / INSTANT TRADE";
+ const swapTitle=$("tradeTitle");if(swapTitle&&!selectedToken)swapTitle.textContent=ar?"\u0627\u0634\u062A\u0631\u0650 \u0647\u0630\u0647 \u0627\u0644\u0639\u0645\u0644\u0629 \u0628\u0627\u0633\u062A\u062E\u062F\u0627\u0645 SOL":"Buy this token with SOL";
+ const swapDesc=document.querySelector(".qx-swap-head p");if(swapDesc)swapDesc.textContent=ar?"\u062A\u062F\u0627\u0648\u0644 \u0645\u0628\u0627\u0634\u0631\u0629 \u0645\u0646 \u062F\u0627\u062E\u0644 QX \u062F\u0648\u0646 \u0627\u0644\u0627\u0646\u062A\u0642\u0627\u0644 \u0625\u0644\u0649 \u0645\u0648\u0642\u0639 \u062E\u0627\u0631\u062C\u064A.":"Trade directly inside QX. No external swap page.";
+ const chartCredit=document.querySelector(".chart-credit");if(chartCredit)chartCredit.textContent=ar?"\u0627\u0644\u0631\u0633\u0645 \u0627\u0644\u0628\u064A\u0627\u0646\u064A \u062F\u0627\u062E\u0644 QX | \u0628\u064A\u0627\u0646\u0627\u062A \u0633\u0648\u0642 \u0633\u0648\u0644\u0627\u0646\u0627":"Chart rendered inside QX | Solana market data";
  const buy=$("buyBtn"),sell=$("sellBtn");if(buy)buy.textContent=L.buy;if(sell)sell.textContent=L.sell;
- t(".percent-title","YOU PAY",L.youPay);t(".percent-available","Available balance: -","Ø§ÙØ±ØµÙØ¯ Ø§ÙÙØªØ§Ø­: -");
+ t(".percent-title","YOU PAY",L.youPay);t(".percent-available","Available balance: -","\u0627\u0644\u0631\u0635\u064A\u062F \u0627\u0644\u0645\u062A\u0627\u062D: -");
  t(".swap-quote span:first-child","You pay",L.youPay);t(".swap-quote:nth-child(2) span:first-child","Estimated receive",L.receive);t(".swap-quote:nth-child(3) span:first-child","QX commission",L.fee);t(".swap-quote:nth-child(4) span:first-child","Route",L.route);t(".swap-quote:nth-child(5) span:first-child","Wallet",L.wallet);
- const quote=$("getQuoteBtn");if(quote){const span=quote.querySelector("span");if(span)span.textContent=L.getQuote;const small=quote.querySelector("small");if(small)small.textContent=ar?"ÙØ³Ø§Ø± Jupiter | Ø¯Ø§Ø®Ù QX":"Jupiter route | inside QX";}
+ const quote=$("getQuoteBtn");if(quote){const span=quote.querySelector("span");if(span)span.textContent=L.getQuote;const small=quote.querySelector("small");if(small)small.textContent=ar?"\u0645\u0633\u0627\u0631 Jupiter | \u062F\u0627\u062E\u0644 QX":"Jupiter route | inside QX";}
  const confirm=$("confirmSwapBtn");if(confirm)confirm.textContent=L.confirm;
  const fee=document.querySelector(".fee-note");if(fee)fee.textContent=L.feeNote;
  const adLabels=[["adDuration",L.adDuration],["adHeadline",L.adHeadline],["adText",L.adText],["adUrl",L.adLink],["adImageUrl",L.adImage]];
  adLabels.forEach(([id,label])=>{const el=$(id);if(el){const lab=document.querySelector(`label[for="${id}"]`);if(lab)lab.textContent=label;}});
  t(".ad-price-line:nth-of-type(1) span","Total price",L.totalPrice);t(".ad-price-line:nth-of-type(2) span","Estimated SOL payment",L.solPayment);t(".ad-modal-note","Payment is requested from the wallet already connected to QX. The advertisement is published only after the payment is verified by QX.",L.adNote);t("#adPayBtn","PAY WITH CONNECTED WALLET",L.payAd);
- ph("adHeadline","Project or token name","Ø§Ø³Ù Ø§ÙÙØ´Ø±ÙØ¹ Ø£Ù Ø§ÙØ¹ÙÙØ©");ph("adText","Write your advertisement here...","Ø§ÙØªØ¨ Ø¥Ø¹ÙØ§ÙÙ ÙÙØ§...");ph("adUrl","https://example.com","https://example.com");
+ ph("adHeadline","Project or token name","\u0627\u0633\u0645 \u0627\u0644\u0645\u0634\u0631\u0648\u0639 \u0623\u0648 \u0627\u0644\u0639\u0645\u0644\u0629");ph("adText","Write your advertisement here...","\u0627\u0643\u062A\u0628 \u0625\u0639\u0644\u0627\u0646\u0643 \u0647\u0646\u0627...");ph("adUrl","https://example.com","https://example.com");
  const close=$("adCloseBtn");if(close)close.setAttribute("aria-label",L.close);
  document.querySelectorAll(".qx-global-settings label").forEach((el,i)=>el.textContent=i===0?L.language:L.currency);
- const currencyOptions=$("qxCurrency");if(currencyOptions){const currencyNames=ar?["Ø¯ÙÙØ§Ø± Ø£ÙØ±ÙÙÙ ($)","Ø¯Ø±ÙÙ Ø¥ÙØ§Ø±Ø§ØªÙ (Ø¯.Ø¥)","ÙÙØ±Ù (â¬)","Ø¬ÙÙÙ Ø¥Ø³ØªØ±ÙÙÙÙ (Â£)","ÙÙ ÙØ§Ø¨Ø§ÙÙ (Â¥)"]:["US Dollar ($)","UAE Dirham (Ø¯.Ø¥)","Euro (â¬)","British Pound (Â£)","Japanese Yen (Â¥)"];Array.from(currencyOptions.options).forEach((o,i)=>{o.textContent=o.value+" â "+(currencyNames[i]||o.value);});}
- const languageOptions=$("qxLanguage");if(languageOptions){languageOptions.options[0].textContent=ar?"Ø§ÙØ¥ÙØ¬ÙÙØ²ÙØ© (EN)":"English (EN)";languageOptions.options[1].textContent=ar?"Ø§ÙØ¹Ø±Ø¨ÙØ© (AR)":"Ø§ÙØ¹Ø±Ø¨ÙØ© (AR)";}
- const adTitle=$("adModalTitle");if(adTitle)adTitle.textContent=ar?"Ø¥Ø¶Ø§ÙØ© Ø¥Ø¹ÙØ§Ù":"Add advertisement";
- const duration=$("adDuration");if(duration){const labels=ar?["Ø³Ø§Ø¹Ø© ÙØ§Ø­Ø¯Ø© â $49.99","3 Ø³Ø§Ø¹Ø§Øª â $99.99","9 Ø³Ø§Ø¹Ø§Øª â $179.99","24 Ø³Ø§Ø¹Ø© â $299.99","3 Ø£ÙØ§Ù â $599.99"]:["1 hour â $49.99","3 hours â $99.99","9 hours â $179.99","24 hours â $299.99","3 days â $599.99"];Array.from(duration.options).forEach((o,i)=>o.textContent=labels[i]);}
- const walletStatus=$("walletStatus");if(walletStatus&&!connected)walletStatus.textContent=ar?"Ø§Ø±Ø¨Ø· ÙØ­ÙØ¸ØªÙ ÙØ¹Ø±Ø¶ Ø§ÙØ£ØµÙÙ.":"Connect your wallet to view assets.";
+ const currencyOptions=$("qxCurrency");if(currencyOptions){const currencyNames=ar?["\u062F\u0648\u0644\u0627\u0631 \u0623\u0645\u0631\u064A\u0643\u064A ($)","\u062F\u0631\u0647\u0645 \u0625\u0645\u0627\u0631\u0627\u062A\u064A (\u062F.\u0625)","\u064A\u0648\u0631\u0648 (\u20AC)","\u062C\u0646\u064A\u0647 \u0625\u0633\u062A\u0631\u0644\u064A\u0646\u064A (\u00A3)","\u064A\u0646 \u064A\u0627\u0628\u0627\u0646\u064A (\u00A5)"]:["US Dollar ($)","UAE Dirham (\u062F.\u0625)","Euro (\u20AC)","British Pound (\u00A3)","Japanese Yen (\u00A5)"];Array.from(currencyOptions.options).forEach((o,i)=>{o.textContent=o.value+" \u2014 "+(currencyNames[i]||o.value);});}
+ const languageOptions=$("qxLanguage");if(languageOptions){languageOptions.options[0].textContent=ar?"\u0627\u0644\u0625\u0646\u062C\u0644\u064A\u0632\u064A\u0629 (EN)":"English (EN)";languageOptions.options[1].textContent=ar?"\u0627\u0644\u0639\u0631\u0628\u064A\u0629 (AR)":"\u0627\u0644\u0639\u0631\u0628\u064A\u0629 (AR)";}
+ const adTitle=$("adModalTitle");if(adTitle)adTitle.textContent=ar?"\u0625\u0636\u0627\u0641\u0629 \u0625\u0639\u0644\u0627\u0646":"Add advertisement";
+ const duration=$("adDuration");if(duration){const labels=ar?["\u0633\u0627\u0639\u0629 \u0648\u0627\u062D\u062F\u0629 \u2014 $49.99","3 \u0633\u0627\u0639\u0627\u062A \u2014 $99.99","9 \u0633\u0627\u0639\u0627\u062A \u2014 $179.99","24 \u0633\u0627\u0639\u0629 \u2014 $299.99","3 \u0623\u064A\u0627\u0645 \u2014 $599.99"]:["1 hour \u2014 $49.99","3 hours \u2014 $99.99","9 hours \u2014 $179.99","24 hours \u2014 $299.99","3 days \u2014 $599.99"];Array.from(duration.options).forEach((o,i)=>o.textContent=labels[i]);}
+ const walletStatus=$("walletStatus");if(walletStatus&&!connected)walletStatus.textContent=ar?"\u0627\u0631\u0628\u0637 \u0645\u062D\u0641\u0638\u062A\u0643 \u0644\u0639\u0631\u0636 \u0627\u0644\u0623\u0635\u0648\u0644.":"Connect your wallet to view assets.";
  const adStatus=$("adStatus");if(adStatus&&!adStatus.textContent.trim())adStatus.textContent="";
  document.querySelectorAll(".nav-btn").forEach(b=>{const id=b.dataset.page;const span=b.querySelector("span");if(span)span.textContent=id==="walletPage"?L.wallet:id==="createPage"?L.create:id==="marketsPage"?L.markets:L.ads;b.setAttribute("aria-label",span?.textContent||"");});
- const nav=document.querySelector(".bottom-nav");if(nav)nav.setAttribute("aria-label",ar?"Ø§ÙØªÙÙÙ Ø§ÙØ±Ø¦ÙØ³Ù":"Main navigation");
- const footer=document.querySelector("footer");if(footer)footer.textContent=ar?"QX Exchange | Ø³ÙÙØ§ÙØ§":"QX Exchange | Solana";
- document.querySelector(".ads-shell")?.setAttribute("aria-label",ar?"Ø§ÙØ¥Ø¹ÙØ§ÙØ§Øª Ø§ÙÙÙÙÙØ©":"Sponsored advertisements");
+ const nav=document.querySelector(".bottom-nav");if(nav)nav.setAttribute("aria-label",ar?"\u0627\u0644\u062A\u0646\u0642\u0644 \u0627\u0644\u0631\u0626\u064A\u0633\u064A":"Main navigation");
+ const footer=document.querySelector("footer");if(footer)footer.textContent=ar?"QX Exchange | \u0633\u0648\u0644\u0627\u0646\u0627":"QX Exchange | Solana";
+ document.querySelector(".ads-shell")?.setAttribute("aria-label",ar?"\u0627\u0644\u0625\u0639\u0644\u0627\u0646\u0627\u062A \u0627\u0644\u0645\u0645\u0648\u0644\u0629":"Sponsored advertisements");
 }
 
 function qxRefreshDisplayedPrices(){
@@ -767,18 +767,18 @@ function escapeHTML(v){
 }
 function repairMojibake(value){
  let text=String(value??"");
- if(!/(?:ÃÂÃÂ.|ÃÂÃÂ.|ÃÂÃÂ¢ÃÂ¢ÃÂÃÂ¬|ÃÂÃÂ°ÃÂÃÂ¸|ÃÂÃÂ.|ÃÂÃÂ.|ÃÂ¯ÃÂ¿ÃÂ½)/.test(text))return text;
+ if(!/(?:\u00C3\u0083\u00C2\u0083.|\u00C3\u0083\u00C2\u0082.|\u00C3\u0083\u00C2\u00A2\u00C3\u00A2\u00C2\u0082\u00C2\u00AC|\u00C3\u0083\u00C2\u00B0\u00C3\u0085\u00C2\u00B8|\u00C3\u0083\u00C2\u0090.|\u00C3\u0083\u00C2\u0091.|\u00C3\u00AF\u00C2\u00BF\u00C2\u00BD)/.test(text))return text;
  try{
   const values=[...text].map(ch=>ch.codePointAt(0));
   if(values.some(n=>n>255))return text;
   const repaired=new TextDecoder("utf-8",{fatal:false}).decode(new Uint8Array(values));
-  if(repaired && !repaired.includes("ÃÂ¯ÃÂ¿ÃÂ½") && repaired.length<=text.length+4)return repaired;
+  if(repaired && !repaired.includes("\u00C3\u00AF\u00C2\u00BF\u00C2\u00BD") && repaired.length<=text.length+4)return repaired;
  }catch(_){}
  return text;
 }
 function cleanTokenText(value,fallback="Unknown Token"){
  let text=repairMojibake(value).normalize("NFC").replace(/[\u0000-\u001F\u007F]/g,"").trim();
- if(!text||text.includes("ÃÂ¯ÃÂ¿ÃÂ½")||/(?:ÃÂÃÂ.|ÃÂÃÂ.|ÃÂÃÂ¢ÃÂ¢ÃÂÃÂ¬|ÃÂÃÂ°ÃÂÃÂ¸)/.test(text))return fallback;
+ if(!text||text.includes("\u00C3\u00AF\u00C2\u00BF\u00C2\u00BD")||/(?:\u00C3\u0083\u00C2\u0083.|\u00C3\u0083\u00C2\u0082.|\u00C3\u0083\u00C2\u00A2\u00C3\u00A2\u00C2\u0082\u00C2\u00AC|\u00C3\u0083\u00C2\u00B0\u00C3\u0085\u00C2\u00B8)/.test(text))return fallback;
  return text.slice(0,72);
 }
 async function getJSON(url){
@@ -1078,7 +1078,7 @@ function renderAssetRows(){
  }).join("");
 }
 
-/* PUBLIC ADVERTISEMENTS â secure activation requires the QX Supabase Edge Function */
+/* PUBLIC ADVERTISEMENTS \u2014 secure activation requires the QX Supabase Edge Function */
 const QX_AD_TREASURY="E4x2DiVVDuVQHSUGgzTPjJMDbiJ6jCRwpEvsvAd31Qs4";
 // Fill these two public Supabase values after creating the QX Ads backend.
 // Never place a Supabase service-role key or any private wallet key in this file.
@@ -1098,7 +1098,7 @@ function qxLangText(en,ar){return qxLanguage==="ar"?ar:en;}
 function updateAdPrice(){
  const hours=Number(adEl("adDuration").value),pkg=QX_AD_PACKAGES[hours],sol=adSolAmount(hours);
  adEl("adUsdPrice").textContent="$"+pkg.usd.toFixed(2);
- adEl("adSolPrice").textContent=sol?sol.toFixed(6)+" SOL":qxLangText("SOL price unavailable","Ø³Ø¹Ø± SOL ØºÙØ± ÙØªØ§Ø­");
+ adEl("adSolPrice").textContent=sol?sol.toFixed(6)+" SOL":qxLangText("SOL price unavailable","\u0633\u0639\u0631 SOL \u063A\u064A\u0631 \u0645\u062A\u0627\u062D");
 }
 function openAdModal(){
  adEl("adsMenu").classList.remove("open");
@@ -1128,7 +1128,7 @@ function safeAdUrl(value,optional=false){
 async function loadPublicAds(){
  const host=adEl("publicAdsList");
  if(!adsBackendReady()){
-  host.innerHTML='<div class="ad-empty">'+qxLangText("Ads feed is not connected yet. Configure the QX Supabase Ads backend to publish and verify paid advertisements.","Ø®Ø¯ÙØ© Ø§ÙØ¥Ø¹ÙØ§ÙØ§Øª ØºÙØ± ÙØ±Ø¨ÙØ·Ø© Ø¨Ø¹Ø¯. ÙÙØ²Ù Ø¥Ø¹Ø¯Ø§Ø¯ Ø®Ø¯ÙØ© QX Ø§ÙØ¢ÙÙØ© ÙÙØ´Ø± Ø§ÙØ¥Ø¹ÙØ§ÙØ§Øª Ø§ÙÙØ¯ÙÙØ¹Ø© ÙØ§ÙØªØ­ÙÙ ÙÙÙØ§.")+'</div>';
+  host.innerHTML='<div class="ad-empty">'+qxLangText("Ads feed is not connected yet. Configure the QX Supabase Ads backend to publish and verify paid advertisements.","\u062E\u062F\u0645\u0629 \u0627\u0644\u0625\u0639\u0644\u0627\u0646\u0627\u062A \u063A\u064A\u0631 \u0645\u0631\u0628\u0648\u0637\u0629 \u0628\u0639\u062F. \u064A\u0644\u0632\u0645 \u0625\u0639\u062F\u0627\u062F \u062E\u062F\u0645\u0629 QX \u0627\u0644\u0622\u0645\u0646\u0629 \u0644\u0646\u0634\u0631 \u0627\u0644\u0625\u0639\u0644\u0627\u0646\u0627\u062A \u0627\u0644\u0645\u062F\u0641\u0648\u0639\u0629 \u0648\u0627\u0644\u062A\u062D\u0642\u0642 \u0645\u0646\u0647\u0627.")+'</div>';
   return;
  }
  try{
@@ -1136,12 +1136,12 @@ async function loadPublicAds(){
   const data=await response.json();
   if(!response.ok)throw new Error(data.error||"Could not load advertisements.");
   const ads=Array.isArray(data.ads)?data.ads:[];
-  if(!ads.length){host.innerHTML='<div class="ad-empty">'+qxLangText("No sponsored advertisements yet.","ÙØ§ ØªÙØ¬Ø¯ Ø¥Ø¹ÙØ§ÙØ§Øª ÙÙÙÙØ© Ø­Ø§ÙÙØ§Ù.")+'</div>';return;}
+  if(!ads.length){host.innerHTML='<div class="ad-empty">'+qxLangText("No sponsored advertisements yet.","\u0644\u0627 \u062A\u0648\u062C\u062F \u0625\u0639\u0644\u0627\u0646\u0627\u062A \u0645\u0645\u0648\u0644\u0629 \u062D\u0627\u0644\u064A\u0627\u064B.")+'</div>';return;}
   host.innerHTML=ads.map(ad=>{
    const title=escapeHTML(ad.title||"Sponsored project"),body=escapeHTML(ad.body||""),url=safeAdUrl(ad.url),image=ad.image_url?safeAdUrl(ad.image_url):"";
-   return '<article class="ad-card">'+(image?'<img class="ad-image" src="'+escapeHTML(image)+'" alt="" loading="lazy" referrerpolicy="no-referrer">':'')+'<div class="ad-copy"><strong>'+title+'</strong><p>'+body+'</p><a href="'+escapeHTML(url)+'" target="_blank" rel="noopener noreferrer">Visit project â</a></div></article>';
+   return '<article class="ad-card">'+(image?'<img class="ad-image" src="'+escapeHTML(image)+'" alt="" loading="lazy" referrerpolicy="no-referrer">':'')+'<div class="ad-copy"><strong>'+title+'</strong><p>'+body+'</p><a href="'+escapeHTML(url)+'" target="_blank" rel="noopener noreferrer">Visit project \u2197</a></div></article>';
   }).join("");
- }catch(e){console.warn("QX ads feed:",e);host.innerHTML='<div class="ad-empty">'+qxLangText("Advertisements are temporarily unavailable.","Ø§ÙØ¥Ø¹ÙØ§ÙØ§Øª ØºÙØ± ÙØªØ§Ø­Ø© ÙØ¤ÙØªØ§Ù.")+'</div>';}
+ }catch(e){console.warn("QX ads feed:",e);host.innerHTML='<div class="ad-empty">'+qxLangText("Advertisements are temporarily unavailable.","\u0627\u0644\u0625\u0639\u0644\u0627\u0646\u0627\u062A \u063A\u064A\u0631 \u0645\u062A\u0627\u062D\u0629 \u0645\u0624\u0642\u062A\u0627\u064B.")+'</div>';}
 }
 async function waitForSolanaConfirmation(signature){
  for(let i=0;i<40;i++){
@@ -1156,40 +1156,40 @@ async function waitForSolanaConfirmation(signature){
 async function payForAdvertisement(){
  if(adBusy)return;
  try{
-  if(!connected||!walletAddress)throw new Error(qxLangText("Connect your wallet to QX first.","Ø§Ø±Ø¨Ø· ÙØ­ÙØ¸ØªÙ Ø¨Ù QX Ø£ÙÙØ§Ù."));
-  if(!adsBackendReady())throw new Error(qxLangText("QX Ads backend is not configured yet. Payment is disabled until the secure verification service is connected.","ÙÙ ÙØªÙ Ø¥Ø¹Ø¯Ø§Ø¯ Ø®Ø¯ÙØ© Ø¥Ø¹ÙØ§ÙØ§Øª QX Ø¨Ø¹Ø¯. Ø§ÙØ¯ÙØ¹ ÙØªÙÙÙ Ø­ØªÙ Ø±Ø¨Ø· Ø®Ø¯ÙØ© Ø§ÙØªØ­ÙÙ Ø§ÙØ¢ÙÙØ©."));
+  if(!connected||!walletAddress)throw new Error(qxLangText("Connect your wallet to QX first.","\u0627\u0631\u0628\u0637 \u0645\u062D\u0641\u0638\u062A\u0643 \u0628\u0640 QX \u0623\u0648\u0644\u0627\u064B."));
+  if(!adsBackendReady())throw new Error(qxLangText("QX Ads backend is not configured yet. Payment is disabled until the secure verification service is connected.","\u0644\u0645 \u064A\u062A\u0645 \u0625\u0639\u062F\u0627\u062F \u062E\u062F\u0645\u0629 \u0625\u0639\u0644\u0627\u0646\u0627\u062A QX \u0628\u0639\u062F. \u0627\u0644\u062F\u0641\u0639 \u0645\u062A\u0648\u0642\u0641 \u062D\u062A\u0649 \u0631\u0628\u0637 \u062E\u062F\u0645\u0629 \u0627\u0644\u062A\u062D\u0642\u0642 \u0627\u0644\u0622\u0645\u0646\u0629."));
   const hours=Number(adEl("adDuration").value),pkg=QX_AD_PACKAGES[hours],sol=adSolAmount(hours);
-  if(!pkg||!sol||!Number.isFinite(sol))throw new Error(qxLangText("Live SOL price is unavailable. Try again shortly.","Ø³Ø¹Ø± SOL Ø§ÙÙØ¨Ø§Ø´Ø± ØºÙØ± ÙØªØ§Ø­. Ø­Ø§ÙÙ Ø¨Ø¹Ø¯ ÙÙÙÙ."));
+  if(!pkg||!sol||!Number.isFinite(sol))throw new Error(qxLangText("Live SOL price is unavailable. Try again shortly.","\u0633\u0639\u0631 SOL \u0627\u0644\u0645\u0628\u0627\u0634\u0631 \u063A\u064A\u0631 \u0645\u062A\u0627\u062D. \u062D\u0627\u0648\u0644 \u0628\u0639\u062F \u0642\u0644\u064A\u0644."));
   const title=repairMojibake(adEl("adHeadline").value).normalize("NFC").trim();
   const body=repairMojibake(adEl("adText").value).normalize("NFC").trim();
   const url=safeAdUrl(adEl("adUrl").value),imageUrl=safeAdUrl(adEl("adImageUrl").value,true);
-  if(title.length<3)throw new Error(qxLangText("Enter an advertisement title.","Ø£Ø¯Ø®Ù Ø¹ÙÙØ§Ù Ø§ÙØ¥Ø¹ÙØ§Ù."));
-  if(body.length<8)throw new Error(qxLangText("Paste your advertisement text.","Ø£Ø¯Ø®Ù ÙØµ Ø§ÙØ¥Ø¹ÙØ§Ù."));
+  if(title.length<3)throw new Error(qxLangText("Enter an advertisement title.","\u0623\u062F\u062E\u0644 \u0639\u0646\u0648\u0627\u0646 \u0627\u0644\u0625\u0639\u0644\u0627\u0646."));
+  if(body.length<8)throw new Error(qxLangText("Paste your advertisement text.","\u0623\u062F\u062E\u0644 \u0646\u0635 \u0627\u0644\u0625\u0639\u0644\u0627\u0646."));
   const provider=getActiveWalletProvider();
-  if(typeof provider?.signTransaction!=="function")throw new Error(qxLangText("The connected wallet does not support transaction signing. Reconnect a Solana wallet.","Ø§ÙÙØ­ÙØ¸Ø© Ø§ÙÙØªØµÙØ© ÙØ§ ØªØ¯Ø¹Ù ØªÙÙÙØ¹ Ø§ÙÙØ¹Ø§ÙÙØ§Øª. Ø£Ø¹Ø¯ Ø±Ø¨Ø· ÙØ­ÙØ¸Ø© Ø³ÙÙØ§ÙØ§."));
+  if(typeof provider?.signTransaction!=="function")throw new Error(qxLangText("The connected wallet does not support transaction signing. Reconnect a Solana wallet.","\u0627\u0644\u0645\u062D\u0641\u0638\u0629 \u0627\u0644\u0645\u062A\u0635\u0644\u0629 \u0644\u0627 \u062A\u062F\u0639\u0645 \u062A\u0648\u0642\u064A\u0639 \u0627\u0644\u0645\u0639\u0627\u0645\u0644\u0627\u062A. \u0623\u0639\u062F \u0631\u0628\u0637 \u0645\u062D\u0641\u0638\u0629 \u0633\u0648\u0644\u0627\u0646\u0627."));
   const lamports=Math.ceil(sol*1e9);
-  if(!Number.isSafeInteger(lamports)||lamports<=0)throw new Error(qxLangText("Invalid SOL payment amount.","ÙÙÙØ© Ø§ÙØ¯ÙØ¹ Ø¨Ø¹ÙÙØ© SOL ØºÙØ± ØµØ­ÙØ­Ø©."));
-  adBusy=true;adEl("adPayBtn").disabled=true;adEl("adPayBtn").textContent=qxLangText("WAITING FOR WALLET APPROVAL...","Ø¨Ø§ÙØªØ¸Ø§Ø± ÙÙØ§ÙÙØ© Ø§ÙÙØ­ÙØ¸Ø©...");
-  adEl("adStatus").textContent=qxLangText("Review and approve the SOL payment in your connected wallet.","Ø±Ø§Ø¬Ø¹ Ø¯ÙØ¹Ø© SOL ÙÙØ§ÙÙ Ø¹ÙÙÙØ§ ÙÙ ÙØ­ÙØ¸ØªÙ Ø§ÙÙØªØµÙØ©.");
+  if(!Number.isSafeInteger(lamports)||lamports<=0)throw new Error(qxLangText("Invalid SOL payment amount.","\u0642\u064A\u0645\u0629 \u0627\u0644\u062F\u0641\u0639 \u0628\u0639\u0645\u0644\u0629 SOL \u063A\u064A\u0631 \u0635\u062D\u064A\u062D\u0629."));
+  adBusy=true;adEl("adPayBtn").disabled=true;adEl("adPayBtn").textContent=qxLangText("WAITING FOR WALLET APPROVAL...","\u0628\u0627\u0646\u062A\u0638\u0627\u0631 \u0645\u0648\u0627\u0641\u0642\u0629 \u0627\u0644\u0645\u062D\u0641\u0638\u0629...");
+  adEl("adStatus").textContent=qxLangText("Review and approve the SOL payment in your connected wallet.","\u0631\u0627\u062C\u0639 \u062F\u0641\u0639\u0629 SOL \u0648\u0648\u0627\u0641\u0642 \u0639\u0644\u064A\u0647\u0627 \u0645\u0646 \u0645\u062D\u0641\u0638\u062A\u0643 \u0627\u0644\u0645\u062A\u0635\u0644\u0629.");
   const latest=await rpc("getLatestBlockhash",[{commitment:"confirmed"}]);
   const transaction=new Transaction({feePayer:new PublicKey(walletAddress),recentBlockhash:latest.value.blockhash});
   transaction.add(SystemProgram.transfer({fromPubkey:new PublicKey(walletAddress),toPubkey:new PublicKey(QX_AD_TREASURY),lamports}));
   const signed=await provider.signTransaction(transaction);
   const encoded=bytesToBase64(signed.serialize());
   const signature=await rpc("sendTransaction",[encoded,{encoding:"base64",skipPreflight:false,preflightCommitment:"confirmed",maxRetries:3}]);
-  adEl("adStatus").textContent=qxLangText("Payment sent. Waiting for Solana confirmation...","ØªÙ Ø¥Ø±Ø³Ø§Ù Ø§ÙØ¯ÙØ¹Ø©. Ø¨Ø§ÙØªØ¸Ø§Ø± ØªØ£ÙÙØ¯ Ø´Ø¨ÙØ© Ø³ÙÙØ§ÙØ§...");
+  adEl("adStatus").textContent=qxLangText("Payment sent. Waiting for Solana confirmation...","\u062A\u0645 \u0625\u0631\u0633\u0627\u0644 \u0627\u0644\u062F\u0641\u0639\u0629. \u0628\u0627\u0646\u062A\u0638\u0627\u0631 \u062A\u0623\u0643\u064A\u062F \u0634\u0628\u0643\u0629 \u0633\u0648\u0644\u0627\u0646\u0627...");
   await waitForSolanaConfirmation(signature);
-  adEl("adStatus").textContent=qxLangText("Payment confirmed. QX is verifying the transaction and publishing your advertisement...","ØªÙ ØªØ£ÙÙØ¯ Ø§ÙØ¯ÙØ¹. ØªØªØ­ÙÙ QX ÙÙ Ø§ÙÙØ¹Ø§ÙÙØ© ÙØªÙØ´Ø± Ø¥Ø¹ÙØ§ÙÙ...");
+  adEl("adStatus").textContent=qxLangText("Payment confirmed. QX is verifying the transaction and publishing your advertisement...","\u062A\u0645 \u062A\u0623\u0643\u064A\u062F \u0627\u0644\u062F\u0641\u0639. \u062A\u062A\u062D\u0642\u0642 QX \u0645\u0646 \u0627\u0644\u0645\u0639\u0627\u0645\u0644\u0629 \u0648\u062A\u0646\u0634\u0631 \u0625\u0639\u0644\u0627\u0646\u0643...");
   const response=await fetch(QX_ADS_SUPABASE_URL+"/functions/v1/"+QX_AD_FUNCTION,{
    method:"POST",headers:{"Content-Type":"application/json","apikey":QX_ADS_SUPABASE_ANON_KEY,"Authorization":"Bearer "+QX_ADS_SUPABASE_ANON_KEY},
    body:JSON.stringify({action:"publish",wallet:walletAddress,signature,duration_hours:hours,price_usd:pkg.usd,sol_amount:sol,title,body,url,image_url:imageUrl})
   });
   const result=await response.json().catch(()=>({}));
   if(!response.ok||!result.ok)throw new Error(result.error||"Payment is confirmed, but server-side verification did not publish the ad. Keep this transaction signature for support: "+signature);
-  adEl("adStatus").textContent=qxLangText("Advertisement published successfully.","ØªÙ ÙØ´Ø± Ø§ÙØ¥Ø¹ÙØ§Ù Ø¨ÙØ¬Ø§Ø­.");
+  adEl("adStatus").textContent=qxLangText("Advertisement published successfully.","\u062A\u0645 \u0646\u0634\u0631 \u0627\u0644\u0625\u0639\u0644\u0627\u0646 \u0628\u0646\u062C\u0627\u062D.");
   await loadPublicAds();
   setTimeout(()=>adEl("adModalBackdrop").classList.remove("open"),1100);
- }catch(e){adEl("adStatus").textContent=e.message||qxLangText("Advertisement payment could not be completed.","ØªØ¹Ø°Ø± Ø¥ÙÙØ§Ù Ø¯ÙØ¹ Ø§ÙØ¥Ø¹ÙØ§Ù.");}
+ }catch(e){adEl("adStatus").textContent=e.message||qxLangText("Advertisement payment could not be completed.","\u062A\u0639\u0630\u0631 \u0625\u0643\u0645\u0627\u0644 \u062F\u0641\u0639 \u0627\u0644\u0625\u0639\u0644\u0627\u0646.");}
  finally{adBusy=false;adEl("adPayBtn").disabled=false;adEl("adPayBtn").textContent="PAY WITH CONNECTED WALLET";}
 }
 adEl("adPayBtn").addEventListener("click",payForAdvertisement);
@@ -1361,7 +1361,7 @@ async function loadMarket(){
 const categoryNames={
  all:"All Solana tokens",new:"New Coins | Live",gainers:"Top Gainers | 24h",losers:"Top Losers | 24h",trending:"Trending tokens",volume:"Top Volume | 24h"
 };
-function qxCategoryName(key){const ar=qxLanguage==="ar";const names=ar?{all:"ÙÙ Ø¹ÙÙØ§Øª Ø³ÙÙØ§ÙØ§",new:"Ø¹ÙÙØ§Øª Ø¬Ø¯ÙØ¯Ø© | ÙØ¨Ø§Ø´Ø±",gainers:"Ø§ÙØ£Ø¹ÙÙ Ø§Ø±ØªÙØ§Ø¹Ø§Ù | 24 Ø³Ø§Ø¹Ø©",losers:"Ø§ÙØ£Ø¹ÙÙ Ø§ÙØ®ÙØ§Ø¶Ø§Ù | 24 Ø³Ø§Ø¹Ø©",trending:"Ø§ÙØ¹ÙÙØ§Øª Ø§ÙØ±Ø§Ø¦Ø¬Ø©",volume:"Ø§ÙØ£Ø¹ÙÙ ØªØ¯Ø§ÙÙØ§Ù | 24 Ø³Ø§Ø¹Ø©"}:categoryNames;return names[key]||categoryNames[key]||key;}
+function qxCategoryName(key){const ar=qxLanguage==="ar";const names=ar?{all:"\u0643\u0644 \u0639\u0645\u0644\u0627\u062A \u0633\u0648\u0644\u0627\u0646\u0627",new:"\u0639\u0645\u0644\u0627\u062A \u062C\u062F\u064A\u062F\u0629 | \u0645\u0628\u0627\u0634\u0631",gainers:"\u0627\u0644\u0623\u0639\u0644\u0649 \u0627\u0631\u062A\u0641\u0627\u0639\u0627\u064B | 24 \u0633\u0627\u0639\u0629",losers:"\u0627\u0644\u0623\u0639\u0644\u0649 \u0627\u0646\u062E\u0641\u0627\u0636\u0627\u064B | 24 \u0633\u0627\u0639\u0629",trending:"\u0627\u0644\u0639\u0645\u0644\u0627\u062A \u0627\u0644\u0631\u0627\u0626\u062C\u0629",volume:"\u0627\u0644\u0623\u0639\u0644\u0649 \u062A\u062F\u0627\u0648\u0644\u0627\u064B | 24 \u0633\u0627\u0639\u0629"}:categoryNames;return names[key]||categoryNames[key]||key;}
 function dedupeVisibleTokenLabels(input){
  // A token's identity is its mint, not its display name or symbol.
  // Different mints can legitimately share a name/symbol, so never hide them as duplicates.
@@ -1430,10 +1430,10 @@ function updateSortUI(){
    ?(sortDirection==="asc"?"Ascending; tap for descending":"Descending; tap to reset")
    :"Tap to sort ascending");
  });
- const names=qxLanguage==="ar"?{price:"Ø§ÙØ³Ø¹Ø±",change:"Ø§ÙØªØºÙØ±",volume:"Ø­Ø¬Ù Ø§ÙØªØ¯Ø§ÙÙ",marketcap:"Ø§ÙÙÙÙØ© Ø§ÙØ³ÙÙÙØ©",liquidity:"Ø§ÙØ³ÙÙÙØ©"}:{price:"Price",change:"Change",volume:"Volume",marketcap:"Market Cap",liquidity:"Liquidity"};
+ const names=qxLanguage==="ar"?{price:"\u0627\u0644\u0633\u0639\u0631",change:"\u0627\u0644\u062A\u063A\u064A\u0631",volume:"\u062D\u062C\u0645 \u0627\u0644\u062A\u062F\u0627\u0648\u0644",marketcap:"\u0627\u0644\u0642\u064A\u0645\u0629 \u0627\u0644\u0633\u0648\u0642\u064A\u0629",liquidity:"\u0627\u0644\u0633\u064A\u0648\u0644\u0629"}:{price:"Price",change:"Change",volume:"Volume",marketcap:"Market Cap",liquidity:"Liquidity"};
  $("sortLabel").textContent=sortMetric
-  ?names[sortMetric]+" | "+(sortDirection==="asc"?(qxLanguage==="ar"?"ÙÙ Ø§ÙØ£ÙÙ Ø¥ÙÙ Ø§ÙØ£Ø¹ÙÙ":"Low to high"):(qxLanguage==="ar"?"ÙÙ Ø§ÙØ£Ø¹ÙÙ Ø¥ÙÙ Ø§ÙØ£ÙÙ":"High to low"))
-  :(qxLanguage==="ar"?"Ø§ÙØªØ±ØªÙØ¨ Ø§ÙØ§ÙØªØ±Ø§Ø¶Ù":"Default order");
+  ?names[sortMetric]+" | "+(sortDirection==="asc"?(qxLanguage==="ar"?"\u0645\u0646 \u0627\u0644\u0623\u0642\u0644 \u0625\u0644\u0649 \u0627\u0644\u0623\u0639\u0644\u0649":"Low to high"):(qxLanguage==="ar"?"\u0645\u0646 \u0627\u0644\u0623\u0639\u0644\u0649 \u0625\u0644\u0649 \u0627\u0644\u0623\u0642\u0644":"High to low"))
+  :(qxLanguage==="ar"?"\u0627\u0644\u062A\u0631\u062A\u064A\u0628 \u0627\u0644\u0627\u0641\u062A\u0631\u0627\u0636\u064A":"Default order");
 }
 $("sortOptions").addEventListener("click",event=>{
  const button=event.target.closest("button[data-sort]");
