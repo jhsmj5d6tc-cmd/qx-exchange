@@ -693,6 +693,11 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape")qxWpHide();});
 </script>
 
 <script type="module">
+// Provide the Buffer global expected by Solana wallet adapters in browser environments.
+import { Buffer } from "https://esm.sh/buffer@6.0.3?bundle";
+globalThis.Buffer = Buffer;
+if (typeof window !== "undefined") window.Buffer = Buffer;
+
 // Load wallet / Solana libraries independently. A failed wallet CDN must not
 // prevent the public market, search, navigation, or other page buttons from running.
 let createAppKit,SolanaAdapter,solana;
