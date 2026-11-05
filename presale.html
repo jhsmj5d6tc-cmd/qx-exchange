@@ -5,6 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#080711">
 <title>QX Presale</title>
+<!-- Buffer must be loaded in this iframe before Solana web3.js. -->
+<script src="https://cdn.jsdelivr.net/npm/buffer@6.0.3/index.min.js"></script>
+<script>
+(() => {
+  if (window.Buffer) {
+    globalThis.Buffer = window.Buffer;
+    window.__qxPresaleBufferReady = Promise.resolve(window.Buffer);
+    return;
+  }
+  window.__qxPresaleBufferReady = Promise.reject(new Error("Buffer library failed to load."));
+})();
+</script>
 <script src="https://unpkg.com/@solana/web3.js@1.95.3/lib/index.iife.min.js"></script>
 <style>
 :root{
@@ -486,6 +498,16 @@ async function buyQX(){
 
  try{
    setStatus("info",tr("approving"));
+
+   // Wait until this iframe has its own Buffer global before web3.js
+   // serializes the Solana transaction.
+   if (!window.__qxPresaleBufferReady) {
+     throw new Error("Buffer library failed to load. Reload the page and try again.");
+   }
+   await window.__qxPresaleBufferReady;
+   if (!window.Buffer) {
+     throw new Error("Buffer library failed to load. Reload the page and try again.");
+   }
 
    // Connect using the exact same wallet session as the parent QX page.
    const address=await ensureWalletConnected();
