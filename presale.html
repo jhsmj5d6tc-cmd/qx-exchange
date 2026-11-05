@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#080711">
 <title>QX Presale</title>
+<!-- Buffer polyfill must load in this document too: the presale page runs in a separate iframe realm. -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/buffer/6.0.3/buffer.min.js"></script>
+<script>if (typeof buffer !== "undefined" && buffer.Buffer) { window.Buffer = buffer.Buffer; }</script>
 <script src="https://unpkg.com/@solana/web3.js@1.95.3/lib/index.iife.min.js"></script>
 <style>
 :root{
@@ -123,7 +126,7 @@ h1{font-size:38px;margin:17px 0 9px}
   <p class="sub" data-i18n="sub">
     Join the QX presale and receive your QX allocation based on the amount of SOL you pay.
   </p>
-  <div class="price">$0.05 <small data-i18n="per">per QX</small></div>
+  <div class="price">$0.002 <small data-i18n="per">per QX</small></div>
 
   <div class="grid">
     <div class="info">
@@ -178,7 +181,7 @@ h1{font-size:38px;margin:17px 0 9px}
 <script>
 (() => {
   const RECEIVE_WALLET = "E4x2DiVVDuVQHSUGgzTPjJMDbiJ6jCRwpEvsvAd31Qs4";
-  const QX_PRICE_USD = 0.05;
+  const QX_PRICE_USD = 0.002;
   const RPC = "https://api.mainnet-beta.solana.com";
   const PRICE_URL = "https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd";
 
