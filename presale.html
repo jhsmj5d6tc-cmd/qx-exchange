@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
@@ -117,32 +116,26 @@ h1{font-size:38px;margin:17px 0 9px}
 </head>
 <body>
 <div class="wrap">
-
 <header>
   <a class="brand" href="index.html" style="text-decoration:none;color:inherit">Q<span>X</span></a>
   <div class="top-actions">
     <select id="language" aria-label="Language">
       <option value="en">English (EN)</option>
-      <option value="ar">العربية (AR)</option>
+      <option value="ar">Ø§ÙØ¹Ø±Ø¨ÙØ© (AR)</option>
     </select>
     <a class="back" href="index.html" data-i18n="back">Back to QX</a>
   </div>
 </header>
-
 <section class="hero">
   <div class="badge" data-i18n="badge">QX PRESALE</div>
   <h1 data-i18n="title">Buy QX</h1>
-  <p class="sub" data-i18n="sub">
-    Join the QX presale and receive your QX allocation based on the amount of SOL you pay.
-  </p>
-
+  <p class="sub" data-i18n="sub">Join the QX presale and receive your QX allocation based on the amount of SOL you pay.</p>
   <div class="price">$0.0002 <small data-i18n="per">per QX</small></div>
   <div class="sol-price">
     <span data-i18n="solEquivalent">SOL equivalent:</span>
     <strong id="solPerQx">Loading...</strong>
     <span data-i18n="perQx">SOL per QX</span>
   </div>
-
   <div class="countdown">
     <div class="countdown-title" data-i18n="countdownTitle">TIME LEFT UNTIL PRESALE ENDS</div>
     <div class="timer" id="timer">
@@ -153,51 +146,29 @@ h1{font-size:38px;margin:17px 0 9px}
     </div>
     <div id="endedMessage" class="ended" hidden data-i18n="ended">PRESALE ENDED</div>
   </div>
-
   <div class="grid">
-    <div class="info">
-      <span data-i18n="total">Total Supply</span>
-      <strong>100,000,000 QX</strong>
-    </div>
+    <div class="info"><span data-i18n="total">Total Supply</span><strong>100,000,000 QX</strong></div>
   </div>
 </section>
-
 <section class="card">
   <h2 data-i18n="buyTitle">Purchase QX</h2>
-
-  <div class="label">
-    <span data-i18n="pay">YOU PAY</span>
-    <span id="solUsdLabel">SOL/USD: —</span>
-  </div>
-
+  <div class="label"><span data-i18n="pay">YOU PAY</span><span id="solUsdLabel">SOL/USD: â</span></div>
   <div class="amount">
     <input id="solAmount" type="number" min="0" step="0.000001" inputmode="decimal" placeholder="0.00">
     <span>SOL</span>
   </div>
-
   <div class="receive">
-    <div class="label">
-      <span data-i18n="receive">YOU RECEIVE</span>
-      <span>QX</span>
-    </div>
+    <div class="label"><span data-i18n="receive">YOU RECEIVE</span><span>QX</span></div>
     <div class="receive-value" id="qxAmount">0 QX</div>
     <div class="quote" id="quoteText" data-i18n="quoteLoading">Live SOL price is loading...</div>
   </div>
-
   <button class="btn primary" id="buyBtn" disabled data-i18n="buy">BUY QX</button>
-  <div class="wallet-hint" id="walletHint" data-i18n="walletHint">
-    Your wallet will connect when you press BUY QX.
-  </div>
+  <div class="wallet-hint" id="walletHint" data-i18n="walletHint">Your wallet will connect when you press BUY QX.</div>
   <div class="status" id="status"></div>
 </section>
-
-<div class="note" data-i18n="note">
-  Your payment is sent on-chain after wallet approval. QX allocation will be delivered manually after the presale ends.
+<div class="note" data-i18n="note">Your payment is sent on-chain after wallet approval. QX allocation will be delivered manually after the presale ends.</div>
+<div class="footer">QX Exchange Â· Solana</div>
 </div>
-
-<div class="footer">QX Exchange · Solana</div>
-</div>
-
 <script>
 (() => {
 "use strict";
@@ -205,15 +176,13 @@ h1{font-size:38px;margin:17px 0 9px}
 const RECEIVE_WALLET = "E4x2DiVVDuQHSUGgzTPjJMDbiJ6jCRwpEvsvAd31Qs4";
 const QX_PRICE_USD = 0.0002;
 const RPC_ENDPOINTS = [
-  "https://api.mainnet-beta.solana.com",
-  "https://solana-rpc.publicnode.com"
+  "https://solana-rpc.publicnode.com",
+  "https://api.mainnet-beta.solana.com"
 ];
 const PRICE_URL = "https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd";
 const PRESALE_END = new Date("2026-11-15T01:45:00+04:00").getTime();
 
 const $ = id => document.getElementById(id);
-let provider = null;
-let publicKey = null;
 let solUsd = null;
 let quoteReady = false;
 let buying = false;
@@ -242,35 +211,37 @@ en:{
  endedError:"The QX presale has ended.",
  note:"Your payment is sent on-chain after wallet approval. QX allocation will be delivered manually after the presale ends.",
  tx:"View transaction on Solscan",
- noWallet:"No Solana wallet was detected. Open this page in a compatible wallet browser.",
+ noWallet:"The QX wallet connection is unavailable. Return to the main QX page and connect your Solana wallet.",
  connected:"Wallet connected: ",
- connecting:"Please approve the wallet connection."
+ connecting:"Opening the QX wallet selector...",
+ waiting:"Wallet connected. Preparing your payment..."
 },
 ar:{
- back:"العودة إلى QX",badge:"اكتتاب QX",title:"شراء QX",
- sub:"انضم إلى اكتتاب QX واحصل على الكمية المستحقة لك بناءً على مبلغ SOL الذي تدفعه.",
- per:"لكل عملة QX",solEquivalent:"السعر بما يعادل:",perQx:"SOL لكل QX",
- countdownTitle:"الوقت المتبقي حتى انتهاء الاكتتاب",
- days:"أيام",hours:"ساعات",minutes:"دقائق",seconds:"ثوانٍ",
- ended:"انتهى الاكتتاب",total:"إجمالي المعروض",buyTitle:"شراء QX",
- pay:"أنت تدفع",receive:"أنت تستلم",buy:"شراء QX",
- quoteLoading:"جارٍ تحميل سعر SOL المباشر...",
- quote:"سعر SOL المباشر: $",
- walletHint:"سيتم ربط محفظتك عند الضغط على زر الشراء.",
- walletFirst:"يرجى ربط محفظة Solana للمتابعة.",
- invalid:"أدخل كمية SOL صحيحة.",
- priceUnavailable:"سعر SOL المباشر غير متاح حالياً. حاول مرة أخرى قبل الشراء.",
- approving:"جارٍ ربط المحفظة وانتظار موافقتك...",
- sending:"تم إرسال العملية. جارٍ تأكيدها على شبكة Solana...",
- success:"تم تأكيد الدفع. كمية QX المستحقة:",
- failed:"فشل الدفع: ",
- cancelled:"تم إلغاء العملية.",
- endedError:"انتهى اكتتاب QX.",
- note:"يتم إرسال الدفع على البلوكشين بعد موافقة المحفظة. سيتم تسليم كمية QX المستحقة يدوياً بعد انتهاء الاكتتاب.",
- tx:"عرض العملية على Solscan",
- noWallet:"لم يتم العثور على محفظة Solana. افتح الصفحة من متصفح محفظة متوافقة.",
- connected:"المحفظة متصلة: ",
- connecting:"يرجى الموافقة على ربط المحفظة."
+ back:"Ø§ÙØ¹ÙØ¯Ø© Ø¥ÙÙ QX",badge:"Ø§ÙØªØªØ§Ø¨ QX",title:"Ø´Ø±Ø§Ø¡ QX",
+ sub:"Ø§ÙØ¶Ù Ø¥ÙÙ Ø§ÙØªØªØ§Ø¨ QX ÙØ§Ø­ØµÙ Ø¹ÙÙ Ø§ÙÙÙÙØ© Ø§ÙÙØ³ØªØ­ÙØ© ÙÙ Ø¨ÙØ§Ø¡Ù Ø¹ÙÙ ÙØ¨ÙØº SOL Ø§ÙØ°Ù ØªØ¯ÙØ¹Ù.",
+ per:"ÙÙÙ Ø¹ÙÙØ© QX",solEquivalent:"Ø§ÙØ³Ø¹Ø± Ø¨ÙØ§ ÙØ¹Ø§Ø¯Ù:",perQx:"SOL ÙÙÙ QX",
+ countdownTitle:"Ø§ÙÙÙØª Ø§ÙÙØªØ¨ÙÙ Ø­ØªÙ Ø§ÙØªÙØ§Ø¡ Ø§ÙØ§ÙØªØªØ§Ø¨",
+ days:"Ø£ÙØ§Ù",hours:"Ø³Ø§Ø¹Ø§Øª",minutes:"Ø¯ÙØ§Ø¦Ù",seconds:"Ø«ÙØ§ÙÙ",
+ ended:"Ø§ÙØªÙÙ Ø§ÙØ§ÙØªØªØ§Ø¨",total:"Ø¥Ø¬ÙØ§ÙÙ Ø§ÙÙØ¹Ø±ÙØ¶",buyTitle:"Ø´Ø±Ø§Ø¡ QX",
+ pay:"Ø£ÙØª ØªØ¯ÙØ¹",receive:"Ø£ÙØª ØªØ³ØªÙÙ",buy:"Ø´Ø±Ø§Ø¡ QX",
+ quoteLoading:"Ø¬Ø§Ø±Ù ØªØ­ÙÙÙ Ø³Ø¹Ø± SOL Ø§ÙÙØ¨Ø§Ø´Ø±...",
+ quote:"Ø³Ø¹Ø± SOL Ø§ÙÙØ¨Ø§Ø´Ø±: $",
+ walletHint:"Ø³ÙØªÙ Ø±Ø¨Ø· ÙØ­ÙØ¸ØªÙ Ø¹ÙØ¯ Ø§ÙØ¶ØºØ· Ø¹ÙÙ Ø²Ø± Ø§ÙØ´Ø±Ø§Ø¡.",
+ walletFirst:"ÙØ±Ø¬Ù Ø±Ø¨Ø· ÙØ­ÙØ¸Ø© Solana ÙÙÙØªØ§Ø¨Ø¹Ø©.",
+ invalid:"Ø£Ø¯Ø®Ù ÙÙÙØ© SOL ØµØ­ÙØ­Ø©.",
+ priceUnavailable:"Ø³Ø¹Ø± SOL Ø§ÙÙØ¨Ø§Ø´Ø± ØºÙØ± ÙØªØ§Ø­ Ø­Ø§ÙÙØ§Ù. Ø­Ø§ÙÙ ÙØ±Ø© Ø£Ø®Ø±Ù ÙØ¨Ù Ø§ÙØ´Ø±Ø§Ø¡.",
+ approving:"Ø¬Ø§Ø±Ù Ø±Ø¨Ø· Ø§ÙÙØ­ÙØ¸Ø© ÙØ§ÙØªØ¸Ø§Ø± ÙÙØ§ÙÙØªÙ...",
+ sending:"ØªÙ Ø¥Ø±Ø³Ø§Ù Ø§ÙØ¹ÙÙÙØ©. Ø¬Ø§Ø±Ù ØªØ£ÙÙØ¯ÙØ§ Ø¹ÙÙ Ø´Ø¨ÙØ© Solana...",
+ success:"ØªÙ ØªØ£ÙÙØ¯ Ø§ÙØ¯ÙØ¹. ÙÙÙØ© QX Ø§ÙÙØ³ØªØ­ÙØ©:",
+ failed:"ÙØ´Ù Ø§ÙØ¯ÙØ¹: ",
+ cancelled:"ØªÙ Ø¥ÙØºØ§Ø¡ Ø§ÙØ¹ÙÙÙØ©.",
+ endedError:"Ø§ÙØªÙÙ Ø§ÙØªØªØ§Ø¨ QX.",
+ note:"ÙØªÙ Ø¥Ø±Ø³Ø§Ù Ø§ÙØ¯ÙØ¹ Ø¹ÙÙ Ø§ÙØ¨ÙÙÙØ´ÙÙ Ø¨Ø¹Ø¯ ÙÙØ§ÙÙØ© Ø§ÙÙØ­ÙØ¸Ø©. Ø³ÙØªÙ ØªØ³ÙÙÙ ÙÙÙØ© QX Ø§ÙÙØ³ØªØ­ÙØ© ÙØ¯ÙÙØ§Ù Ø¨Ø¹Ø¯ Ø§ÙØªÙØ§Ø¡ Ø§ÙØ§ÙØªØªØ§Ø¨.",
+ tx:"Ø¹Ø±Ø¶ Ø§ÙØ¹ÙÙÙØ© Ø¹ÙÙ Solscan",
+ noWallet:"ØªØ¹Ø°Ø± Ø§ÙÙØµÙÙ Ø¥ÙÙ Ø±Ø¨Ø· Ø§ÙÙØ­ÙØ¸Ø© ÙÙ QX. Ø§Ø±Ø¬Ø¹ Ø¥ÙÙ ØµÙØ­Ø© QX Ø§ÙØ±Ø¦ÙØ³ÙØ© ÙØ§Ø±Ø¨Ø· ÙØ­ÙØ¸Ø© Solana.",
+ connected:"Ø§ÙÙØ­ÙØ¸Ø© ÙØªØµÙØ©: ",
+ connecting:"Ø¬Ø§Ø±Ù ÙØªØ­ ÙØ§Ø¦ÙØ© Ø§ÙÙØ­Ø§ÙØ¸ ÙÙ QX...",
+ waiting:"ØªÙ Ø±Ø¨Ø· Ø§ÙÙØ­ÙØ¸Ø©. Ø¬Ø§Ø±Ù ØªØ¬ÙÙØ² Ø§ÙØ¯ÙØ¹..."
 }
 };
 
@@ -317,9 +288,9 @@ function clearStatus(){
  $("status").textContent="";
 }
 
-function shortAddress(key){
- const value=key.toString();
- return value.slice(0,6)+"..."+value.slice(-4);
+function shortAddress(value){
+ const text=String(value);
+ return text.slice(0,6)+"..."+text.slice(-4);
 }
 
 function updateCountdown(){
@@ -340,13 +311,53 @@ function updateCountdown(){
  $("seconds").textContent=String(seconds).padStart(2,"0");
 }
 
-function getWalletProvider(){
- if(window.phantom?.solana?.isPhantom) return window.phantom.solana;
- if(window.solflare?.isSolflare) return window.solflare;
- if(window.backpack?.solana) return window.backpack.solana;
- if(window.solana?.isPhantom) return window.solana;
- if(window.solana) return window.solana;
+function getParentBridge(){
+ try{
+   const p=window.parent;
+   if(p && p!==window &&
+      typeof p.QXGetWalletState==="function" &&
+      typeof p.QXConnectWallet==="function" &&
+      typeof p.QXSendPresaleTransaction==="function") return p;
+ }catch(error){}
  return null;
+}
+
+function readParentWallet(){
+ const bridge=getParentBridge();
+ if(!bridge)return null;
+ try{
+   const state=bridge.QXGetWalletState();
+   if(state?.connected && state?.address) return String(state.address);
+ }catch(error){}
+ return null;
+}
+
+async function ensureWalletConnected(){
+ const bridge=getParentBridge();
+ if(!bridge) throw new Error(tr("noWallet"));
+
+ let address=readParentWallet();
+ if(address){
+   $("walletHint").textContent=tr("connected")+shortAddress(address);
+   return address;
+ }
+
+ $("walletHint").textContent=tr("connecting");
+ // Open the same QX wallet picker used by the main page.
+ await bridge.QXConnectWallet();
+
+ // AppKit's open() can resolve when the picker opens, before the user connects.
+ // Poll the parent state until the wallet is actually connected.
+ const started=Date.now();
+ while(Date.now()-started<120000){
+   await new Promise(resolve=>setTimeout(resolve,400));
+   address=readParentWallet();
+   if(address){
+     $("walletHint").textContent=tr("connected")+shortAddress(address);
+     return address;
+   }
+ }
+ throw new Error("Wallet connection timed out. Connect your wallet in the QX wallet window and try again.");
 }
 
 function updateBuyState(){
@@ -355,70 +366,10 @@ function updateBuyState(){
  $("buyBtn").disabled=!(quoteReady && amount>0 && Number.isFinite(amount) && active && !buying);
 }
 
-function handleAccountChanged(pubkey){
- if(pubkey){
-   publicKey=pubkey;
-   $("walletHint").textContent=tr("connected")+shortAddress(pubkey);
- }else{
-   provider=null;
-   publicKey=null;
-   $("walletHint").textContent=tr("walletHint");
- }
- updateBuyState();
-}
-
-function attachWalletEvents(p){
- if(!p || typeof p.on!=="function") return;
- if(p.__qxPresaleEventsAttached) return;
- p.on("accountChanged",handleAccountChanged);
- p.on("disconnect",()=>handleAccountChanged(null));
- p.__qxPresaleEventsAttached=true;
-}
-
-async function ensureWalletConnected(){
- let p=getWalletProvider();
- if(!p) throw new Error(tr("noWallet"));
-
- if(p.publicKey && p.isConnected!==false){
-   provider=p;
-   publicKey=p.publicKey;
-   attachWalletEvents(p);
-   $("walletHint").textContent=tr("connected")+shortAddress(publicKey);
-   return;
- }
-
- // Try to restore a previously approved wallet connection first.
- try{
-   if(typeof p.connect==="function"){
-     const restored=await p.connect({onlyIfTrusted:true});
-     const key=restored?.publicKey || p.publicKey;
-     if(key){
-       provider=p;
-       publicKey=key;
-       attachWalletEvents(p);
-       $("walletHint").textContent=tr("connected")+shortAddress(key);
-       return;
-     }
-   }
- }catch(_){}
-
- // If no trusted session exists, request connection from the wallet.
- if(typeof p.connect!=="function") throw new Error(tr("noWallet"));
- $("walletHint").textContent=tr("connecting");
- const result=await p.connect();
- const key=result?.publicKey || p.publicKey;
- if(!key) throw new Error("Wallet did not return a public key.");
-
- provider=p;
- publicKey=key;
- attachWalletEvents(p);
- $("walletHint").textContent=tr("connected")+shortAddress(key);
-}
-
 function updateQuote(){
  const sol=Number($("solAmount").value);
  if(!solUsd || !Number.isFinite(solUsd)){
-   $("qxAmount").textContent="—";
+   $("qxAmount").textContent="â";
    $("quoteText").textContent=tr("quoteLoading");
    quoteReady=false;
    updateBuyState();
@@ -452,8 +403,8 @@ async function loadSolPrice(){
  }catch(err){
    solUsd=null;
    quoteReady=false;
-   $("solUsdLabel").textContent="SOL/USD: —";
-   $("solPerQx").textContent="—";
+   $("solUsdLabel").textContent="SOL/USD: â";
+   $("solPerQx").textContent="â";
    $("quoteText").textContent=tr("priceUnavailable");
    updateBuyState();
  }
@@ -470,16 +421,37 @@ async function getWorkingConnection(){
    try{
      const connection=new solanaWeb3.Connection(endpoint,"confirmed");
      const latest=await connection.getLatestBlockhash("confirmed");
+     if(!latest?.blockhash || !latest?.lastValidBlockHeight) throw new Error("RPC returned an incomplete blockhash.");
      return {connection,latest};
-   }catch(err){
-     lastError=err;
-   }
+   }catch(err){lastError=err;}
  }
  throw new Error("Unable to reach Solana RPC. "+String(lastError?.message||lastError||""));
 }
 
+function toBase64(bytes){
+ let binary="";
+ const chunkSize=0x8000;
+ for(let i=0;i<bytes.length;i+=chunkSize){
+   binary+=String.fromCharCode(...bytes.subarray(i,i+chunkSize));
+ }
+ return btoa(binary);
+}
+
+async function sendThroughMainQX(transaction){
+ const bridge=getParentBridge();
+ if(!bridge) throw new Error(tr("noWallet"));
+
+ // The main QX page expects a base64-encoded serialized transaction.
+ // It deserializes, signs and submits it using the connected wallet adapter.
+ const serialized=transaction.serialize({
+   requireAllSignatures:false,
+   verifySignatures:false
+ });
+ return await bridge.QXSendPresaleTransaction(toBase64(serialized));
+}
+
 async function buyQX(){
- if(buying) return;
+ if(buying)return;
  clearStatus();
 
  if(Date.now()>=PRESALE_END){
@@ -504,7 +476,7 @@ async function buyQX(){
 
  const qx=(sol*solUsd)/QX_PRICE_USD;
  const lamports=Math.round(sol*solanaWeb3.LAMPORTS_PER_SOL);
- if(lamports<=0){
+ if(!Number.isSafeInteger(lamports)||lamports<=0){
    setStatus("error",tr("invalid"));
    return;
  }
@@ -515,19 +487,13 @@ async function buyQX(){
  try{
    setStatus("info",tr("approving"));
 
-   // Connect or restore the wallet through the BUY button.
-   await ensureWalletConnected();
-
-   const sender=new solanaWeb3.PublicKey(publicKey.toString());
+   // Connect using the exact same wallet session as the parent QX page.
+   const address=await ensureWalletConnected();
+   const sender=new solanaWeb3.PublicKey(address);
    const destination=new solanaWeb3.PublicKey(RECEIVE_WALLET);
 
-   if(typeof provider.signTransaction!=="function"){
-     throw new Error("This wallet does not support signTransaction.");
-   }
-
-   // Try the primary RPC and then the fallback RPC.
+   // Fetch a fresh blockhash immediately before creating the transfer.
    const {connection,latest}=await getWorkingConnection();
-
    const transaction=new solanaWeb3.Transaction().add(
      solanaWeb3.SystemProgram.transfer({
        fromPubkey:sender,
@@ -535,28 +501,16 @@ async function buyQX(){
        lamports
      })
    );
-
    transaction.feePayer=sender;
    transaction.recentBlockhash=latest.blockhash;
 
-   const signedTransaction=await provider.signTransaction(transaction);
-   if(!signedTransaction || typeof signedTransaction.serialize!=="function"){
-     throw new Error("The wallet did not return a valid signed transaction.");
+   setStatus("info",tr("waiting"));
+   const signature=await sendThroughMainQX(transaction);
+   if(typeof signature!=="string" || !signature){
+     throw new Error("The connected wallet did not return a valid transaction signature.");
    }
 
    setStatus("info",tr("sending"));
-
-   const signature=await connection.sendRawTransaction(
-     signedTransaction.serialize(),
-     {
-       skipPreflight:false,
-       preflightCommitment:"confirmed",
-       maxRetries:3
-     }
-   );
-
-   if(!signature) throw new Error("Solana RPC did not return a transaction signature.");
-
    const confirmation=await connection.confirmTransaction({
      signature,
      blockhash:latest.blockhash,
@@ -569,19 +523,14 @@ async function buyQX(){
 
    $("solAmount").value="";
    updateQuote();
-
    setStatus(
      "success",
      tr("success")+" "+qx.toLocaleString("en-US",{maximumFractionDigits:2})+" QX",
      "https://solscan.io/tx/"+encodeURIComponent(signature)
    );
-
  }catch(err){
    const msg=String(err?.message||err||"");
-   setStatus(
-     "error",
-     /reject|cancel|4001/i.test(msg) ? tr("cancelled") : tr("failed")+msg
-   );
+   setStatus("error",/reject|cancel|4001|user rejected/i.test(msg)?tr("cancelled"):tr("failed")+msg);
  }finally{
    buying=false;
    updateBuyState();
@@ -591,29 +540,11 @@ async function buyQX(){
 $("buyBtn").addEventListener("click",buyQX);
 
 async function restoreWallet(){
- const p=getWalletProvider();
- if(!p) return;
- try{
-   if(p.publicKey && p.isConnected!==false){
-     provider=p;
-     publicKey=p.publicKey;
-     attachWalletEvents(p);
-     $("walletHint").textContent=tr("connected")+shortAddress(publicKey);
-     updateBuyState();
-     return;
-   }
-   if(typeof p.connect==="function"){
-     const result=await p.connect({onlyIfTrusted:true});
-     const key=result?.publicKey||p.publicKey;
-     if(key){
-       provider=p;
-       publicKey=key;
-       attachWalletEvents(p);
-       $("walletHint").textContent=tr("connected")+shortAddress(key);
-       updateBuyState();
-     }
-   }
- }catch(_){}
+ const address=readParentWallet();
+ if(address){
+   $("walletHint").textContent=tr("connected")+shortAddress(address);
+ }
+ updateBuyState();
 }
 
 applyLanguage();
@@ -625,5 +556,3 @@ restoreWallet();
 
 })();
 </script>
-</body>
-</html>
