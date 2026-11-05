@@ -6,22 +6,26 @@
 <meta name="theme-color" content="#080711">
 <title>QX Presale</title>
 <!-- Buffer must be loaded in this iframe before Solana web3.js. -->
-<script src="https://cdn.jsdelivr.net/npm/buffer@6.0.3/index.min.js"></script>
-<script src="https://unpkg.com/buffer@6.0.3/index.min.js"></script>
+<!-- This is the standalone browser build of feross/buffer. -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/buffer/6.0.3/buffer.min.js"></script>
 <script>
 (() => {
-  // The browser bundle exposes Buffer either as window.Buffer or
-  // window.buffer.Buffer depending on the CDN build. Normalize both cases.
-  const B = window.Buffer || (window.buffer && window.buffer.Buffer);
-  if (B) {
-    window.Buffer = B;
-    globalThis.Buffer = B;
-    window.__qxPresaleBufferReady = Promise.resolve(B);
-  } else {
+  // Do NOT trust an existing window.Buffer blindly: some wallet/iframe
+  // environments expose a partial Buffer object without Buffer.from().
+  const candidates = [
+    window.buffer && window.buffer.Buffer,
+    window.Buffer
+  ];
+  const B = candidates.find(x => x && typeof x.from === "function" && typeof x.alloc === "function");
+  if (!B) {
     window.__qxPresaleBufferReady = Promise.reject(
-      new Error("Buffer library failed to load.")
+      new Error("Buffer library failed to load correctly.")
     );
+    return;
   }
+  window.Buffer = B;
+  globalThis.Buffer = B;
+  window.__qxPresaleBufferReady = Promise.resolve(B);
 })();
 </script>
 <script src="https://unpkg.com/@solana/web3.js@1.95.3/lib/index.iife.min.js"></script>
