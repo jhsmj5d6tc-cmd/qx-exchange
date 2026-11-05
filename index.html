@@ -422,7 +422,7 @@ body.qx-token-open #getQuoteBtn{display:none!important}
  <section class="panel" style="padding:0;overflow:hidden">
   <iframe
    id="qxPresaleFrame"
-   src="./presale.html?v=qx-presale-004"
+   src="./presale.html?v=qx-presale-003"
    title="QX Presale"
    loading="lazy"
    style="display:block;width:100%;height:calc(100vh - 170px);min-height:760px;border:0;background:#080711"
@@ -969,12 +969,9 @@ function getInjectedWallets(){
  return list;
 }
 function getActiveWalletProvider(){
- // Prefer the injected provider that owns the currently connected address.
- // This avoids signing through a stale AppKit/WalletConnect provider when the
- // user opened QX inside Phantom, Solflare, or Backpack.
+ if(activeWalletProvider)return activeWalletProvider;
  const injected=getInjectedWallets().find(x=>x.provider.publicKey?.toString()===walletAddress);
  if(injected)return injected.provider;
- if(activeWalletProvider)return activeWalletProvider;
  try{return appKit?.getWalletProvider?.()||null;}catch(_){return null;}
 }
 async function setConnectedWallet(provider,address,name="Wallet"){
@@ -1045,15 +1042,14 @@ window.QXGetWalletState=()=>({connected:!!connected,address:walletAddress||""});
 window.QXSendPresaleTransaction=async serializedTransaction=>{
  if(!connected||!walletAddress)throw new Error("Connect your wallet to QX first.");
  const provider=getActiveWalletProvider();
- if(!provider||typeof provider.signTransaction!=="function")throw new Error("The connected Solana wallet does not support signTransaction. Reconnect the wallet and try again.");
- if(!Transaction||!Connection)throw new Error("Solana transaction libraries are still loading. Reload QX and try again.");
+ if(!provider||typeof provider.signAndSendTransaction!=="function")throw new Error("The connected wallet does not support Solana transaction signing.");
+ if(!Transaction)throw new Error("Solana transaction library is still loading. Please try again.");
  const bytes=Uint8Array.from(atob(String(serializedTransaction)),c=>c.charCodeAt(0));
  const transaction=Transaction.from(bytes);
- if(transaction.feePayer?.toBase58()!==walletAddress)throw new Error("The presale transaction fee payer does not match the connected wallet.");
- const signed=await provider.signTransaction(transaction);
- if(!signed||typeof signed.serialize!=="function")throw new Error("The wallet did not return a valid signed Solana transaction.");
- const connection=new Connection(RPCS[0],"confirmed");
- return await connection.sendRawTransaction(signed.serialize(),{skipPreflight:false,preflightCommitment:"confirmed",maxRetries:3});
+ const result=await provider.signAndSendTransaction(transaction);
+ const signature=result?.signature||result?.result||result;
+ if(typeof signature!=="string")throw new Error("The wallet did not return a transaction signature.");
+ return signature;
 };
 
 const qxWalletReady=qxLibraryReady.then(async()=>{
@@ -1064,7 +1060,6 @@ const qxWalletReady=qxLibraryReady.then(async()=>{
   appKit=createAppKit({
    adapters:[solanaAdapter],
    networks:[solana],
-   defaultNetwork:solana,
    projectId:PROJECT_ID,
    metadata:{name:"QX Exchange",description:"Solana exchange",url:location.origin,icons:[]},
    themeMode:"dark",
@@ -2099,4 +2094,49 @@ function refreshSelectedTokenDetails(token){
  $("detailTransactions").textContent=(buys+sells).toLocaleString("en-US")+" | "+buys+" buys / "+sells+" sells";
  $("solscanLink").href="https://solscan.io/token/"+mint;
  const image=token.info?.imageUrl||"";
- if(image){$("detailImage").src=image;$("detailImage").style.display="block";}else{$("detailImage").remove
+ if(image){$("detailImage").src=image;$("detailImage").style.display="block";}else{$("detailImage").removeAttribute("src");$("detailImage").style.display="none";}
+ const pairAddress=token.pairAddress;
+ $("detailHolders").textContent="Not available";
+ $("detailHolders").title="A verified holder-data provider is required for a reliable live holder count.";
+ if(valid(pairAddress)){$("detailChartWrap").style.display="block";loadQXChart(pairAddress,activeChartRange);}
+ else{$("chartMessage").textContent="No Solana liquidity pool is available for this token yet.";$("chartMessage").style.display="block";$("detailChartWrap").style.display="block";}
+}
+function openToken(token){
+ clearPendingSwap("Token selected. Enter an amount and get a fresh quote.");
+ selectedToken=token;
+ document.body.classList.add("qx-token-open");
+ $("detail").style.display="block";
+ activeChartRange="5m";
+ refreshSelectedTokenDetails(token);
+ tradePercent=25;
+ updateTradePercentUI();
+ refreshTradeBalance(true);
+ window.scrollTo({top:0,behavior:"instant"});
+}
+function closeTokenView(){
+ clearPendingSwap("Returned to Solana markets.");
+ document.body.classList.remove("qx-token-open");
+ $("detail").style.display="none";
+ window.scrollTo({top:0,behavior:"instant"});
+}
+$("tokenBackBtn").addEventListener("click",closeTokenView);
+$("refreshBtn").onclick=async()=>{
+ await loadSolPrice();
+ if(connected)await loadPortfolio();
+};
+
+updateSortUI();
+changeTradeDirection("buy");
+updateTradePercentUI();
+loadSolPrice();
+loadMarket();
+setInterval(loadSolPrice,60000);
+// Public market endpoints are polled every 20 seconds for a near-live new-coin feed.
+setInterval(loadMarket,20000);
+// Refresh the selected token candles while its QX terminal is open.
+setInterval(()=>{if(document.body.classList.contains("qx-token-open")&&selectedToken?.pairAddress)loadQXChart(selectedToken.pairAddress,activeChartRange);},30000);
+
+// All page text is served as UTF-8. No runtime text rewriting is applied.
+</script>
+</body>
+</html>
