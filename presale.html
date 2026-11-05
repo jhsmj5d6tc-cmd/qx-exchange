@@ -5,9 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#080711">
 <title>QX Presale</title>
-<!-- Buffer polyfill must load in this document too: the presale page runs in a separate iframe realm. -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/buffer/6.0.3/buffer.min.js"></script>
-<script>if (typeof buffer !== "undefined" && buffer.Buffer) { window.Buffer = buffer.Buffer; }</script>
+<!-- Load Buffer before Solana web3; this page may run inside a cross-origin wallet iframe. -->
+<script src="https://cdn.jsdelivr.net/npm/buffer@6.0.3/index.min.js"></script>
+<script>
+(function () {
+  var candidate = (typeof buffer !== "undefined" && buffer && buffer.Buffer)
+    ? buffer.Buffer
+    : (window.buffer && window.buffer.Buffer ? window.buffer.Buffer : null);
+  if (candidate) {
+    window.Buffer = candidate;
+    if (typeof globalThis !== "undefined") globalThis.Buffer = candidate;
+  }
+})();
+</script>
 <script src="https://unpkg.com/@solana/web3.js@1.95.3/lib/index.iife.min.js"></script>
 <style>
 :root{
