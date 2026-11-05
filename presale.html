@@ -282,55 +282,8 @@ h1{font-size:38px;margin:17px 0 9px}
     return null;
   }
 
-  function getParentWalletState(){
-    try{
-      if(window.parent!==window && window.parent.location.origin===location.origin && typeof window.parent.QXGetWalletState==="function"){
-        return window.parent.QXGetWalletState();
-      }
-    }catch(_){ }
-    return null;
-  }
-
-  function syncParentWallet(state=getParentWalletState()){
-    if(!state)return false;
-    if(state.connected && state.address){
-      try{
-        publicKey=new solanaWeb3.PublicKey(state.address);
-        provider={qxParentWallet:true};
-        $("walletStatus").textContent=state.address.slice(0,6)+"..."+state.address.slice(-4);
-        $("connectBtn").textContent=state.address.slice(0,6)+"..."+state.address.slice(-4);
-        updateBuyState();
-        return true;
-      }catch(_){ }
-    }
-    provider=null;publicKey=null;
-    $("walletStatus").textContent=tr("notConnected");
-    $("connectBtn").textContent=tr("connect");
-    updateBuyState();
-    return false;
-  }
-
-  window.addEventListener("message",event=>{
-    if(event.origin!==location.origin || event.source!==window.parent)return;
-    if(event.data?.type==="QX_WALLET")syncParentWallet({connected:!!event.data.connected,address:event.data.address||""});
-    if(event.data?.type==="QX_LANGUAGE" && (event.data.language==="en"||event.data.language==="ar")){
-      lang=event.data.language;localStorage.setItem("qxPresaleLang",lang);applyLanguage();
-    }
-  });
-
   async function connectWallet(){
     clearStatus();
-    try{
-      if(window.parent!==window && window.parent.location.origin===location.origin && typeof window.parent.QXConnectWallet==="function"){
-        await window.parent.QXConnectWallet();
-        if(syncParentWallet())return;
-        setStatus("info",lang==="ar"?"Ø§Ø®ØªØ± ÙØ­ÙØ¸ØªÙ ÙÙ ÙØ§ÙØ°Ø© Ø§ÙØ±Ø¨Ø· ÙÙ QXØ ÙØ¨Ø¹Ø¯ Ø§ÙØ§ØªØµØ§Ù Ø§Ø±Ø¬Ø¹ Ø¥ÙÙ ØµÙØ­Ø© Ø§ÙØ¨ÙØ¹ Ø§ÙÙØ³Ø¨Ù.":"Choose your wallet in the QX connection window, then return here after it connects.");
-        return;
-      }
-    }catch(error){
-      setStatus("error",tr("failed")+(error?.message||String(error)));
-      return;
-    }
     const p = getWalletProvider();
     if(!p){
       setStatus("error",
@@ -455,26 +408,25 @@ h1{font-size:38px;margin:17px 0 9px}
       const latest = await connection.getLatestBlockhash("confirmed");
       transaction.recentBlockhash = latest.blockhash;
 
-      setStatus("info", tr("approving"));
-      let signature;
-      // The embedded presale must use the exact wallet session connected by
-      // the parent QX page (Safari + WalletConnect included).
-      if(window.parent!==window && window.parent.location.origin===location.origin && typeof window.parent.QXSendPresaleTransaction==="function"){
-        if(!syncParentWallet())throw new Error("Connect your Solana wallet from the main QX page first.");
-        const unsignedBytes=transaction.serialize({requireAllSignatures:false,verifySignatures:false});
-        let binary="";
-        for(let i=0;i<unsignedBytes.length;i++)binary+=String.fromCharCode(unsignedBytes[i]);
-        signature=await window.parent.QXSendPresaleTransaction(btoa(binary));
-      }else{
-        if(!provider || provider.qxParentWallet || typeof provider.signTransaction!=="function"){
-          throw new Error("This wallet does not support Solana transaction signing. Reconnect using Phantom, Solflare, or another Solana wallet.");
-        }
-        const signedTransaction=await provider.signTransaction(transaction);
-        if(!signedTransaction || typeof signedTransaction.serialize!=="function")throw new Error("The wallet did not return a valid signed Solana transaction.");
-        signature=await connection.sendRawTransaction(signedTransaction.serialize(),{skipPreflight:false,preflightCommitment:"confirmed",maxRetries:3});
+      // Ask the connected Solana wallet to sign only. Submit the signed
+      // transaction through the Solana RPC connection instead of the wallet's
+      // signAndSendTransaction helper. This avoids chain-namespace routing
+      // errors (for example: "Invalid chain id") in some wallet adapters.
+      if(typeof provider.signTransaction !== "function"){
+        throw new Error("This wallet does not support Solana transaction signing. Reconnect using a Solana wallet such as Phantom or Solflare.");
       }
-      if(typeof signature!=="string"||!signature)throw new Error("Solana RPC did not return a transaction signature.");
+
+      const signedTransaction = await provider.signTransaction(transaction);
+      if(!signedTransaction || typeof signedTransaction.serialize !== "function"){
+        throw new Error("The wallet did not return a valid signed Solana transaction.");
+      }
+
       setStatus("info", tr("sending"));
+
+      const signature = await connection.sendRawTransaction(
+        signedTransaction.serialize(),
+        {skipPreflight:false, preflightCommitment:"confirmed", maxRetries:3}
+      );
       if(typeof signature !== "string" || !signature){
         throw new Error("Solana RPC did not return a transaction signature.");
       }
@@ -504,7 +456,6 @@ h1{font-size:38px;margin:17px 0 9px}
   $("buyBtn").addEventListener("click", buyQX);
 
   applyLanguage();
-  syncParentWallet();
   loadSolPrice();
   setInterval(loadSolPrice, 30000);
 
