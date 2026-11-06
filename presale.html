@@ -5,195 +5,151 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#080711">
 <title>QX Presale — Standalone</title>
-<!-- Buffer must be loaded in this iframe before Solana web3.js. -->
-<!-- This is the standalone browser build of feross/buffer. -->
-<script src="https://cdn.jsdelivr.net/npm/buffer@6.0.3/index.min.js"></script>
-<script>
-(() => {
-  // Do NOT trust an existing window.Buffer blindly: some wallet/iframe
-  // environments expose a partial Buffer object without Buffer.from().
-  const candidates = [
-    window.buffer && window.buffer.Buffer,
-    window.Buffer
-  ];
-  const B = candidates.find(x =>
-    x &&
-    typeof x.from === "function" &&
-    typeof x.alloc === "function" &&
-    typeof x.allocUnsafe === "function" &&
-    typeof x.concat === "function"
-  );
-  if (!B) {
-    window.__qxPresaleBufferReady = Promise.reject(
-      new Error("Buffer library failed to load correctly.")
-    );
-    return;
-  }
-  window.Buffer = B;
-  globalThis.Buffer = B;
-  window.__qxPresaleBufferReady = Promise.resolve(B);
-})();
-</script>
-<script src="https://unpkg.com/@solana/web3.js@1.98.4/lib/index.iife.min.js"></script>
+<!-- Buffer and Solana Web3 are initialized together in the module below. -->
 
 <script type="module">
 (() => {
-  const ready = (async () => {
-    try {
-      const [{ Buffer }, appkitModule, adapterModule, networksModule, web3Module] = await Promise.all([
-        import("https://esm.sh/buffer@6.0.3?bundle"),
-        import("https://esm.sh/@reown/appkit?bundle"),
-        import("https://esm.sh/@reown/appkit-adapter-solana?bundle"),
-        import("https://esm.sh/@reown/appkit/networks?bundle"),
-        import("https://esm.sh/@solana/web3.js@1.98.4?bundle")
-      ]);
+  "use strict";
 
-      globalThis.Buffer = Buffer;
-      window.Buffer = Buffer;
+  // Load Buffer independently. A Reown import failure must never prevent Buffer
+  // from becoming available to the payment code.
+  window.__qxPresaleBufferReady = (async () => {
+    let lastError;
+    const sources = [
+      () => import("https://esm.sh/buffer@6.0.3?bundle"),
+      () => import("https://cdn.jsdelivr.net/npm/buffer@6.0.3/+esm")
+    ];
+    for (const load of sources) {
+      try {
+        const mod = await load();
+        const B = mod.Buffer || mod.default?.Buffer || mod.default;
+        if (!B || typeof B.from !== "function" || typeof B.alloc !== "function" ||
+            typeof B.allocUnsafe !== "function" || typeof B.concat !== "function") {
+          throw new Error("Buffer module did not expose the required methods.");
+        }
+        window.Buffer = B;
+        globalThis.Buffer = B;
+        return B;
+      } catch (error) { lastError = error; }
+    }
+    throw new Error("Buffer could not load from either CDN. " + (lastError?.message || ""));
+  })();
 
-      const createAppKit = appkitModule.createAppKit;
-      const SolanaAdapter = adapterModule.SolanaAdapter;
-      const solana = networksModule.solana;
+  window.__qxSolanaWeb3Ready = import("https://esm.sh/@solana/web3.js@1.98.4?bundle")
+    .then(mod => {
+      window.solanaWeb3 = mod;
+      return mod;
+    });
 
-      if (typeof createAppKit !== "function" || typeof SolanaAdapter !== "function" || !solana) {
-        throw new Error("Reown Solana modules loaded incorrectly.");
+  let appKit = null;
+  let connectedAddress = "";
+  let activeProvider = null;
+  const valid = value => typeof value === "string" && /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(value);
+
+  function injectedWallets() {
+    const candidates = [
+      [window.phantom && window.phantom.solana, "Phantom"],
+      [window.solflare, "Solflare"],
+      [window.backpack && (window.backpack.solana || window.backpack), "Backpack"],
+      [window.solana, window.solana?.isPhantom ? "Phantom" : "Solana wallet"]
+    ];
+    const out = [];
+    for (const [provider, name] of candidates) {
+      if (provider && typeof provider.connect === "function" && !out.some(x => x.provider === provider)) {
+        out.push({ provider, name });
       }
+    }
+    return out;
+  }
 
-      const adapter = new SolanaAdapter();
-      const appKit = createAppKit({
-        adapters: [adapter],
-        networks: [solana],
-        projectId: "bd6faec63fbd0865f57da576a550ef09",
-        metadata: {
-          name: "QX Presale",
-          description: "QX Presale",
-          url: location.origin,
-          icons: []
-        },
-        themeMode: "dark",
-        themeVariables: {
-          "--w3m-accent": "#9b6cff",
-          "--w3m-border-radius-master": "10px"
-        },
-        features: {
-          analytics: true,
-          email: false,
-          socials: []
+  async function appKitReady() {
+    if (appKit) return appKit;
+    if (!window.__qxAppKitPromise) {
+      window.__qxAppKitPromise = (async () => {
+        const [appkitModule, adapterModule, networksModule] = await Promise.all([
+          import("https://esm.sh/@reown/appkit?bundle"),
+          import("https://esm.sh/@reown/appkit-adapter-solana?bundle"),
+          import("https://esm.sh/@reown/appkit/networks?bundle")
+        ]);
+        const createAppKit = appkitModule.createAppKit;
+        const SolanaAdapter = adapterModule.SolanaAdapter;
+        const solana = networksModule.solana;
+        if (typeof createAppKit !== "function" || typeof SolanaAdapter !== "function" || !solana) {
+          throw new Error("Reown Solana wallet selector failed to initialize.");
         }
-      });
-
-      let connectedAddress = "";
-      let activeProvider = null;
-
-      const valid = value =>
-        typeof value === "string" &&
-        /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(value);
-
-      const injected = () => {
-        const out = [];
-        const candidates = [
-          [window.phantom?.solana, "Phantom"],
-          [window.solflare, "Solflare"],
-          [window.backpack?.solana || window.backpack, "Backpack"]
-        ];
-        for (const [provider, name] of candidates) {
-          if (
-            provider &&
-            typeof provider.connect === "function" &&
-            !out.some(x => x.provider === provider)
-          ) out.push({ provider, name });
+        const adapter = new SolanaAdapter();
+        appKit = createAppKit({
+          adapters: [adapter], networks: [solana],
+          projectId: "bd6faec63fbd0865f57da576a550ef09",
+          metadata: { name: "QX Presale", description: "QX Presale", url: location.href, icons: [] },
+          themeMode: "dark",
+          themeVariables: { "--w3m-accent": "#9b6cff", "--w3m-border-radius-master": "10px" },
+          features: { analytics: false, email: false, socials: [] }
+        });
+        if (typeof appKit.subscribeAccount === "function") {
+          appKit.subscribeAccount(state => {
+            const address = state?.address || state?.account?.address || "";
+            if (state?.isConnected && valid(address)) {
+              connectedAddress = String(address);
+              activeProvider = appKit.getWalletProvider?.() || activeProvider;
+            }
+          });
         }
-        return out;
-      };
+        return appKit;
+      })();
+    }
+    return window.__qxAppKitPromise;
+  }
 
-      async function setConnected(address, provider) {
-        if (!valid(address)) throw new Error("Wallet returned an invalid Solana address.");
+  async function connect() {
+    if (valid(connectedAddress)) return connectedAddress;
+
+    const wallets = injectedWallets();
+    // In a wallet's own browser, use its injected provider directly.
+    if (wallets.length === 1) {
+      const { provider } = wallets[0];
+      const result = await provider.connect();
+      const address = result?.publicKey?.toString?.() || provider.publicKey?.toString?.();
+      if (!valid(address)) throw new Error("The wallet did not return a valid Solana address.");
+      connectedAddress = address;
+      activeProvider = provider;
+      return address;
+    }
+
+    // In Safari or when multiple wallets are available, open the wallet picker.
+    let kit;
+    try { kit = await appKitReady(); }
+    catch (e) {
+      if (wallets.length > 1) throw new Error("More than one wallet was detected, but the wallet selector could not load. Open the page in your preferred wallet or try again. " + (e?.message || ""));
+      throw new Error("The Solana wallet selector could not load. Check the Reown project configuration and try again. " + (e?.message || ""));
+    }
+    await kit.open();
+    const started = Date.now();
+    while (Date.now() - started < 120000) {
+      const state = kit.getState?.();
+      const raw = state?.address || state?.account?.address || state?.active?.address || "";
+      const account = kit.getAccount?.();
+      const candidate = raw || account?.address || account?.caipAddress || "";
+      const address = String(candidate).split(":").pop();
+      if (valid(address)) {
         connectedAddress = address;
-        activeProvider = provider || appKit.getWalletProvider?.() || null;
+        activeProvider = kit.getWalletProvider?.() || null;
         return address;
       }
-
-      async function connect() {
-        // If already connected in this page, reuse it.
-        if (valid(connectedAddress)) return connectedAddress;
-
-        // Prefer an injected wallet when this page is opened inside its wallet browser.
-        const wallets = injected();
-        if (wallets.length === 1) {
-          const { provider } = wallets[0];
-          try {
-            const result = await provider.connect({ onlyIfTrusted: false });
-            const address =
-              result?.publicKey?.toString?.() ||
-              provider.publicKey?.toString?.();
-            if (valid(address)) return setConnected(address, provider);
-          } catch (e) {
-            if (e?.code === 4001 || /reject|cancel/i.test(String(e?.message || ""))) {
-              throw e;
-            }
-          }
-        }
-
-        // Otherwise open the same Reown Solana wallet picker used by QX.
-        await appKit.open();
-
-        const started = Date.now();
-        while (Date.now() - started < 120000) {
-          const state = appKit.getState?.();
-          const address =
-            state?.address ||
-            state?.account?.address ||
-            state?.active?.address ||
-            "";
-
-          if (valid(address)) {
-            const provider = appKit.getWalletProvider?.() || null;
-            return setConnected(String(address), provider);
-          }
-
-          const account = appKit.getAccount?.();
-          const accountAddress =
-            account?.address || account?.caipAddress || "";
-          if (valid(String(accountAddress).split(":").pop())) {
-            const normalized = String(accountAddress).split(":").pop();
-            const provider = appKit.getWalletProvider?.() || null;
-            return setConnected(normalized, provider);
-          }
-
-          await new Promise(r => setTimeout(r, 400));
-        }
-
-        throw new Error("Wallet connection timed out. Connect your Solana wallet and try again.");
-      }
-
-      if (typeof appKit.subscribeAccount === "function") {
-        appKit.subscribeAccount(state => {
-          const address = state?.address || state?.account?.address || "";
-          if (state?.isConnected && valid(address)) {
-            connectedAddress = String(address);
-            activeProvider = appKit.getWalletProvider?.() || activeProvider;
-          }
-        });
-      }
-
-      window.__qxStandaloneWalletReady = Promise.resolve();
-      window.__qxStandaloneWallet = {
-        connect,
-        getAddress: () => connectedAddress,
-        getProvider: () =>
-          activeProvider ||
-          appKit.getWalletProvider?.() ||
-          null,
-        getAppKit: () => appKit,
-        web3: web3Module
-      };
-    } catch (error) {
-      console.error("QX standalone wallet initialization failed:", error);
-      window.__qxStandaloneWalletReady = Promise.reject(error);
-      window.__qxStandaloneWallet = null;
+      await new Promise(resolve => setTimeout(resolve, 350));
     }
-  })();
-  window.__qxStandaloneWalletReady = ready;
+    throw new Error("Wallet connection timed out. Please connect and approve in your wallet.");
+  }
+
+  // Expose the wallet API immediately so the visible Connect button always works,
+  // even while Reown's selector is still loading.
+  window.__qxStandaloneWallet = {
+    connect,
+    getAddress: () => connectedAddress,
+    getProvider: () => activeProvider || appKit?.getWalletProvider?.() || null,
+    getAppKit: () => appKit
+  };
+  window.__qxStandaloneWalletReady = Promise.resolve();
 })();
 </script>
 <style>
@@ -280,8 +236,9 @@ h1{font-size:38px;margin:17px 0 9px}
 }
 .primary{background:var(--green);color:#06150f}
 .secondary{background:#21152f;color:#fff;border:1px solid var(--line)}
-.wallet{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px;border:1px solid #39265a;border-radius:10px;background:#0d0917}
-.wallet-status{font-size:11px;color:var(--muted);overflow-wrap:anywhere;min-width:0}
+.wallet{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px;border:1px solid #39265a;border-radius:10px;background:#0d0917;min-height:58px}
+.wallet-status{font-size:11px;color:var(--muted);overflow-wrap:anywhere;min-width:0;flex:1}
+#connectWalletBtn{display:inline-flex!important;visibility:visible!important;opacity:1!important;position:relative;z-index:2;flex:0 0 auto;min-width:145px;min-height:42px;align-items:center;justify-content:center}
 .btn:disabled{opacity:.45;cursor:not-allowed}
 .wallet-hint{
  margin-top:10px;text-align:center;color:var(--muted);
@@ -674,10 +631,7 @@ async function buyQX(){
 
    // Wait until this iframe has its own Buffer global before web3.js
    // serializes the Solana transaction.
-   if (!window.__qxPresaleBufferReady) {
-     throw new Error("Buffer library failed to load. Reload the page and try again.");
-   }
-   await window.__qxPresaleBufferReady;
+   await Promise.all([window.__qxPresaleBufferReady, window.__qxSolanaWeb3Ready]);
    if (
      !window.Buffer ||
      typeof window.Buffer.from !== "function" ||
