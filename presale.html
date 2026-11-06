@@ -618,25 +618,58 @@ async function getWorkingConnection(){
  throw new Error("Unable to reach Solana RPC. "+String(lastError?.message||lastError||""));
 }
 
-async function sendDirect(transaction){
+async function sendDirect(transaction,connection){
  await window.__qxStandaloneWalletReady;
 
  const wallet = window.__qxStandaloneWallet;
  if(!wallet) throw new Error("Wallet connection is unavailable.");
 
  const provider = wallet.getProvider();
- if(!provider || typeof provider.signAndSendTransaction !== "function"){
-   throw new Error("The connected wallet does not support Solana transaction signing.");
+ if(!provider) throw new Error("Wallet provider is unavailable.");
+
+ // Prefer signTransaction + our own RPC send. This avoids a wallet/provider
+ // using a stale internal RPC while the page is already using a fresh blockhash.
+ if(typeof provider.signTransaction === "function"){
+   const signed = await provider.signTransaction(transaction);
+   if(!signed) throw new Error("The wallet did not return a signed transaction.");
+   const raw = signed.serialize();
+   const signature = await connection.sendRawTransaction(raw,{
+     skipPreflight:false,
+     preflightCommitment:"processed",
+     maxRetries:3
+   });
+   if(typeof signature !== "string" || !signature){
+     throw new Error("Solana RPC did not return a transaction signature.");
+   }
+   return signature;
  }
 
- const result = await provider.signAndSendTransaction(transaction);
- const signature = result?.signature || result?.result || result;
-
- if(typeof signature !== "string" || !signature){
-   throw new Error("The wallet did not return a transaction signature.");
+ if(typeof provider.signAndSendTransaction === "function"){
+   const result = await provider.signAndSendTransaction(transaction);
+   const signature = result?.signature || result?.result || result;
+   if(typeof signature !== "string" || !signature){
+     throw new Error("The wallet did not return a transaction signature.");
+   }
+   return signature;
  }
 
- return signature;
+ throw new Error("The connected wallet does not support Solana transaction signing.");
+}
+
+async function waitForSignature(connection,signature,timeoutMs=90000){
+ const started=Date.now();
+ while(Date.now()-started<timeoutMs){
+   const result=await connection.getSignatureStatuses([signature],{searchTransactionHistory:true});
+   const value=result?.value?.[0];
+   if(value?.err){
+     throw new Error("Transaction failed on Solana: "+JSON.stringify(value.err));
+   }
+   if(value && (value.confirmationStatus==="confirmed" || value.confirmationStatus==="finalized")){
+     return value;
+   }
+   await new Promise(resolve=>setTimeout(resolve,1200));
+ }
+ throw new Error("Transaction confirmation timed out. Do not pay again until you check your wallet history.");
 }
 
 async function sendPaymentWithFreshBlockhash(sender,destination,lamports){
@@ -656,16 +689,29 @@ async function sendPaymentWithFreshBlockhash(sender,destination,lamports){
    transaction.recentBlockhash=latest.blockhash;
 
    setStatus("info", attempt===1 ? tr("waiting") : "Previous transaction expired. Requesting a fresh Solana transaction...");
-   const signature=await sendDirect(transaction);
+   const signature=await sendDirect(transaction,connection);
    if(typeof signature!=="string" || !signature){
      throw new Error("The connected wallet did not return a valid transaction signature.");
    }
 
    setStatus("info",tr("sending"));
 
-   // Check the signature first. If the wallet actually submitted it and it
-   // already landed, never ask the user to pay again.
+   // Do NOT use confirmTransaction(blockhash,lastValidBlockHeight) here.
+   // A slow/remote wallet can make that local validity window expire even
+   // though the transaction signature is still being processed. Poll the
+   // signature itself instead, using searchTransactionHistory.
    try{
+     await waitForSignature(connection,signature,90000);
+     return {signature,connection,latest};
+   }catch(err){
+     lastError=err;
+     const msg=String(err?.message||err||"");
+     if(attempt===maxAttempts || /Transaction failed on Solana/i.test(msg)){
+       throw err;
+     }
+
+     // Only rebuild when the signature did not confirm. Never create a
+     // second payment for a transaction that is already confirmed.
      const statusResult=await connection.getSignatureStatuses([signature],{searchTransactionHistory:true});
      const statusValue=statusResult?.value?.[0];
      if(statusValue?.err){
@@ -673,43 +719,6 @@ async function sendPaymentWithFreshBlockhash(sender,destination,lamports){
      }
      if(statusValue && (statusValue.confirmationStatus==="confirmed" || statusValue.confirmationStatus==="finalized")){
        return {signature,connection,latest};
-     }
-   }catch(statusErr){
-     const smsg=String(statusErr?.message||statusErr||"");
-     if(/failed on Solana/i.test(smsg)) throw statusErr;
-   }
-
-   try{
-     const confirmation=await connection.confirmTransaction({
-       signature,
-       blockhash:latest.blockhash,
-       lastValidBlockHeight:latest.lastValidBlockHeight
-     },"confirmed");
-     if(confirmation?.value?.err){
-       throw new Error("Transaction failed on Solana: "+JSON.stringify(confirmation.value.err));
-     }
-     return {signature,connection,latest};
-   }catch(err){
-     lastError=err;
-     const msg=String(err?.message||err||"");
-     if(!/block height exceeded|expired/i.test(msg) || attempt===maxAttempts){
-       throw err;
-     }
-
-     // Before retrying, make sure the signature was not actually confirmed
-     // while the confirmation call was reporting an expired block height.
-     try{
-       const statusResult=await connection.getSignatureStatuses([signature],{searchTransactionHistory:true});
-       const statusValue=statusResult?.value?.[0];
-       if(statusValue?.err){
-         throw new Error("Transaction failed on Solana: "+JSON.stringify(statusValue.err));
-       }
-       if(statusValue && (statusValue.confirmationStatus==="confirmed" || statusValue.confirmationStatus==="finalized")){
-         return {signature,connection,latest};
-       }
-     }catch(statusErr){
-       const smsg=String(statusErr?.message||statusErr||"");
-       if(/failed on Solana/i.test(smsg)) throw statusErr;
      }
    }
  }
