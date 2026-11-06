@@ -89,9 +89,12 @@
         if (typeof appKit.subscribeAccount === "function") {
           appKit.subscribeAccount(state => {
             const address = state?.address || state?.account?.address || "";
-            if (state?.isConnected && valid(address)) {
-              connectedAddress = String(address);
+            if (state?.isConnected && valid(String(address).split(":").pop())) {
+              connectedAddress = String(address).split(":").pop();
               activeProvider = appKit.getWalletProvider?.() || activeProvider;
+            } else if (state?.isConnected === false) {
+              connectedAddress = "";
+              activeProvider = null;
             }
           });
         }
@@ -101,15 +104,38 @@
     return window.__qxAppKitPromise;
   }
 
+  function currentAddress() {
+    const candidates = [
+      connectedAddress,
+      activeProvider?.publicKey?.toString?.(),
+      appKit?.getAccount?.()?.address,
+      appKit?.getState?.()?.address,
+      appKit?.getState?.()?.account?.address,
+      appKit?.getState?.()?.active?.address
+    ];
+    for (const value of candidates) {
+      const address = String(value || "").split(":").pop();
+      if (valid(address)) return address;
+    }
+    return "";
+  }
+
   async function connect() {
-    if (valid(connectedAddress)) return connectedAddress;
+    const alreadyConnected = currentAddress();
+    if (alreadyConnected) {
+      connectedAddress = alreadyConnected;
+      return alreadyConnected;
+    }
 
     const wallets = injectedWallets();
-    // In a wallet's own browser, use its injected provider directly.
+    // In a wallet's own browser, reuse an existing session before asking again.
     if (wallets.length === 1) {
       const { provider } = wallets[0];
-      const result = await provider.connect();
-      const address = result?.publicKey?.toString?.() || provider.publicKey?.toString?.();
+      let address = provider.publicKey?.toString?.() || "";
+      if (!valid(address)) {
+        const result = await provider.connect();
+        address = result?.publicKey?.toString?.() || provider.publicKey?.toString?.() || "";
+      }
       if (!valid(address)) throw new Error("The wallet did not return a valid Solana address.");
       connectedAddress = address;
       activeProvider = provider;
@@ -145,8 +171,8 @@
   // even while Reown's selector is still loading.
   window.__qxStandaloneWallet = {
     connect,
-    getAddress: () => connectedAddress,
-    getProvider: () => activeProvider || appKit?.getWalletProvider?.() || null,
+    getAddress: currentAddress,
+    getProvider: () => activeProvider || appKit?.getWalletProvider?.() || injectedWallets()[0]?.provider || null,
     getAppKit: () => appKit
   };
   window.__qxStandaloneWalletReady = Promise.resolve();
@@ -238,6 +264,7 @@ h1{font-size:38px;margin:17px 0 9px}
 .secondary{background:#21152f;color:#fff;border:1px solid var(--line)}
 .wallet{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px;border:1px solid #39265a;border-radius:10px;background:#0d0917;min-height:58px}
 .wallet-status{font-size:11px;color:var(--muted);overflow-wrap:anywhere;min-width:0;flex:1}
+.wallet-balance{margin-top:9px;padding:11px 12px;border:1px solid rgba(67,255,173,.22);border-radius:10px;background:rgba(67,255,173,.045);font-size:13px;font-weight:800;color:var(--green);font-variant-numeric:tabular-nums}
 #connectWalletBtn{display:inline-flex!important;visibility:visible!important;opacity:1!important;position:relative;z-index:2;flex:0 0 auto;min-width:145px;min-height:42px;align-items:center;justify-content:center}
 .btn:disabled{opacity:.45;cursor:not-allowed}
 .wallet-hint{
@@ -305,6 +332,7 @@ h1{font-size:38px;margin:17px 0 9px}
     <div class="wallet-status" id="walletStatus" data-i18n="notConnected">Wallet not connected</div>
     <button class="btn secondary" id="connectWalletBtn" type="button" style="display:inline-flex;visibility:visible;opacity:1;width:auto;min-width:150px;margin:0;padding:10px 13px;position:relative;z-index:2" data-i18n="connect">CONNECT WALLET</button>
   </div>
+  <div class="wallet-balance" id="walletBalance">SOL balance: —</div>
   <div class="wallet-hint" id="walletHint" data-i18n="walletHint">Connect your Solana wallet directly on this presale page.</div>
 </section>
 <section class="card">
@@ -455,6 +483,40 @@ function shortAddress(value){
  return text.slice(0,6)+"..."+text.slice(-4);
 }
 
+async function refreshWalletBalance(address){
+ const balanceEl=$("walletBalance");
+ if(!address){ balanceEl.textContent="SOL balance: —"; return; }
+ balanceEl.textContent="Loading SOL balance...";
+ try{
+   await window.__qxSolanaWeb3Ready;
+   const owner=new solanaWeb3.PublicKey(address);
+   let lastError=null;
+   for(const endpoint of RPC_ENDPOINTS){
+     try{
+       const connection=new solanaWeb3.Connection(endpoint,"confirmed");
+       const lamports=await connection.getBalance(owner,"confirmed");
+       const sol=lamports/solanaWeb3.LAMPORTS_PER_SOL;
+       const solText=sol.toLocaleString("en-US",{minimumFractionDigits:4,maximumFractionDigits:6})+" SOL";
+       const usdText=solUsd?" · $"+(sol*solUsd).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}):"";
+       balanceEl.textContent=(lang==="ar"?"رصيد المحفظة: ":"Wallet balance: ")+solText+usdText;
+       return;
+     }catch(error){lastError=error;}
+   }
+   throw lastError || new Error("Balance lookup failed");
+ }catch(error){
+   balanceEl.textContent=lang==="ar"?"تعذر تحميل رصيد SOL":"Unable to load SOL balance";
+ }
+}
+
+function showConnectedWallet(address){
+ if(!address) return;
+ const label=tr("connected")+shortAddress(address);
+ $("walletHint").textContent=label;
+ $("walletStatus").textContent=label;
+ $("connectWalletBtn").textContent=shortAddress(address);
+ refreshWalletBalance(address);
+}
+
 function updateCountdown(){
  const remaining=PRESALE_END-Date.now();
  if(remaining<=0){
@@ -475,31 +537,16 @@ function updateCountdown(){
 
 async function ensureWalletConnected(){
  await window.__qxStandaloneWalletReady;
-
- if(!window.__qxStandaloneWallet){
-   throw new Error("QX wallet connection could not be initialized. Reload the page and try again.");
- }
-
- let address = window.__qxStandaloneWallet.getAddress();
- if(address){
-   $("walletHint").textContent = tr("connected") + shortAddress(address);
-   $("walletStatus").textContent = tr("connected") + shortAddress(address);
-   $("connectWalletBtn").textContent = shortAddress(address);
-   return address;
- }
-
- $("walletHint").textContent = tr("connecting");
- $("walletStatus").textContent = tr("connecting");
- $("connectWalletBtn").disabled = true;
- address = await window.__qxStandaloneWallet.connect();
-
+ const wallet=window.__qxStandaloneWallet;
+ if(!wallet) throw new Error("QX wallet connection could not be initialized. Reload the page and try again.");
+ let address=wallet.getAddress();
  if(!address){
-   throw new Error("No Solana wallet address was returned.");
+   $("walletHint").textContent=tr("connecting");
+   $("walletStatus").textContent=tr("connecting");
+   address=await wallet.connect();
  }
-
- $("walletHint").textContent = tr("connected") + shortAddress(address);
- $("walletStatus").textContent = tr("connected") + shortAddress(address);
- $("connectWalletBtn").textContent = shortAddress(address);
+ if(!address) throw new Error("No Solana wallet address was returned.");
+ showConnectedWallet(address);
  return address;
 }
 
@@ -706,16 +753,17 @@ async function restoreWallet(){
  try{
    await window.__qxStandaloneWalletReady;
    const address=window.__qxStandaloneWallet?.getAddress?.() || "";
-   if(address){
-     $("walletHint").textContent=tr("connected")+shortAddress(address);
-     $("walletStatus").textContent=tr("connected")+shortAddress(address);
-     $("connectWalletBtn").textContent=shortAddress(address);
-   }
+   if(address) showConnectedWallet(address);
  }catch(error){
    console.warn("Standalone wallet is not ready yet:",error);
  }
  updateBuyState();
 }
+
+window.addEventListener("qx-wallet-connected",event=>{
+ const address=event.detail?.address || window.__qxStandaloneWallet?.getAddress?.();
+ if(address) showConnectedWallet(address);
+});
 
 async function connectWallet(){
  clearStatus();
@@ -730,6 +778,8 @@ async function connectWallet(){
    setStatus("error",message);
  }finally{
    button.disabled=false;
+   const address=window.__qxStandaloneWallet?.getAddress?.() || "";
+   if(address) showConnectedWallet(address);
  }
 }
 
@@ -739,6 +789,10 @@ setInterval(updateCountdown,1000);
 loadSolPrice();
 setInterval(loadSolPrice,30000);
 restoreWallet();
+setInterval(()=>{
+ const address=window.__qxStandaloneWallet?.getAddress?.() || "";
+ if(address) refreshWalletBalance(address);
+},30000);
 
 })();
 </script>
