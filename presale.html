@@ -639,6 +639,83 @@ async function sendDirect(transaction){
  return signature;
 }
 
+async function sendPaymentWithFreshBlockhash(sender,destination,lamports){
+ await Promise.all([window.__qxPresaleBufferReady, window.__qxSolanaWeb3Ready]);
+ const maxAttempts=2;
+ let lastError=null;
+ for(let attempt=1;attempt<=maxAttempts;attempt++){
+   const {connection,latest}=await getWorkingConnection();
+   const transaction=new solanaWeb3.Transaction().add(
+     solanaWeb3.SystemProgram.transfer({
+       fromPubkey:sender,
+       toPubkey:destination,
+       lamports
+     })
+   );
+   transaction.feePayer=sender;
+   transaction.recentBlockhash=latest.blockhash;
+
+   setStatus("info", attempt===1 ? tr("waiting") : "Previous transaction expired. Requesting a fresh Solana transaction...");
+   const signature=await sendDirect(transaction);
+   if(typeof signature!=="string" || !signature){
+     throw new Error("The connected wallet did not return a valid transaction signature.");
+   }
+
+   setStatus("info",tr("sending"));
+
+   // Check the signature first. If the wallet actually submitted it and it
+   // already landed, never ask the user to pay again.
+   try{
+     const statusResult=await connection.getSignatureStatuses([signature],{searchTransactionHistory:true});
+     const statusValue=statusResult?.value?.[0];
+     if(statusValue?.err){
+       throw new Error("Transaction failed on Solana: "+JSON.stringify(statusValue.err));
+     }
+     if(statusValue && (statusValue.confirmationStatus==="confirmed" || statusValue.confirmationStatus==="finalized")){
+       return {signature,connection,latest};
+     }
+   }catch(statusErr){
+     const smsg=String(statusErr?.message||statusErr||"");
+     if(/failed on Solana/i.test(smsg)) throw statusErr;
+   }
+
+   try{
+     const confirmation=await connection.confirmTransaction({
+       signature,
+       blockhash:latest.blockhash,
+       lastValidBlockHeight:latest.lastValidBlockHeight
+     },"confirmed");
+     if(confirmation?.value?.err){
+       throw new Error("Transaction failed on Solana: "+JSON.stringify(confirmation.value.err));
+     }
+     return {signature,connection,latest};
+   }catch(err){
+     lastError=err;
+     const msg=String(err?.message||err||"");
+     if(!/block height exceeded|expired/i.test(msg) || attempt===maxAttempts){
+       throw err;
+     }
+
+     // Before retrying, make sure the signature was not actually confirmed
+     // while the confirmation call was reporting an expired block height.
+     try{
+       const statusResult=await connection.getSignatureStatuses([signature],{searchTransactionHistory:true});
+       const statusValue=statusResult?.value?.[0];
+       if(statusValue?.err){
+         throw new Error("Transaction failed on Solana: "+JSON.stringify(statusValue.err));
+       }
+       if(statusValue && (statusValue.confirmationStatus==="confirmed" || statusValue.confirmationStatus==="finalized")){
+         return {signature,connection,latest};
+       }
+     }catch(statusErr){
+       const smsg=String(statusErr?.message||statusErr||"");
+       if(/failed on Solana/i.test(smsg)) throw statusErr;
+     }
+   }
+ }
+ throw lastError || new Error("Payment could not be confirmed.");
+}
+
 async function buyQX(){
  if(buying)return;
  clearStatus();
@@ -701,34 +778,13 @@ async function buyQX(){
      throw new Error("Invalid Solana public key. Reconnect the wallet and try again.");
    }
 
-   // Fetch a fresh blockhash immediately before creating the transfer.
-   const {connection,latest}=await getWorkingConnection();
-   const transaction=new solanaWeb3.Transaction().add(
-     solanaWeb3.SystemProgram.transfer({
-       fromPubkey:sender,
-       toPubkey:destination,
-       lamports
-     })
-   );
-   transaction.feePayer=sender;
-   transaction.recentBlockhash=latest.blockhash;
-
-   setStatus("info",tr("waiting"));
-   const signature=await sendDirect(transaction);
-   if(typeof signature!=="string" || !signature){
-     throw new Error("The connected wallet did not return a valid transaction signature.");
-   }
-
-   setStatus("info",tr("sending"));
-   const confirmation=await connection.confirmTransaction({
-     signature,
-     blockhash:latest.blockhash,
-     lastValidBlockHeight:latest.lastValidBlockHeight
-   },"confirmed");
-
-   if(confirmation?.value?.err){
-     throw new Error("Transaction failed on Solana: "+JSON.stringify(confirmation.value.err));
-   }
+   // Build the transfer with a fresh blockhash. If the wallet approval
+   // takes long enough for that blockhash to expire, the helper safely
+   // rebuilds the transaction with a new blockhash and asks for approval
+   // again. It checks the old signature first so a successful payment is
+   // never duplicated.
+   const payment=await sendPaymentWithFreshBlockhash(sender,destination,lamports);
+   const signature=payment.signature;
 
    $("solAmount").value="";
    updateQuote();
