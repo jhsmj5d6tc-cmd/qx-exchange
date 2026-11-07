@@ -525,7 +525,7 @@ body.qx-token-open #getQuoteBtn{display:none!important}
     <div class="swap-quote"><span>Route</span><strong id="swapRoute">QX best available route</strong></div>
     <div class="swap-quote"><span>Wallet</span><strong id="swapWallet">Not connected</strong></div>
     <button class="swap-action" id="getQuoteBtn"><span>UPDATE LIVE QUOTE</span><small>Live Jupiter price | inside QX</small></button>
-    <button class="swap-action swap-secondary" id="confirmSwapBtn" disabled>BUY TOKEN</button>
+    <button class="swap-action swap-secondary" id="confirmSwapBtn" type="button">GET LIVE QUOTE FIRST</button>
     <p class="fee-note">QX fee: <strong>1%</strong> per completed swap. The live quote must confirm the full fee before wallet signing. No fee is charged when a swap is not completed.</p>
     <p class="swap-status" id="swapStatus">Connect your wallet, enter an amount, then review the live quote and confirm in your wallet.</p>
    </div>
@@ -664,6 +664,11 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape")qxWpHide();});
   if(status)status.textContent="Starting wallet selection...";
   if(feedback)feedback.textContent="Starting wallet selection...";
   try{
+   let walletBootWait=0;
+   while(typeof window.QXConnectWallet!=="function"&&walletBootWait<100){
+    await new Promise(resolve=>setTimeout(resolve,100));
+    walletBootWait++;
+   }
    if(typeof window.QXConnectWallet!=="function"){
     throw new Error("Wallet module did not finish loading. Check your internet connection, then reload the page.");
    }
@@ -716,8 +721,8 @@ const qxLibraryReady = (async()=>{
  }
  // Load Solana transaction libraries before QX wallet initialization is considered ready.
  const optional=await Promise.all([
-  import("https://esm.sh/@solana/web3.js@1.99.0?bundle&target=es2022"),
-  import("https://esm.sh/@solana/spl-token@0.4.15?bundle&target=es2022")
+  import("https://esm.sh/@solana/web3.js@1.98.4?target=es2022&deps=@solana/buffer-layout@4.0.1"),
+  import("https://esm.sh/@solana/spl-token@0.4.15?target=es2022&deps=@solana/web3.js@1.98.4,@solana/buffer-layout@4.0.1")
  ]);
  ({Connection,PublicKey,Keypair,SystemProgram,Transaction,VersionedTransaction}=optional[0]);
  ({MINT_SIZE,TOKEN_PROGRAM_ID,getAssociatedTokenAddress,createInitializeMintInstruction,createAssociatedTokenAccountInstruction,createMintToInstruction}=optional[1]);
@@ -1019,9 +1024,11 @@ window.QXGetWalletState=()=>({connected:!!connected,address:walletAddress||""});
 
 const qxWalletReady=qxLibraryReady.then(async()=>{
  try{
-  // Use explicit Solana wallet adapters so Reown does not have to infer a
-  // second wallet-adapter dependency graph inside the CDN bundle.
-  const solanaAdapter=new SolanaAdapter({registerWalletStandard:true});
+  // Reown automatically discovers browser Wallet Standard wallets (including
+  // Phantom and Solflare). Keep registerWalletStandard at its default false:
+  // true registers the WalletConnect session as another Wallet Standard wallet
+  // and can create duplicate wallet registration in this standalone CDN build.
+  const solanaAdapter=new SolanaAdapter();
   appKit=createAppKit({
    adapters:[solanaAdapter],
    networks:[solana],
@@ -1830,7 +1837,8 @@ const QX_REFERRAL_ACCOUNT="UMRAMLr2CqNNSUhVJvdB2bbEGHPwL5n6LpFzTxycmBW";
 const QX_REFERRAL_FEE_BPS=100; // 100 bps = 1.00%
 function clearPendingSwap(message){
  pendingSwapOrder=null;
- $("confirmSwapBtn").disabled=true;
+ $("confirmSwapBtn").disabled=false;
+ $("confirmSwapBtn").textContent="GET LIVE QUOTE FIRST";
  $("swapReceive").textContent="Enter amount to estimate";
  if(message)$("swapStatus").textContent=message;
  updateIndicativeEstimate();
@@ -1913,9 +1921,13 @@ async function requestQXQuote(){
   const input=getSwapInputAmount();
   if(pair.inputMint===pair.outputMint)throw new Error("Selling and buying assets cannot be the same.");
   quoteBusy=true;
+  $("confirmSwapBtn").disabled=true;
+  $("confirmSwapBtn").textContent="GETTING LIVE QUOTE...";
   $("getQuoteBtn").disabled=true;
   $("getQuoteBtn").textContent="Finding best price...";
   clearPendingSwap();
+  $("confirmSwapBtn").disabled=true;
+  $("confirmSwapBtn").textContent="GETTING LIVE QUOTE...";
   $("swapPay").textContent=input.amount.toLocaleString("en-US",{maximumFractionDigits:8})+" "+(tradeDirection==="buy"?"SOL":selectedToken.baseToken.symbol);
   $("swapWallet").textContent=short(walletAddress);
   $("swapStatus").textContent="QX is finding the best available market route. Nothing moves until you approve in Phantom.";
@@ -1941,11 +1953,12 @@ async function requestQXQuote(){
   $("qxFeeDisplay").textContent="1.00% | included in "+feeMintLabel;
   $("swapRoute").textContent="QX / "+(data.router||"Best available route");
   $("confirmSwapBtn").disabled=false;
-  $("confirmSwapBtn").textContent=(tradeDirection==="buy"?"BUY ":"SELL ")+pendingSwapOrder.outputSymbol;
+  $("confirmSwapBtn").textContent=tradeDirection==="buy"?"CONFIRM BUY":"CONFIRM SELL";
   $("swapStatus").textContent="Live price ready. Review exactly what you pay and receive, then approve the transaction in your connected wallet. Final output can change with market conditions.";
  }catch(error){
   pendingSwapOrder=null;
-  $("confirmSwapBtn").disabled=true;
+  $("confirmSwapBtn").disabled=false;
+  $("confirmSwapBtn").textContent="GET LIVE QUOTE FIRST";
   $("swapStatus").textContent=error.message||"Could not get a swap quote.";
  }finally{
   quoteBusy=false;
@@ -1998,20 +2011,28 @@ async function executeQXSwap(){
   $("confirmSwapBtn").textContent="Swap completed";
  }catch(error){
   $("swapStatus").textContent=(pendingSwapOrder?"":"The signed order cannot be retried. Check your wallet activity and Solscan before requesting a new quote. ")+(error.message||"Swap could not be completed.");
-  $("confirmSwapBtn").disabled=true;
+  $("confirmSwapBtn").disabled=false;
  }finally{
   swapBusy=false;
   $("getQuoteBtn").disabled=false;
-  if($("confirmSwapBtn").textContent!=="Swap completed")$("confirmSwapBtn").textContent=tradeDirection==="buy"?"BUY TOKEN":"SELL TOKEN";
+  if($("confirmSwapBtn").textContent!=="Swap completed"){
+   $("confirmSwapBtn").disabled=false;
+   $("confirmSwapBtn").textContent=pendingSwapOrder?(tradeDirection==="buy"?"CONFIRM BUY":"CONFIRM SELL"):"GET LIVE QUOTE FIRST";
+  }
  }
 }
+function handleConfirmSwapClick(){
+ if(quoteBusy||swapBusy)return;
+ if(pendingSwapOrder)executeQXSwap();
+ else requestQXQuote();
+}
 $("getQuoteBtn").onclick=requestQXQuote;
-$("confirmSwapBtn").onclick=executeQXSwap;
+$("confirmSwapBtn").onclick=handleConfirmSwapClick;
 
 function changeTradeDirection(direction){
  tradeDirection=direction;
  $("tradeTitle").textContent=direction==="buy"?"Buy this token with SOL":"Sell this token for SOL";
- $("confirmSwapBtn").textContent=direction==="buy"?"BUY TOKEN":"SELL TOKEN";
+ $("confirmSwapBtn").textContent="GET LIVE QUOTE FIRST";
  $("swapDirectionBtn").textContent=direction==="buy"?"REVERSE SWAP DIRECTION | SOL TO TOKEN":"REVERSE SWAP DIRECTION | TOKEN TO SOL";
  $("buyBtn").classList.toggle("active",direction==="buy");
  $("sellBtn").classList.toggle("active",direction==="sell");
@@ -2068,58 +2089,4 @@ function refreshSelectedTokenDetails(token){
  $("detailAddress").textContent=mint;
  $("detailPrice").textContent=usd(token.priceUsd);
  const change=Number(token.priceChange?.h24);
- $("detailChange").textContent=Number.isFinite(change)?(change>0?"+":"")+change.toFixed(2)+"% | 24h":"24h change unavailable";
- $("detailChange").className="detail-change "+(change>0?"up":change<0?"down":"neutral");
- $("detailMarketCap").textContent=money(token.marketCap||token.fdv);
- $("detailLiquidity").textContent=money(token.liquidity?.usd);
- $("detailVolume").textContent=money(token.volume?.h24);
- const buys=Number(token.txns?.h24?.buys||0),sells=Number(token.txns?.h24?.sells||0);
- $("detailTransactions").textContent=(buys+sells).toLocaleString("en-US")+" | "+buys+" buys / "+sells+" sells";
- $("solscanLink").href="https://solscan.io/token/"+mint;
- const image=token.info?.imageUrl||"";
- if(image){$("detailImage").src=image;$("detailImage").style.display="block";}else{$("detailImage").removeAttribute("src");$("detailImage").style.display="none";}
- const pairAddress=token.pairAddress;
- $("detailHolders").textContent="Not available";
- $("detailHolders").title="A verified holder-data provider is required for a reliable live holder count.";
- if(valid(pairAddress)){$("detailChartWrap").style.display="block";loadQXChart(pairAddress,activeChartRange);}
- else{$("chartMessage").textContent="No Solana liquidity pool is available for this token yet.";$("chartMessage").style.display="block";$("detailChartWrap").style.display="block";}
-}
-function openToken(token){
- clearPendingSwap("Token selected. Enter an amount and get a fresh quote.");
- selectedToken=token;
- document.body.classList.add("qx-token-open");
- $("detail").style.display="block";
- activeChartRange="5m";
- refreshSelectedTokenDetails(token);
- tradePercent=25;
- updateTradePercentUI();
- refreshTradeBalance(true);
- window.scrollTo({top:0,behavior:"instant"});
-}
-function closeTokenView(){
- clearPendingSwap("Returned to Solana markets.");
- document.body.classList.remove("qx-token-open");
- $("detail").style.display="none";
- window.scrollTo({top:0,behavior:"instant"});
-}
-$("tokenBackBtn").addEventListener("click",closeTokenView);
-$("refreshBtn").onclick=async()=>{
- await loadSolPrice();
- if(connected)await loadPortfolio();
-};
-
-updateSortUI();
-changeTradeDirection("buy");
-updateTradePercentUI();
-loadSolPrice();
-loadMarket();
-setInterval(loadSolPrice,60000);
-// Public market endpoints are polled every 20 seconds for a near-live new-coin feed.
-setInterval(loadMarket,20000);
-// Refresh the selected token candles while its QX terminal is open.
-setInterval(()=>{if(document.body.classList.contains("qx-token-open")&&selectedToken?.pairAddress)loadQXChart(selectedToken.pairAddress,activeChartRange);},30000);
-
-// All page text is served as UTF-8. No runtime text rewriting is applied.
-</script>
-</body>
-</html>
+ $("detailChange").textContent=Numb
