@@ -723,13 +723,16 @@ const qxLibraryReady = (async()=>{
   console.error("QX required Reown module failed:",error);
   throw new Error("Reown SDK load failed: "+(error?.message||String(error))+". Reload QX and try again.");
  }
- // Portfolio/token libraries load separately and do not block the wallet picker.
- Promise.allSettled([import("@solana/web3.js"),import("@solana/spl-token")]).then(optional=>{
-  if(optional[0].status==="fulfilled") ({Connection,PublicKey,Keypair,SystemProgram,Transaction,VersionedTransaction}=optional[0].value);
-  if(optional[1].status==="fulfilled") ({MINT_SIZE,TOKEN_PROGRAM_ID,getAssociatedTokenAddress,createInitializeMintInstruction,createAssociatedTokenAccountInstruction,createMintToInstruction}=optional[1].value);
-  const errors=optional.filter(x=>x.status==="rejected").map(x=>String(x.reason?.message||x.reason));
-  if(errors.length) console.warn("QX optional Solana library load errors:",errors);
- }).catch(error=>console.warn("QX optional libraries:",error));
+ // Load Solana transaction libraries before QX wallet initialization is considered ready.
+ const optional=await Promise.all([
+  import("@solana/web3.js"),
+  import("@solana/spl-token")
+ ]);
+ ({Connection,PublicKey,Keypair,SystemProgram,Transaction,VersionedTransaction}=optional[0]);
+ ({MINT_SIZE,TOKEN_PROGRAM_ID,getAssociatedTokenAddress,createInitializeMintInstruction,createAssociatedTokenAccountInstruction,createMintToInstruction}=optional[1]);
+ if(!Connection||!PublicKey||!Keypair||!SystemProgram||!Transaction||!MINT_SIZE||!TOKEN_PROGRAM_ID){
+  throw new Error("Required Solana libraries loaded without the required exports.");
+ }
 })();
 
 const $=id=>document.getElementById(id);
@@ -1325,7 +1328,14 @@ function parseTokenUnits(value,decimals){
 async function createQXToken(){
  const button=$("createTokenBtn"),status=$("createTokenStatus"),resultBox=$("createdTokenResult");
  if(button.disabled)return;
- if(!Connection||!PublicKey||!Keypair||!SystemProgram||!Transaction||!MINT_SIZE||!TOKEN_PROGRAM_ID){status.textContent="Solana libraries could not load. Reload the page and try again.";return;}
+ try{await qxLibraryReady;}catch(error){
+  status.textContent="Solana libraries could not load: "+(error?.message||String(error));
+  return;
+ }
+ if(!Connection||!PublicKey||!Keypair||!SystemProgram||!Transaction||!MINT_SIZE||!TOKEN_PROGRAM_ID){
+  status.textContent="Solana libraries are not ready. Please reload QX once and try again.";
+  return;
+ }
  try{
   const name=$("tokenName").value.trim(),symbol=$("tokenSymbol").value.trim().toUpperCase();
   const decimals=Number($("tokenDecimals").value),supply=parseTokenUnits($("tokenSupply").value,decimals);
@@ -1974,129 +1984,4 @@ async function executeQXSwap(){
   $("swapStatus").innerHTML='Swap successful. <a class="detail-link" target="_blank" rel="noopener" href="https://solscan.io/tx/'+encodeURIComponent(signature)+'">View transaction on Solscan -></a>';
   $("confirmSwapBtn").textContent="Swap completed";
  }catch(error){
-  $("swapStatus").textContent=(pendingSwapOrder?"":"The signed order cannot be retried. Check your wallet activity and Solscan before requesting a new quote. ")+(error.message||"Swap could not be completed.");
-  $("confirmSwapBtn").disabled=true;
- }finally{
-  swapBusy=false;
-  $("getQuoteBtn").disabled=false;
-  if($("confirmSwapBtn").textContent!=="Swap completed")$("confirmSwapBtn").textContent=tradeDirection==="buy"?"BUY TOKEN":"SELL TOKEN";
- }
-}
-$("getQuoteBtn").onclick=requestQXQuote;
-$("confirmSwapBtn").onclick=executeQXSwap;
-
-function changeTradeDirection(direction){
- tradeDirection=direction;
- $("tradeTitle").textContent=direction==="buy"?"Buy this token with SOL":"Sell this token for SOL";
- $("confirmSwapBtn").textContent=direction==="buy"?"BUY TOKEN":"SELL TOKEN";
- $("swapDirectionBtn").textContent=direction==="buy"?"REVERSE SWAP DIRECTION | SOL TO TOKEN":"REVERSE SWAP DIRECTION | TOKEN TO SOL";
- $("buyBtn").classList.toggle("active",direction==="buy");
- $("sellBtn").classList.toggle("active",direction==="sell");
- updateTradePercentUI();
- clearPendingSwap("Trade direction changed. Get a fresh quote.");
- if(selectedToken){
-  refreshTradeBalance(false).then(()=>{
-   if($("tradeAmountInput")?.value&&Number($("tradeAmountInput").value)>0)requestQXQuote();
-  }).catch(error=>{$("swapStatus").textContent=error.message||"Could not refresh token balance.";});
- }
-}
-$("buyBtn").onclick=()=>changeTradeDirection("buy");
-$("sellBtn").onclick=()=>changeTradeDirection("sell");
-$("swapDirectionBtn").onclick=()=>changeTradeDirection(tradeDirection==="buy"?"sell":"buy");
-
-/* QX NATIVE SOLANA CANDLESTICK CHART - rendered inside QX */
-let qxChart=null,qxCandleSeries=null,qxVolumeSeries=null,qxChartPair="",activeChartRange="5m",qxChartResizeObserver=null,qxChartRequest=0;
-const QX_CHART_RANGES={"5m":{unit:"minute",aggregate:5},"15m":{unit:"minute",aggregate:15},"1H":{unit:"hour",aggregate:1},"4H":{unit:"hour",aggregate:4},"1D":{unit:"day",aggregate:1}};
-function initQXChart(){
- const el=$("detailChart");if(!el||!window.LightweightCharts)return false;
- if(qxChart&&qxChartPair===selectedToken?.pairAddress)return true;
- el.innerHTML="";if(qxChart){try{qxChart.remove()}catch(e){}}
- qxChart=LightweightCharts.createChart(el,{width:el.clientWidth||340,height:el.clientHeight||320,layout:{background:{type:"solid",color:"#080711"},textColor:"#b9a9d4",fontFamily:"Arial"},grid:{vertLines:{color:"rgba(76,57,103,.22)"},horzLines:{color:"rgba(76,57,103,.28)"}},rightPriceScale:{borderColor:"#342747",scaleMargins:{top:.08,bottom:.24}},timeScale:{borderColor:"#342747",timeVisible:true,secondsVisible:false,rightOffset:4},crosshair:{mode:LightweightCharts.CrosshairMode.Normal},localization:{priceFormatter:p=>p<.0001?p.toPrecision(5):p.toLocaleString("en-US",{maximumFractionDigits:6})}});
- qxCandleSeries=qxChart.addCandlestickSeries({upColor:"#43ffad",downColor:"#ff557e",borderUpColor:"#43ffad",borderDownColor:"#ff557e",wickUpColor:"#43ffad",wickDownColor:"#ff557e",priceLineVisible:true});
- qxVolumeSeries=qxChart.addHistogramSeries({priceFormat:{type:"volume"},priceScaleId:"volume",lastValueVisible:false,priceLineVisible:false});
- qxChart.priceScale("volume").applyOptions({scaleMargins:{top:.84,bottom:0},borderVisible:false});
- if(qxChartResizeObserver)qxChartResizeObserver.disconnect();
- if(typeof ResizeObserver!=="undefined"){qxChartResizeObserver=new ResizeObserver(entries=>{const b=entries[0]?.contentRect;if(b&&qxChart)qxChart.applyOptions({width:Math.max(280,Math.floor(b.width)),height:Math.max(230,Math.floor(b.height))})});qxChartResizeObserver.observe(el)}
- return true;
-}
-async function loadQXChart(pair,range){
- const id=++qxChartRequest,period=QX_CHART_RANGES[range]||QX_CHART_RANGES["5m"];
- $("chartRanges").querySelectorAll("[data-chart-range]").forEach(b=>b.classList.toggle("active",b.dataset.chartRange===range));
- $("chartMessage").style.display="none";
- if(!initQXChart()){$("chartMessage").textContent="Chart engine could not load. Refresh the page to retry.";$("chartMessage").style.display="block";return}
- if(qxChartPair!==pair){qxChartPair=pair;qxCandleSeries.setData([]);qxVolumeSeries.setData([])}
- try{
-  const url="https://api.geckoterminal.com/api/v2/networks/solana/pools/"+encodeURIComponent(pair)+"/ohlcv/"+period.unit+"?aggregate="+period.aggregate+"&limit=180&currency=usd&token=base";
-  const response=await fetch(url,{headers:{accept:"application/json"}});if(!response.ok)throw Error("Chart data request failed ("+response.status+")");
-  const json=await response.json(),rows=json?.data?.attributes?.ohlcv_list||[];if(!rows.length)throw Error("No candle data is available for this market yet.");if(id!==qxChartRequest)return;
-  const candles=rows.map(r=>({time:Number(r[0]),open:Number(r[1]),high:Number(r[2]),low:Number(r[3]),close:Number(r[4])})).filter(c=>[c.time,c.open,c.high,c.low,c.close].every(Number.isFinite)).sort((a,b)=>a.time-b.time);
-  const volume=rows.map(r=>({time:Number(r[0]),value:Number(r[5])||0,color:Number(r[4])>=Number(r[1])?"rgba(67,255,173,.32)":"rgba(255,85,126,.32)"})).filter(v=>Number.isFinite(v.time)).sort((a,b)=>a.time-b.time);
-  if(!candles.length)throw Error("No valid candle data was returned.");
-  qxCandleSeries.setData(candles);qxVolumeSeries.setData(volume);qxChart.timeScale().fitContent();
- }catch(err){if(id!==qxChartRequest)return;qxCandleSeries?.setData([]);qxVolumeSeries?.setData([]);$("chartMessage").textContent=err.message||"Chart data unavailable";$("chartMessage").style.display="block"}
-}
-$("chartRanges").addEventListener("click",e=>{const b=e.target.closest("[data-chart-range]");if(!b||!selectedToken?.pairAddress)return;activeChartRange=b.dataset.chartRange;loadQXChart(selectedToken.pairAddress,activeChartRange)});
-
-/* TOKEN DETAILS + CHART */
-function refreshSelectedTokenDetails(token){
- const mint=token.baseToken.address;
- $("detailName").textContent=token.baseToken.name||"Token";
- $("detailSymbol").textContent=token.baseToken.symbol||"";
- $("detailAddress").textContent=mint;
- $("detailPrice").textContent=usd(token.priceUsd);
- const change=Number(token.priceChange?.h24);
- $("detailChange").textContent=Number.isFinite(change)?(change>0?"+":"")+change.toFixed(2)+"% | 24h":"24h change unavailable";
- $("detailChange").className="detail-change "+(change>0?"up":change<0?"down":"neutral");
- $("detailMarketCap").textContent=money(token.marketCap||token.fdv);
- $("detailLiquidity").textContent=money(token.liquidity?.usd);
- $("detailVolume").textContent=money(token.volume?.h24);
- const buys=Number(token.txns?.h24?.buys||0),sells=Number(token.txns?.h24?.sells||0);
- $("detailTransactions").textContent=(buys+sells).toLocaleString("en-US")+" | "+buys+" buys / "+sells+" sells";
- $("solscanLink").href="https://solscan.io/token/"+mint;
- const image=token.info?.imageUrl||"";
- if(image){$("detailImage").src=image;$("detailImage").style.display="block";}else{$("detailImage").removeAttribute("src");$("detailImage").style.display="none";}
- const pairAddress=token.pairAddress;
- $("detailHolders").textContent="Not available";
- $("detailHolders").title="A verified holder-data provider is required for a reliable live holder count.";
- if(valid(pairAddress)){$("detailChartWrap").style.display="block";loadQXChart(pairAddress,activeChartRange);}
- else{$("chartMessage").textContent="No Solana liquidity pool is available for this token yet.";$("chartMessage").style.display="block";$("detailChartWrap").style.display="block";}
-}
-function openToken(token){
- clearPendingSwap("Token selected. Enter an amount and get a fresh quote.");
- selectedToken=token;
- document.body.classList.add("qx-token-open");
- $("detail").style.display="block";
- activeChartRange="5m";
- refreshSelectedTokenDetails(token);
- tradePercent=25;
- updateTradePercentUI();
- refreshTradeBalance(true);
- window.scrollTo({top:0,behavior:"instant"});
-}
-function closeTokenView(){
- clearPendingSwap("Returned to Solana markets.");
- document.body.classList.remove("qx-token-open");
- $("detail").style.display="none";
- window.scrollTo({top:0,behavior:"instant"});
-}
-$("tokenBackBtn").addEventListener("click",closeTokenView);
-$("refreshBtn").onclick=async()=>{
- await loadSolPrice();
- if(connected)await loadPortfolio();
-};
-
-updateSortUI();
-changeTradeDirection("buy");
-updateTradePercentUI();
-loadSolPrice();
-loadMarket();
-setInterval(loadSolPrice,60000);
-// Public market endpoints are polled every 20 seconds for a near-live new-coin feed.
-setInterval(loadMarket,20000);
-// Refresh the selected token candles while its QX terminal is open.
-setInterval(()=>{if(document.body.classList.contains("qx-token-open")&&selectedToken?.pairAddress)loadQXChart(selectedToken.pairAddress,activeChartRange);},30000);
-
-// All page text is served as UTF-8. No runtime text rewriting is applied.
-</script>
-</body>
-</html>
+  $("swapStatus").textContent=(pendingSwapOrder?"":"The signed order cannot be retried. Check your wallet activity and Solscan before requesting a ne
