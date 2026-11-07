@@ -525,7 +525,7 @@ body.qx-token-open #getQuoteBtn{display:none!important}
     <div class="swap-quote"><span>Route</span><strong id="swapRoute">QX best available route</strong></div>
     <div class="swap-quote"><span>Wallet</span><strong id="swapWallet">Not connected</strong></div>
     <button class="swap-action" id="getQuoteBtn"><span>UPDATE LIVE QUOTE</span><small>Live Jupiter price | inside QX</small></button>
-    <button class="swap-action swap-secondary" id="confirmSwapBtn" type="button">GET LIVE QUOTE FIRST</button>
+    <button class="swap-action swap-secondary" id="confirmSwapBtn" disabled>BUY TOKEN</button>
     <p class="fee-note">QX fee: <strong>1%</strong> per completed swap. The live quote must confirm the full fee before wallet signing. No fee is charged when a swap is not completed.</p>
     <p class="swap-status" id="swapStatus">Connect your wallet, enter an amount, then review the live quote and confirm in your wallet.</p>
    </div>
@@ -1830,8 +1830,7 @@ const QX_REFERRAL_ACCOUNT="UMRAMLr2CqNNSUhVJvdB2bbEGHPwL5n6LpFzTxycmBW";
 const QX_REFERRAL_FEE_BPS=100; // 100 bps = 1.00%
 function clearPendingSwap(message){
  pendingSwapOrder=null;
- $("confirmSwapBtn").disabled=false;
- $("confirmSwapBtn").textContent="GET LIVE QUOTE FIRST";
+ $("confirmSwapBtn").disabled=true;
  $("swapReceive").textContent="Enter amount to estimate";
  if(message)$("swapStatus").textContent=message;
  updateIndicativeEstimate();
@@ -1914,8 +1913,6 @@ async function requestQXQuote(){
   const input=getSwapInputAmount();
   if(pair.inputMint===pair.outputMint)throw new Error("Selling and buying assets cannot be the same.");
   quoteBusy=true;
-  $("confirmSwapBtn").disabled=true;
-  $("confirmSwapBtn").textContent="GETTING LIVE QUOTE...";
   $("getQuoteBtn").disabled=true;
   $("getQuoteBtn").textContent="Finding best price...";
   clearPendingSwap();
@@ -1944,13 +1941,12 @@ async function requestQXQuote(){
   $("qxFeeDisplay").textContent="1.00% | included in "+feeMintLabel;
   $("swapRoute").textContent="QX / "+(data.router||"Best available route");
   $("confirmSwapBtn").disabled=false;
-  $("confirmSwapBtn").textContent=tradeDirection==="buy"?"CONFIRM BUY":"CONFIRM SELL";
+  $("confirmSwapBtn").textContent=(tradeDirection==="buy"?"BUY ":"SELL ")+pendingSwapOrder.outputSymbol;
   $("swapStatus").textContent="Live price ready. Review exactly what you pay and receive, then approve the transaction in your connected wallet. Final output can change with market conditions.";
  }catch(error){
   pendingSwapOrder=null;
-  $("confirmSwapBtn").disabled=false;
-  $("confirmSwapBtn").textContent="GET LIVE QUOTE FIRST";
-  $("swapStatus").textContent=error.message||"Could not get a swap quote."; 
+  $("confirmSwapBtn").disabled=true;
+  $("swapStatus").textContent=error.message||"Could not get a swap quote.";
  }finally{
   quoteBusy=false;
   $("getQuoteBtn").disabled=false;
@@ -2002,28 +1998,20 @@ async function executeQXSwap(){
   $("confirmSwapBtn").textContent="Swap completed";
  }catch(error){
   $("swapStatus").textContent=(pendingSwapOrder?"":"The signed order cannot be retried. Check your wallet activity and Solscan before requesting a new quote. ")+(error.message||"Swap could not be completed.");
-  $("confirmSwapBtn").disabled=false;
+  $("confirmSwapBtn").disabled=true;
  }finally{
   swapBusy=false;
   $("getQuoteBtn").disabled=false;
-  if($("confirmSwapBtn").textContent!=="Swap completed"){
-   $("confirmSwapBtn").disabled=false;
-   $("confirmSwapBtn").textContent=pendingSwapOrder?(tradeDirection==="buy"?"CONFIRM BUY":"CONFIRM SELL"):"GET LIVE QUOTE FIRST";
-  }
+  if($("confirmSwapBtn").textContent!=="Swap completed")$("confirmSwapBtn").textContent=tradeDirection==="buy"?"BUY TOKEN":"SELL TOKEN";
  }
 }
-function handleConfirmSwapClick(){
- if(quoteBusy||swapBusy)return;
- if(pendingSwapOrder)executeQXSwap();
- else requestQXQuote();
-}
 $("getQuoteBtn").onclick=requestQXQuote;
-$("confirmSwapBtn").onclick=handleConfirmSwapClick;
+$("confirmSwapBtn").onclick=executeQXSwap;
 
 function changeTradeDirection(direction){
  tradeDirection=direction;
  $("tradeTitle").textContent=direction==="buy"?"Buy this token with SOL":"Sell this token for SOL";
- $("confirmSwapBtn").textContent="GET LIVE QUOTE FIRST";
+ $("confirmSwapBtn").textContent=direction==="buy"?"BUY TOKEN":"SELL TOKEN";
  $("swapDirectionBtn").textContent=direction==="buy"?"REVERSE SWAP DIRECTION | SOL TO TOKEN":"REVERSE SWAP DIRECTION | TOKEN TO SOL";
  $("buyBtn").classList.toggle("active",direction==="buy");
  $("sellBtn").classList.toggle("active",direction==="sell");
