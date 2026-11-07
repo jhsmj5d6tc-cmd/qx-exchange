@@ -681,10 +681,9 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape")qxWpHide();});
 </script>
 
 <script type="module">
-// Provide the Buffer global expected by Solana wallet adapters in browser environments.
-import { Buffer } from "https://esm.sh/buffer@6.0.3?bundle";
-globalThis.Buffer = Buffer;
-if (typeof window !== "undefined") window.Buffer = Buffer;
+// No static third-party imports here: a failed CDN import must not stop
+// the entire page module, including the public Solana market, from starting.
+// The Solana libraries used by wallet/token features are loaded dynamically below.
 
 // Load wallet / Solana libraries independently. A failed wallet CDN must not
 // prevent the public market, search, navigation, or other page buttons from running.
@@ -880,9 +879,18 @@ function cleanTokenText(value,fallback="Unknown Token"){
  return text.slice(0,72);
 }
 async function getJSON(url){
- const r=await fetch(url);
- if(!r.ok)throw new Error("Market data request failed");
- return r.json();
+ const controller=new AbortController();
+ const timeout=setTimeout(()=>controller.abort(),12000);
+ try{
+  const r=await fetch(url,{signal:controller.signal,headers:{accept:"application/json"}});
+  if(!r.ok)throw new Error("Market data request failed ("+r.status+")");
+  return await r.json();
+ }catch(error){
+  if(error?.name==="AbortError")throw new Error("Market data request timed out. Retrying automatically.");
+  throw error;
+ }finally{
+  clearTimeout(timeout);
+ }
 }
 async function rpc(method,params){
  let lastError;
@@ -1439,6 +1447,11 @@ function timeSince(timestamp){
 async function loadMarket(){
  if(marketBusy)return;
  marketBusy=true;
+ const resultsBox=$("tokenResults");
+ if(resultsBox&&!allPairs.length){
+  resultsBox.innerHTML='<div class="market-empty">Connecting to Solana market data...</div>';
+  $("coinCount").textContent="Loading...";
+ }
  try{
   const results=await Promise.allSettled([
    getJSON("https://api.dexscreener.com/latest/dex/search?q=solana"),
@@ -1475,8 +1488,14 @@ async function loadMarket(){
    if(updated){selectedToken=updated;refreshSelectedTokenDetails(updated);updateIndicativeEstimate();}
   }
  }catch(e){
-  $("marketStatus").textContent="Market feed temporarily unavailable | "+(e.message||"Retrying automatically");
-  if(!allPairs.length)$ ("tokenResults").innerHTML='<div class="market-empty">Market data unavailable. Please try again.</div>';
+  const message=e?.message||"Market data is temporarily unavailable.";
+  $("marketStatus").textContent="Market feed temporarily unavailable | "+message+" | Retrying automatically";
+  if(!allPairs.length){
+   $("coinCount").textContent="0 tokens";
+   $("tokenResults").innerHTML='<div class="market-empty">Market data unavailable right now. QX will retry automatically. '+escapeHTML(message)+'</div>';
+  }else{
+   renderMarket();
+  }
  }finally{marketBusy=false;}
 }
 
@@ -2052,4 +2071,55 @@ function refreshSelectedTokenDetails(token){
  $("detailChange").textContent=Number.isFinite(change)?(change>0?"+":"")+change.toFixed(2)+"% | 24h":"24h change unavailable";
  $("detailChange").className="detail-change "+(change>0?"up":change<0?"down":"neutral");
  $("detailMarketCap").textContent=money(token.marketCap||token.fdv);
- $("detailLiquidity").textContent=money(token.liquidity?.u
+ $("detailLiquidity").textContent=money(token.liquidity?.usd);
+ $("detailVolume").textContent=money(token.volume?.h24);
+ const buys=Number(token.txns?.h24?.buys||0),sells=Number(token.txns?.h24?.sells||0);
+ $("detailTransactions").textContent=(buys+sells).toLocaleString("en-US")+" | "+buys+" buys / "+sells+" sells";
+ $("solscanLink").href="https://solscan.io/token/"+mint;
+ const image=token.info?.imageUrl||"";
+ if(image){$("detailImage").src=image;$("detailImage").style.display="block";}else{$("detailImage").removeAttribute("src");$("detailImage").style.display="none";}
+ const pairAddress=token.pairAddress;
+ $("detailHolders").textContent="Not available";
+ $("detailHolders").title="A verified holder-data provider is required for a reliable live holder count.";
+ if(valid(pairAddress)){$("detailChartWrap").style.display="block";loadQXChart(pairAddress,activeChartRange);}
+ else{$("chartMessage").textContent="No Solana liquidity pool is available for this token yet.";$("chartMessage").style.display="block";$("detailChartWrap").style.display="block";}
+}
+function openToken(token){
+ clearPendingSwap("Token selected. Enter an amount and get a fresh quote.");
+ selectedToken=token;
+ document.body.classList.add("qx-token-open");
+ $("detail").style.display="block";
+ activeChartRange="5m";
+ refreshSelectedTokenDetails(token);
+ tradePercent=25;
+ updateTradePercentUI();
+ refreshTradeBalance(true);
+ window.scrollTo({top:0,behavior:"instant"});
+}
+function closeTokenView(){
+ clearPendingSwap("Returned to Solana markets.");
+ document.body.classList.remove("qx-token-open");
+ $("detail").style.display="none";
+ window.scrollTo({top:0,behavior:"instant"});
+}
+$("tokenBackBtn").addEventListener("click",closeTokenView);
+$("refreshBtn").onclick=async()=>{
+ await loadSolPrice();
+ if(connected)await loadPortfolio();
+};
+
+updateSortUI();
+changeTradeDirection("buy");
+updateTradePercentUI();
+loadSolPrice();
+loadMarket();
+setInterval(loadSolPrice,60000);
+// Public market endpoints are polled every 20 seconds for a near-live new-coin feed.
+setInterval(loadMarket,20000);
+// Refresh the selected token candles while its QX terminal is open.
+setInterval(()=>{if(document.body.classList.contains("qx-token-open")&&selectedToken?.pairAddress)loadQXChart(selectedToken.pairAddress,activeChartRange);},30000);
+
+// All page text is served as UTF-8. No runtime text rewriting is applied.
+</script>
+</body>
+</html>
