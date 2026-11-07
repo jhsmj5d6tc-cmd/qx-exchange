@@ -377,9 +377,108 @@ body.qx-token-open #getQuoteBtn{display:none!important}
 .qx-swap-purchase .percent-range{margin-top:8px}
 .qx-swap-purchase .percent-foot{margin-top:4px}
 @media(max-width:520px){.qx-swap-value input{font-size:23px}.qx-swap-output{font-size:22px}}
+
+
+/* QX NEBULA 3D â cinematic visual upgrade */
+:root{--qx-cyan:#55f5ff;--qx-violet:#a66bff;--qx-pink:#ff5ee8;--qx-gold:#ffd77a}
+html{scroll-behavior:smooth;background:#05030d}
+body{isolation:isolate;overflow-x:hidden;background-color:#05030d;background-image:radial-gradient(ellipse at 50% -10%,rgba(129,70,255,.38),transparent 48%),radial-gradient(ellipse at 4% 32%,rgba(32,222,255,.13),transparent 32%),radial-gradient(ellipse at 96% 66%,rgba(255,61,214,.12),transparent 34%),linear-gradient(135deg,#05030d 0%,#0b0820 48%,#05040d 100%)}
+body:before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.23;background-image:linear-gradient(rgba(116,91,255,.19) 1px,transparent 1px),linear-gradient(90deg,rgba(116,91,255,.19) 1px,transparent 1px);background-size:54px 54px;mask-image:linear-gradient(to bottom,black,transparent 82%);transform:perspective(600px) rotateX(58deg) scale(1.8) translateY(13%);transform-origin:top center;animation:qx-grid-drift 24s linear infinite}
+body:after{content:"";position:fixed;inset:-20%;z-index:-1;pointer-events:none;background:conic-gradient(from 90deg at 50% 50%,transparent 0 20%,rgba(105,68,255,.07) 25%,transparent 34% 58%,rgba(36,229,255,.06) 65%,transparent 74%);filter:blur(48px);animation:qx-nebula 32s linear infinite}
+@keyframes qx-grid-drift{to{background-position:0 54px,54px 0}}
+@keyframes qx-nebula{to{transform:rotate(360deg)}}
+.wrap{position:relative;perspective:1400px}
+header{position:relative;z-index:2}
+.logo{font-size:clamp(29px,5vw,39px);letter-spacing:2px;text-shadow:0 0 12px rgba(85,245,255,.55),0 0 34px rgba(166,107,255,.65);transform:translateZ(28px)}
+.logo span{color:var(--qx-cyan);text-shadow:0 0 10px rgba(85,245,255,.9),0 0 25px rgba(85,245,255,.5)}
+.panel,.hero,.list,.sort-panel,.ad-card{position:relative;overflow:hidden;border:1px solid rgba(172,126,255,.36);background:linear-gradient(145deg,rgba(34,22,63,.88),rgba(9,9,24,.94) 62%,rgba(19,13,38,.92));box-shadow:0 18px 45px rgba(0,0,0,.42),0 0 0 1px rgba(255,255,255,.025) inset,0 0 28px rgba(126,74,255,.10),inset 0 1px 0 rgba(255,255,255,.12);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);transform-style:preserve-3d;transition:transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .35s,border-color .35s}
+.panel:before,.hero:before,.ad-card:before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 0%,rgba(255,255,255,.055) 28%,transparent 48%),radial-gradient(circle at 100% 0%,rgba(85,245,255,.10),transparent 38%);opacity:.9}
+.panel:hover,.hero:hover,.ad-card:hover{transform:translateY(-5px) rotateX(1.1deg) rotateY(-.6deg) translateZ(10px);border-color:rgba(85,245,255,.55);box-shadow:0 28px 58px rgba(0,0,0,.5),0 0 34px rgba(85,245,255,.13),0 0 46px rgba(166,107,255,.15),inset 0 1px 0 rgba(255,255,255,.16)}
+.hero{background:radial-gradient(circle at 85% 12%,rgba(85,245,255,.19),transparent 28%),radial-gradient(circle at 10% 90%,rgba(255,94,232,.13),transparent 35%),linear-gradient(135deg,rgba(46,25,88,.96),rgba(12,10,29,.97) 70%);border-color:rgba(166,107,255,.58);box-shadow:0 25px 65px rgba(42,18,95,.35),0 0 45px rgba(137,85,255,.17),inset 0 1px 0 rgba(255,255,255,.18)}
+.value{color:#fff;text-shadow:0 0 18px rgba(85,245,255,.22),0 5px 22px rgba(0,0,0,.55)}
+.btn,.market-tab,.nav-btn,.sort-option button{position:relative;overflow:hidden;transition:transform .22s,box-shadow .22s,filter .22s,border-color .22s}
+.btn:before,.market-tab:before{content:"";position:absolute;top:-120%;left:-45%;width:35%;height:340%;transform:rotate(28deg);background:linear-gradient(90deg,transparent,rgba(255,255,255,.28),transparent);transition:left .55s}
+.btn:hover:before,.market-tab:hover:before{left:130%}
+.btn:hover,.market-tab:hover,.sort-option button:hover{transform:translateY(-2px);box-shadow:0 9px 24px rgba(115,69,255,.24);filter:brightness(1.12)}
+.primary{background:linear-gradient(120deg,#62ffd0,#55f5ff 55%,#a6ffef);color:#04151a;box-shadow:0 0 18px rgba(85,245,255,.24),0 7px 22px rgba(37,220,190,.13);font-weight:900}
+input,select,textarea{background:linear-gradient(145deg,rgba(10,8,27,.96),rgba(22,14,43,.96))!important;border-color:rgba(151,112,220,.45)!important;box-shadow:inset 0 2px 8px rgba(0,0,0,.32),0 1px 0 rgba(255,255,255,.035)}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--qx-cyan)!important;box-shadow:0 0 0 3px rgba(85,245,255,.11),0 0 22px rgba(85,245,255,.12),inset 0 2px 8px rgba(0,0,0,.25)}
+.list{border-radius:17px;background:linear-gradient(145deg,rgba(23,16,44,.94),rgba(8,8,22,.97))}
+.asset-logo,.asset-fallback{box-shadow:0 5px 15px rgba(0,0,0,.38),0 0 0 2px rgba(173,132,255,.2),0 0 18px rgba(85,245,255,.12)}
+.tag,.wallet-badge{box-shadow:0 0 14px rgba(67,255,173,.10)}
+.bottom-nav{background:rgba(6,5,18,.88);border-top:1px solid rgba(145,111,220,.38);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);box-shadow:0 -12px 38px rgba(0,0,0,.38)}
+.nav-btn.active{color:var(--qx-cyan);text-shadow:0 0 13px rgba(85,245,255,.55)}
+.market-tab.active{background:linear-gradient(120deg,#59ffd0,#55f5ff);box-shadow:0 0 20px rgba(85,245,255,.22)}
+footer{ text-shadow:0 0 14px rgba(166,107,255,.25)}
+@media(max-width:600px){.panel,.hero,.list,.ad-card{border-radius:15px}.panel:hover,.hero:hover,.ad-card:hover{transform:translateY(-2px)}body:before{background-size:38px 38px}.wrap{padding-left:11px;padding-right:11px}}
+@media(prefers-reduced-motion:reduce){body:before,body:after{animation:none!important}.panel,.hero,.list,.ad-card,.btn,.market-tab{transition:none!important}}
+
+</style>
+<style id="qx-cosmic-ultimate">
+:root{--qx-violet:#a855ff;--qx-cyan:#45f5ff;--qx-pink:#ff4bd8;--qx-gold:#ffe28a}
+html{background:#03020b;scroll-behavior:smooth}
+body{position:relative;isolation:isolate;overflow-x:hidden;background:radial-gradient(ellipse at 50% -15%,#30205b 0%,#100b25 34%,#05040f 68%,#020208 100%)!important;color:#f8f4ff}
+/* Deep-space aurora + dimensional portal */
+body:before{content:"";position:fixed;z-index:-2;inset:-22%;pointer-events:none;background:conic-gradient(from 0deg at 50% 48%,transparent 0 12%,rgba(79,246,255,.10) 17%,transparent 23%,rgba(186,76,255,.13) 33%,transparent 42%,rgba(255,68,208,.09) 53%,transparent 63%,rgba(64,255,208,.08) 74%,transparent 84%);filter:blur(54px);animation:qxGalaxySpin 65s linear infinite}
+body:after{content:"";position:fixed;z-index:-1;pointer-events:none;inset:0;background:radial-gradient(ellipse at 50% 45%,transparent 25%,rgba(0,0,0,.12) 60%,rgba(0,0,0,.72) 100%),repeating-linear-gradient(0deg,rgba(255,255,255,.018) 0 1px,transparent 1px 4px);opacity:.65}
+.qx-cosmic-stage{position:fixed;z-index:-1;inset:0;overflow:hidden;pointer-events:none;perspective:1000px}
+.qx-cosmic-stage:before{content:"";position:absolute;width:min(76vw,900px);aspect-ratio:1;left:50%;top:42%;transform:translate(-50%,-50%) rotateX(68deg);border-radius:50%;border:1px solid rgba(91,244,255,.35);box-shadow:0 0 25px rgba(69,245,255,.22),inset 0 0 55px rgba(163,76,255,.18),0 0 100px rgba(161,65,255,.13);animation:qxPortal 18s ease-in-out infinite}
+.qx-cosmic-stage:after{content:"";position:absolute;width:min(58vw,680px);aspect-ratio:1;left:50%;top:42%;transform:translate(-50%,-50%) rotateX(68deg) rotateZ(35deg);border-radius:50%;border:2px dashed rgba(255,75,216,.22);box-shadow:0 0 50px rgba(255,75,216,.12);animation:qxPortalReverse 32s linear infinite}
+.qx-starfield{position:absolute;inset:0;background-image:radial-gradient(2px 2px at 8% 18%,#fff 50%,transparent 60%),radial-gradient(1px 1px at 22% 72%,#69f8ff 50%,transparent 60%),radial-gradient(2px 2px at 81% 24%,#d8a0ff 50%,transparent 60%),radial-gradient(1px 1px at 72% 83%,#fff 50%,transparent 60%),radial-gradient(1.5px 1.5px at 43% 12%,#ff8eea 50%,transparent 60%),radial-gradient(1px 1px at 93% 61%,#fff 50%,transparent 60%);background-size:370px 330px;opacity:.5;animation:qxStars 55s linear infinite}
+.wrap{position:relative;z-index:1;transform-style:preserve-3d}
+header,.hero,.panel,.list,.ad-card,.coin-card,.modal,.qx-card{backdrop-filter:blur(22px) saturate(150%);-webkit-backdrop-filter:blur(22px) saturate(150%);background:linear-gradient(145deg,rgba(35,24,68,.78),rgba(8,9,27,.78))!important;border:1px solid rgba(153,117,255,.28)!important;box-shadow:0 18px 55px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.09),0 0 28px rgba(114,67,255,.09);transform-style:preserve-3d;transition:transform .45s cubic-bezier(.2,.8,.2,1),box-shadow .45s,border-color .45s}
+.hero{position:relative;overflow:hidden;box-shadow:0 25px 70px rgba(0,0,0,.38),0 0 45px rgba(104,72,255,.16),inset 0 1px 0 rgba(255,255,255,.15)!important}
+.hero:before,.panel:before,.ad-card:before{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;background:linear-gradient(115deg,transparent 15%,rgba(255,255,255,.07) 32%,transparent 48%);transform:translateX(-130%);animation:qxGlassSweep 9s ease-in-out infinite}
+.hero:after{content:"QX";position:absolute;right:3%;bottom:-.32em;font-size:clamp(110px,24vw,280px);font-weight:1000;letter-spacing:-.1em;line-height:1;color:rgba(185,143,255,.045);text-shadow:0 0 55px rgba(100,241,255,.12);pointer-events:none;transform:translateZ(35px)}
+.panel:hover,.hero:hover,.list:hover,.ad-card:hover{transform:translateY(-5px) perspective(1000px) rotateX(1deg);border-color:rgba(78,244,255,.55)!important;box-shadow:0 28px 75px rgba(0,0,0,.48),0 0 36px rgba(69,245,255,.14),inset 0 1px 0 rgba(255,255,255,.14)!important}
+.btn,.market-tab,.nav-btn{position:relative;overflow:hidden;transition:transform .25s,filter .25s,box-shadow .25s}
+.btn.primary{background:linear-gradient(115deg,#8b42ff,#3d9cff 52%,#39eacb)!important;border:1px solid rgba(255,255,255,.28)!important;box-shadow:0 0 18px rgba(125,78,255,.45),inset 0 1px 0 rgba(255,255,255,.35)!important;text-shadow:0 1px 8px rgba(0,0,0,.25)}
+.btn:hover,.market-tab:hover{transform:translateY(-2px) scale(1.025);filter:brightness(1.18);box-shadow:0 0 24px rgba(69,245,255,.25)}
+.brand-mark{filter:drop-shadow(0 0 12px rgba(69,245,255,.75)) drop-shadow(0 0 26px rgba(168,85,255,.45));transform:translateZ(22px)}
+.brand-name{text-shadow:0 0 18px rgba(69,245,255,.35),0 0 35px rgba(168,85,255,.25)}
+input,select,textarea{background:rgba(5,7,22,.78)!important;border:1px solid rgba(130,119,255,.35)!important;box-shadow:inset 0 2px 12px rgba(0,0,0,.25),0 0 14px rgba(100,90,255,.06)}
+.tag,.wallet-badge{border:1px solid rgba(69,245,255,.25);box-shadow:0 0 14px rgba(69,245,255,.08);background:rgba(69,245,255,.07)}
+@keyframes qxGalaxySpin{to{transform:rotate(360deg)}}
+@keyframes qxPortal{0%,100%{transform:translate(-50%,-50%) rotateX(68deg) rotateZ(0deg) scale(.96);opacity:.55}50%{transform:translate(-50%,-50%) rotateX(68deg) rotateZ(180deg) scale(1.05);opacity:.95}}
+@keyframes qxPortalReverse{to{transform:translate(-50%,-50%) rotateX(68deg) rotateZ(-325deg)}}
+@keyframes qxStars{to{background-position:370px 330px}}
+@keyframes qxGlassSweep{0%,65%,100%{transform:translateX(-130%)}80%{transform:translateX(130%)}}
+@media(max-width:650px){.qx-cosmic-stage:before{width:125vw;top:32%}.qx-cosmic-stage:after{width:95vw;top:32%}.hero:after{font-size:120px}.panel:hover,.hero:hover,.list:hover,.ad-card:hover{transform:translateY(-2px)}}
+@media(prefers-reduced-motion:reduce){.qx-cosmic-stage:before,.qx-cosmic-stage:after,.qx-starfield,body:before,.hero:before,.panel:before,.ad-card:before{animation:none!important}.panel,.hero,.list,.ad-card,.btn,.market-tab{transition:none!important}}
+</style>
+
+<style id="qx-year-3000-visual-upgrade">
+:root{--qx-ion:#72fbff;--qx-plasma:#a77bff;--qx-quantum:#ff75e8;--qx-lime:#b8ffb0}
+/* QX // YEAR 3000: layered quantum interface */
+.qx-chrono-layer{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;perspective:1200px;contain:strict}
+.qx-chrono-layer:before{content:"";position:absolute;left:50%;top:46%;width:min(110vw,1250px);aspect-ratio:1;transform:translate(-50%,-50%) rotateX(73deg);border-radius:50%;background:repeating-radial-gradient(circle,transparent 0 38px,rgba(114,251,255,.13) 39px 40px,transparent 41px 78px);mask-image:radial-gradient(circle,#000 15%,transparent 70%);filter:drop-shadow(0 0 22px rgba(114,251,255,.22));animation:qxQuantumRadar 42s linear infinite}
+.qx-chrono-layer:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent 0 9.8%,rgba(114,251,255,.055) 10%,transparent 10.15% 89.8%,rgba(167,123,255,.055) 90%,transparent 90.15%),linear-gradient(0deg,transparent 0 14.8%,rgba(114,251,255,.04) 15%,transparent 15.15% 84.8%,rgba(167,123,255,.04) 85%,transparent 85.15%);opacity:.65;mask-image:linear-gradient(transparent,#000 15%,#000 85%,transparent)}
+.qx-chrono-crown{position:absolute;left:50%;top:43%;width:min(68vw,760px);aspect-ratio:1;border:1px solid rgba(114,251,255,.18);border-radius:50%;transform:translate(-50%,-50%) rotateX(72deg);box-shadow:0 0 35px rgba(114,251,255,.08),inset 0 0 45px rgba(167,123,255,.1);animation:qxCrownSpin 75s linear infinite}
+.qx-chrono-crown:before,.qx-chrono-crown:after{content:"";position:absolute;inset:8%;border:1px dashed rgba(255,117,232,.23);border-radius:50%;transform:rotate(42deg)}
+.qx-chrono-crown:after{inset:19%;border-style:solid;border-color:rgba(114,251,255,.18);transform:rotate(-38deg)}
+.qx-chrono-corner{position:fixed;z-index:2;top:12px;left:14px;width:42px;height:42px;border-top:1px solid rgba(114,251,255,.48);border-left:1px solid rgba(114,251,255,.48);pointer-events:none;filter:drop-shadow(0 0 7px rgba(114,251,255,.5))}
+.qx-chrono-corner.right{left:auto;right:14px;transform:scaleX(-1)}
+.qx-chrono-status{position:fixed;z-index:2;bottom:12px;left:16px;color:rgba(174,236,255,.42);font:9px/1.5 ui-monospace,monospace;letter-spacing:2px;pointer-events:none;text-shadow:0 0 10px rgba(114,251,255,.25)}
+.wrap{z-index:1}
+header{border-color:rgba(114,251,255,.36)!important;box-shadow:0 14px 45px rgba(0,0,0,.4),0 0 24px rgba(114,251,255,.08),inset 0 1px 0 rgba(255,255,255,.13)!important}
+.hero{background:radial-gradient(ellipse at 50% 0%,rgba(114,251,255,.2),transparent 46%),radial-gradient(ellipse at 100% 100%,rgba(255,117,232,.13),transparent 44%),linear-gradient(135deg,rgba(27,25,67,.91),rgba(5,8,25,.96) 58%,rgba(30,13,55,.91))!important;border-color:rgba(114,251,255,.4)!important}
+.panel,.hero,.list,.ad-card,.coin-card,.qx-card{box-shadow:0 20px 65px rgba(0,0,0,.42),0 0 0 1px rgba(114,251,255,.035) inset,0 0 26px rgba(114,251,255,.055),inset 0 1px 0 rgba(255,255,255,.1)!important}
+.logo,.brand-name{filter:drop-shadow(0 0 8px rgba(114,251,255,.4)) drop-shadow(0 0 20px rgba(167,123,255,.3))}
+.btn.primary{background:linear-gradient(110deg,#8e55ff 0%,#4bdcff 48%,#72ffd0 100%)!important;box-shadow:0 0 22px rgba(114,251,255,.28),0 0 48px rgba(167,123,255,.16),inset 0 1px 0 rgba(255,255,255,.42)!important}
+.market-tab.active,.nav-btn.active{filter:drop-shadow(0 0 9px rgba(114,251,255,.5))}
+@keyframes qxQuantumRadar{to{transform:translate(-50%,-50%) rotateX(73deg) rotateZ(360deg)}}
+@keyframes qxCrownSpin{to{transform:translate(-50%,-50%) rotateX(72deg) rotateZ(-360deg)}}
+@media(max-width:650px){.qx-chrono-crown{width:115vw;top:32%}.qx-chrono-layer:before{top:34%;width:145vw}.qx-chrono-status{font-size:7px;opacity:.55}.qx-chrono-corner{width:24px;height:24px;top:8px;left:8px}.qx-chrono-corner.right{right:8px;left:auto}}
+@media(prefers-reduced-motion:reduce){.qx-chrono-layer:before,.qx-chrono-crown{animation:none!important}}
 </style>
 </head>
 <body>
+<div class="qx-cosmic-stage" aria-hidden="true"><div class="qx-starfield"></div></div>
+<div class="qx-chrono-layer" aria-hidden="true"><div class="qx-chrono-crown"></div></div>
+<div class="qx-chrono-corner" aria-hidden="true"></div><div class="qx-chrono-corner right" aria-hidden="true"></div>
+<div class="qx-chrono-status" aria-hidden="true">QX / QUANTUM EXCHANGE / SYSTEM ONLINE</div>
+
+
 <div class="wrap">
 <header>
  <a class="brand-lockup" href="#walletPage" aria-label="QX Exchange home">
