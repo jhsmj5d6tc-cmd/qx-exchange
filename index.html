@@ -654,9 +654,6 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape")qxWpHide();});
 <script type="importmap">
 {
  "imports":{
-  "@reown/appkit":"https://cdn.jsdelivr.net/npm/@reown/appkit@1.8.24/+esm",
-  "@reown/appkit/networks":"https://cdn.jsdelivr.net/npm/@reown/appkit@1.8.24/networks/+esm",
-  "@reown/appkit-adapter-solana":"https://cdn.jsdelivr.net/npm/@reown/appkit-adapter-solana@1.8.24/+esm",
   "@solana/web3.js":"https://cdn.jsdelivr.net/npm/@solana/web3.js@1.98.4/+esm",
   "@solana/spl-token":"https://cdn.jsdelivr.net/npm/@solana/spl-token@0.4.13/+esm"
  }
@@ -707,19 +704,18 @@ let MINT_SIZE,TOKEN_PROGRAM_ID,getAssociatedTokenAddress,createInitializeMintIns
 const qxLibraryReady = (async()=>{
  try{
   // Load sequentially so Safari reports which CDN package actually failed.
-  // Use jsDelivr's ESM transformer for the complete published Reown package graph.
-  // This avoids the esm.sh externalization graph that was causing Safari to request
-  // a symbol such as MultisigOperation from a different Solana dependency version.
-  let appkitModule,solanaAdapterModule,networksModule;
-  try{appkitModule=await import("@reown/appkit");}
-  catch(error){throw new Error("@reown/appkit could not load: "+(error?.message||String(error)));}
-  try{solanaAdapterModule=await import("@reown/appkit-adapter-solana");}
-  catch(error){throw new Error("@reown/appkit-adapter-solana could not load: "+(error?.message||String(error)));}
-  try{networksModule=await import("@reown/appkit/networks");}
-  catch(error){throw new Error("@reown/appkit/networks could not load: "+(error?.message||String(error)));}
-  createAppKit=appkitModule.createAppKit;
-  SolanaAdapter=solanaAdapterModule.SolanaAdapter;
-  solana=networksModule.solana;
+  // IMPORTANT: use Reown's official pre-bundled CDN build for plain HTML.
+  // The separate @reown/appkit + @reown/appkit-adapter-solana imports were
+  // resolving different Solana dependency graphs in Safari and produced the
+  // "MultisigOperation" missing-export error before the wallet picker opened.
+  // Reown publishes appkit-cdn specifically for CDN/no-build-tool apps and it
+  // bundles the Solana adapter and network exports together.
+  let cdnModule;
+  try{cdnModule=await import("https://cdn.jsdelivr.net/npm/@reown/appkit-cdn@1.8.24/dist/appkit.js");}
+  catch(error){throw new Error("Reown AppKit CDN could not load: "+(error?.message||String(error)));}
+  createAppKit=cdnModule.createAppKit;
+  SolanaAdapter=cdnModule.SolanaAdapter;
+  solana=cdnModule.networks?.solana;
   if(typeof createAppKit!=="function"||typeof SolanaAdapter!=="function"||!solana){
    throw new Error("Reown modules loaded, but createAppKit, SolanaAdapter, or the Solana mainnet export is missing.");
   }
@@ -1041,7 +1037,7 @@ const qxWalletReady=qxLibraryReady.then(async()=>{
     }
    });
   }
-  console.info("QX wallet connection initialized for",location.origin,"with Reown AppKit 1.8.24 + jsDelivr ESM; all Solana wallets are shown.");
+  console.info("QX wallet connection initialized for",location.origin,"with Reown AppKit CDN 1.8.24; all Solana wallets are shown.");
  }catch(error){
   qxWalletInitError=error;
   console.error("QX wallet initialization failed:",error);
