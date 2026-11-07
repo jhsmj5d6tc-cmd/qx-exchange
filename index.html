@@ -9,7 +9,6 @@
 <meta name="theme-color" content="#080711">
 <meta name="google-site-verification" content="A5ntuJ6pvvK-Uo8HHA96o5bUPFGOg_70p-Nh_rsZ8NM">
 <title>QX Exchange</title>
-<meta name="qx-build" content="safari-reown-fix-2026-11-07">
 
 <style>
 :root{
@@ -658,8 +657,8 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape")qxWpHide();});
   "@reown/appkit":"https://cdn.jsdelivr.net/npm/@reown/appkit@1.8.24/+esm",
   "@reown/appkit/networks":"https://cdn.jsdelivr.net/npm/@reown/appkit@1.8.24/networks/+esm",
   "@reown/appkit-adapter-solana":"https://cdn.jsdelivr.net/npm/@reown/appkit-adapter-solana@1.8.24/+esm",
-  "@solana/web3.js":"https://esm.sh/@solana/web3.js@1.98.4",
-  "@solana/spl-token":"https://esm.sh/@solana/spl-token@0.4.13?external=@solana/web3.js"
+  "@solana/web3.js":"https://cdn.jsdelivr.net/npm/@solana/web3.js@1.98.4/+esm",
+  "@solana/spl-token":"https://cdn.jsdelivr.net/npm/@solana/spl-token@0.4.13/+esm"
  }
 }
 </script>
@@ -693,7 +692,7 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape")qxWpHide();});
 </script>
 
 <script type="module">
-// Provide the Buffer global expected by Solana wallet adapters in browser environments.
+// Provide the Buffer global expected by Solana wallet adapters in browser environments. jsDelivr ESM keeps this browser-safe without relying on Node globals.
 import { Buffer } from "https://cdn.jsdelivr.net/npm/buffer@6.0.3/+esm";
 globalThis.Buffer = Buffer;
 if (typeof window !== "undefined") window.Buffer = Buffer;
@@ -708,7 +707,7 @@ let MINT_SIZE,TOKEN_PROGRAM_ID,getAssociatedTokenAddress,createInitializeMintIns
 const qxLibraryReady = (async()=>{
  try{
   // Load sequentially so Safari reports which CDN package actually failed.
-  // Reown is loaded from jsDelivr ESM to avoid the Safari/esm.sh named-export mismatch seen with the bundled module graph.
+  // The import map uses jsDelivr ESM entrypoints so Reown packages share a consistent browser module graph instead of mixing duplicated bundled Solana dependencies.
   let appkitModule,solanaAdapterModule,networksModule;
   try{appkitModule=await import("@reown/appkit");}
   catch(error){throw new Error("@reown/appkit could not load: "+(error?.message||String(error)));}
@@ -1005,7 +1004,7 @@ async function connectQXWallet(){
   await appKit.open();
  }catch(error){
   const detail=String(error?.message||error||"Unknown connection error");
-  const hint=" If Safari blocks wallet libraries, allow site content and reload QX. You can also open QX inside Phantom or Solflare.";
+  const hint=" The domain is already allowlisted. If Safari blocks the CDN, allow site content and reload; alternatively open QX inside Phantom or Solflare.";
   $("walletStatus").textContent="Wallet connection failed: "+detail+hint;
   if(feedback)feedback.textContent="Wallet connection failed: "+detail+hint;
   throw new Error(detail+hint);
@@ -1040,7 +1039,7 @@ const qxWalletReady=qxLibraryReady.then(async()=>{
     }
    });
   }
-  console.info("QX wallet connection initialized for",location.origin,"with Solana WalletConnect; all wallets are shown.");
+  console.info("QX wallet connection initialized for",location.origin,"with Solana WalletConnect; all wallets are shown. Reown ESM graph: jsDelivr 1.8.24.");
  }catch(error){
   qxWalletInitError=error;
   console.error("QX wallet initialization failed:",error);
