@@ -917,7 +917,7 @@ const SOL="So11111111111111111111111111111111111111112";
 const QX_TOKEN_FEE_RECIPIENT="E4x2DiVVDuVQHSUGgzTPjJMDbiJ6jCRwpEvsvAd31Qs4";
 const QX_TOKEN_FEE_LAMPORTS=300000000;
 const USDC="EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
-const RPCS=["https://api.mainnet-beta.solana.com","https://api.mainnet.solana.com","https://rpc.ankr.com/solana"];
+const RPCS=["https://api.mainnet-beta.solana.com","https://api.mainnet.solana.com","https://solana-rpc.publicnode.com","https://rpc.ankr.com/solana"];
 const SOL_RESERVE=0.002;
 
 let appKit,activeWalletProvider=null,walletAddress="",connected=false,solPrice=0,qxWalletInitError=null;
@@ -1080,12 +1080,12 @@ async function rpc(method,params){
  let lastError;
  for(const endpoint of RPCS){
   try{
-   const response=await fetch(endpoint,{
-    method:"POST",headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({jsonrpc:"2.0",id:1,method,params})
-   });
+   const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),9000);
+   const response=await fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({jsonrpc:"2.0",id:1,method,params}),signal:controller.signal});
+   clearTimeout(timer);
+   if(!response.ok)throw new Error("HTTP "+response.status);
    const data=await response.json();
-   if(data.result)return data.result;
+   if(Object.prototype.hasOwnProperty.call(data,"result"))return data.result;
    lastError=new Error(data.error?.message||"RPC request failed");
   }catch(e){lastError=e;}
  }
@@ -1916,6 +1916,7 @@ function getCategoryPairs(){
  let list=bestPairsByMint(allPairs.filter(p=>p?.chainId==="solana"&&valid(String(p?.baseToken?.address||""))),true);
  if(currentCategory==="new"){
   list=newPairs.slice().sort((a,b)=>Number(b.pairCreatedAt||0)-Number(a.pairCreatedAt||0));
+  if(!list.length)list=allPairs.slice().sort((a,b)=>Number(b.liquidity?.usd||0)-Number(a.liquidity?.usd||0)).slice(0,50);
  }else if(currentCategory==="trending"){
   list=trendingPairs.slice();
  }else if(currentCategory==="gainers"){
@@ -2703,7 +2704,10 @@ window.addEventListener("qx:wallet-changed",()=>{qxLoadCreatorDashboard()});
  function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));}
  function render(){
   const el=box();if(!el)return;
-  if(!cache.length){el.innerHTML='<div class="market-empty">No live Solana pairs returned yet.</div>';return;}
+  if(!cache.length){
+   if(!el.querySelector(".market-row") && !el.querySelector(".token-card"))el.innerHTML='<div class="market-empty">Connecting to live Solana market data…</div>';
+   return;
+  }
   el.innerHTML=cache.slice(0,100).map(p=>{
    const a=p.baseToken?.address||"",n=esc(p.baseToken?.name||"Token"),s=esc(p.baseToken?.symbol||""),ch=Number(p.priceChange?.h24||0),cl=ch>=0?"positive":"negative";
    return '<button type="button" class="market-row qx-fallback-row" data-mint="'+esc(a)+'" style="width:100%;text-align:left;background:none;border:0;color:inherit;cursor:pointer;padding:12px 8px;display:grid;grid-template-columns:minmax(0,1fr) 120px 90px;gap:10px;align-items:center"><span><strong>'+n+'</strong><small style="display:block;color:var(--muted)">'+s+' · '+esc(a.slice(0,6)+"…"+a.slice(-4))+'</small></span><span class="right">'+price(p.priceUsd)+'</span><span class="right '+cl+'">'+(ch>=0?"+":"")+ch.toFixed(2)+'%</span></button>';
@@ -2723,12 +2727,13 @@ window.addEventListener("qx:wallet-changed",()=>{qxLoadCreatorDashboard()});
    }
    cache=[...map.values()].sort((a,b)=>Number(b.liquidity?.usd||0)-Number(a.liquidity?.usd||0));
    render();
+   try{window.QXMarketSafetyCache=cache;}catch(_){}
   }catch(e){if(!cache.length){box().innerHTML='<div class="market-empty">Market connection failed. Retrying automatically...</div>';status().textContent="Market retry: "+(e?.message||"network error");}}
   finally{busy=false;}
  }
  window.QXMarketSafetyRun=run;
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>setTimeout(run,1200));else setTimeout(run,1200);
- setInterval(run,20000);
+ setInterval(run,12000);
 })();
 </script>
 </body>
