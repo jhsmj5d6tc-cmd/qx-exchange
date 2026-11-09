@@ -2284,8 +2284,9 @@ async function loadMarket(){
    const qs=["solana","SOL","USDC","BONK","JUP","RAY"];
    const rs=await Promise.allSettled(qs.map(q=>json("https://api.dexscreener.com/latest/dex/search?q="+encodeURIComponent(q))));
    const map=new Map();
+   const CANONICAL_SOL_MINT="So11111111111111111111111111111111111111112";
    for(const r of rs)if(r.status==="fulfilled")for(const p of (r.value?.pairs||[])){
-    const mint=String(p.baseToken?.address||"");if(p.chainId!=="solana"||!validMint(mint)||mint===SOL)continue;
+    const mint=String(p.baseToken?.address||"");if(p.chainId!=="solana"||!validMint(mint)||mint===CANONICAL_SOL_MINT)continue;
     const nm=String(p.baseToken?.name||"").trim().toLowerCase(),sm=String(p.baseToken?.symbol||"").trim().toLowerCase();
     if(sm==="sol"||sm==="wsol"||nm==="solana"||nm==="wrapped solana"||nm==="wrapped sol")continue;
     const old=map.get(mint);if(!old||Number(p.liquidity?.usd||0)>Number(old.liquidity?.usd||0))map.set(mint,p);
@@ -2293,7 +2294,14 @@ async function loadMarket(){
    cache=[...map.values()].sort((a,b)=>Number(b.liquidity?.usd||0)-Number(a.liquidity?.usd||0));
    render();
    try{window.QXMarketSafetyCache=cache;}catch(_){}
-  }catch(e){if(!cache.length){box().innerHTML='<div class="market-empty">Market connection failed. Retrying automatically...</div>';status().textContent="Market retry: "+(e?.message||"network error");}}
+  }catch(e){
+   console.warn("QX safety market feed failed",e);
+   if(!cache.length){
+    const b=box(),st=status();
+    if(b)b.innerHTML='<div class="market-empty">Market connection failed. Retrying automatically...</div>';
+    if(st)st.textContent="Market retry: "+(e?.message||"network error");
+   }
+  }
   finally{busy=false;}
  }
  window.QXMarketSafetyRun=run;
