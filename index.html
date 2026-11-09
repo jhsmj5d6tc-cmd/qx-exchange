@@ -1212,6 +1212,7 @@ async function connectQXWallet(){
 // The early wrapper above remains the public wallet entry point.
 window.QXConnectWallet=window.QXConnectWallet||(()=>connectQXWallet());
 window.QXGetWalletState=()=>({connected:!!connected,address:walletAddress||""});
+window.QXGetActiveWalletProvider=()=>getActiveWalletProvider();
 
 // QX REAL LAUNCH ENGINE — Meteora Dynamic Bonding Curve on Solana Mainnet.
 // This is not a simulator: every launch/swap below builds a transaction against the
@@ -1809,6 +1810,38 @@ $("launchTokenBtn")?.addEventListener("click",qxLaunchToken);
 // Metadata/logo sources: Jupiter verified token list + GeckoTerminal + DexScreener.
 const QX_GECKO_BASE="https://api.geckoterminal.com/api/v2/networks/solana";
 const QX_JUP_TOKENS="https://tokens.jup.ag/tokens?tags=verified";
+// Public Jupiter Developer Platform key supplied for QX. It is used only for
+// public quote/price endpoints; no private wallet material is stored here.
+const QX_JUP_API_KEY="jup_pub_646a02a3199987e777a62f4df5efaa06aeb0cbb5edc35244c9adce130b998621";
+async function qxJupJSON(url){
+ const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),10000);
+ try{
+  const r=await fetch(url,{signal:controller.signal,headers:{accept:"application/json","x-api-key":QX_JUP_API_KEY}});
+  if(!r.ok)throw new Error("Jupiter request failed ("+r.status+")");
+  return await r.json();
+ }finally{clearTimeout(timer);}
+}
+async function qxFetchJupiterPriceUniverse(meta){
+ const entries=[...meta.entries()].slice(0,1200);
+ const out=[];
+ for(let i=0;i<entries.length;i+=50){
+  const chunk=entries.slice(i,i+50);
+  try{
+   const data=await qxJupJSON("https://api.jup.ag/price/v3?ids="+encodeURIComponent(chunk.map(x=>x[0]).join(",")));
+   const prices=data?.data||{};
+   for(const [mint,m] of Object.entries(prices)){
+    const metaItem=meta.get(mint);if(!metaItem||!Number.isFinite(Number(m?.usdPrice)))continue;
+    out.push({
+     chainId:"solana",pairAddress:"jupiter_"+mint,baseToken:{address:mint,name:metaItem.name||"Unknown Token",symbol:metaItem.symbol||"TOKEN"},
+     quoteToken:{address:SOL,symbol:"SOL"},priceUsd:String(m.usdPrice),
+     priceChange:{h24:qxNum(m.priceChange24h)},volume:{h24:0},liquidity:{usd:0},marketCap:0,fdv:0,
+     txns:{h24:{buys:0,sells:0}},pairCreatedAt:0,info:{imageUrl:metaItem.imageUrl||""},dexId:"jupiter-price",tokenDecimals:m.decimals??metaItem.decimals
+    });
+   }
+  }catch(e){console.warn("Jupiter price batch failed",e);}
+ }
+ return out;
+}
 let qxJupiterMeta=null;
 let qxMarketGeneration=0;
 
@@ -1875,7 +1908,7 @@ function qxMergeJupiterMeta(list,meta){
  });
 }
 async function qxFetchDexFallback(){
- const qs=["solana","SOL","USDC","USDT","BONK","WIF","JUP","RAY","POPCAT","MEW","PENGU","JTO","PYTH","PUMP","TRUMP","MELANIA","DRIFT","ORCA","KMNO","HNT","IO","NOS","RENDER"];
+ const qs=["SOL","USDC","USDT","BONK","WIF","JUP","RAY","POPCAT","MEW","PENGU","JTO","PYTH","PUMP","TRUMP","MELANIA","DRIFT","ORCA","KMNO","HNT","IO","NOS","RENDER","JITOSOL","JUPSOL","JLP","WEN","SAMO","MOBILE","HONEY","MOTHER","GIGA","GOAT","ACT","FWOG","BOME","SLERF","PONKE","MYRO","MICHI","RETARDIO","NEIRO","ZEREBRO","GRASS","TNSR","W","KMNO","PRCL","ZEUS","CLOUD","MPLX","JTO","MNDE","HNT","NOS","IO","DEBRIDGE","WIF","JUP","RAY","ORCA","MET","DUST","HUB","CROWN","DADDY","PIPPIN"];
  const rs=await Promise.allSettled(qs.map(q=>getJSON("https://api.dexscreener.com/latest/dex/search?q="+encodeURIComponent(q))));
  return rs.flatMap(r=>r.status==="fulfilled"?(r.value?.pairs||[]):[])
   .filter(p=>p?.chainId==="solana"&&valid(String(p?.baseToken?.address||""))&&String(p.baseToken.address)!==SOL&&!qxLooksLikeFakeNative(p));
@@ -1920,6 +1953,152 @@ function qxTokenMeta(p){
  const tx=qxNum(p?.txns?.h24?.buys)+qxNum(p?.txns?.h24?.sells);
  return '<span class="token-meta"><span>MC '+escapeHTML(money(p?.marketCap||p?.fdv||0))+'</span><span>LIQ '+escapeHTML(money(p?.liquidity?.usd||0))+'</span><span>VOL '+escapeHTML(money(p?.volume?.h24||0))+'</span><span>TX '+tx.toLocaleString()+'</span></span>';
 }
+function sortPairs(list){
+ const arr=[...(list||[])];
+ if(!sortMetric)return arr;
+ const val=p=>sortMetric==="price"?qxNum(p?.priceUsd):sortMetric==="change"?qxNum(p?.priceChange?.h24):sortMetric==="volume"?qxNum(p?.volume?.h24):sortMetric==="marketcap"?qxNum(p?.marketCap||p?.fdv):sortMetric==="liquidity"?qxNum(p?.liquidity?.usd):0;
+ const dir=sortDirection==="asc"?1:-1;
+ return arr.sort((a,b)=>(val(a)-val(b))*dir);
+}
+function qxSetSwapStatus(message){const el=$("swapStatus");if(el)el.textContent=String(message||"");}
+function qxTokenDecimals(token){const d=Number(token?.tokenDecimals);return Number.isInteger(d)&&d>=0&&d<=18?d:9;}
+function qxToRawAmount(value,decimals){
+ const text=String(value||"").trim();if(!/^\d+(?:\.\d+)?$/.test(text))throw new Error("Enter a valid amount.");
+ const [whole,frac=""]=text.split(".");if(frac.length>decimals)throw new Error("Amount has more decimal places than this token supports.");
+ return (BigInt(whole)*10n**BigInt(decimals)+BigInt((frac+"0".repeat(decimals)).slice(0,decimals)||"0")).toString();
+}
+function qxFromRaw(raw,decimals){return Number(raw)/10**decimals;}
+async function qxEnsureFeeAccount(mint){
+ const connection=await qxGetHealthyConnection();
+ const owner=new PublicKey(QX_TOKEN_FEE_RECIPIENT),mintPk=new PublicKey(mint);
+ const ata=await getAssociatedTokenAddress(mintPk,owner,false,TOKEN_PROGRAM_ID);
+ const info=await connection.getAccountInfo(ata,"confirmed");
+ if(info)return ata;
+ if(!connected||!walletAddress)throw new Error("Connect your wallet before preparing the QX fee account.");
+ const payer=new PublicKey(walletAddress),block=await connection.getLatestBlockhash("confirmed");
+ const tx=new Transaction({feePayer:payer,recentBlockhash:block.blockhash});
+ tx.add(createAssociatedTokenAccountInstruction(payer,ata,owner,mintPk,TOKEN_PROGRAM_ID));
+ const provider=window.QXGetActiveWalletProvider?.()||null;
+ if(typeof provider?.signTransaction!=="function")throw new Error("The connected wallet cannot sign the fee-account setup transaction. Reconnect and try again.");
+ const signed=await provider.signTransaction(tx);
+ const sig=await connection.sendRawTransaction(signed.serialize(),{skipPreflight:false,preflightCommitment:"confirmed"});
+ const conf=await connection.confirmTransaction({signature:sig,blockhash:block.blockhash,lastValidBlockHeight:block.lastValidBlockHeight},"confirmed");
+ if(conf.value?.err)throw new Error("QX fee account setup failed on-chain: "+JSON.stringify(conf.value.err));
+ return ata;
+}
+function qxB64ToBytes(b64){const bin=atob(b64);const out=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)out[i]=bin.charCodeAt(i);return out;}
+function qxBytesToB64(bytes){let s="";const a=bytes instanceof Uint8Array?bytes:new Uint8Array(bytes);for(let i=0;i<a.length;i+=0x8000)s+=String.fromCharCode(...a.subarray(i,i+0x8000));return btoa(s);}
+async function qxBuildJupiterQuote(){
+ if(!selectedToken)throw new Error("Select a Solana token first.");
+ if(!connected||!walletAddress)throw new Error("Connect your Solana wallet first.");
+ const amount=Number($("tradeAmountInput")?.value||0);if(!Number.isFinite(amount)||amount<=0)throw new Error("Enter a trade amount greater than zero.");
+ const inputMint=tradeDirection==="buy"?SOL:selectedToken.baseToken.address;
+ const outputMint=tradeDirection==="buy"?selectedToken.baseToken.address:SOL;
+ const inputDecimals=tradeDirection==="buy"?9:qxTokenDecimals(selectedToken);
+ const raw=qxToRawAmount(amount,inputDecimals);
+ if(tradeDirection==="buy"&&amount>Math.max(0,walletSolBalance-SOL_RESERVE))throw new Error("The amount exceeds your available SOL after the QX reserve.");
+ if(tradeDirection==="sell"&&amount>selectedTokenBalance)throw new Error("The amount exceeds your available token balance.");
+ const params=new URLSearchParams({inputMint,outputMint,amount:raw,slippageBps:"50",instructionVersion:"V2",platformFeeBps:"100"});
+ const response=await fetch("https://api.jup.ag/swap/v1/quote?"+params.toString(),{headers:{accept:"application/json","x-api-key":QX_JUP_API_KEY}});
+ const quote=await response.json();if(!response.ok||quote.error)throw new Error(quote.error||quote.errorMessage||"Jupiter quote failed.");
+ if(!quote.outAmount)throw new Error("Jupiter returned no executable output for this token.");
+ return {quote,inputMint,outputMint,raw,amount,inputDecimals};
+}
+async function qxRequestLiveQuote(){
+ if(quoteBusy)return;quoteBusy=true;const btn=$("getQuoteBtn");if(btn)btn.disabled=true;
+ try{
+  qxSetSwapStatus("Requesting a fresh executable Jupiter quote with the QX 1% fee…");
+  const q=await qxBuildJupiterQuote();pendingSwapOrder=q;
+  const out=qxFromRaw(q.quote.outAmount,qxTokenDecimals(q.outputMint===SOL?{tokenDecimals:9}:selectedToken));
+  const outSymbol=tradeDirection==="buy"?selectedToken.baseToken.symbol:"SOL";
+  $("swapReceive").textContent=out.toLocaleString(undefined,{maximumFractionDigits:Math.min(9,qxTokenDecimals(q.outputMint===SOL?{tokenDecimals:9}:selectedToken))})+" "+outSymbol;
+  $("swapPay").textContent=q.amount+" "+(tradeDirection==="buy"?"SOL":selectedToken.baseToken.symbol);
+  $("qxFeeDisplay").textContent="1.00% · included in executable quote";
+  $("swapRoute").textContent=(q.quote.routePlan||[]).map(x=>x?.swapInfo?.label||x?.swapInfo?.ammKey||"Jupiter").filter(Boolean).join(" → ")||"Jupiter best route";
+  $("confirmSwapBtn").textContent="CONFIRM SWAP IN WALLET";
+  $("confirmSwapBtn").disabled=false;
+  qxSetSwapStatus("Quote ready. Review the 1% QX fee, route and receive amount, then confirm in your wallet.");
+ }catch(e){pendingSwapOrder=null;$("confirmSwapBtn").disabled=true;qxSetSwapStatus(e?.message||"Could not obtain a live quote.");}
+ finally{quoteBusy=false;if(btn)btn.disabled=false;}
+}
+async function qxExecuteSwap(){
+ if(swapBusy)return;if(!pendingSwapOrder)throw new Error("Get a fresh live quote first.");
+ swapBusy=true;const btn=$("confirmSwapBtn");if(btn)btn.disabled=true;
+ try{
+  const q=await qxBuildJupiterQuote();pendingSwapOrder=q;
+  const feeAccount=await qxEnsureFeeAccount(SOL);
+  qxSetSwapStatus("Building the real on-chain Jupiter transaction…");
+  const r=await fetch("https://api.jup.ag/swap/v1/swap",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":QX_JUP_API_KEY},body:JSON.stringify({quoteResponse:q.quote,userPublicKey:walletAddress,wrapAndUnwrapSol:true,feeAccount:feeAccount.toBase58(),trackingAccount:QX_TOKEN_FEE_RECIPIENT,dynamicComputeUnitLimit:true,prioritizationFeeLamports:{priorityLevelWithMaxLamports:{priorityLevel:"veryHigh",maxLamports:1000000}}})});
+  const data=await r.json();if(!r.ok||data.error)throw new Error(data.error||data.errorMessage||"Jupiter swap transaction build failed.");
+  if(!data.swapTransaction)throw new Error("Jupiter did not return a transaction to sign.");
+  const provider=window.QXGetActiveWalletProvider?.()||null;if(typeof provider?.signTransaction!=="function")throw new Error("Connected wallet cannot sign the swap transaction. Reconnect the wallet and try again.");
+  const tx=VersionedTransaction.deserialize(qxB64ToBytes(data.swapTransaction));
+  qxSetSwapStatus("Review and approve the real swap transaction in your wallet…");
+  const signed=await provider.signTransaction(tx);
+  const connection=await qxGetHealthyConnection();
+  const sig=await connection.sendRawTransaction(signed.serialize(),{skipPreflight:false,maxRetries:3,preflightCommitment:"confirmed"});
+  qxSetSwapStatus("Swap sent. Waiting for Solana confirmation…");
+  const conf=await connection.confirmTransaction({signature:sig,blockhash:tx.message.recentBlockhash,lastValidBlockHeight:data.lastValidBlockHeight},"confirmed");
+  if(conf.value?.err)throw new Error("Swap failed on-chain: "+JSON.stringify(conf.value.err));
+  pendingSwapOrder=null;$("swapReceive").textContent="Confirmed on Solana";$("confirmSwapBtn").textContent="SWAP CONFIRMED";$("qxFeeDisplay").textContent="1.00% · QX fee account: "+short(feeAccount.toBase58());
+  qxSetSwapStatus("Swap confirmed on Solana. Transaction: "+sig);
+  const link=$("solscanLink");if(link)link.href="https://solscan.io/token/"+encodeURIComponent(selectedToken?.baseToken?.address||"");
+  await refreshTradeBalances();
+  setTimeout(()=>{if(btn)btn.disabled=false;},900);
+ }catch(e){qxSetSwapStatus(e?.message||"Swap failed. No success was recorded.");if(btn)btn.disabled=false;throw e;}finally{swapBusy=false;}
+}
+async function refreshTradeBalances(){
+ if(!connected||!selectedToken)return;
+ try{
+  const sol=await rpc("getBalance",[walletAddress,{commitment:"confirmed"}]);walletSolBalance=Number(sol||0)/1e9;
+  const mint=selectedToken.baseToken.address;selectedTokenBalance=0;selectedTokenDecimals=qxTokenDecimals(selectedToken);
+  const res=await rpc("getTokenAccountsByOwner",[walletAddress,{mint},{encoding:"jsonParsed",commitment:"confirmed"}]);
+  for(const item of (res?.value||[]))selectedTokenBalance+=Number(item?.account?.data?.parsed?.info?.tokenAmount?.uiAmount||0);
+  const available=tradeDirection==="buy"?Math.max(0,walletSolBalance-SOL_RESERVE):selectedTokenBalance;
+  $("percentAvailable").textContent="Available balance: "+available.toLocaleString(undefined,{maximumFractionDigits:9})+" "+(tradeDirection==="buy"?"SOL":selectedToken.baseToken.symbol);
+ }catch(e){console.warn("QX trade balance refresh",e);}
+}
+function updateTradePercentUI(){
+ const input=$("tradeAmountInput"),range=$("percentRange"),value=$("percentValue");if(!input||!range)return;
+ const available=tradeDirection==="buy"?Math.max(0,walletSolBalance-SOL_RESERVE):selectedTokenBalance;
+ const pct=Math.max(0,Math.min(100,Number(range.value)||0));tradePercent=pct;
+ if(value)value.textContent=pct+"%";
+ const amt=available*pct/100;if(document.activeElement!==input||!input.value)input.value=amt>0?String(Number(amt.toFixed(9))):"";
+ const panel=$("percentPanel");if(panel)panel.classList.toggle("sell",tradeDirection==="sell");
+ $("tradeAmountSymbol").textContent=tradeDirection==="buy"?"SOL":(selectedToken?.baseToken?.symbol||"TOKEN");
+ $("qxPayLabel").textContent=tradeDirection==="buy"?"YOU PAY":"YOU SELL";
+ $("qxReceiveLabel").textContent=tradeDirection==="buy"?"YOU RECEIVE":"YOU RECEIVE";
+ $("qxReceiveSymbol").textContent=tradeDirection==="buy"?(selectedToken?.baseToken?.symbol||"TOKEN"):"SOL";
+}
+function setTradeDirection(dir){
+ tradeDirection=dir==="sell"?"sell":"buy";
+ $("buyBtn")?.classList.toggle("active",tradeDirection==="buy");$("sellBtn")?.classList.toggle("active",tradeDirection==="sell");
+ $("tradeTitle").textContent=tradeDirection==="buy"?"Buy this token with SOL":"Sell this token for SOL";
+ pendingSwapOrder=null;$("confirmSwapBtn").disabled=true;$("confirmSwapBtn").textContent="GET LIVE QUOTE FIRST";$("swapReceive").textContent="Enter amount to estimate";qxSetSwapStatus("Direction changed. Get a fresh live quote before signing.");updateTradePercentUI();refreshTradeBalances();
+}
+function openToken(token){
+ selectedToken=token;selectedTokenDecimals=qxTokenDecimals(token);tradeDirection="buy";document.body.classList.add("qx-token-open");
+ const detail=$("detail");if(!detail)return;detail.style.display="block";
+ $("detailName").textContent=cleanTokenText(token.baseToken?.name,"Unknown Token");$("detailSymbol").textContent=cleanTokenText(token.baseToken?.symbol,"TOKEN");$("detailPrice").textContent=usd(token.priceUsd);
+ const ch=qxNum(token.priceChange?.h24);$("detailChange").textContent=ch?(ch>0?"+":"")+ch.toFixed(2)+"%":"—";$("detailChange").className="detail-change "+(ch>0?"up":ch<0?"down":"neutral");
+ $("detailAddress").textContent=token.baseToken.address;
+ $("detailMarketCap").textContent=money(token.marketCap||token.fdv||0);$("detailLiquidity").textContent=money(token.liquidity?.usd||0);$("detailVolume").textContent=money(token.volume?.h24||0);
+ const tx=qxNum(token.txns?.h24?.buys)+qxNum(token.txns?.h24?.sells);$("detailTransactions").textContent=tx?tx.toLocaleString():"—";
+ const img=$("detailImage"),url=qxSafeUrl(token.info?.imageUrl||"");if(url){img.src=url;img.style.display="block";}else img.style.display="none";
+ const link=$("solscanLink");if(link)link.href="https://solscan.io/token/"+encodeURIComponent(token.baseToken.address);
+ $("swapWallet").textContent=connected?short(walletAddress):"Not connected";
+ $("swapDirectionBtn").hidden=false;$("swapDirectionBtn").textContent="REVERSE SWAP DIRECTION | SOL ↔ TOKEN";
+ $("confirmSwapBtn").disabled=true;$("confirmSwapBtn").textContent="GET LIVE QUOTE FIRST";$("qxFeeDisplay").textContent="1.00% · live quote required";$("swapRoute").textContent="QX best available Jupiter route";
+ updateTradePercentUI();refreshTradeBalances();
+}
+$("tokenBackBtn")?.addEventListener("click",()=>{document.body.classList.remove("qx-token-open");$("detail").style.display="none";selectedToken=null;pendingSwapOrder=null;});
+$("buyBtn")?.addEventListener("click",()=>setTradeDirection("buy"));$("sellBtn")?.addEventListener("click",()=>setTradeDirection("sell"));
+$("swapDirectionBtn")?.addEventListener("click",()=>setTradeDirection(tradeDirection==="buy"?"sell":"buy"));
+$("getQuoteBtn")?.addEventListener("click",()=>qxRequestLiveQuote());$("confirmSwapBtn")?.addEventListener("click",()=>qxExecuteSwap().catch(()=>{}));
+$("tradeAmountInput")?.addEventListener("input",()=>{pendingSwapOrder=null;$("confirmSwapBtn").disabled=true;});
+$("percentRange")?.addEventListener("input",()=>{tradePercent=Number($("percentRange").value);$("percentValue").textContent=tradePercent+"%";const available=tradeDirection==="buy"?Math.max(0,walletSolBalance-SOL_RESERVE):selectedTokenBalance;$("tradeAmountInput").value=Number((available*tradePercent/100).toFixed(9))||"";});
+document.querySelectorAll(".percent-btn").forEach(b=>b.addEventListener("click",()=>{$("percentRange").value=b.dataset.percent;$("percentRange").dispatchEvent(new Event("input"));}));
+$("sortOptions")?.addEventListener("click",e=>{const b=e.target.closest("button[data-sort]");if(!b)return;const m=b.dataset.sort;if(sortMetric===m)sortDirection=sortDirection==="desc"?"asc":"desc";else{sortMetric=m;sortDirection="desc";}document.querySelectorAll("#sortOptions button").forEach(x=>x.classList.toggle("active",x===b));$("sortLabel").textContent=m+" "+(sortDirection==="desc"?"descending":"ascending");renderMarket();});
 function renderMarket(){
  let list=qxCategoryList();
  const query=$("search")?.value.trim().toLowerCase()||"";
@@ -1966,12 +2145,13 @@ async function loadMarket(){
   const resultsBox=$("tokenResults");if(resultsBox&&!allPairs.length){resultsBox.innerHTML='<div class="market-empty">Loading global Solana market…</div>';$('coinCount').textContent='Loading…';}
   const requests=[];
   // 10 pages of each feed gives a much wider universe while avoiding an aggressive request storm.
-  for(let page=1;page<=10;page++)requests.push(qxFetchGecko("/pools?page="+page+"&include=base_token"));
-  for(let page=1;page<=5;page++)requests.push(qxFetchGecko("/trending_pools?page="+page+"&include=base_token"));
-  for(let page=1;page<=5;page++)requests.push(qxFetchGecko("/new_pools?page="+page+"&include=base_token"));
+  for(let page=1;page<=15;page++)requests.push(qxFetchGecko("/pools?page="+page+"&include=base_token"));
+  for(let page=1;page<=4;page++)requests.push(qxFetchGecko("/trending_pools?page="+page+"&include=base_token"));
+  for(let page=1;page<=4;page++)requests.push(qxFetchGecko("/new_pools?page="+page+"&include=base_token"));
   const [gecko,dex,meta]=await Promise.all([Promise.allSettled(requests),qxFetchDexFallback(),qxFetchJupiterMeta()]);
   if(generation!==qxMarketGeneration)return;
-  let pairs=gecko.flatMap(r=>r.status==="fulfilled"?r.value:[]);pairs.push(...dex);
+  const jupUniverse=await qxFetchJupiterPriceUniverse(meta);
+  let pairs=gecko.flatMap(r=>r.status==="fulfilled"?r.value:[]);pairs.push(...dex,...jupUniverse);
   pairs=bestPairsByMint(qxMergeJupiterMeta(pairs,meta)).map(qxNormalizePair);
   const canonical=await fetchCanonicalSol();if(canonical)pairs.push(qxNormalizePair(canonical));
   allPairs=bestPairsByMint(pairs).map(qxNormalizePair);
@@ -1987,6 +2167,11 @@ async function loadMarket(){
  }catch(e){console.warn("QX global market v19",e);$("marketStatus").textContent="Global Solana market retrying automatically · "+(e?.message||"temporary error");if(allPairs.length)renderMarket();else $("tokenResults").innerHTML='<div class="market-empty">Global Solana market is temporarily unavailable. Retrying automatically.</div>';
  }finally{marketBusy=false;}
 }
+// The previous build defined the market engine but never invoked it. Start the
+// authoritative market after the module is initialized so the safety net cannot
+// overwrite the real multi-source market state.
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>setTimeout(loadMarket,250));
+else setTimeout(loadMarket,250);
 </script>
 
 <script>
