@@ -1848,98 +1848,145 @@ function timeSince(timestamp){
  if(seconds<86400)return Math.floor(seconds/3600)+"h ago";
  return Math.floor(seconds/86400)+"d ago";
 }
+async function fetchGeckoSolanaPools(){
+ const urls=[];
+ // GeckoTerminal exposes paginated Solana pools and new pools. We use several
+ // pages so QX is not limited to the handful returned by DexScreener search.
+ for(let page=1;page<=6;page++){
+  urls.push(`https://api.geckoterminal.com/api/v2/networks/solana/pools?include=base_token&page=${page}&sort=h24_volume_usd_desc`);
+  urls.push(`https://api.geckoterminal.com/api/v2/networks/solana/new_pools?include=base_token&page=${page}`);
+ }
+ const settled=await Promise.allSettled(urls.map(u=>getJSON(u)));
+ const out=[];
+ for(const r of settled){
+  if(r.status!=='fulfilled')continue;
+  const body=r.value||{};
+  const included=Array.isArray(body.included)?body.included:[];
+  const tokenMap=new Map();
+  for(const item of included){
+   if(item?.type==='token'&&item?.attributes?.address)tokenMap.set(String(item.attributes.address),item.attributes);
+  }
+  for(const row of Array.isArray(body.data)?body.data:[]){
+   const a=row?.attributes||{};
+   const rel=row?.relationships?.base_token?.data?.id||'';
+   const mint=String(rel).replace(/^solana_/,'');
+   const tok=tokenMap.get(mint)||{};
+   if(!valid(mint)||mint===SOL)continue;
+   const name=tok.name||String(a.name||'').split('/')[0].trim()||'Unknown Token';
+   const symbol=tok.symbol||String(name).replace(/[^A-Za-z0-9]/g,'').slice(0,10).toUpperCase()||'TOKEN';
+   const h24=Number(a.price_change_percentage?.h24);
+   const tx=a.transactions?.h24||{};
+   out.push({
+    chainId:'solana',
+    dexId:'geckoterminal',
+    pairAddress:a.address||'',
+    pairCreatedAt:a.pool_created_at?Date.parse(a.pool_created_at):0,
+    baseToken:{address:mint,name,symbol},
+    priceUsd:a.base_token_price_usd||null,
+    priceChange:{h24:Number.isFinite(h24)?h24:null},
+    volume:{h24:Number(a.volume_usd?.h24||0)},
+    liquidity:{usd:Number(a.reserve_in_usd||0)},
+    marketCap:Number(a.market_cap_usd||0),
+    fdv:Number(a.fdv_usd||0),
+    txns:{h24:{buys:Number(tx.buys||0),sells:Number(tx.sells||0)}},
+    info:{imageUrl:tok.image_url||''}
+   });
+  }
+ }
+ return out;
+}
+async function fetchJupiterVerifiedTokens(){
+ try{
+  const data=await getJSON('https://tokens.jup.ag/tokens?tags=verified');
+  return Array.isArray(data)?data:[];
+ }catch(e){return [];}
+}
+function enrichMarketMetadata(pairs,jupTokens){
+ const meta=new Map();
+ for(const t of jupTokens||[]){
+  if(valid(String(t?.address||'')))meta.set(String(t.address),t);
+ }
+ return (pairs||[]).map(p=>{
+  const t=meta.get(String(p?.baseToken?.address||''));
+  if(!t)return p;
+  return {...p,baseToken:{...p.baseToken,name:p.baseToken?.name||t.name,symbol:p.baseToken?.symbol||t.symbol},info:{...(p.info||{}),imageUrl:p.info?.imageUrl||t.logoURI||''}};
+ });
+}
 async function loadMarket(){
  if(marketBusy)return;
  marketBusy=true;
- const resultsBox=$("tokenResults");
+ const resultsBox=$('tokenResults');
  if(resultsBox&&!allPairs.length){
   resultsBox.innerHTML='<div class="market-empty">Connecting to live Solana market data...</div>';
-  $("coinCount").textContent="Loading...";
+  $('coinCount').textContent='Loading...';
  }
  try{
-  // Pull several independent Solana discovery feeds. DexScreener search results
-  // are pool-based, so the same token can appear many times; everything below is
-  // normalized to ONE row per mint before it reaches the UI.
-  const urls=[
-   "https://api.dexscreener.com/latest/dex/search?q=solana",
-   "https://api.dexscreener.com/latest/dex/search?q=SOL",
-   "https://api.dexscreener.com/latest/dex/search?q=USDC",
-   "https://api.dexscreener.com/latest/dex/search?q=USDT",
-   "https://api.dexscreener.com/latest/dex/search?q=BONK",
-   "https://api.dexscreener.com/latest/dex/search?q=WIF",
-   "https://api.dexscreener.com/latest/dex/search?q=JUP",
-   "https://api.dexscreener.com/latest/dex/search?q=RAY",
-   "https://api.dexscreener.com/latest/dex/search?q=POPCAT",
-   "https://api.dexscreener.com/latest/dex/search?q=MEW"
-  ];
-  const discovery=[...urls];
-  const results=await Promise.allSettled(discovery.map(u=>getJSON(u)));
-  let pairs=results.flatMap(r=>r.status==="fulfilled"?(r.value?.pairs||[]):[])
-   .filter(p=>p?.chainId==="solana"&&valid(String(p?.baseToken?.address||"")));
+  const searchTerms=['solana','SOL','USDC','USDT','BONK','WIF','JUP','RAY','POPCAT','MEW','PUMP','FARTCOIN','TRUMP','PENGU','MELANIA','PYTH','JTO','ORCA','MNGO','KMNO','DRIFT','GRASS','IO','RENDER','TNSR','WEN','SAMO','BOME','MOTHER','GOAT','SPX','GIGA','FWOG','AI16Z','ARC','MOODENG'];
+  const letterTerms='abcdefghijklmnopqrstuvwxyz'.split('').map(c=>c);
+  const urls=[...searchTerms,...letterTerms].map(q=>'https://api.dexscreener.com/latest/dex/search?q='+encodeURIComponent(q));
+  const results=await Promise.allSettled(urls.map(u=>getJSON(u)));
+  let pairs=results.flatMap(r=>r.status==='fulfilled'?(r.value?.pairs||[]):[])
+   .filter(p=>p?.chainId==='solana'&&valid(String(p?.baseToken?.address||'')));
 
-  // Latest token profiles / boosts discover newer Solana tokens that may not
-  // appear in the generic search results.
   const extras=await Promise.allSettled([
-   getJSON("https://api.dexscreener.com/token-profiles/latest/v1"),
-   getJSON("https://api.dexscreener.com/token-boosts/latest/v1")
+   getJSON('https://api.dexscreener.com/token-profiles/latest/v1'),
+   getJSON('https://api.dexscreener.com/token-boosts/latest/v1')
   ]);
   const extraMints=[];
+  const profileLogos=new Map();
   for(const r of extras){
-   if(r.status!=="fulfilled"||!Array.isArray(r.value))continue;
+   if(r.status!=='fulfilled'||!Array.isArray(r.value))continue;
    for(const item of r.value){
-    if(item?.chainId==="solana"&&valid(String(item?.tokenAddress||"")))extraMints.push(String(item.tokenAddress));
+    if(item?.chainId==='solana'&&valid(String(item?.tokenAddress||''))){
+     const mint=String(item.tokenAddress);extraMints.push(mint);
+     if(item.icon)profileLogos.set(mint,item.icon);
+    }
    }
   }
   const extraPairs=await fetchPairsForMints(extraMints);
+  for(const p of extraPairs){if(!p.info?.imageUrl&&profileLogos.has(p.baseToken.address))p.info={...(p.info||{}),imageUrl:profileLogos.get(p.baseToken.address)};}
   pairs.push(...extraPairs);
+
+  // Broader Solana coverage: paginated GeckoTerminal pools, including new pools.
+  const gecko=await fetchGeckoSolanaPools();
+  pairs.push(...gecko);
+
+  const jup=await fetchJupiterVerifiedTokens();
+  pairs=enrichMarketMetadata(pairs,jup);
 
   const canonical=await fetchCanonicalSol();
   if(canonical)pairs.push(canonical);
 
-  // First collapse by mint, choosing the most liquid pool for each token.
   allPairs=bestPairsByMint(pairs,true);
 
-  // Then collapse display-name/symbol collisions as well. This prevents the
-  // market from looking like the same coin is listed repeatedly when multiple
-  // pools/mints use the same branding. Keep the strongest/liquid listing.
-  const byDisplay=new Map();
-  for(const pair of allPairs){
-   const mint=String(pair?.baseToken?.address||"");
-   const symbol=normalizedTokenLabel(pair?.baseToken?.symbol||"");
-   const name=normalizedTokenLabel(pair?.baseToken?.name||"");
-   const key=(symbol||name)?(symbol+"|"+name):mint;
-   const old=byDisplay.get(key);
-   if(!old||Number(pair?.liquidity?.usd||0)>Number(old?.liquidity?.usd||0))byDisplay.set(key,pair);
-  }
-  allPairs=[...byDisplay.values()];
-
-  // Stable market ordering: highest liquidity first. No random/search-order
-  // jumps every refresh.
+  // Do NOT collapse different mints just because they share a name/symbol.
+  // The mint address is the canonical identity. This prevents legitimate coins
+  // from disappearing while still removing duplicate pools for one mint.
   allPairs.sort((a,b)=>{
    const liq=Number(b?.liquidity?.usd||0)-Number(a?.liquidity?.usd||0);
    if(liq)return liq;
    const vol=Number(b?.volume?.h24||0)-Number(a?.volume?.h24||0);
    if(vol)return vol;
-   return String(a?.baseToken?.symbol||"").localeCompare(String(b?.baseToken?.symbol||""));
+   return String(a?.baseToken?.symbol||'').localeCompare(String(b?.baseToken?.symbol||''));
   });
 
   newPairs=allPairs.filter(p=>Number(p.pairCreatedAt||0)>Date.now()-7*86400000)
    .sort((a,b)=>Number(b.pairCreatedAt||0)-Number(a.pairCreatedAt||0));
-  trendingPairs=allPairs.slice().sort((a,b)=>Number(b.volume?.h24||0)-Number(a.volume?.h24||0)).slice(0,50);
+  trendingPairs=allPairs.slice().sort((a,b)=>Number(b.volume?.h24||0)-Number(a.volume?.h24||0)).slice(0,100);
 
-  if(!allPairs.length)throw new Error("No verified Solana market tokens were returned.");
-  $("marketStatus").textContent="Solana-only market · Deduplicated · Live data · Last update "+new Date().toLocaleTimeString();
+  if(!allPairs.length)throw new Error('No verified Solana market tokens were returned.');
+  $('marketStatus').textContent='Solana-only market · Live multi-source data · '+allPairs.length+' unique tokens · Last update '+new Date().toLocaleTimeString();
   renderMarket();
   if(selectedToken){
    const updated=allPairs.find(p=>p.baseToken.address===selectedToken.baseToken.address);
    if(updated){selectedToken=updated;refreshSelectedTokenDetails(updated);updateIndicativeEstimate();}
   }
  }catch(e){
-  const message=e?.message||"Market data is temporarily unavailable.";
-  $("marketStatus").textContent="Market feed temporarily unavailable · "+message+" · Retrying automatically";
+  const message=e?.message||'Market data is temporarily unavailable.';
+  $('marketStatus').textContent='Market feed temporarily unavailable · retrying automatically';
   if(!allPairs.length){
-   $("coinCount").textContent="0 tokens";
-   $("tokenResults").innerHTML='<div class="market-empty">Live Solana market data is temporarily unavailable. QX is retrying automatically.<br><small>'+escapeHTML(message)+'</small></div>';
+   $('coinCount').textContent='0 tokens';
+   $('tokenResults').innerHTML='<div class="market-empty">Live Solana market data is temporarily unavailable. QX is retrying automatically.</div>';
   }else renderMarket();
  }finally{marketBusy=false;}
 }
