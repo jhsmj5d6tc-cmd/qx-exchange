@@ -924,7 +924,7 @@ const SOL="So11111111111111111111111111111111111111112";
 const QX_TOKEN_FEE_RECIPIENT="E4x2DiVVDuVQHSUGgzTPjJMDbiJ6jCRwpEvsvAd31Qs4";
 const QX_TOKEN_FEE_LAMPORTS=300000000;
 const USDC="EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
-const RPCS=["https://solana-rpc.publicnode.com","https://api.mainnet-beta.solana.com"];
+const RPCS=["https://api.mainnet-beta.solana.com","https://solana-rpc.publicnode.com"];
 const SOL_RESERVE=0.002;
 
 let appKit,activeWalletProvider=null,walletAddress="",connected=false,solPrice=0,qxWalletInitError=null;
@@ -1666,6 +1666,7 @@ async function qxLaunchToken(opts={}){
   if(!Number.isFinite(initialMc)||initialMc<=0||!Number.isFinite(migrationMc)||migrationMc<=initialMc)throw new Error("Graduation market cap must be greater than the initial market cap.");
   if(!Number.isFinite(firstBuy)||firstBuy<0)throw new Error("Enter a valid first-buy amount.");
   const image=qxOptionalUrl("launchImage","Logo URL");
+  status.textContent="Connecting to Solana Mainnet…";
   const connection=await qxGetHealthyConnection(),payer=new PublicKey(walletAddress);
   const client=new dbc.DynamicBondingCurveClient(connection,"confirmed");
   const BN=dbc.BN;
@@ -1729,6 +1730,7 @@ async function qxLaunchToken(opts={}){
   // SDK v2 returns two unsigned transactions. The config keypair signs the
   // config transaction; the base-mint keypair signs the pool transaction.
   status.textContent="Step 1/2: review and approve the real QX launch configuration transaction…";
+  status.textContent="Building the real Meteora DBC launch transactions…";
   const pair=await client.partner.createConfigAndPoolWithFirstBuy({
    config:config.publicKey,
    feeClaimer:payer,
@@ -1740,6 +1742,7 @@ async function qxLaunchToken(opts={}){
    firstBuyParam
   });
 
+  status.textContent="Step 1/2: preparing the real QX configuration transaction…";
   const configTx=pair.createConfigTx;
   const configBlock=await connection.getLatestBlockhash("confirmed");
   configTx.recentBlockhash=configBlock.blockhash;
@@ -1748,6 +1751,7 @@ async function qxLaunchToken(opts={}){
   const configSig=await qxSendWalletTx(configTx,signer,connection,[config]);
 
   status.textContent="Step 2/2: review and approve the real pool creation transaction…";
+  status.textContent="Step 2/2: preparing the real QX pool + first-buy transaction…";
   const poolTx=pair.createPoolWithFirstBuyTx;
   const poolBlock=await connection.getLatestBlockhash("confirmed");
   poolTx.recentBlockhash=poolBlock.blockhash;
@@ -2332,7 +2336,15 @@ async function requestQXNativeDbcBuy(pair,input){
  const connection=await qxGetHealthyConnection();
  const owner=new PublicKey(walletAddress);
  const client=new dbc.DynamicBondingCurveClient(connection,"confirmed");
- const pool=await client.state.getPoolByBaseMint(new PublicKey(pair.outputMint));
+ let pool;
+ try{
+  pool=await Promise.race([
+   client.state.getPoolByBaseMint(new PublicKey(pair.outputMint)),
+   new Promise((_,reject)=>setTimeout(()=>reject(new Error("DBC pool lookup timed out after 12 seconds. Check the Solana RPC endpoint.")),12000))
+  ]);
+ }catch(e){
+  throw new Error("QX DBC pool lookup failed: "+(e?.message||String(e)));
+ }
  if(!pool?.publicKey)throw new Error("No live QX DBC pool was found for this token.");
  const virtualPool=pool.poolState||pool.virtualPool||pool;
  const config=pool.poolConfigState||pool.configState||pool.config;
@@ -2341,23 +2353,25 @@ async function requestQXNativeDbcBuy(pair,input){
  const slot=await connection.getSlot("confirmed");
  const blockTime=await connection.getBlockTime(slot);
  const currentPoint=new dbc.BN(Math.max(0,Number(blockTime||Math.floor(Date.now()/1000))));
- const quote=client.pool.swapQuote({
+ const quote=client.pool.swapQuote2({
   virtualPool,
   config,
   swapBaseForQuote:false,
   amountIn:new dbc.BN(input.raw),
+  swapMode:dbc.SwapMode.ExactIn,
   slippageBps:100,
   hasReferral:false,
   currentPoint,
   eligibleForFirstSwapWithMinFee:false
  });
  if(!quote||!quote.minimumAmountOut)throw new Error("The QX DBC pool could not produce a live buy quote.");
- const swapTx=await client.pool.swap({
+ const swapTx=await client.pool.swap2({
   owner,
   pool:pool.publicKey,
   amountIn:new dbc.BN(input.raw),
   minimumAmountOut:quote.minimumAmountOut,
   swapBaseForQuote:false,
+  swapMode:dbc.SwapMode.ExactIn,
   referralTokenAccount:null
  });
 
@@ -2789,3 +2803,4 @@ window.addEventListener("qx:wallet-changed",()=>{qxLoadCreatorDashboard()});
 </script>
 </body>
 </html>
+
