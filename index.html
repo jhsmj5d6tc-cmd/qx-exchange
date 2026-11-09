@@ -1589,22 +1589,27 @@ async function createQXToken(){
    SystemProgram.createAccount({fromPubkey:owner,newAccountPubkey:mint.publicKey,space:MINT_SIZE,lamports,programId:TOKEN_PROGRAM_ID}),
    createInitializeMintInstruction(mint.publicKey,decimals,owner,null,TOKEN_PROGRAM_ID),
    createAssociatedTokenAccountInstruction(owner,ata,owner,mint.publicKey,TOKEN_PROGRAM_ID),
-   createMintToInstruction(mint.publicKey,ata,owner,supply,[],TOKEN_PROGRAM_ID),
-   SystemProgram.transfer({fromPubkey:owner,toPubkey:new PublicKey(QX_TOKEN_FEE_RECIPIENT),lamports:QX_TOKEN_FEE_LAMPORTS})
+   createMintToInstruction(mint.publicKey,ata,owner,supply,[],TOKEN_PROGRAM_ID)
   );
   createTx.partialSign(mint);
-  status.textContent="Step 1 of 2: review and approve the token creation transaction in your Solana wallet. This transaction creates the mint and initial supply; network fees and rent apply.";
+  status.textContent="Step 1 of 2: approve the token creation transaction in your Solana wallet. QX first creates the mint and initial supply.";
   const signedCreate=await signer.signTransaction(createTx);
   const createSignature=await connection.sendRawTransaction(signedCreate.serialize(),{skipPreflight:false,preflightCommitment:"confirmed"});
   status.textContent="Token transaction sent. Waiting for Solana confirmation...";
   const createConfirmation=await connection.confirmTransaction({signature:createSignature,blockhash:latest.blockhash,lastValidBlockHeight:latest.lastValidBlockHeight},"confirmed");
   if(createConfirmation.value?.err)throw new Error("Token creation failed on-chain: "+JSON.stringify(createConfirmation.value.err));
   const mintAddress=mint.publicKey.toBase58();
-  const tokenRecord={name,symbol,decimals,mint:mintAddress,owner:walletAddress,signature:createSignature,feeSol:0.30,feeRecipient:QX_TOKEN_FEE_RECIPIENT,feeStatus:"pending",image:qxTokenImageData||"",socials,createdAt:Date.now()};
+  status.textContent="Step 2 of 2: approve the separate QX 0.30 SOL creation-fee payment in your wallet.";
+  const feeBlock=await connection.getLatestBlockhash("confirmed");
+  const feeTx=new Transaction({feePayer:owner,recentBlockhash:feeBlock.blockhash});
+  feeTx.add(SystemProgram.transfer({fromPubkey:owner,toPubkey:new PublicKey(QX_TOKEN_FEE_RECIPIENT),lamports:QX_TOKEN_FEE_LAMPORTS}));
+  const signedFee=await signer.signTransaction(feeTx);
+  const feeSignature=await connection.sendRawTransaction(signedFee.serialize(),{skipPreflight:false,preflightCommitment:"confirmed"});
+  const feeConfirmation=await connection.confirmTransaction({signature:feeSignature,blockhash:feeBlock.blockhash,lastValidBlockHeight:feeBlock.lastValidBlockHeight},"confirmed");
+  if(feeConfirmation.value?.err)throw new Error("Token was created, but the QX creation-fee payment failed on-chain: "+JSON.stringify(feeConfirmation.value.err)+". Mint: "+mintAddress);
+  const tokenRecord={name,symbol,decimals,mint:mintAddress,owner:walletAddress,signature:createSignature,feeSol:0.30,feeRecipient:QX_TOKEN_FEE_RECIPIENT,feeStatus:"paid",feeSignature, image:qxTokenImageData||"",socials,createdAt:Date.now()};
   const saved=JSON.parse(localStorage.getItem("qxCreatedTokens")||"[]");saved.unshift(tokenRecord);localStorage.setItem("qxCreatedTokens",JSON.stringify(saved.slice(0,20)));
-  tokenRecord.feeStatus="paid";
-  tokenRecord.feeSignature=createSignature;
-  status.textContent="Token created and QX 0.30 SOL creation fee confirmed atomically in the same Solana transaction.";
+  status.textContent="Token created and QX 0.30 SOL creation fee confirmed in a separate Solana transaction.";
   button.textContent="Create another token";
   const latestSaved=JSON.parse(localStorage.getItem("qxCreatedTokens")||"[]");
   const recordIndex=latestSaved.findIndex(x=>x.mint===mintAddress);if(recordIndex>=0)latestSaved[recordIndex]=tokenRecord;
@@ -2318,64 +2323,57 @@ async function requestQXQuote(){
  if(quoteBusy||swapBusy)return;
  try{
   if(!selectedToken)throw new Error("Select a token from the market first.");
-  if(!JUPITER_API_KEY.startsWith("jup_pub_") || JUPITER_API_KEY==="PASTE_YOUR_FULL_JUPITER_PUBLISHABLE_KEY_HERE"){
-   throw new Error("QX Swap is ready in the interface, but the full Jupiter Publishable API key has not been inserted yet.");
-  }
-  if(!valid(QX_REFERRAL_ACCOUNT)){
-   $("qxFeeDisplay").textContent="1.00% | setup pending";
-   throw new Error("QX 1% commission is not activated yet. Add the QX referral account and initialize its SOL fee account before enabling swaps.");
-  }
-  const pair=getSwapMints();
-  const input=getSwapInputAmount();
-  if(pair.inputMint===pair.outputMint)throw new Error("Selling and buying assets cannot be the same.");
-  quoteBusy=true;
-  $("confirmSwapBtn").disabled=true;
-  $("confirmSwapBtn").textContent="GETTING LIVE QUOTE...";
-  $("getQuoteBtn").disabled=true;
-  $("getQuoteBtn").textContent="Finding best price...";
-  clearPendingSwap();
-  $("confirmSwapBtn").disabled=true;
-  $("confirmSwapBtn").textContent="GETTING LIVE QUOTE...";
+  if(!JUPITER_API_KEY.startsWith("jup_pub_")||JUPITER_API_KEY==="PASTE_YOUR_FULL_JUPITER_PUBLISHABLE_KEY_HERE")throw new Error("The Jupiter Publishable API key is not configured.");
+  if(!valid(QX_REFERRAL_ACCOUNT))throw new Error("QX referral account is invalid or not configured.");
+  const pair=getSwapMints(),input=getSwapInputAmount();
+  quoteBusy=true;$("confirmSwapBtn").disabled=true;$("confirmSwapBtn").textContent="GETTING LIVE QUOTE...";$("getQuoteBtn").disabled=true;$("getQuoteBtn").textContent="Finding best price...";clearPendingSwap();
   $("swapPay").textContent=input.amount.toLocaleString("en-US",{maximumFractionDigits:8})+" "+(tradeDirection==="buy"?"SOL":selectedToken.baseToken.symbol);
   $("swapWallet").textContent=short(walletAddress);
-  $("swapStatus").textContent="QX is finding the best available market route. Nothing moves until you approve in your connected Solana wallet.";
-  const params=new URLSearchParams({inputMint:pair.inputMint,outputMint:pair.outputMint,amount:input.raw,taker:walletAddress,referralAccount:QX_REFERRAL_ACCOUNT,referralFee:String(QX_REFERRAL_FEE_BPS)});
-  const response=await fetch(JUPITER_SWAP_API+"/order?"+params.toString(),{headers:jupiterHeaders()});
-  const rawBody=await response.text();
-  let data={};
-  try{data=rawBody?JSON.parse(rawBody):{};}catch(parseError){data={raw:rawBody};}
-  if(!response.ok){
-   const detail=data.errorMessage||data.error||data.message||data.raw||rawBody||"No error details were returned by Jupiter.";
-   const code=data.errorCode||data.code||"";
-   throw new Error("Jupiter /order HTTP "+response.status+(code?" ["+code+"]":"")+": "+String(detail).slice(0,700));
+  $("swapStatus").textContent="QX is requesting a fresh executable Jupiter quote. Nothing moves until you approve it.";
+
+  async function fetchOrder(extra={}){
+   const params=new URLSearchParams({inputMint:pair.inputMint,outputMint:pair.outputMint,amount:input.raw,taker:walletAddress,referralAccount:QX_REFERRAL_ACCOUNT,referralFee:String(QX_REFERRAL_FEE_BPS),...extra});
+   const response=await fetch(JUPITER_SWAP_API+"/order?"+params.toString(),{headers:jupiterHeaders()});
+   const raw=await response.text();let data={};try{data=raw?JSON.parse(raw):{};}catch(_){data={raw};}
+   if(!response.ok){
+    const detail=String(data.errorMessage||data.error||data.message||data.raw||raw||"Unknown Jupiter error");
+    const err=new Error("Jupiter /order HTTP "+response.status+": "+detail.slice(0,700));err.httpStatus=response.status;err.jupiterDetail=detail;throw err;
+   }
+   return data;
   }
-  if(data.referralAccount!==QX_REFERRAL_ACCOUNT||Number(data.feeBps)<QX_REFERRAL_FEE_BPS||!data.feeMint){
-   const returnedFee=Number(data.feeBps)||0;
-   throw new Error("QX 1% fee was not attached to this quote (returned "+(returnedFee/100).toFixed(2)+"%). No swap was submitted. Check the referral token account for the fee mint shown by Jupiter.");
+
+  let data;
+  try{data=await fetchOrder();}
+  catch(firstError){
+   const d=String(firstError.jupiterDetail||firstError.message||"").toLowerCase();
+   if(firstError.httpStatus===400&&d.includes("failed to get quotes")){
+    // Some newly listed/illiquid tokens can fail on one router. Retry the same
+    // fee-bearing request with individual routers excluded before declaring no route.
+    const retries=["jupiterz","dflow","okx","jupiterz,dflow","jupiterz,okx","dflow,okx"];
+    let last=firstError;
+    for(const excluded of retries){
+     try{data=await fetchOrder({excludeRouters:excluded});break;}catch(e){last=e;}
+    }
+    if(!data)throw new Error("Jupiter could not find an executable route for this token and amount. The token may have no active liquidity, or its liquidity may be too small for this trade. No wallet transaction was created. Details: "+String(last.jupiterDetail||last.message||"").slice(0,500));
+   }else throw firstError;
   }
-  if(!data.transaction){
-   if(data.errorMessage)throw new Error(data.errorMessage);
-   throw new Error("No executable route is available for this amount. Try a different amount or token.");
-  }
+
+  if(data.referralAccount!==QX_REFERRAL_ACCOUNT)throw new Error("Jupiter returned a different referral account. No swap was submitted.");
+  const feeBps=Number(data.feeBps)||0;
+  const platformFeeBps=Number(data.platformFee?.feeBps)||0;
+  if(feeBps<QX_REFERRAL_FEE_BPS)throw new Error("QX 1% fee was not attached to this live order (returned "+(feeBps/100).toFixed(2)+"%). No swap was submitted.");
+  if(!data.feeMint||!data.transaction||!data.requestId)throw new Error("Jupiter returned an incomplete executable order. No swap was submitted. Try refreshing the quote.");
   const outputDecimals=await getMintDecimals(pair.outputMint);
   pendingSwapOrder={data,outputDecimals,inputAmount:input.amount,inputSymbol:tradeDirection==="buy"?"SOL":selectedToken.baseToken.symbol,outputSymbol:tradeDirection==="buy"?selectedToken.baseToken.symbol:"SOL",createdAt:Date.now(),wallet:walletAddress};
   $("swapReceive").textContent=displayRawAmount(data.outAmount,outputDecimals)+" "+pendingSwapOrder.outputSymbol;
   const feeMintLabel=data.feeMint===SOL?"SOL":data.feeMint===USDC?"USDC":short(data.feeMint);
   $("qxFeeDisplay").textContent="1.00% | included in "+feeMintLabel;
-  $("swapRoute").textContent="QX / "+(data.router||"Best available route");
-  $("confirmSwapBtn").disabled=false;
-  $("confirmSwapBtn").textContent=tradeDirection==="buy"?"CONFIRM BUY":"CONFIRM SELL";
-  $("swapStatus").textContent="Live price ready. Review exactly what you pay and receive, then approve the transaction in your connected wallet. Final output can change with market conditions.";
+  $("swapRoute").textContent="QX / "+(data.router||data.routePlan?.length?"Best available route":"Best available route");
+  $("confirmSwapBtn").disabled=false;$("confirmSwapBtn").textContent=tradeDirection==="buy"?"CONFIRM BUY":"CONFIRM SELL";
+  $("swapStatus").textContent="Live executable price ready. Review the amount, QX 1% fee and route, then approve in your wallet.";
  }catch(error){
-  pendingSwapOrder=null;
-  $("confirmSwapBtn").disabled=false;
-  $("confirmSwapBtn").textContent="GET LIVE QUOTE FIRST";
-  $("swapStatus").textContent=error.message||"Could not get a swap quote.";
- }finally{
-  quoteBusy=false;
-  $("getQuoteBtn").disabled=false;
-  $("getQuoteBtn").textContent="Refresh best price";
- }
+  pendingSwapOrder=null;$("confirmSwapBtn").disabled=false;$("confirmSwapBtn").textContent="GET LIVE QUOTE FIRST";$("swapStatus").textContent=error.message||"Could not get a swap quote.";
+ }finally{quoteBusy=false;$("getQuoteBtn").disabled=false;$("getQuoteBtn").textContent="Refresh best price";}
 }
 async function executeQXSwap(){
  if(swapBusy)return;
@@ -2633,4 +2631,71 @@ async function qxRunRealRiskScan(){
   if(!flags.length){
    el.innerHTML='<strong>QX REAL SCAN: No high-risk mint flags detected.</strong><br>Mint authority and freeze authority are revoked; largest-holder concentration is below 10% based on the RPC response.';
   }else{
-   el.innerHTML='<strong>QX REAL SCAN: Review required.</strong><br>'+flags.map(x=>qxEsc(x)).join("<b
+   el.innerHTML='<strong>QX REAL SCAN: Review required.</strong><br>'+flags.map(x=>qxEsc(x)).join("<br>");
+  }
+ }catch(e){el.textContent=e?.message||"Risk scan failed."}
+}
+function qxEsc(s){
+ return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+}
+async function qxLoadRecentTransactions(){
+ const mint=$("qxOnchainPanel")?.dataset.mint;
+ const box=$("qxTxList"); if(!mint||!box)return;
+ box.textContent="Loading recent Solana signatures…";
+ try{
+  const connection=await qxGetHealthyConnection();
+  const sigs=await connection.getSignaturesForAddress(new PublicKey(mint),{limit:12},"confirmed");
+  if(!sigs.length){box.textContent="No recent signatures were returned for this mint account.";return;}
+  box.innerHTML="<strong>Recent signatures touching the mint:</strong><br>"+
+   sigs.map(s=>'<div style="padding:5px 0;border-bottom:1px solid var(--line)"><a class="detail-link" target="_blank" rel="noopener" href="'+qxExplorerTx(s.signature)+'">'+qxEsc(qxShort(s.signature))+'</a> · '+qxEsc(s.err?"FAILED":"CONFIRMED")+' · '+new Date((s.blockTime||0)*1000).toLocaleString()+"</div>").join("");
+ }catch(e){box.textContent=e?.message||"Transaction history could not be loaded."}
+}
+$("qxRefreshChainBtn")?.addEventListener("click",async()=>{if(selectedToken)await qxLoadOnChainPanel(selectedToken)});
+$("qxRiskScanBtn")?.addEventListener("click",qxRunRealRiskScan);
+$("qxTxBtn")?.addEventListener("click",qxLoadRecentTransactions);
+
+async function qxLoadCreatorDashboard(){
+ const identity=$("creatorIdentity"),list=$("creatorLaunches");
+ if(!identity||!list)return;
+ if(!connected||!walletAddress){
+  identity.textContent="Connect your wallet to load your launches.";
+  list.innerHTML="";
+  return;
+ }
+ identity.textContent="Creator wallet: "+walletAddress;
+ list.textContent="Reading your recorded launches and verifying them on Solana…";
+ try{
+  const saved=JSON.parse(localStorage.getItem("qxRealLaunches")||"[]");
+  const mine=saved.filter(x=>String(x.creator||"")===String(walletAddress));
+  if(!mine.length){
+   list.innerHTML="<div class='small'>No QX launches recorded for this connected wallet in this browser.</div>";
+   return;
+  }
+  const connection=await qxGetHealthyConnection();
+  const rows=[];
+  for(const r of mine.slice(0,20)){
+   let state="NOT VERIFIED",supply="—";
+   try{
+    const mintData=await qxReadMintOnChain(r.mint);
+    state="ON-CHAIN VERIFIED";
+    supply=qxFormatRawSupply(mintData.supply,mintData.decimals);
+   }catch(_){}
+   rows.push('<div class="panel" style="margin:10px 0;padding:14px">'+
+    '<strong>'+qxEsc((r.name||"Token")+" ("+(r.symbol||"")+")")+'</strong>'+
+    '<div class="small" style="margin-top:6px">Status: '+qxEsc(state)+' · Supply: '+qxEsc(supply)+'</div>'+
+    '<div class="small" style="margin-top:6px">Mint: '+qxEsc(qxShort(r.mint))+'</div>'+
+    '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">'+
+    '<a class="btn" target="_blank" rel="noopener" href="'+qxExplorerToken(r.mint)+'">OPEN MINT</a>'+
+    (r.pool?'<a class="btn" target="_blank" rel="noopener" href="https://solscan.io/account/'+encodeURIComponent(r.pool)+'">OPEN POOL</a>':"")+
+    '</div></div>');
+  }
+  list.innerHTML=rows.join("");
+ }catch(e){list.textContent=e?.message||"Creator data could not be loaded."}
+}
+$("creatorRefreshBtn")?.addEventListener("click",qxLoadCreatorDashboard);
+window.addEventListener("qx:wallet-changed",()=>{qxLoadCreatorDashboard()});
+
+</script>
+</body>
+</html>
+
