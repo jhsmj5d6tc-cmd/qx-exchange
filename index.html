@@ -1857,23 +1857,78 @@ async function loadMarket(){
   $("coinCount").textContent="Loading...";
  }
  try{
+  // Pull several independent Solana discovery feeds. DexScreener search results
+  // are pool-based, so the same token can appear many times; everything below is
+  // normalized to ONE row per mint before it reaches the UI.
   const urls=[
    "https://api.dexscreener.com/latest/dex/search?q=solana",
    "https://api.dexscreener.com/latest/dex/search?q=SOL",
    "https://api.dexscreener.com/latest/dex/search?q=USDC",
-   "https://api.dexscreener.com/latest/dex/search?q=BONK"
+   "https://api.dexscreener.com/latest/dex/search?q=USDT",
+   "https://api.dexscreener.com/latest/dex/search?q=BONK",
+   "https://api.dexscreener.com/latest/dex/search?q=WIF",
+   "https://api.dexscreener.com/latest/dex/search?q=JUP",
+   "https://api.dexscreener.com/latest/dex/search?q=RAY",
+   "https://api.dexscreener.com/latest/dex/search?q=POPCAT",
+   "https://api.dexscreener.com/latest/dex/search?q=MEW"
   ];
-  const results=await Promise.allSettled(urls.map(u=>getJSON(u)));
-  const pairs=results.flatMap(r=>r.status==="fulfilled"?(r.value?.pairs||[]):[])
+  const discovery=[...urls];
+  const results=await Promise.allSettled(discovery.map(u=>getJSON(u)));
+  let pairs=results.flatMap(r=>r.status==="fulfilled"?(r.value?.pairs||[]):[])
    .filter(p=>p?.chainId==="solana"&&valid(String(p?.baseToken?.address||"")));
+
+  // Latest token profiles / boosts discover newer Solana tokens that may not
+  // appear in the generic search results.
+  const extras=await Promise.allSettled([
+   getJSON("https://api.dexscreener.com/token-profiles/latest/v1"),
+   getJSON("https://api.dexscreener.com/token-boosts/latest/v1")
+  ]);
+  const extraMints=[];
+  for(const r of extras){
+   if(r.status!=="fulfilled"||!Array.isArray(r.value))continue;
+   for(const item of r.value){
+    if(item?.chainId==="solana"&&valid(String(item?.tokenAddress||"")))extraMints.push(String(item.tokenAddress));
+   }
+  }
+  const extraPairs=await fetchPairsForMints(extraMints);
+  pairs.push(...extraPairs);
+
   const canonical=await fetchCanonicalSol();
   if(canonical)pairs.push(canonical);
+
+  // First collapse by mint, choosing the most liquid pool for each token.
   allPairs=bestPairsByMint(pairs,true);
+
+  // Then collapse display-name/symbol collisions as well. This prevents the
+  // market from looking like the same coin is listed repeatedly when multiple
+  // pools/mints use the same branding. Keep the strongest/liquid listing.
+  const byDisplay=new Map();
+  for(const pair of allPairs){
+   const mint=String(pair?.baseToken?.address||"");
+   const symbol=normalizedTokenLabel(pair?.baseToken?.symbol||"");
+   const name=normalizedTokenLabel(pair?.baseToken?.name||"");
+   const key=(symbol||name)?(symbol+"|"+name):mint;
+   const old=byDisplay.get(key);
+   if(!old||Number(pair?.liquidity?.usd||0)>Number(old?.liquidity?.usd||0))byDisplay.set(key,pair);
+  }
+  allPairs=[...byDisplay.values()];
+
+  // Stable market ordering: highest liquidity first. No random/search-order
+  // jumps every refresh.
+  allPairs.sort((a,b)=>{
+   const liq=Number(b?.liquidity?.usd||0)-Number(a?.liquidity?.usd||0);
+   if(liq)return liq;
+   const vol=Number(b?.volume?.h24||0)-Number(a?.volume?.h24||0);
+   if(vol)return vol;
+   return String(a?.baseToken?.symbol||"").localeCompare(String(b?.baseToken?.symbol||""));
+  });
+
   newPairs=allPairs.filter(p=>Number(p.pairCreatedAt||0)>Date.now()-7*86400000)
    .sort((a,b)=>Number(b.pairCreatedAt||0)-Number(a.pairCreatedAt||0));
   trendingPairs=allPairs.slice().sort((a,b)=>Number(b.volume?.h24||0)-Number(a.volume?.h24||0)).slice(0,50);
-  if(!allPairs.length)throw new Error("DexScreener returned no Solana pairs.");
-  $("marketStatus").textContent="Solana-only market · Live data · Last update "+new Date().toLocaleTimeString();
+
+  if(!allPairs.length)throw new Error("No verified Solana market tokens were returned.");
+  $("marketStatus").textContent="Solana-only market · Deduplicated · Live data · Last update "+new Date().toLocaleTimeString();
   renderMarket();
   if(selectedToken){
    const updated=allPairs.find(p=>p.baseToken.address===selectedToken.baseToken.address);
@@ -1894,17 +1949,27 @@ const categoryNames={
 };
 function qxCategoryName(key){const ar=qxLanguage==="ar";const names=ar?{all:"\u0643\u0644 \u0639\u0645\u0644\u0627\u062A \u0633\u0648\u0644\u0627\u0646\u0627",new:"\u0639\u0645\u0644\u0627\u062A \u062C\u062F\u064A\u062F\u0629 | \u0645\u0628\u0627\u0634\u0631",gainers:"\u0627\u0644\u0623\u0639\u0644\u0649 \u0627\u0631\u062A\u0641\u0627\u0639\u0627\u064B | 24 \u0633\u0627\u0639\u0629",losers:"\u0627\u0644\u0623\u0639\u0644\u0649 \u0627\u0646\u062E\u0641\u0627\u0636\u0627\u064B | 24 \u0633\u0627\u0639\u0629",trending:"\u0627\u0644\u0639\u0645\u0644\u0627\u062A \u0627\u0644\u0631\u0627\u0626\u062C\u0629",volume:"\u0627\u0644\u0623\u0639\u0644\u0649 \u062A\u062F\u0627\u0648\u0644\u0627\u064B | 24 \u0633\u0627\u0639\u0629"}:categoryNames;return names[key]||categoryNames[key]||key;}
 function dedupeVisibleTokenLabels(input){
- // A token's identity is its mint, not its display name or symbol.
- // Different mints can legitimately share a name/symbol, so never hide them as duplicates.
+ // UI identity is mint first. If different mints have exactly the same
+ // normalized name+symbol, keep only the most liquid listing so the market
+ // does not visually repeat the same branded coin.
  const byMint=new Map();
  for(const pair of input||[]){
   const mint=String(pair?.baseToken?.address||"").trim();
   if(!valid(mint)||pair?.chainId!=="solana")continue;
-  const previous=byMint.get(mint);
-  if(!previous||Number(pair.liquidity?.usd||0)>Number(previous.liquidity?.usd||0))byMint.set(mint,pair);
+  const old=byMint.get(mint);
+  if(!old||Number(pair?.liquidity?.usd||0)>Number(old?.liquidity?.usd||0))byMint.set(mint,pair);
  }
- return [...byMint.values()];
+ const byLabel=new Map();
+ for(const pair of byMint.values()){
+  const symbol=normalizedTokenLabel(pair?.baseToken?.symbol||"");
+  const name=normalizedTokenLabel(pair?.baseToken?.name||"");
+  const key=(symbol||name)?symbol+"|"+name:String(pair?.baseToken?.address||"");
+  const old=byLabel.get(key);
+  if(!old||Number(pair?.liquidity?.usd||0)>Number(old?.liquidity?.usd||0))byLabel.set(key,pair);
+ }
+ return [...byLabel.values()];
 }
+
 function normalizedTokenLabel(value){
  return cleanTokenText(value,"").normalize("NFKC").toLocaleLowerCase().replace(/\s+/g," ").trim();
 }
@@ -1916,7 +1981,7 @@ function getCategoryPairs(){
  let list=bestPairsByMint(allPairs.filter(p=>p?.chainId==="solana"&&valid(String(p?.baseToken?.address||""))),true);
  if(currentCategory==="new"){
   list=newPairs.slice().sort((a,b)=>Number(b.pairCreatedAt||0)-Number(a.pairCreatedAt||0));
-  if(!list.length)list=allPairs.slice().sort((a,b)=>Number(b.liquidity?.usd||0)-Number(a.liquidity?.usd||0)).slice(0,50);
+  
  }else if(currentCategory==="trending"){
   list=trendingPairs.slice();
  }else if(currentCategory==="gainers"){
