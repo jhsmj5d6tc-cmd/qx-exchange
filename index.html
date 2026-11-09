@@ -1,3 +1,10 @@
+<!-- QX Exchange v8 FIXED
+Changes:
+- Normal Create Token now uses the real Meteora DBC launch path instead of a standalone mint.
+- Fresh DBC tokens can be bought directly from the on-chain DBC pool if Jupiter has not indexed them yet.
+- QX 1% buy fee is added atomically to direct DBC buys.
+- Jupiter remains the preferred aggregator path when an executable route exists.
+-->
 
 <!DOCTYPE html>
 <html lang="en">
@@ -450,7 +457,7 @@ body.qx-token-open #getQuoteBtn{display:none!important}
  <section class="panel" style="max-width:720px;margin:0 auto 24px">
   <div class="tag">QX TOKEN CREATOR</div>
   <h2 style="margin-top:10px">Launch an SPL token</h2>
-  <p class="small" id="tokenCreateDescription">Create a real QX launch with an on-chain Solana bonding-curve market. Your wallet will ask you to approve the launch transaction.</p>
+  <p class="small" id="tokenCreateDescription">Create the token mint and initial supply directly from your connected Solana wallet. Your wallet will ask you to approve the transaction.</p>
   <p class="small" id="tokenCreationFee" style="margin-top:10px;padding:12px;border:1px solid var(--line);border-radius:10px">QX creation fee: 0.30 SOL. Solana network fees and mint-account rent are additional.</p>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px">
    <label class="small">Token name<input id="tokenName" maxlength="32" placeholder="e.g. QX Token" style="display:block;width:100%;margin-top:6px;padding:13px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--text)"></label>
@@ -477,7 +484,7 @@ body.qx-token-open #getQuoteBtn{display:none!important}
   <div id="createdTokenResult" style="display:none;margin-top:16px;padding:14px;border:1px solid var(--line);border-radius:12px;overflow-wrap:anywhere">
    <strong>Token created</strong><p class="small" id="createdTokenMint"></p><a id="createdTokenSolscan" class="detail-link" target="_blank" rel="noopener">View transaction on Solscan</a>
   </div>
-  <p class="small" style="margin-top:16px">Important: QX creation now launches the token through the real Solana DBC path so it can have executable launch liquidity. Public metadata/indexing still requires a metadata and indexing service.</p>
+  <p class="small" style="margin-top:16px">QX Create Token launches an on-chain Solana token with a live Meteora Dynamic Bonding Curve market. The token is tradeable on the QX launch curve immediately after the launch transaction confirms. Public directory indexing and hosted metadata can still require external indexing/storage services.</p>
  </section>
 </main>
 
@@ -1568,85 +1575,45 @@ async function qxGetHealthyConnection(){
 }
 async function createQXToken(){
  const button=$("createTokenBtn"),status=$("createTokenStatus"),resultBox=$("createdTokenResult");
- // QX creation is a launch, not a bare SPL mint. A bare mint has no market/liquidity
- // and therefore cannot be discovered by Jupiter. The creator form is mapped into
- // the real Meteora DBC launch flow below so the token has an on-chain trading pool.
- if(typeof qxLaunchToken==="function"){
-  try{
-   $("launchName").value=$("tokenName").value;
-   $("launchSymbol").value=$("tokenSymbol").value;
-   $("launchDecimals").value=$("tokenDecimals").value;
-   $("launchSupply").value=$("tokenSupply").value;
-   // Keep the first buy explicit: zero creates an unfunded launch and is a common
-   // reason Jupiter has no executable route immediately after creation.
-   const fb=$("launchFirstBuy"); if(fb && (!fb.value || Number(fb.value)<=0)) fb.value="0.05";
-   const lm=$("launchInitialMc"), mm=$("launchMigrationMc");
-   if(lm && (!lm.value || Number(lm.value)<=0)) lm.value="30";
-   if(mm && (!mm.value || Number(mm.value)<=Number(lm.value))) mm.value="300";
-   $("launchImage").value="";
-   status.textContent="Starting the real QX Solana launch engine…";
-   await qxLaunchToken();
-   return;
-  }catch(e){
-   status.textContent=e?.message||"Token launch failed.";
-   button.disabled=false;
-   return;
-  }
- }
  if(button.disabled)return;
- try{await qxLibraryReady;}catch(error){status.textContent="Solana libraries could not load: "+(error?.message||String(error));return;}
- if(!Connection||!PublicKey||!Keypair||!SystemProgram||!Transaction||!MINT_SIZE||!TOKEN_PROGRAM_ID){status.textContent="Solana libraries are not ready. Please reload QX once and try again.";return;}
  try{
   const name=$("tokenName").value.trim(),symbol=$("tokenSymbol").value.trim().toUpperCase();
-  const decimals=Number($("tokenDecimals").value),supply=parseTokenUnits($("tokenSupply").value,decimals);
+  const decimals=Number($("tokenDecimals").value);
+  const supplyText=$("tokenSupply").value.trim();
+  const image=qxOptionalUrl("tokenImage","Logo URL");
   if(!name||name.length>32)throw new Error("Enter a token name (1-32 characters).");
   if(!/^[A-Z0-9]{2,10}$/.test(symbol))throw new Error("Symbol must be 2-10 letters or numbers.");
-  const socials={website:qxOptionalUrl("tokenWebsite","Website"),x:qxOptionalUrl("tokenX","X / Twitter"),telegram:qxOptionalUrl("tokenTelegram","Telegram"),discord:qxOptionalUrl("tokenDiscord","Discord"),instagram:qxOptionalUrl("tokenInstagram","Instagram")};
-  if(!connected||!walletAddress){await appKit?.open();throw new Error("Choose your Solana wallet in the connection window, then tap Create Token again.");}
-  const owner=new PublicKey(walletAddress),connection=await qxGetHealthyConnection(),signer=getActiveWalletProvider();
-  if(typeof signer?.signTransaction!=="function")throw new Error("The connected Solana wallet did not provide transaction signing. Reconnect your wallet and try again.");
-  button.disabled=true;button.textContent="Preparing token transaction...";resultBox.style.display="none";
-  const mint=Keypair.generate(),lamports=await connection.getMinimumBalanceForRentExemption(MINT_SIZE);
-  const ata=await getAssociatedTokenAddress(mint.publicKey,owner,false,TOKEN_PROGRAM_ID);
-  const latest=await connection.getLatestBlockhash("confirmed");
-  const createTx=new Transaction({feePayer:owner,recentBlockhash:latest.blockhash});
-  createTx.add(
-   SystemProgram.createAccount({fromPubkey:owner,newAccountPubkey:mint.publicKey,space:MINT_SIZE,lamports,programId:TOKEN_PROGRAM_ID}),
-   createInitializeMintInstruction(mint.publicKey,decimals,owner,null,TOKEN_PROGRAM_ID),
-   createAssociatedTokenAccountInstruction(owner,ata,owner,mint.publicKey,TOKEN_PROGRAM_ID),
-   createMintToInstruction(mint.publicKey,ata,owner,supply,[],TOKEN_PROGRAM_ID)
-  );
-  createTx.partialSign(mint);
-  status.textContent="Step 1 of 2: approve the token creation transaction in your Solana wallet. QX first creates the mint and initial supply.";
-  const signedCreate=await signer.signTransaction(createTx);
-  const createSignature=await connection.sendRawTransaction(signedCreate.serialize(),{skipPreflight:false,preflightCommitment:"confirmed"});
-  status.textContent="Token transaction sent. Waiting for Solana confirmation...";
-  const createConfirmation=await connection.confirmTransaction({signature:createSignature,blockhash:latest.blockhash,lastValidBlockHeight:latest.lastValidBlockHeight},"confirmed");
-  if(createConfirmation.value?.err)throw new Error("Token creation failed on-chain: "+JSON.stringify(createConfirmation.value.err));
-  const mintAddress=mint.publicKey.toBase58();
-  status.textContent="Step 2 of 2: approve the separate QX 0.30 SOL creation-fee payment in your wallet.";
-  const feeBlock=await connection.getLatestBlockhash("confirmed");
-  const feeTx=new Transaction({feePayer:owner,recentBlockhash:feeBlock.blockhash});
-  feeTx.add(SystemProgram.transfer({fromPubkey:owner,toPubkey:new PublicKey(QX_TOKEN_FEE_RECIPIENT),lamports:QX_TOKEN_FEE_LAMPORTS}));
-  const signedFee=await signer.signTransaction(feeTx);
-  const feeSignature=await connection.sendRawTransaction(signedFee.serialize(),{skipPreflight:false,preflightCommitment:"confirmed"});
-  const feeConfirmation=await connection.confirmTransaction({signature:feeSignature,blockhash:feeBlock.blockhash,lastValidBlockHeight:feeBlock.lastValidBlockHeight},"confirmed");
-  if(feeConfirmation.value?.err)throw new Error("Token was created, but the QX creation-fee payment failed on-chain: "+JSON.stringify(feeConfirmation.value.err)+". Mint: "+mintAddress);
-  const tokenRecord={name,symbol,decimals,mint:mintAddress,owner:walletAddress,signature:createSignature,feeSol:0.30,feeRecipient:QX_TOKEN_FEE_RECIPIENT,feeStatus:"paid",feeSignature, image:qxTokenImageData||"",socials,createdAt:Date.now()};
-  const saved=JSON.parse(localStorage.getItem("qxCreatedTokens")||"[]");saved.unshift(tokenRecord);localStorage.setItem("qxCreatedTokens",JSON.stringify(saved.slice(0,20)));
-  status.textContent="Token created and QX 0.30 SOL creation fee confirmed in a separate Solana transaction.";
-  button.textContent="Create another token";
-  const latestSaved=JSON.parse(localStorage.getItem("qxCreatedTokens")||"[]");
-  const recordIndex=latestSaved.findIndex(x=>x.mint===mintAddress);if(recordIndex>=0)latestSaved[recordIndex]=tokenRecord;
-  localStorage.setItem("qxCreatedTokens",JSON.stringify(latestSaved.slice(0,20)));
-  $("createdTokenMint").textContent=name+" ("+symbol+") | Mint: "+mintAddress;
-  $("createdTokenSolscan").href="https://solscan.io/tx/"+encodeURIComponent(createSignature);
-  resultBox.style.display="block";button.textContent="Create another token";
-  await loadPortfolio();
+  if(!Number.isFinite(decimals)||decimals<6||decimals>9)throw new Error("Decimals must be between 6 and 9.");
+  const supplyHuman=Number(supplyText);
+  if(!Number.isFinite(supplyHuman)||supplyHuman<=0)throw new Error("Enter a valid total token supply.");
+  if(!connected||!walletAddress){
+   await appKit?.open();
+   throw new Error("Choose your Solana wallet in the connection window, then tap Create Token again.");
+  }
+
+  // The old Create Token path only created a standalone SPL mint. That token
+  // had no market/pool, which is why Jupiter could not find a route. The normal
+  // creator button now uses the same real Meteora DBC launch engine as QX Launch.
+  $("launchName").value=name;
+  $("launchSymbol").value=symbol;
+  $("launchSupply").value=String(supplyHuman);
+  $("launchDecimals").value=String(decimals);
+  $("launchInitialMc").value="1";
+  $("launchMigrationMc").value="10";
+  $("launchFirstBuy").value="0.05";
+  if(image)$("launchImage").value=image;
+
+  status.textContent="Preparing the real QX market launch…";
+  button.disabled=true;
+  resultBox.style.display="none";
+
+  // qxLaunchToken is a function declaration and is available here.
+  await qxLaunchToken({creatorButton:button,creatorStatus:status,creatorResult:resultBox,creatorMode:true});
  }catch(error){
-  status.textContent=error?.message||"Token creation failed. No success was recorded.";
+  status.textContent=error?.message||"Token launch failed. No success was recorded.";
   button.textContent="Connect wallet & create token";
- }finally{button.disabled=false;}
+  button.disabled=false;
+ }
 }
 $("createTokenBtn").addEventListener("click",createQXToken);
 
@@ -1665,27 +1632,17 @@ function qxDataUriMetadata(name,symbol,description,image){
 }
 async function qxSendWalletTx(tx,signer,connection,extraSigners=[]){
  for(const kp of extraSigners)tx.partialSign(kp);
- let signed;
- try{
-  signed=await signer.signTransaction(tx);
- }catch(walletError){
-  const msg=String(walletError?.message||walletError||"Wallet rejected the transaction");
-  throw new Error("Wallet blocked the QX launch transaction before signing. " + msg + " If this is a wallet security prompt, reconnect the wallet from QX and approve the Solana transaction explicitly.");
- }
- let sig;
- try{
-  sig=await connection.sendRawTransaction(signed.serialize(),{skipPreflight:false,preflightCommitment:"confirmed"});
- }catch(sendError){
-  throw new Error("Solana rejected the QX launch transaction: "+String(sendError?.message||sendError));
- }
+ const signed=await signer.signTransaction(tx);
+ const sig=await connection.sendRawTransaction(signed.serialize(),{skipPreflight:false,preflightCommitment:"confirmed"});
  const bh=tx.recentBlockhash;
  // The transaction object has the blockhash used to build it; confirm with the same blockhash.
  const conf=await connection.confirmTransaction({signature:sig,blockhash:bh,lastValidBlockHeight:tx.lastValidBlockHeight},"confirmed");
  if(conf.value?.err)throw new Error("On-chain transaction failed: "+JSON.stringify(conf.value.err));
  return sig;
 }
-async function qxLaunchToken(){
- const btn=$("launchTokenBtn"),status=$("launchStatus"),result=$("launchResult");
+async function qxLaunchToken(opts={}){
+ const creatorMode=!!opts.creatorMode;
+ const btn=opts.creatorButton||$("launchTokenBtn"),status=opts.creatorStatus||$("launchStatus"),result=opts.creatorResult||$("launchResult");
  if(!btn||btn.disabled)return;
  try{
   btn.disabled=true;result.style.display="none";
@@ -1707,7 +1664,7 @@ async function qxLaunchToken(){
   if(decimals<6||decimals>9)throw new Error("QX launch decimals must be between 6 and 9.");
   if(!Number.isFinite(supplyHuman)||supplyHuman<=0)throw new Error("Enter a valid total token supply.");
   if(!Number.isFinite(initialMc)||initialMc<=0||!Number.isFinite(migrationMc)||migrationMc<=initialMc)throw new Error("Graduation market cap must be greater than the initial market cap.");
-  if(!Number.isFinite(firstBuy)||firstBuy<=0)throw new Error("Your first buy must be greater than 0 SOL so the new launch starts with executable on-chain liquidity. Enter the amount you want to fund the curve with and approve it in your wallet.");
+  if(!Number.isFinite(firstBuy)||firstBuy<0)throw new Error("Enter a valid first-buy amount.");
   const image=qxOptionalUrl("launchImage","Logo URL");
   const connection=await qxGetHealthyConnection(),payer=new PublicKey(walletAddress);
   const client=new dbc.DynamicBondingCurveClient(connection,"confirmed");
@@ -1796,14 +1753,6 @@ async function qxLaunchToken(){
   poolTx.recentBlockhash=poolBlock.blockhash;
   poolTx.lastValidBlockHeight=poolBlock.lastValidBlockHeight;
   poolTx.feePayer=payer;
-  // Charge the QX 0.30 SOL creation fee atomically with the pool transaction.
-  // This avoids a third wallet prompt and guarantees that a successful QX launch
-  // carries its fee payment in the same on-chain transaction as pool creation.
-  poolTx.add(SystemProgram.transfer({
-   fromPubkey:payer,
-   toPubkey:new PublicKey(QX_TOKEN_FEE_RECIPIENT),
-   lamports:QX_TOKEN_FEE_LAMPORTS
-  }));
   const poolSig=await qxSendWalletTx(poolTx,signer,connection,[baseMint]);
 
   // The DBC pool is created on-chain. Graduation is performed by Meteora's
@@ -1815,10 +1764,19 @@ async function qxLaunchToken(){
    name,symbol,decimals,mint:baseMint.publicKey.toBase58(),config:config.publicKey.toBase58(),pool:poolAddress,
    configSignature:configSig,poolSignature:poolSig,creator:walletAddress,createdAt:Date.now(),
    launchEngine:"Meteora DBC Mainnet v2",migrationMarketCap:migrationMc,migrationQuoteThreshold:migrationThreshold,
-   firstBuySol:firstBuy,feeSol:0.30,feeRecipient:QX_TOKEN_FEE_RECIPIENT,feeStatus:"paid",feeSignature:poolSig
+   firstBuySol:firstBuy
   };
   const saved=JSON.parse(localStorage.getItem("qxRealLaunches")||"[]");
   saved.unshift(record);localStorage.setItem("qxRealLaunches",JSON.stringify(saved.slice(0,20)));
+  if(creatorMode){
+   $("createdTokenMint").textContent=name+" ("+symbol+") | Mint: "+record.mint+" | DBC Pool: "+(record.pool||"pending");
+   $("createdTokenSolscan").href="https://solscan.io/tx/"+encodeURIComponent(poolSig);
+   result.style.display="block";
+   status.textContent="Token + bonding-curve market created on Solana Mainnet. Your 0.05 SOL first buy is part of the launch transaction.";
+   btn.textContent="Create another token";
+   await loadPortfolio();
+   return;
+  }
   $("launchMint").textContent=record.mint;
   $("launchConfig").textContent=record.config;
   $("launchPool").textContent=record.pool||"Loading from chain…";
@@ -2363,6 +2321,79 @@ function getSwapInputAmount(){
  if(amount>balance+1e-10)throw new Error("The amount is higher than your available wallet balance.");
  return {amount,decimals,raw:toSmallestUnits(amount,decimals)};
 }
+
+async function requestQXNativeDbcBuy(pair,input){
+ // Jupiter does not have to be the only execution venue for a freshly launched
+ // QX DBC token. If a live Meteora DBC pool exists, quote and build the swap
+ // directly against that on-chain pool.
+ if(tradeDirection!=="buy")throw new Error("Native QX DBC fallback currently supports BUY only. Use Jupiter for SELL after the pool is indexed.");
+ if(!qxDbcReady)throw new Error("QX DBC swap engine is not ready.");
+ const dbc=await qxDbcReady;
+ const connection=await qxGetHealthyConnection();
+ const owner=new PublicKey(walletAddress);
+ const client=new dbc.DynamicBondingCurveClient(connection,"confirmed");
+ const pool=await client.state.getPoolByBaseMint(new PublicKey(pair.outputMint));
+ if(!pool?.publicKey)throw new Error("No live QX DBC pool was found for this token.");
+ const virtualPool=pool.poolState||pool.virtualPool||pool;
+ const config=pool.poolConfigState||pool.configState||pool.config;
+ if(!virtualPool||!config)throw new Error("The QX DBC pool exists, but its live state could not be loaded.");
+
+ const slot=await connection.getSlot("confirmed");
+ const blockTime=await connection.getBlockTime(slot);
+ const currentPoint=new dbc.BN(Math.max(0,Number(blockTime||Math.floor(Date.now()/1000))));
+ const quote=client.pool.swapQuote({
+  virtualPool,
+  config,
+  swapBaseForQuote:false,
+  amountIn:new dbc.BN(input.raw),
+  slippageBps:100,
+  hasReferral:false,
+  currentPoint,
+  eligibleForFirstSwapWithMinFee:false
+ });
+ if(!quote||!quote.minimumAmountOut)throw new Error("The QX DBC pool could not produce a live buy quote.");
+ const swapTx=await client.pool.swap({
+  owner,
+  pool:pool.publicKey,
+  amountIn:new dbc.BN(input.raw),
+  minimumAmountOut:quote.minimumAmountOut,
+  swapBaseForQuote:false,
+  referralTokenAccount:null
+ });
+
+ // QX 1% platform fee is taken atomically from the same SOL input.
+ // This prevents a fee from being collected if the swap itself fails.
+ const qxFeeLamports=Math.floor(Number(input.raw)*QX_REFERRAL_FEE_BPS/10000);
+ if(qxFeeLamports>0){
+  swapTx.add(SystemProgram.transfer({
+   fromPubkey:owner,
+   toPubkey:new PublicKey(QX_TOKEN_FEE_RECIPIENT),
+   lamports:qxFeeLamports
+  }));
+ }
+
+ const bh=await connection.getLatestBlockhash("confirmed");
+ swapTx.recentBlockhash=bh.blockhash;
+ swapTx.lastValidBlockHeight=bh.lastValidBlockHeight;
+ swapTx.feePayer=owner;
+ const signer=getActiveWalletProvider();
+ if(typeof signer?.signTransaction!=="function")throw new Error("Your wallet does not expose transaction signing. Reconnect and try again.");
+ const signed=await signer.signTransaction(swapTx);
+ const sig=await connection.sendRawTransaction(signed.serialize(),{skipPreflight:false,preflightCommitment:"confirmed"});
+ const confirmation=await connection.confirmTransaction({signature:sig,blockhash:bh.blockhash,lastValidBlockHeight:bh.lastValidBlockHeight},"confirmed");
+ if(confirmation.value?.err)throw new Error("QX DBC buy failed on-chain: "+JSON.stringify(confirmation.value.err));
+
+ return {
+  outAmount:quote.outputAmount?.toString?.()||quote.amountOut?.toString?.()||quote.minimumAmountOut.toString(),
+  feeBps:QX_REFERRAL_FEE_BPS,
+  feeMint:SOL,
+  requestId:"QX-DBC-"+sig,
+  transaction:null,
+  directSignature:sig,
+  pool:pool.publicKey.toBase58()
+ };
+}
+
 async function requestQXQuote(){
  if(quoteBusy||swapBusy)return;
  try{
@@ -2398,7 +2429,23 @@ async function requestQXQuote(){
     for(const excluded of retries){
      try{data=await fetchOrder({excludeRouters:excluded});break;}catch(e){last=e;}
     }
-    if(!data)throw new Error("Jupiter could not find an executable route for this token and amount. The token may have no active liquidity, or its liquidity may be too small for this trade. No wallet transaction was created. Details: "+String(last.jupiterDetail||last.message||"").slice(0,500));
+    if(!data){
+     // Fresh QX DBC launches may be tradable on-chain before an aggregator
+     // indexes the pool. Try the DBC directly instead of falsely declaring the
+     // token untradeable.
+     try{
+      const native=await requestQXNativeDbcBuy(pair,input);
+      const outputDecimals=await getMintDecimals(pair.outputMint);
+      pendingSwapOrder={data:native,outputDecimals,inputAmount:input.amount,inputSymbol:"SOL",outputSymbol:selectedToken.baseToken.symbol,createdAt:Date.now(),wallet:walletAddress,directSignature:native.directSignature,directPool:native.pool};
+      $("swapReceive").textContent=displayRawAmount(native.outAmount,outputDecimals)+" "+pendingSwapOrder.outputSymbol;
+      $("swapStatus").textContent="Live QX DBC quote confirmed. QX 1% fee is included atomically. Approve the wallet transaction to buy.";
+      $("confirmSwapBtn").disabled=false;
+      $("confirmSwapBtn").textContent="BUY "+selectedToken.baseToken.symbol;
+      return;
+     }catch(dbcError){
+      throw new Error("Jupiter could not find an executable route, and QX DBC could not execute a direct buy for this token. The token may not have a live DBC pool yet. Jupiter: "+String(last.jupiterDetail||last.message||"").slice(0,280)+" | DBC: "+String(dbcError?.message||dbcError).slice(0,280));
+     }
+    }
    }else throw firstError;
   }
 
@@ -2742,4 +2789,3 @@ window.addEventListener("qx:wallet-changed",()=>{qxLoadCreatorDashboard()});
 </script>
 </body>
 </html>
-
