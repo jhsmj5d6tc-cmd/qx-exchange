@@ -876,39 +876,37 @@ let Connection,PublicKey,Keypair,SystemProgram,Transaction,VersionedTransaction;
 let MINT_SIZE,TOKEN_PROGRAM_ID,getAssociatedTokenAddress,createInitializeMintInstruction,createAssociatedTokenAccountInstruction,createMintToInstruction;
 // Load only the three required Reown modules first. Keep the actual CDN error so
 // Safari shows the failing package instead of a misleading generic message.
-const qxLibraryReady = (async()=>{
- try{
-  // Load sequentially so Safari reports which CDN package actually failed.
-  // IMPORTANT: use Reown's official pre-bundled CDN build for plain HTML.
-  // The separate @reown/appkit + @reown/appkit-adapter-solana imports were
-  // resolving different Solana dependency graphs in Safari and produced the
-  // "MultisigOperation" missing-export error before the wallet picker opened.
-  // Reown publishes appkit-cdn specifically for CDN/no-build-tool apps and it
-  // bundles the Solana adapter and network exports together.
-  let cdnModule;
-  try{cdnModule=await import("https://cdn.jsdelivr.net/npm/@reown/appkit-cdn@1.8.24/dist/appkit.min.js");}
-  catch(error){throw new Error("Reown AppKit CDN could not load: "+(error?.message||String(error)));}
-  createAppKit=cdnModule.createAppKit;
-  SolanaAdapter=cdnModule.SolanaAdapter;
-  solana=cdnModule.networks?.solana;
-  if(typeof createAppKit!=="function"||typeof SolanaAdapter!=="function"||!solana){
-   throw new Error("Reown modules loaded, but createAppKit, SolanaAdapter, or the Solana mainnet export is missing.");
-  }
- }catch(error){
-  console.error("QX required Reown module failed:",error);
-  throw new Error("Reown SDK load failed: "+(error?.message||String(error))+". Reload QX and try again.");
- }
- // Load Solana transaction libraries before QX wallet initialization is considered ready.
+const qxSolanaReady=(async()=>{
  const optional=await Promise.all([
   import("https://esm.sh/@solana/web3.js@1.98.4?target=es2022&deps=@solana/buffer-layout@4.0.1"),
   import("https://esm.sh/@solana/spl-token@0.4.15?target=es2022&deps=@solana/web3.js@1.98.4,@solana/buffer-layout@4.0.1")
  ]);
  ({Connection,PublicKey,Keypair,SystemProgram,Transaction,VersionedTransaction}=optional[0]);
  ({MINT_SIZE,TOKEN_PROGRAM_ID,getAssociatedTokenAddress,createInitializeMintInstruction,createAssociatedTokenAccountInstruction,createMintToInstruction}=optional[1]);
- if(!Connection||!PublicKey||!Keypair||!SystemProgram||!Transaction||!MINT_SIZE||!TOKEN_PROGRAM_ID){
-  throw new Error("Required Solana libraries loaded without the required exports.");
+ if(!Connection||!PublicKey||!Keypair||!SystemProgram||!Transaction||!MINT_SIZE||!TOKEN_PROGRAM_ID)throw new Error("Required Solana libraries loaded without the required exports.");
+ return true;
+})().catch(e=>{console.error("QX Solana library load failed",e);throw new Error("Solana libraries could not load: "+(e?.message||String(e)));});
+
+// Reown is optional when a browser wallet provider is injected. This prevents a
+// Reown CDN problem from disabling the rest of QX and also lets Phantom/Solflare
+// connect directly in their in-app browsers.
+const qxWalletReady=qxSolanaReady.then(async()=>{
+ try{
+  const cdnModule=await import("https://cdn.jsdelivr.net/npm/@reown/appkit-cdn@1.8.24/dist/appkit.min.js");
+  createAppKit=cdnModule.createAppKit; SolanaAdapter=cdnModule.SolanaAdapter; solana=cdnModule.networks?.solana;
+  if(typeof createAppKit!=="function"||typeof SolanaAdapter!=="function"||!solana)throw new Error("Reown AppKit CDN loaded without the required Solana exports.");
+  const solanaAdapter=new SolanaAdapter();
+  appKit=createAppKit({adapters:[solanaAdapter],networks:[solana],projectId:PROJECT_ID,metadata:{name:"QX Exchange",description:"Solana exchange",url:location.origin,icons:[]},themeMode:"dark",themeVariables:{"--w3m-accent":"#9b6cff","--w3m-border-radius-master":"10px"},features:{analytics:true,email:false,socials:[]}});
+  if(typeof appKit.subscribeAccount==="function")appKit.subscribeAccount(async state=>{const address=state?.address||state?.account?.address||"";if(state?.isConnected&&valid(address)){try{await setConnectedWallet(appKit.getWalletProvider?.()||null,address,"Wallet");}catch(e){$("walletStatus").textContent="Wallet connected, but portfolio loading failed: "+e.message;}}else if(connected&&!getInjectedWallets().some(x=>x.provider.publicKey?.toString()===walletAddress))clearConnectedWallet();});
+  console.info("QX Reown wallet picker initialized.");
+  return true;
+ }catch(error){
+  qxWalletInitError=error; console.warn("QX Reown unavailable; injected Solana wallets remain available.",error);
+  return false;
  }
-})();
+});
+
+const qxLibraryReady=qxSolanaReady;
 
 const $=id=>document.getElementById(id);
 const PROJECT_ID="bd6faec63fbd0865f57da576a550ef09";
@@ -917,7 +915,7 @@ const SOL="So11111111111111111111111111111111111111112";
 const QX_TOKEN_FEE_RECIPIENT="E4x2DiVVDuVQHSUGgzTPjJMDbiJ6jCRwpEvsvAd31Qs4";
 const QX_TOKEN_FEE_LAMPORTS=300000000;
 const USDC="EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
-const RPCS=["https://api.mainnet-beta.solana.com"];
+const RPCS=["https://api.mainnet-beta.solana.com","https://api.mainnet.solana.com","https://rpc.ankr.com/solana"];
 const SOL_RESERVE=0.002;
 
 let appKit,activeWalletProvider=null,walletAddress="",connected=false,solPrice=0,qxWalletInitError=null;
@@ -1180,11 +1178,8 @@ async function connectQXWallet(){
   }
  }
  try{
-  await Promise.race([
-   qxWalletReady,
-   new Promise((_,reject)=>setTimeout(()=>reject(new Error("Wallet selector startup timed out. Reload QX and try again.")),12000))
-  ]);
-  if(!appKit)throw qxWalletInitError||new Error("The wallet connection window could not be initialized.");
+  await Promise.race([qxWalletReady,new Promise((_,reject)=>setTimeout(()=>reject(new Error("Wallet selector startup timed out. The Solana wallet picker did not load.")),12000))]);
+  if(!appKit)throw qxWalletInitError||new Error("The wallet picker could not be initialized. If you have Phantom or Solflare installed, open QX in that wallet and connect directly.");
   $("walletStatus").textContent="Choose Phantom, Solflare, or another Solana wallet.";
   if(feedback)feedback.textContent="Choose your Solana wallet in the window that opens.";
   // Only Solana is configured in this AppKit instance. Prefer the connection
@@ -1227,421 +1222,6 @@ qxDbcReady=(async()=>{
   }
 })();
 
-const qxWalletReady=qxLibraryReady.then(async()=>{
- try{
-  // Reown automatically discovers browser Wallet Standard wallets (including
-  // Phantom and Solflare). Keep registerWalletStandard at its default false:
-  // true registers the WalletConnect session as another Wallet Standard wallet
-  // and can create duplicate wallet registration in this standalone CDN build.
-  const solanaAdapter=new SolanaAdapter();
-  appKit=createAppKit({
-   adapters:[solanaAdapter],
-   networks:[solana],
-   projectId:PROJECT_ID,
-   metadata:{name:"QX Exchange",description:"Solana exchange",url:location.origin,icons:[]},
-   themeMode:"dark",
-   themeVariables:{"--w3m-accent":"#9b6cff","--w3m-border-radius-master":"10px"},
-   features:{analytics:true,email:false,socials:[]}
-  });
-  if(typeof appKit.subscribeAccount==="function"){
-   appKit.subscribeAccount(async state=>{
-    const address=state?.address||state?.account?.address||"";
-    if(state?.isConnected&&valid(address)){
-     try{await setConnectedWallet(appKit.getWalletProvider?.()||null,address,"Wallet");}
-     catch(e){$("walletStatus").textContent="Wallet connected, but portfolio loading failed: "+e.message;}
-    }else if(connected&&!getInjectedWallets().some(x=>x.provider.publicKey?.toString()===walletAddress)){
-     clearConnectedWallet();
-    }
-   });
-  }
-  console.info("QX wallet connection initialized for",location.origin,"with Reown AppKit CDN 1.8.24; Solana wallet discovery is handled by the AppKit adapter.");
- }catch(error){
-  qxWalletInitError=error;
-  console.error("QX wallet initialization failed:",error);
-  const message=error?.message||"Wallet initialization failed.";
-  if($("walletStatus"))$("walletStatus").textContent=message;
-  if($("connectFeedback"))$("connectFeedback").textContent=message;
-  throw error;
- }
-});
-window.QXWalletReady=qxWalletReady;
-
-for(const {provider,name} of getInjectedWallets()){
- if(typeof provider.on==="function"){
-  provider.on("disconnect",()=>{if(activeWalletProvider===provider)clearConnectedWallet(name+" disconnected.");});
-  provider.on("accountChanged",async key=>{
-   const address=key?.toString?.();
-   if(address&&valid(address)){try{await setConnectedWallet(provider,address,name);}catch(e){$("walletStatus").textContent=e.message;}}
-   else if(activeWalletProvider===provider)clearConnectedWallet(name+" account disconnected.");
-  });
- }
-}
-
-async function loadSolPrice(){
- try{
-  const data=await getJSON("https://api.dexscreener.com/latest/dex/tokens/"+SOL);
-  const best=(data.pairs||[])
-   .filter(p=>p.chainId==="solana"&&p.baseToken?.address===SOL)
-   .sort((a,b)=>Number(b.liquidity?.usd||0)-Number(a.liquidity?.usd||0))[0];
-  if(best){canonicalSolPair=best;solPrice=Number(best.priceUsd||0);}
-  updateIndicativeEstimate();
-  if(connected)await loadPortfolio();
-  if(allPairs.length)renderMarket();
- }catch(e){console.warn("SOL price:",e);}
-}
-
-async function loadPortfolio(){
- if(!connected||!walletAddress)return;
- $("assetsList").textContent="Loading assets...";
- try{
-  const balance=await rpc("getBalance",[walletAddress]);
-  walletSolBalance=Number(balance.value||0)/1e9;
-  let total=walletSolBalance*solPrice;
-  const rows=[{
-   name:"Solana",symbol:"SOL",mint:SOL,amount:walletSolBalance,
-   value:walletSolBalance*solPrice,
-   logo:"https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/solana/info/logo.png"
-  }];
-  const programs=[
-   "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
-   "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
-  ];
-  for(const programId of programs){
-   try{
-    const result=await rpc("getTokenAccountsByOwner",[
-     walletAddress,{programId},{encoding:"jsonParsed"}
-    ]);
-    for(const account of result.value||[]){
-     const info=account.account.data.parsed.info;
-     const amount=Number(info.tokenAmount.uiAmountString||0);
-     if(amount>0){
-      rows.push({
-       name:"Token",symbol:short(info.mint),mint:info.mint,
-       amount,value:null,logo:"",decimals:info.tokenAmount.decimals
-      });
-     }
-    }
-   }catch(e){console.warn("Token account lookup:",e);}
-  }
-
-  const uniqueRows=new Map();
-  for(const row of rows){
-   const previous=uniqueRows.get(row.mint);
-   if(!previous)uniqueRows.set(row.mint,{...row});
-   else{
-    previous.amount=Number(previous.amount||0)+Number(row.amount||0);
-    if(previous.value===null)previous.value=row.value;
-   }
-  }
-  rows.splice(0,rows.length,...uniqueRows.values());
-  const mints=[...new Set(rows.filter(t=>t.mint!==SOL).map(t=>t.mint))].slice(0,30);
-  if(mints.length){
-   try{
-    const metadata=await getJSON("https://api.dexscreener.com/tokens/v1/solana/"+mints.join(","));
-    const map=new Map();
-    for(const p of metadata||[]){
-     const mint=p.baseToken?.address;
-     if(p.chainId!=="solana"||!mint)continue;
-     const previous=map.get(mint);
-     if(!previous||Number(p.liquidity?.usd||0)>Number(previous.liquidity||0))map.set(mint,{
-      name:p.baseToken?.name||"Token",
-      symbol:p.baseToken?.symbol||short(mint),
-      logo:p.info?.imageUrl||"",
-      liquidity:Number(p.liquidity?.usd||0)
-     });
-    }
-    rows.forEach(t=>{
-     const info=map.get(t.mint);
-     if(info)Object.assign(t,info);
-    });
-   }catch(e){console.warn("Token metadata:",e);}
-  }
-  // Price held SPL tokens using the most liquid market pair returned by DexScreener.
-  const priceMints=rows.filter(t=>t.mint!==SOL).map(t=>t.mint).slice(0,30);
-  if(priceMints.length){
-   try{
-    const pricePairs=await getJSON("https://api.dexscreener.com/tokens/v1/solana/"+priceMints.join(","));
-    const priceMap=new Map();
-    for(const pair of pricePairs||[]){
-     const mint=pair.baseToken?.address;
-     if(!mint||!priceMints.includes(mint))continue;
-     const previous=priceMap.get(mint);
-     if(!previous||Number(pair.liquidity?.usd||0)>Number(previous.liquidity?.usd||0))priceMap.set(mint,pair);
-    }
-    rows.forEach(t=>{
-     if(t.mint===SOL)return;
-     const pair=priceMap.get(t.mint);
-     const price=Number(pair?.priceUsd);
-     if(Number.isFinite(price)&&price>0){
-      t.value=t.amount*price;
-      total+=t.value;
-      if(pair.baseToken){t.name=pair.baseToken.name||t.name;t.symbol=pair.baseToken.symbol||t.symbol;}
-      if(pair.info?.imageUrl)t.logo=pair.info.imageUrl;
-     }
-    });
-   }catch(e){console.warn("Token prices:",e);}
-  }
-  lastAssetRows=rows;
-  $("totalValue").dataset.realValue=usd(total);
-  $("totalValue").textContent=masked(usd(total));
-  renderAssetRows();
-  $("walletStatus").textContent="Balances updated. Token prices are shown when market data is available.";
-  if(selectedToken)await refreshTradeBalance(false);
- }catch(e){
-  $("walletStatus").textContent=e.message;
-  $("assetsList").textContent="Could not load wallet assets.";
- }
-}
-
-function renderAssetRows(){
- if(!lastAssetRows.length)return;
- $("assetsList").className="";
- $("assetsList").innerHTML=lastAssetRows.map(t=>{
-  const name=escapeHTML(t.name||"Token"),symbol=escapeHTML(t.symbol||"");
-  const logo=typeof t.logo==="string"&&/^https:\/\//i.test(t.logo)?escapeHTML(t.logo):"";
-  const initials=escapeHTML((t.symbol||"?").slice(0,2).toUpperCase());
-  const img=logo?`<img class="asset-logo" src="${logo}" alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'">`:"";
-  const fallback=`<span class="asset-fallback" style="display:${logo?"none":"grid"}">${initials}</span>`;
-  const amount=Number(t.amount||0).toLocaleString("en-US",{maximumFractionDigits:8});
-  return `<div class="asset-row">
-   <span class="asset-token">${img}${fallback}<span class="asset-name"><strong>${name}</strong><small>${symbol}</small></span></span>
-   <span class="asset-number">${masked(amount)}</span>
-   <span class="asset-number">${masked(t.value===null?"-":usd(t.value))}</span>
-  </div>`;
- }).join("");
-}
-
-
-/* QX REAL CONFIG
- * Frontend-safe values only.
- * Never put a Supabase service_role/secret key or wallet private key in this file.
- * Chain: Solana Mainnet-beta
- * Jupiter: Publishable browser key
- * Backend: Supabase Edge Function for paid-ad verification
- */
-
-/* PUBLIC ADVERTISEMENTS \u2014 secure activation requires the QX Supabase Edge Function */
-const QX_AD_TREASURY="E4x2DiVVDuVQHSUGgzTPjJMDbiJ6jCRwpEvsvAd31Qs4";
-// Public Supabase project values used by the QX Ads Edge Function.
-// Never place a Supabase service-role/secret key or any private wallet key in this file.
-const QX_ADS_SUPABASE_URL="https://qkazosqvnmknnzkukggj.supabase.co";
-const QX_ADS_SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrYXpvc3F2bm1rbnprdWtnZ2oiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTc5MzYzODQ2MSwiZXhwIjoyMTA5MjE0NDYxfQ.HDZyq99QqTo6kFEm5msYF7CbTOj3QSQfW6PohVixpyg";
-const QX_AD_FUNCTION="qx-ads";
-const QX_AD_PACKAGES={1:{usd:49.99,label:"1 hour"},3:{usd:99.99,label:"3 hours"},9:{usd:179.99,label:"9 hours"},24:{usd:299.99,label:"24 hours"},72:{usd:599.99,label:"3 days"}};
-const adEl=id=>document.getElementById(id);
-let adBusy=false;
-function adsBackendReady(){return /^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(QX_ADS_SUPABASE_URL)&&QX_ADS_SUPABASE_ANON_KEY.startsWith("eyJ");}
-function adSolAmount(hours){
- const price=QX_AD_PACKAGES[Number(hours)]?.usd;
- if(!price||!solPrice||solPrice<=0)return null;
- return Math.ceil((price/solPrice)*1e6)/1e6;
-}
-function qxLangText(en,ar){return qxLanguage==="ar"?ar:en;}
-function updateAdPrice(){
- const hours=Number(adEl("adDuration").value),pkg=QX_AD_PACKAGES[hours],sol=adSolAmount(hours);
- adEl("adUsdPrice").textContent="$"+pkg.usd.toFixed(2);
- adEl("adSolPrice").textContent=sol?sol.toFixed(6)+" SOL":qxLangText("SOL price unavailable","\u0633\u0639\u0631 SOL \u063A\u064A\u0631 \u0645\u062A\u0627\u062D");
-}
-function openAdModal(){
- adEl("adsMenu").classList.remove("open");
- adEl("adsMenuBtn").setAttribute("aria-expanded","false");
- adEl("adStatus").textContent="";
- updateAdPrice();
- adEl("adModalBackdrop").classList.add("open");
-}
-function closeAdModal(){if(!adBusy)adEl("adModalBackdrop").classList.remove("open");}
-adEl("adsMenuBtn").addEventListener("click",()=>{
- const open=adEl("adsMenu").classList.toggle("open");
- adEl("adsMenuBtn").setAttribute("aria-expanded",String(open));
-});
-adEl("addAdMenuBtn").addEventListener("click",openAdModal);
-adEl("adCloseBtn").addEventListener("click",closeAdModal);
-adEl("adModalBackdrop").addEventListener("click",e=>{if(e.target===adEl("adModalBackdrop"))closeAdModal();});
-adEl("adDuration").addEventListener("change",updateAdPrice);
-for(const id of ["adHeadline","adText"]){
- adEl(id).addEventListener("blur",()=>{adEl(id).value=repairMojibake(adEl(id).value).normalize("NFC");});
-}
-function safeAdUrl(value,optional=false){
- const v=String(value||"").trim();if(!v&&optional)return "";
- let u;try{u=new URL(v);}catch(e){throw new Error("Enter a valid https:// link.");}
- if(u.protocol!=="https:")throw new Error("Only secure https:// links are accepted.");
- return u.href;
-}
-async function loadPublicAds(){
- const host=adEl("publicAdsList");
- if(!adsBackendReady()){
-  host.innerHTML='<div class="ad-empty">'+qxLangText("Ads feed is not connected yet. Configure the QX Supabase Ads backend to publish and verify paid advertisements.","\u062E\u062F\u0645\u0629 \u0627\u0644\u0625\u0639\u0644\u0627\u0646\u0627\u062A \u063A\u064A\u0631 \u0645\u0631\u0628\u0648\u0637\u0629 \u0628\u0639\u062F. \u064A\u0644\u0632\u0645 \u0625\u0639\u062F\u0627\u062F \u062E\u062F\u0645\u0629 QX \u0627\u0644\u0622\u0645\u0646\u0629 \u0644\u0646\u0634\u0631 \u0627\u0644\u0625\u0639\u0644\u0627\u0646\u0627\u062A \u0627\u0644\u0645\u062F\u0641\u0648\u0639\u0629 \u0648\u0627\u0644\u062A\u062D\u0642\u0642 \u0645\u0646\u0647\u0627.")+'</div>';
-  return;
- }
- try{
-  const response=await fetch(QX_ADS_SUPABASE_URL+"/functions/v1/"+QX_AD_FUNCTION,{headers:{"apikey":QX_ADS_SUPABASE_ANON_KEY,"Authorization":"Bearer "+QX_ADS_SUPABASE_ANON_KEY}});
-  const data=await response.json();
-  if(!response.ok)throw new Error(data.error||"Could not load advertisements.");
-  const ads=Array.isArray(data.ads)?data.ads:[];
-  if(!ads.length){host.innerHTML='<div class="ad-empty">'+qxLangText("No sponsored advertisements yet.","\u0644\u0627 \u062A\u0648\u062C\u062F \u0625\u0639\u0644\u0627\u0646\u0627\u062A \u0645\u0645\u0648\u0644\u0629 \u062D\u0627\u0644\u064A\u0627\u064B.")+'</div>';return;}
-  host.innerHTML=ads.map(ad=>{
-   const title=escapeHTML(ad.title||"Sponsored project"),body=escapeHTML(ad.body||""),url=safeAdUrl(ad.url),image=ad.image_url?safeAdUrl(ad.image_url):"";
-   return '<article class="ad-card">'+(image?'<img class="ad-image" src="'+escapeHTML(image)+'" alt="" loading="lazy" referrerpolicy="no-referrer">':'')+'<div class="ad-copy"><strong>'+title+'</strong><p>'+body+'</p><a href="'+escapeHTML(url)+'" target="_blank" rel="noopener noreferrer">'+qxLangText("Visit project","\u0632\u064A\u0627\u0631\u0629 \u0627\u0644\u0645\u0634\u0631\u0648\u0639")+' \u2197</a></div></article>';
-  }).join("");
- }catch(e){console.warn("QX ads feed:",e);host.innerHTML='<div class="ad-empty">'+qxLangText("Advertisements are temporarily unavailable.","\u0627\u0644\u0625\u0639\u0644\u0627\u0646\u0627\u062A \u063A\u064A\u0631 \u0645\u062A\u0627\u062D\u0629 \u0645\u0624\u0642\u062A\u0627\u064B.")+'</div>';}
-}
-async function waitForSolanaConfirmation(signature){
- for(let i=0;i<40;i++){
-  const status=await rpc("getSignatureStatuses",[[signature],{searchTransactionHistory:true}]);
-  const value=status?.value?.[0];
-  if(value?.err)throw new Error("Solana payment failed on-chain.");
-  if(value&&(value.confirmationStatus==="confirmed"||value.confirmationStatus==="finalized"))return;
-  await new Promise(resolve=>setTimeout(resolve,1500));
- }
- throw new Error("Payment was sent but confirmation timed out. Do not pay again; check your wallet transaction history.");
-}
-async function payForAdvertisement(){
- if(adBusy)return;
- try{
-  if(!connected||!walletAddress)throw new Error(qxLangText("Connect your wallet to QX first.","\u0627\u0631\u0628\u0637 \u0645\u062D\u0641\u0638\u062A\u0643 \u0628\u0640 QX \u0623\u0648\u0644\u0627\u064B."));
-  if(!adsBackendReady())throw new Error(qxLangText("QX Ads backend is not configured yet. Payment is disabled until the secure verification service is connected.","\u0644\u0645 \u064A\u062A\u0645 \u0625\u0639\u062F\u0627\u062F \u062E\u062F\u0645\u0629 \u0625\u0639\u0644\u0627\u0646\u0627\u062A QX \u0628\u0639\u062F. \u0627\u0644\u062F\u0641\u0639 \u0645\u062A\u0648\u0642\u0641 \u062D\u062A\u0649 \u0631\u0628\u0637 \u062E\u062F\u0645\u0629 \u0627\u0644\u062A\u062D\u0642\u0642 \u0627\u0644\u0622\u0645\u0646\u0629."));
-  const hours=Number(adEl("adDuration").value),pkg=QX_AD_PACKAGES[hours],sol=adSolAmount(hours);
-  if(!pkg||!sol||!Number.isFinite(sol))throw new Error(qxLangText("Live SOL price is unavailable. Try again shortly.","\u0633\u0639\u0631 SOL \u0627\u0644\u0645\u0628\u0627\u0634\u0631 \u063A\u064A\u0631 \u0645\u062A\u0627\u062D. \u062D\u0627\u0648\u0644 \u0628\u0639\u062F \u0642\u0644\u064A\u0644."));
-  const title=repairMojibake(adEl("adHeadline").value).normalize("NFC").trim();
-  const body=repairMojibake(adEl("adText").value).normalize("NFC").trim();
-  const url=safeAdUrl(adEl("adUrl").value),imageUrl=safeAdUrl(adEl("adImageUrl").value,true);
-  if(title.length<3)throw new Error(qxLangText("Enter an advertisement title.","\u0623\u062F\u062E\u0644 \u0639\u0646\u0648\u0627\u0646 \u0627\u0644\u0625\u0639\u0644\u0627\u0646."));
-  if(body.length<8)throw new Error(qxLangText("Paste your advertisement text.","\u0623\u062F\u062E\u0644 \u0646\u0635 \u0627\u0644\u0625\u0639\u0644\u0627\u0646."));
-  const provider=getActiveWalletProvider();
-  if(typeof provider?.signTransaction!=="function")throw new Error(qxLangText("The connected wallet does not support transaction signing. Reconnect a Solana wallet.","\u0627\u0644\u0645\u062D\u0641\u0638\u0629 \u0627\u0644\u0645\u062A\u0635\u0644\u0629 \u0644\u0627 \u062A\u062F\u0639\u0645 \u062A\u0648\u0642\u064A\u0639 \u0627\u0644\u0645\u0639\u0627\u0645\u0644\u0627\u062A. \u0623\u0639\u062F \u0631\u0628\u0637 \u0645\u062D\u0641\u0638\u0629 \u0633\u0648\u0644\u0627\u0646\u0627."));
-  const lamports=Math.ceil(sol*1e9);
-  if(!Number.isSafeInteger(lamports)||lamports<=0)throw new Error(qxLangText("Invalid SOL payment amount.","\u0642\u064A\u0645\u0629 \u0627\u0644\u062F\u0641\u0639 \u0628\u0639\u0645\u0644\u0629 SOL \u063A\u064A\u0631 \u0635\u062D\u064A\u062D\u0629."));
-  adBusy=true;adEl("adPayBtn").disabled=true;adEl("adPayBtn").textContent=qxLangText("WAITING FOR WALLET APPROVAL...","\u0628\u0627\u0646\u062A\u0638\u0627\u0631 \u0645\u0648\u0627\u0641\u0642\u0629 \u0627\u0644\u0645\u062D\u0641\u0638\u0629...");
-  adEl("adStatus").textContent=qxLangText("Review and approve the SOL payment in your connected wallet.","\u0631\u0627\u062C\u0639 \u062F\u0641\u0639\u0629 SOL \u0648\u0648\u0627\u0641\u0642 \u0639\u0644\u064A\u0647\u0627 \u0645\u0646 \u0645\u062D\u0641\u0638\u062A\u0643 \u0627\u0644\u0645\u062A\u0635\u0644\u0629.");
-  const latest=await rpc("getLatestBlockhash",[{commitment:"confirmed"}]);
-  const transaction=new Transaction({feePayer:new PublicKey(walletAddress),recentBlockhash:latest.value.blockhash});
-  transaction.add(SystemProgram.transfer({fromPubkey:new PublicKey(walletAddress),toPubkey:new PublicKey(QX_AD_TREASURY),lamports}));
-  const signed=await provider.signTransaction(transaction);
-  const encoded=bytesToBase64(signed.serialize());
-  const signature=await rpc("sendTransaction",[encoded,{encoding:"base64",skipPreflight:false,preflightCommitment:"confirmed",maxRetries:3}]);
-  adEl("adStatus").textContent=qxLangText("Payment sent. Waiting for Solana confirmation...","\u062A\u0645 \u0625\u0631\u0633\u0627\u0644 \u0627\u0644\u062F\u0641\u0639\u0629. \u0628\u0627\u0646\u062A\u0638\u0627\u0631 \u062A\u0623\u0643\u064A\u062F \u0634\u0628\u0643\u0629 \u0633\u0648\u0644\u0627\u0646\u0627...");
-  await waitForSolanaConfirmation(signature);
-  adEl("adStatus").textContent=qxLangText("Payment confirmed. QX is verifying the transaction and publishing your advertisement...","\u062A\u0645 \u062A\u0623\u0643\u064A\u062F \u0627\u0644\u062F\u0641\u0639. \u062A\u062A\u062D\u0642\u0642 QX \u0645\u0646 \u0627\u0644\u0645\u0639\u0627\u0645\u0644\u0629 \u0648\u062A\u0646\u0634\u0631 \u0625\u0639\u0644\u0627\u0646\u0643...");
-  const response=await fetch(QX_ADS_SUPABASE_URL+"/functions/v1/"+QX_AD_FUNCTION,{
-   method:"POST",headers:{"Content-Type":"application/json","apikey":QX_ADS_SUPABASE_ANON_KEY,"Authorization":"Bearer "+QX_ADS_SUPABASE_ANON_KEY},
-   body:JSON.stringify({action:"publish",wallet:walletAddress,signature,duration_hours:hours,price_usd:pkg.usd,sol_amount:sol,title,body,url,image_url:imageUrl})
-  });
-  const result=await response.json().catch(()=>({}));
-  if(!response.ok||!result.ok)throw new Error(result.error||"Payment is confirmed, but server-side verification did not publish the ad. Keep this transaction signature for support: "+signature);
-  adEl("adStatus").textContent=qxLangText("Advertisement published successfully.","\u062A\u0645 \u0646\u0634\u0631 \u0627\u0644\u0625\u0639\u0644\u0627\u0646 \u0628\u0646\u062C\u0627\u062D.");
-  await loadPublicAds();
-  setTimeout(()=>adEl("adModalBackdrop").classList.remove("open"),1100);
- }catch(e){adEl("adStatus").textContent=e.message||qxLangText("Advertisement payment could not be completed.","\u062A\u0639\u0630\u0631 \u0625\u0643\u0645\u0627\u0644 \u062F\u0641\u0639 \u0627\u0644\u0625\u0639\u0644\u0627\u0646.");}
- finally{adBusy=false;adEl("adPayBtn").disabled=false;adEl("adPayBtn").textContent=qxLangText("PAY WITH CONNECTED WALLET","\u0627\u062F\u0641\u0639 \u0628\u0627\u0644\u0645\u062D\u0641\u0638\u0629 \u0627\u0644\u0645\u062A\u0635\u0644\u0629");}
-}
-adEl("adPayBtn").addEventListener("click",payForAdvertisement);
-loadPublicAds();
-
-
-/* QX TOKEN CREATOR - creates a real SPL mint on Solana Mainnet */
-let qxTokenImageData="";
-$("tokenImage")?.addEventListener("change",()=>{
- const file=$("tokenImage").files?.[0];qxTokenImageData="";
- const wrap=$("tokenImagePreviewWrap"),preview=$("tokenImagePreview");
- if(!file){wrap.style.display="none";return;}
- if(!["image/png","image/jpeg","image/webp"].includes(file.type)||file.size>500*1024){
-  $("createTokenStatus").textContent="Choose a PNG, JPG or WEBP image no larger than 500 KB.";$("tokenImage").value="";wrap.style.display="none";return;
- }
- const reader=new FileReader();reader.onload=()=>{qxTokenImageData=String(reader.result||"");preview.src=qxTokenImageData;wrap.style.display="flex";};
- reader.onerror=()=>{$("createTokenStatus").textContent="Could not read the selected image. Please choose it again.";};reader.readAsDataURL(file);
-});
-function qxOptionalUrl(id,label){
- const value=$(id)?.value.trim()||"";if(!value)return "";
- let url;try{url=new URL(value);}catch(_){throw new Error(label+" must be a complete URL beginning with https://");}
- if(!["https:","http:"].includes(url.protocol))throw new Error(label+" must use http or https.");
- return url.href;
-}
-function parseTokenUnits(value,decimals){
- const text=String(value||"").trim();
- if(!/^\d+(?:\.\d+)?$/.test(text))throw new Error("Enter a valid initial supply.");
- const parts=text.split("."),whole=parts[0],fraction=parts[1]||"";
- if(fraction.length>decimals)throw new Error("Supply has more decimal places than the selected decimals.");
- const raw=BigInt(whole)*10n**BigInt(decimals)+BigInt((fraction+"0".repeat(decimals)).slice(0,decimals)||"0");
- if(raw<=0n||raw>18446744073709551615n)throw new Error("Supply must be greater than zero and fit the SPL token limit.");
- return raw;
-}
-async function qxGetHealthyConnection(){
- for(const endpoint of RPCS){try{const c=new Connection(endpoint,"confirmed");await c.getLatestBlockhash("confirmed");return c;}catch(_){}}
- throw new Error("No Solana RPC endpoint is reachable from this browser.");
-}
-async function createQXToken(){
- const button=$("createTokenBtn"),status=$("createTokenStatus"),resultBox=$("createdTokenResult");
- if(!button||button.dataset.busy==="1")return;
- try{
-  button.dataset.busy="1";button.disabled=true;
-  await qxLibraryReady;
-  if(!Connection||!PublicKey||!Keypair||!SystemProgram||!Transaction||!MINT_SIZE||!TOKEN_PROGRAM_ID){
-   throw new Error("Solana libraries are not ready. Reload QX and try again.");
-  }
-  const name=$("tokenName").value.trim(),symbol=$("tokenSymbol").value.trim().toUpperCase();
-  const decimals=Number($("tokenDecimals").value),supplyText=$("tokenSupply").value.trim();
-  const image=qxOptionalUrl("tokenImage","Logo URL");
-  if(!name||name.length>32)throw new Error("Enter a token name (1-32 characters).");
-  if(!/^[A-Z0-9]{2,10}$/.test(symbol))throw new Error("Symbol must be 2-10 letters or numbers.");
-  if(!Number.isFinite(decimals)||decimals<6||decimals>9)throw new Error("Decimals must be between 6 and 9.");
-  const supplyHuman=Number(supplyText);
-  if(!Number.isFinite(supplyHuman)||supplyHuman<=0)throw new Error("Enter a valid total token supply.");
-  if(!connected||!walletAddress){
-   status.textContent="Opening Solana wallet selection…";
-   try{await qxWalletReady;if(appKit)await appKit.open({view:"Connect"});else throw new Error("Wallet selector is not ready.");}
-   catch(e){throw new Error("Connect your Solana wallet first, then create the token again. "+(e?.message||String(e)));}
-   return;
-  }
-
-  // IMPORTANT: the Create Token button uses the real DBC launch engine.
-  // Do not create a standalone mint first; a standalone mint has no market.
-  $("launchName").value=name;
-  $("launchSymbol").value=symbol;
-  $("launchSupply").value=supplyText;
-  $("launchDecimals").value=String(decimals);
-  $("launchInitialMc").value="1";
-  $("launchMigrationMc").value="10";
-  $("launchFirstBuy").value="0.05";
-  if(image)$("launchImage").value=image;
-  status.textContent="Preparing the real QX market launch…";
-  resultBox.style.display="none";
-
-  // qxLaunchToken accepts the creator button directly, so its disabled state is
-  // owned by one function only. This avoids the old frozen-button bug.
-  button.disabled=false;
-  await qxLaunchToken({creatorButton:button,creatorStatus:status,creatorResult:resultBox,creatorMode:true});
- }catch(error){
-  console.error("QX Create Token:",error);
-  status.textContent=error?.message||"Token launch failed. No success was recorded.";
-  button.textContent="Connect wallet & create token";
- }finally{
-  button.dataset.busy="0";
-  button.disabled=false;
- }
-}
-$("createTokenBtn")?.addEventListener("click",createQXToken);
-/* QX REAL LAUNCH ENGINE */
-// QX Launch uses Meteora Dynamic Bonding Curve on Solana Mainnet. The curve, swaps and graduation threshold are on-chain; the mainnet migration keeper performs graduation when eligible.
-
-function qxLaunchLamports(sol){
- const n=Number(sol); if(!Number.isFinite(n)||n<0)throw new Error("Enter a valid SOL amount.");
- return BigInt(Math.round(n*1e9));
-}
-function qxLaunchUnits(value,decimals){return parseTokenUnits(value,decimals);}
-function qxDataUriMetadata(name,symbol,description,image){
- const meta={name,symbol,description}; if(image)meta.image=image;
- return "data:application/json,"+encodeURIComponent(JSON.stringify(meta));
-}
-async function qxSendWalletTx(tx,signer,connection,extraSigners=[]){
- for(const kp of extraSigners)tx.partialSign(kp);
- const signed=await signer.signTransaction(tx);
- const sig=await connection.sendRawTransaction(signed.serialize(),{skipPreflight:false,preflightCommitment:"confirmed"});
- const bh=tx.recentBlockhash;
- // The transaction object has the blockhash used to build it; confirm with the same blockhash.
- const conf=await connection.confirmTransaction({signature:sig,blockhash:bh,lastValidBlockHeight:tx.lastValidBlockHeight},"confirmed");
- if(conf.value?.err)throw new Error("On-chain transaction failed: "+JSON.stringify(conf.value.err));
- return sig;
-}
 async function qxLaunchToken(opts={}){
  const creatorMode=!!opts.creatorMode;
  const btn=opts.creatorButton||$("launchTokenBtn"),status=opts.creatorStatus||$("launchStatus"),result=opts.creatorResult||$("launchResult");
