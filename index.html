@@ -601,7 +601,39 @@ body.qx-token-open #getQuoteBtn{display:none!important}
     <p class="swap-status" id="swapStatus">Connect your wallet, enter an amount, then review the live quote and confirm in your wallet.</p>
    </div>
   </section>
+  
+<!-- QX REAL ON-CHAIN CONTROL PANEL -->
+<section id="qxOnchainPanel" class="panel" style="display:none;margin-top:18px">
+ <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+  <div><div class="qx-swap-kicker">QX ON-CHAIN CONTROL</div><h3 style="margin:4px 0">Live Solana verification</h3></div>
+  <span id="qxChainBadge" class="tag">READING SOLANA</span>
  </div>
+ <div id="qxChainStats" class="detail-stats" style="margin-top:12px">
+  <div class="detail-stat"><small>Token supply</small><strong id="qxSupply">â</strong></div>
+  <div class="detail-stat"><small>Decimals</small><strong id="qxDecimals">â</strong></div>
+  <div class="detail-stat"><small>Mint authority</small><strong id="qxMintAuthority">â</strong></div>
+  <div class="detail-stat"><small>Freeze authority</small><strong id="qxFreezeAuthority">â</strong></div>
+ </div>
+ <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
+  <button class="btn primary" type="button" id="qxRefreshChainBtn">REFRESH ON-CHAIN DATA</button>
+  <button class="btn" type="button" id="qxRiskScanBtn">RUN REAL RISK SCAN</button>
+  <button class="btn" type="button" id="qxTxBtn">LOAD RECENT TRANSACTIONS</button>
+ </div>
+ <div id="qxRiskResult" class="small" style="margin-top:12px"></div>
+ <div id="qxTxList" class="small" style="margin-top:12px"></div>
+</section>
+
+ </div>
+</main>
+
+<main id="creatorPage" class="page">
+ <div class="market-heading"><h2>Creator Dashboard</h2><span class="tag">QX CREATOR</span></div>
+ <section class="panel">
+  <div class="small">Your launch records are cross-checked against Solana Mainnet. QX never treats localStorage alone as proof that a launch exists.</div>
+  <div id="creatorIdentity" style="margin:14px 0;font-weight:700">Connect your wallet to load your launches.</div>
+  <button class="btn primary" type="button" id="creatorRefreshBtn">REFRESH CREATOR DATA</button>
+  <div id="creatorLaunches" style="margin-top:16px"></div>
+ </section>
 </main>
 
 <main id="adsPage" class="page">
@@ -662,6 +694,7 @@ body.qx-token-open #getQuoteBtn{display:none!important}
  <button class="nav-btn active" data-page="marketsPage" aria-label="Markets">
   <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5M4 19h17M7 15l4-4 3 2 6-7"/></svg><span>Markets</span>
  </button>
+ <button class="nav-btn" data-page="creatorPage" aria-label="Creator Dashboard"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM4 21a8 8 0 0 1 16 0"/></svg><span>Creator</span></button>
  <button class="nav-btn" data-page="adsPage" aria-label="Advertisements">
   <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10v4h4l10 5V5L7 10H3Z"/><path d="m7 14 2 6h4l-2-4M20 9l2-2M20 15l2 2"/></svg><span>Ads</span>
  </button>
@@ -2445,6 +2478,7 @@ function refreshSelectedTokenDetails(token){
  $("solscanLink").href="https://solscan.io/token/"+mint;
  const image=token.info?.imageUrl||"";
  if(image){$("detailImage").src=image;$("detailImage").style.display="block";}else{$("detailImage").removeAttribute("src");$("detailImage").style.display="none";}
+ qxLoadOnChainPanel(token).catch(()=>{});
  const pairAddress=token.pairAddress;
  $("detailHolders").textContent="Not available";
  $("detailHolders").title="A verified holder-data provider is required for a reliable live holder count.";
@@ -2487,6 +2521,150 @@ setInterval(loadMarket,20000);
 setInterval(()=>{if(document.body.classList.contains("qx-token-open")&&selectedToken?.pairAddress)loadQXChart(selectedToken.pairAddress,activeChartRange);},30000);
 
 // All page text is served as UTF-8. No runtime text rewriting is applied.
+
+
+/* QX REAL ON-CHAIN CONTROL PANEL v3 */
+function qxShort(value){
+ if(!value)return "â";
+ const s=String(value);
+ return s.length>14?s.slice(0,7)+"â¦"+s.slice(-5):s;
+}
+function qxExplorerTx(sig){
+ return "https://solscan.io/tx/"+encodeURIComponent(sig);
+}
+function qxExplorerToken(mint){
+ return "https://solscan.io/token/"+encodeURIComponent(mint);
+}
+async function qxReadMintOnChain(mintAddress){
+ const connection=await qxGetHealthyConnection();
+ const mintPk=new PublicKey(mintAddress);
+ const parsed=await connection.getParsedAccountInfo(mintPk,"confirmed");
+ const value=parsed?.value;
+ if(!value)throw new Error("Mint account was not found on Solana Mainnet.");
+ const info=value?.data?.parsed?.info;
+ if(!info)throw new Error("This mint is not returned as a parsed SPL mint by the connected RPC.");
+ return {
+  supply:String(info.supply||"0"),
+  decimals:Number(info.decimals||0),
+  mintAuthority:info.mintAuthority||null,
+  freezeAuthority:info.freezeAuthority||null,
+  owner:value.owner?.toBase58?.()||String(value.owner||""),
+  executable:Boolean(value.executable)
+ };
+}
+function qxFormatRawSupply(raw,decimals){
+ try{
+  const n=BigInt(String(raw));
+  const d=10n**BigInt(decimals);
+  const whole=n/d, frac=(n%d).toString().padStart(decimals,"0").replace(/0+$/,"");
+  return frac?whole.toString()+"."+frac:whole.toString();
+ }catch(_){return String(raw)}
+}
+async function qxLoadOnChainPanel(token){
+ const panel=$("qxOnchainPanel"); if(!panel||!token?.baseToken?.address)return;
+ panel.style.display="block";
+ const mint=token.baseToken.address;
+ try{
+  $("qxChainBadge").textContent="LIVE Â· SOLANA MAINNET";
+  const data=await qxReadMintOnChain(mint);
+  $("qxSupply").textContent=qxFormatRawSupply(data.supply,data.decimals);
+  $("qxDecimals").textContent=String(data.decimals);
+  $("qxMintAuthority").textContent=data.mintAuthority?qxShort(data.mintAuthority):"REVOKED";
+  $("qxFreezeAuthority").textContent=data.freezeAuthority?qxShort(data.freezeAuthority):"REVOKED";
+  panel.dataset.mint=mint;
+  $("qxRiskResult").textContent="Mint account verified on-chain.";
+ }catch(e){
+  $("qxChainBadge").textContent="ON-CHAIN READ FAILED";
+  $("qxRiskResult").textContent=e?.message||"Could not read the mint account.";
+ }
+}
+async function qxRunRealRiskScan(){
+ const mint=$("qxOnchainPanel")?.dataset.mint;
+ if(!mint)return;
+ const el=$("qxRiskResult"); el.textContent="Scanning mint account and largest holdersâ¦";
+ try{
+  const connection=await qxGetHealthyConnection();
+  const mintPk=new PublicKey(mint);
+  const mintData=await qxReadMintOnChain(mint);
+  const largest=await connection.getTokenLargestAccounts(mintPk,"confirmed");
+  const supplyRaw=BigInt(String(mintData.supply||"0"));
+  let topPct=0;
+  if(supplyRaw>0n){
+   const topRaw=BigInt(String(largest?.value?.[0]?.amount||"0"));
+   topPct=Number((topRaw*100000n)/supplyRaw)/1000;
+  }
+  const flags=[];
+  if(mintData.mintAuthority)flags.push("Mint authority is active");
+  if(mintData.freezeAuthority)flags.push("Freeze authority is active");
+  if(topPct>=20)flags.push("Largest holder controls â¥20% of supply");
+  else if(topPct>=10)flags.push("Largest holder controls â¥10% of supply");
+  if(!flags.length){
+   el.innerHTML='<strong>QX REAL SCAN: No high-risk mint flags detected.</strong><br>Mint authority and freeze authority are revoked; largest-holder concentration is below 10% based on the RPC response.';
+  }else{
+   el.innerHTML='<strong>QX REAL SCAN: Review required.</strong><br>'+flags.map(x=>qxEsc(x)).join("<br>");
+  }
+ }catch(e){el.textContent=e?.message||"Risk scan failed."}
+}
+function qxEsc(s){
+ return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+}
+async function qxLoadRecentTransactions(){
+ const mint=$("qxOnchainPanel")?.dataset.mint;
+ const box=$("qxTxList"); if(!mint||!box)return;
+ box.textContent="Loading recent Solana signaturesâ¦";
+ try{
+  const connection=await qxGetHealthyConnection();
+  const sigs=await connection.getSignaturesForAddress(new PublicKey(mint),{limit:12},"confirmed");
+  if(!sigs.length){box.textContent="No recent signatures were returned for this mint account.";return;}
+  box.innerHTML="<strong>Recent signatures touching the mint:</strong><br>"+
+   sigs.map(s=>'<div style="padding:5px 0;border-bottom:1px solid var(--line)"><a class="detail-link" target="_blank" rel="noopener" href="'+qxExplorerTx(s.signature)+'">'+qxEsc(qxShort(s.signature))+'</a> Â· '+qxEsc(s.err?"FAILED":"CONFIRMED")+' Â· '+new Date((s.blockTime||0)*1000).toLocaleString()+"</div>").join("");
+ }catch(e){box.textContent=e?.message||"Transaction history could not be loaded."}
+}
+$("qxRefreshChainBtn")?.addEventListener("click",async()=>{if(selectedToken)await qxLoadOnChainPanel(selectedToken)});
+$("qxRiskScanBtn")?.addEventListener("click",qxRunRealRiskScan);
+$("qxTxBtn")?.addEventListener("click",qxLoadRecentTransactions);
+
+async function qxLoadCreatorDashboard(){
+ const identity=$("creatorIdentity"),list=$("creatorLaunches");
+ if(!identity||!list)return;
+ if(!connected||!walletAddress){
+  identity.textContent="Connect your wallet to load your launches.";
+  list.innerHTML="";
+  return;
+ }
+ identity.textContent="Creator wallet: "+walletAddress;
+ list.textContent="Reading your recorded launches and verifying them on Solanaâ¦";
+ try{
+  const saved=JSON.parse(localStorage.getItem("qxRealLaunches")||"[]");
+  const mine=saved.filter(x=>String(x.creator||"")===String(walletAddress));
+  if(!mine.length){
+   list.innerHTML="<div class='small'>No QX launches recorded for this connected wallet in this browser.</div>";
+   return;
+  }
+  const connection=await qxGetHealthyConnection();
+  const rows=[];
+  for(const r of mine.slice(0,20)){
+   let state="NOT VERIFIED",supply="â";
+   try{
+    const mintData=await qxReadMintOnChain(r.mint);
+    state="ON-CHAIN VERIFIED";
+    supply=qxFormatRawSupply(mintData.supply,mintData.decimals);
+   }catch(_){}
+   rows.push('<div class="panel" style="margin:10px 0;padding:14px">'+
+    '<strong>'+qxEsc((r.name||"Token")+" ("+(r.symbol||"")+")")+'</strong>'+
+    '<div class="small" style="margin-top:6px">Status: '+qxEsc(state)+' Â· Supply: '+qxEsc(supply)+'</div>'+
+    '<div class="small" style="margin-top:6px">Mint: '+qxEsc(qxShort(r.mint))+'</div>'+
+    '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">'+
+    '<a class="btn" target="_blank" rel="noopener" href="'+qxExplorerToken(r.mint)+'">OPEN MINT</a>'+
+    (r.pool?'<a class="btn" target="_blank" rel="noopener" href="https://solscan.io/account/'+encodeURIComponent(r.pool)+'">OPEN POOL</a>':"")+
+    '</div></div>');
+  }
+  list.innerHTML=rows.join("");
+ }catch(e){list.textContent=e?.message||"Creator data could not be loaded."}
+}
+$("creatorRefreshBtn")?.addEventListener("click",qxLoadCreatorDashboard);
+window.addEventListener("qx:wallet-changed",()=>{qxLoadCreatorDashboard()});
+
 </script>
 </body>
 </html>
