@@ -92,7 +92,7 @@ input{width:100%;min-width:0;background:#0c0920;color:white;border:1px solid var
 .tag{color:var(--green);font-size:11px;background:#193d35;padding:6px 9px;border-radius:7px}
 .bottom-nav{
  position:fixed;left:0;right:0;bottom:0;z-index:999;display:grid;
- grid-template-columns:repeat(5,minmax(0,1fr));background:rgba(8,7,17,.97);
+ grid-template-columns:repeat(6,minmax(0,1fr));background:rgba(8,7,17,.97);
  border-top:1px solid var(--line);padding:8px 10px calc(8px + env(safe-area-inset-bottom));min-height:72px
 }
 .nav-btn{border:0;background:none;color:#b8aec9;font-size:12px;font-weight:700;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:7px 4px;min-height:56px;line-height:1.2;-webkit-tap-highlight-color:transparent}
@@ -381,6 +381,13 @@ body.qx-token-open #getQuoteBtn{display:none!important}
 .qx-swap-purchase .percent-range{margin-top:8px}
 .qx-swap-purchase .percent-foot{margin-top:4px}
 @media(max-width:520px){.qx-swap-value input{font-size:23px}.qx-swap-output{font-size:22px}}
+
+.qx-launch-hero{background:radial-gradient(circle at 88% 0%,rgba(67,255,173,.16),transparent 35%),linear-gradient(135deg,#1a1630,#0f0d19)}
+.qx-launch-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:16px}
+.qx-launch-grid label{display:block}.qx-launch-grid input,.qx-launch-grid select{margin-top:6px}
+.qx-launch-checks{display:flex;gap:7px;flex-wrap:wrap;margin:14px 0;color:#bfeedd;font-size:10px}
+.qx-launch-checks span{border:1px solid rgba(67,255,173,.22);background:rgba(67,255,173,.07);border-radius:999px;padding:7px 9px}
+@media(max-width:560px){.qx-launch-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -463,6 +470,45 @@ body.qx-token-open #getQuoteBtn{display:none!important}
  </section>
 </main>
 
+
+<main id="launchPage" class="page">
+ <div class="market-heading"><h2>QX Launch</h2><span class="tag">REAL SOLANA LAUNCH</span></div>
+ <section class="panel qx-launch-hero">
+  <div class="tag">QX DYNAMIC BONDING CURVE</div>
+  <h2>Launch a real token market</h2>
+  <p class="small">QX launches the token into a live on-chain bonding curve. Buys and sells execute against the Solana mainnet DBC program. When the configured migration threshold is reached, the pool can graduate to DAMM v2 according to the on-chain configuration.</p>
+  <div class="qx-launch-grid">
+   <div><label class="small">Token name<input id="launchName" maxlength="32" placeholder="QX Token"></label></div>
+   <div><label class="small">Symbol<input id="launchSymbol" maxlength="10" placeholder="QXT" style="text-transform:uppercase"></label></div>
+   <div><label class="small">Total supply<input id="launchSupply" inputmode="decimal" value="1000000000" placeholder="1000000000"></label></div>
+   <div><label class="small">Decimals<select id="launchDecimals"><option value="9" selected>9</option><option value="8">8</option><option value="7">7</option><option value="6">6</option></select></label></div>
+   <div><label class="small">Initial market cap (SOL)<input id="launchInitialMc" inputmode="decimal" value="1" min="0.01"></label></div>
+   <div><label class="small">Graduation market cap (SOL)<input id="launchMigrationMc" inputmode="decimal" value="10" min="0.1"></label></div>
+   <div><label class="small">Your first buy (SOL)<input id="launchFirstBuy" inputmode="decimal" value="0.05" min="0"></label></div>
+   <div><label class="small">Logo URL (optional)<input id="launchImage" placeholder="https://..."></label></div>
+  </div>
+  <div class="qx-launch-checks">
+   <span>â Immutable token authority</span><span>â Real on-chain curve</span><span>â Creator fee configured</span><span>â DAMM v2 graduation path</span>
+  </div>
+  <button id="launchTokenBtn" class="btn primary" type="button">Connect wallet & launch on Solana</button>
+  <div id="launchStatus" class="swap-status">Launch engine readyingâ¦</div>
+ </section>
+ <section id="launchResult" class="panel" style="display:none">
+  <div class="tag">ON-CHAIN LAUNCH CREATED</div>
+  <h3 id="launchResultTitle">Token launched</h3>
+  <div class="detail-stats">
+   <div class="detail-stat"><small>Token Mint</small><strong id="launchMint">-</strong></div>
+   <div class="detail-stat"><small>DBC Pool</small><strong id="launchPool">-</strong></div>
+   <div class="detail-stat"><small>Config</small><strong id="launchConfig">-</strong></div>
+   <div class="detail-stat"><small>Launch progress</small><strong id="launchProgress">0%</strong></div>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+   <a id="launchMintLink" class="btn" target="_blank" rel="noopener">Open mint on Solscan</a>
+   <a id="launchPoolLink" class="btn" target="_blank" rel="noopener">Open pool on Solscan</a>
+  </div>
+ </section>
+</main>
+
 <main id="marketsPage" class="page active">
  <div class="market-heading"><h2>Solana Markets</h2><span class="tag">LIVE MARKET</span></div>
  <div class="market-layout">
@@ -533,7 +579,7 @@ body.qx-token-open #getQuoteBtn{display:none!important}
     </div>
     <div class="qx-swap-purchase">
      <div class="percent-panel qx-pay-card" id="percentPanel">
-      <div class="qx-swap-label"><span id="qxPayLabel">YOU PAY</span><span id="qxSolUsd">SOL/USD: Ã¢ÂÂ</span></div>
+      <div class="qx-swap-label"><span id="qxPayLabel">YOU PAY</span><span id="qxSolUsd">SOL/USD: ÃÂ¢ÃÂÃÂ</span></div>
       <div class="qx-swap-value"><input id="tradeAmountInput" type="number" min="0" step="any" inputmode="decimal" placeholder="0.00" aria-label="Trade amount"><span class="qx-swap-coin" id="tradeAmountSymbol">SOL</span></div>
       <div class="percent-available" id="percentAvailable">Available balance: -</div><span id="percentAmount" hidden></span>
       <div class="percent-buttons"><button class="percent-btn" data-percent="25">25%</button><button class="percent-btn" data-percent="50">50%</button><button class="percent-btn" data-percent="75">75%</button><button class="percent-btn" data-percent="100">MAX</button></div>
@@ -607,6 +653,10 @@ body.qx-token-open #getQuoteBtn{display:none!important}
   <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="15" rx="3"/><path d="M3 9h18M16 14h2"/></svg><span>Wallet</span>
  </button>
  <button class="nav-btn" data-page="createPage" aria-label="Create Token">
+  <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M3 12h18"/></svg>
+  <span>Launch</span>
+ </button>
+ <button class="nav-btn" data-page="createPage" aria-label="Create Token">
   <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v16M4 12h16"/><circle cx="12" cy="12" r="9"/></svg><span>Create Token</span>
  </button>
  <button class="nav-btn active" data-page="marketsPage" aria-label="Markets">
@@ -619,24 +669,24 @@ body.qx-token-open #getQuoteBtn{display:none!important}
 
 <div class="qx-wp-modal" id="qxWhitePaperModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="qxWpTitle">
  <section class="qx-wp-panel">
-  <header class="qx-wp-head"><div><strong id="qxWpTitle">QX EXCHANGE | WHITE PAPER</strong><small>Version 1.0 ÃÂ· November 2026</small></div><button class="qx-wp-close" type="button" id="qxCloseWhitePaper" aria-label="Close">ÃÂ</button></header>
+  <header class="qx-wp-head"><div><strong id="qxWpTitle">QX EXCHANGE | WHITE PAPER</strong><small>Version 1.0 ÃÂÃÂ· November 2026</small></div><button class="qx-wp-close" type="button" id="qxCloseWhitePaper" aria-label="Close">ÃÂÃÂ</button></header>
   <article class="qx-wp-content">
-   <div class="qx-wp-kicker">QX EXCHANGE</div><h1>A Solana-focused digital asset platform</h1><p class="qx-wp-sub">WHITE PAPER ÃÂ· Vision ÃÂ· Platform Overview ÃÂ· Product Framework ÃÂ· Roadmap</p>
+   <div class="qx-wp-kicker">QX EXCHANGE</div><h1>A Solana-focused digital asset platform</h1><p class="qx-wp-sub">WHITE PAPER ÃÂÃÂ· Vision ÃÂÃÂ· Platform Overview ÃÂÃÂ· Product Framework ÃÂÃÂ· Roadmap</p>
    <p class="qx-wp-note">This document describes the QX Exchange platform concept, its intended product direction, and areas of ongoing development. It is informational and is not an offer to sell securities or financial products.</p>
    <h2>Important Notice</h2><p>This white paper is provided for general informational purposes only. It describes the QX Exchange project and its intended direction as understood at the time of publication. Product capabilities, integrations, availability, fees, supported assets, and timelines may change as development progresses.</p><p>References to planned capabilities are forward-looking and should not be interpreted as confirmation that those capabilities are currently live, complete, audited, or available to every user. Users should independently assess the risks of digital assets, blockchain transactions, smart contracts, wallet connections, and third-party services.</p><p>QX Exchange does not promise investment returns, token appreciation, trading profits, or uninterrupted service. Nothing in this document constitutes financial, investment, legal, or tax advice. Access to digital-asset services may be restricted by applicable laws and regulations.</p>
    <h2>Contents</h2><ol><li>Executive Summary</li><li>Vision and Mission</li><li>The Opportunity</li><li>Platform Overview</li><li>Core Product Areas</li><li>User Experience and Wallet Connectivity</li><li>Fees and Potential Revenue Model</li><li>Security, Risk and Transparency</li><li>Development Roadmap</li><li>Long-Term Direction</li><li>Disclaimer</li></ol>
    <h2>1. Executive Summary</h2><p>QX Exchange is a digital-asset platform focused on the Solana ecosystem. Its product direction brings key on-chain activities into one accessible experience: discovering Solana-based tokens, reviewing market information, connecting compatible wallets, swapping supported assets, and creating tokens through an in-platform workflow.</p><p>The project aims to reduce friction between discovering a digital asset and taking an on-chain action. Rather than treating market discovery, token creation, and swapping as disconnected tasks, QX is being developed around a unified interface designed to make these activities easier to navigate.</p><p>QX is a developing platform. Availability and completeness of individual functions depend on implementation, external integrations, network conditions, and ongoing testing. This paper distinguishes the product direction from features that may still be under development.</p>
    <h2>2. Vision and Mission</h2><h3>Vision</h3><p>To build a clear, accessible gateway to the Solana digital-asset ecosystem, bringing discovery, token creation, and on-chain exchange experiences together in one platform.</p><h3>Mission</h3><p>To simplify common on-chain workflows through an approachable interface, transparent information, wallet-based user control, and a product experience that can evolve with the Solana ecosystem.</p><h3>Product principles</h3><ul><li><b>Clarity:</b> present asset and transaction information in a way users can understand.</li><li><b>User control:</b> wallet-based interactions should keep signing authority with the user's wallet.</li><li><b>Focused scope:</b> prioritize Solana ecosystem assets and integrations.</li><li><b>Transparency:</b> distinguish confirmed functionality from planned features and disclose relevant fees and third-party dependencies.</li></ul>
-   <h2>3. The Opportunity</h2><p>The digital-asset ecosystem can be difficult to navigate, particularly for users moving between token discovery, market data, wallet connections, swaps, and token creation tools. Each step may involve a different interface, provider, or technical process.</p><p>QX is designed around the opportunity to make these steps feel more connected. A unified interface can help users move from discovering a Solana token to reviewing its available information and, where supported, initiating an on-chain swap. A token-creation workflow can also make selected creation steps more approachable for users who want to launch a token on Solana.</p><p>This opportunity exists in a competitive and rapidly changing market. QX's ability to earn user trust will depend on reliability, accurate data, clear disclosures, security practices, and a useful experienceÃ¢ÂÂnot simply on the number of listed assets or advertised features.</p>
+   <h2>3. The Opportunity</h2><p>The digital-asset ecosystem can be difficult to navigate, particularly for users moving between token discovery, market data, wallet connections, swaps, and token creation tools. Each step may involve a different interface, provider, or technical process.</p><p>QX is designed around the opportunity to make these steps feel more connected. A unified interface can help users move from discovering a Solana token to reviewing its available information and, where supported, initiating an on-chain swap. A token-creation workflow can also make selected creation steps more approachable for users who want to launch a token on Solana.</p><p>This opportunity exists in a competitive and rapidly changing market. QX's ability to earn user trust will depend on reliability, accurate data, clear disclosures, security practices, and a useful experienceÃÂ¢ÃÂÃÂnot simply on the number of listed assets or advertised features.</p>
    <h2>4. Platform Overview</h2><p>QX Exchange is positioned as a Solana-focused, wallet-connected platform. It is not described in this document as a centralized exchange, broker, custodian, or bank. Users should verify the transaction details displayed by their wallet before signing any on-chain transaction.</p><ul><li><b>Market discovery:</b> browse and search supported Solana ecosystem assets, with market information and sorting or filtering tools where data is available.</li><li><b>Swap experience:</b> access supported token swaps through integrated routing or liquidity infrastructure, subject to provider availability and transaction conditions.</li><li><b>Token creation:</b> use an in-platform workflow intended to guide users through creating a token on Solana. Creation costs, required wallet approvals, metadata handling, and final on-chain results should be shown clearly.</li><li><b>Advertising:</b> provide a dedicated area for promotional placements, subject to the platform's publication rules, payment verification, and operational controls.</li></ul>
    <h2>5. Core Product Areas</h2><h3>5.1 Solana market discovery</h3><p>The market experience is intended to help users explore Solana-based tokens through search, categories, sorting, and asset information. Data quality is essential: token identity should be based on reliable identifiers such as mint addresses and network information, not symbol or name alone. Market data may depend on external providers and can be delayed, incomplete, or unavailable.</p><h3>5.2 Token swapping</h3><p>The swap interface is intended to let users select assets, enter an amount, review a quoted route, and submit a transaction through a connected wallet. Quotes, routes, price impact, slippage, network fees, liquidity, and execution outcomes can change between quote and confirmation. A displayed quote is not a guarantee of execution.</p><h3>5.3 Token creation</h3><p>QX includes an intended in-platform token-creation workflow for the Solana network. Token creators remain responsible for choosing accurate token details, understanding the permissions and supply configuration they approve, and complying with applicable requirements. Token creation does not guarantee liquidity, exchange listings, market demand, or value.</p><h3>5.4 Advertising</h3><p>A dedicated advertising area is part of the platform direction. A robust advertising flow should clearly state placement terms, pricing, campaign duration, eligibility, payment status, and publication status. Advertisements should not be presented as endorsements or investment recommendations. Any payment and verification workflow must be confirmed operational before being described as live.</p>
    <h2>6. User Experience and Wallet Connectivity</h2><p>The platform is intended to provide a responsive experience across desktop and mobile devices. Wallet connectivity is central to the user journey because wallet software is used to authorize transactions. QX should clearly identify the connected network and wallet address, request only necessary permissions, and display transaction details before the user signs.</p><p>Wallet connection does not mean QX has custody of a user's private keys or assets. Users should never share seed phrases or private keys with the platform. Compatibility may vary by wallet, browser, device, and provider integration.</p>
    <h2>7. Fees and Potential Revenue Model</h2><p>Potential revenue sources may include clearly disclosed swap-related fees where supported by the relevant integration, paid advertising placements, and optional services associated with platform tools. The availability and structure of each revenue stream depend on provider terms, technical configuration, user disclosure, and applicable law.</p><p>Any fee must be shown in a clear and understandable manner before the user commits to a transaction or purchase. Referral or integrator programs operated by third parties may have their own eligibility, settlement, token-account, and claiming requirements. Participation in such a program should not be represented as guaranteed revenue.</p><p>QX does not promise a particular revenue level, trading volume, advertising demand, or commercial outcome.</p>
    <h2>8. Security, Risk and Transparency</h2><p>Digital-asset activity involves substantial risks. Token prices can be volatile; liquidity can be limited; smart contracts and third-party services can contain vulnerabilities; transactions may be irreversible; and network congestion or provider outages may affect execution.</p><p>Security and trust should be treated as ongoing responsibilities. Important practices include:</p><ul><li>Use established wallet connection standards and keep integrations updated.</li><li>Never request or store users' seed phrases or private keys.</li><li>Validate token identity using network and mint-address data.</li><li>Display transaction amounts, routes, fees, and relevant risk information before signing.</li><li>Monitor dependencies, investigate incidents, and communicate material service issues.</li><li>Commission independent security reviews where appropriate and publish the scope and status accurately.</li></ul><p>This document does not claim that the entire platform or every integration has undergone an independent security audit. Users should conduct their own due diligence and interact only with the official QX website and verified channels.</p>
-   <h2>9. Development Roadmap</h2><p>The roadmap below describes development priorities, not guaranteed delivery dates. Priorities and sequencing may change in response to testing, security reviews, provider dependencies, user feedback, and regulatory considerations.</p><h3>Phase 1 Ã¢ÂÂ Core experience</h3><ul><li>Improve the Solana-focused market interface, search, filtering, and asset identification.</li><li>Stabilize wallet connectivity and the swap transaction journey.</li><li>Improve mobile responsiveness, accessibility, and language presentation.</li></ul><h3>Phase 2 Ã¢ÂÂ Platform utility</h3><ul><li>Refine the token-creation workflow and make its costs and configuration steps clearer.</li><li>Improve transaction history, favorites, notifications, and token information where reliable data sources are available.</li><li>Complete advertising controls, payment verification, and campaign-status handling before representing them as fully operational.</li></ul><h3>Phase 3 Ã¢ÂÂ Reliability and ecosystem growth</h3><ul><li>Expand monitoring, operational support, and incident-response processes.</li><li>Evaluate additional Solana ecosystem integrations based on security, reliability, and user value.</li><li>Explore partnerships and further product capabilities after validating demand and operational readiness.</li></ul>
+   <h2>9. Development Roadmap</h2><p>The roadmap below describes development priorities, not guaranteed delivery dates. Priorities and sequencing may change in response to testing, security reviews, provider dependencies, user feedback, and regulatory considerations.</p><h3>Phase 1 ÃÂ¢ÃÂÃÂ Core experience</h3><ul><li>Improve the Solana-focused market interface, search, filtering, and asset identification.</li><li>Stabilize wallet connectivity and the swap transaction journey.</li><li>Improve mobile responsiveness, accessibility, and language presentation.</li></ul><h3>Phase 2 ÃÂ¢ÃÂÃÂ Platform utility</h3><ul><li>Refine the token-creation workflow and make its costs and configuration steps clearer.</li><li>Improve transaction history, favorites, notifications, and token information where reliable data sources are available.</li><li>Complete advertising controls, payment verification, and campaign-status handling before representing them as fully operational.</li></ul><h3>Phase 3 ÃÂ¢ÃÂÃÂ Reliability and ecosystem growth</h3><ul><li>Expand monitoring, operational support, and incident-response processes.</li><li>Evaluate additional Solana ecosystem integrations based on security, reliability, and user value.</li><li>Explore partnerships and further product capabilities after validating demand and operational readiness.</li></ul>
    <h2>10. Long-Term Direction</h2><p>QX aims to develop into a recognizable access point for useful Solana ecosystem activities. Long-term progress will be measured by product reliability, user confidence, quality of information, responsible integrations, and the ability to deliver practical tools that solve real user needs.</p><p>The project may evaluate additional features over time, but any expansion should preserve the platform's core principles: user control, clear disclosures, network-specific accuracy, and honest communication about what is available.</p>
    <h2>11. Disclaimer</h2><p>This white paper is not an offer, solicitation, or recommendation to buy or sell any digital asset, security, or financial instrument. It does not create any contractual rights, guarantees, or obligations. The information is provided as a project overview and may be updated without notice.</p><p>Digital assets and blockchain transactions are high risk and may not be suitable for all users. Users are responsible for understanding the technology, verifying addresses and transaction details, assessing counterparties and token projects, and determining their own legal, tax, and regulatory obligations.</p><p>Third-party wallets, protocols, market-data providers, routing services, and blockchain infrastructure are independent services. Their availability, policies, fees, and performance are outside QX's direct control. QX makes no guarantee that any third-party service will remain available or operate without interruption.</p><p>All product descriptions should be read as subject to ongoing development and verification. No statement in this document should be interpreted as a promise of future performance, investment return, token value, liquidity, listing, or commercial success.</p>
-   <h2>Project website</h2><p><a href="https://jhsmj5d6tc-cmd.github.io/qx-exchange/" target="_blank" rel="noopener noreferrer" style="color:#d9b8ff">QX Exchange</a></p><p class="qx-wp-sub">End of document ÃÂ· QX EXCHANGE | WHITE PAPER</p>
+   <h2>Project website</h2><p><a href="https://jhsmj5d6tc-cmd.github.io/qx-exchange/" target="_blank" rel="noopener noreferrer" style="color:#d9b8ff">QX Exchange</a></p><p class="qx-wp-sub">End of document ÃÂÃÂ· QX EXCHANGE | WHITE PAPER</p>
   </article>
  </section>
 </div>
@@ -823,7 +873,7 @@ const qxLibraryReady = (async()=>{
 const $=id=>document.getElementById(id);
 const PROJECT_ID="bd6faec63fbd0865f57da576a550ef09";
 const SOL="So11111111111111111111111111111111111111112";
-// QX token-creation fee: 0.30 SOL, paid atomically with SPL mint creation.
+// QX token-creation fee: 0.30 SOL. The legacy creator flow pays it as a separate on-chain transfer.
 const QX_TOKEN_FEE_RECIPIENT="E4x2DiVVDuVQHSUGgzTPjJMDbiJ6jCRwpEvsvAd31Qs4";
 const QX_TOKEN_FEE_LAMPORTS=300000000;
 const USDC="EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
@@ -930,7 +980,7 @@ function qxApplyLanguage(){
  const duration=$("adDuration");if(duration){const labels=ar?["\u0633\u0627\u0639\u0629 \u0648\u0627\u062D\u062F\u0629 \u2014 $49.99","3 \u0633\u0627\u0639\u0627\u062A \u2014 $99.99","9 \u0633\u0627\u0639\u0627\u062A \u2014 $179.99","24 \u0633\u0627\u0639\u0629 \u2014 $299.99","3 \u0623\u064A\u0627\u0645 \u2014 $599.99"]:["1 hour \u2014 $49.99","3 hours \u2014 $99.99","9 hours \u2014 $179.99","24 hours \u2014 $299.99","3 days \u2014 $599.99"];Array.from(duration.options).forEach((o,i)=>o.textContent=labels[i]);}
  const walletStatus=$("walletStatus");if(walletStatus&&!connected)walletStatus.textContent=ar?"\u0627\u0631\u0628\u0637 \u0645\u062D\u0641\u0638\u062A\u0643 \u0644\u0639\u0631\u0636 \u0627\u0644\u0623\u0635\u0648\u0644.":"Connect your wallet to view assets.";
  const adStatus=$("adStatus");if(adStatus&&!adStatus.textContent.trim())adStatus.textContent="";
- document.querySelectorAll(".nav-btn").forEach(b=>{const id=b.dataset.page;const span=b.querySelector("span");if(span)span.textContent=id==="walletPage"?L.wallet:id==="createPage"?L.create:id==="marketsPage"?L.markets:L.ads;b.setAttribute("aria-label",span?.textContent||"");});
+ document.querySelectorAll(".nav-btn").forEach(b=>{const id=b.dataset.page;const span=b.querySelector("span");if(span)span.textContent=id==="walletPage"?L.wallet:id==="createPage"?L.create:id==="launchPage"?(ar?"Ø¥Ø·ÙØ§Ù QX":"Launch"):id==="marketsPage"?L.markets:L.ads;b.setAttribute("aria-label",span?.textContent||"");});
  const nav=document.querySelector(".bottom-nav");if(nav)nav.setAttribute("aria-label",ar?"\u0627\u0644\u062A\u0646\u0642\u0644 \u0627\u0644\u0631\u0626\u064A\u0633\u064A":"Main navigation");
  const footer=document.querySelector("footer");if(footer)footer.textContent=ar?"QX Exchange | \u0633\u0648\u0644\u0627\u0646\u0627":"QX Exchange | Solana";
  document.querySelector(".ads-shell")?.setAttribute("aria-label",ar?"\u0627\u0644\u0625\u0639\u0644\u0627\u0646\u0627\u062A \u0627\u0644\u0645\u0645\u0648\u0644\u0629":"Sponsored advertisements");
@@ -1111,6 +1161,28 @@ async function connectQXWallet(){
 // The early wrapper above remains the public wallet entry point.
 window.QXConnectWallet=window.QXConnectWallet||(()=>connectQXWallet());
 window.QXGetWalletState=()=>({connected:!!connected,address:walletAddress||""});
+
+// QX REAL LAUNCH ENGINE â Meteora Dynamic Bonding Curve on Solana Mainnet.
+// This is not a simulator: every launch/swap below builds a transaction against the
+// published Meteora DBC mainnet program and asks the connected wallet to sign it.
+let qxDbc=null, qxDbcReady=null, qxDbcError="";
+qxDbcReady=(async()=>{
+  try{
+    const [sdk,bnmod]=await Promise.all([
+      import("https://esm.sh/@meteora-ag/dynamic-bonding-curve-sdk@2.0.0?target=es2022&bundle"),
+      import("https://esm.sh/bn.js@5.2.2?target=es2022&bundle")
+    ]);
+    qxDbc={...sdk,BN:bnmod.default||bnmod.BN||bnmod};
+    if(!qxDbc.DynamicBondingCurveClient||!qxDbc.buildCurveWithMarketCap||!qxDbc.TokenType||!qxDbc.TokenDecimal||!qxDbc.MigrationOption){
+      throw new Error("QX launch SDK loaded without the required DBC exports.");
+    }
+    return qxDbc;
+  }catch(e){
+    qxDbcError=e?.message||String(e);
+    console.error("QX DBC SDK load failed:",e);
+    throw new Error("QX real launch engine could not load: "+qxDbcError);
+  }
+})();
 
 const qxWalletReady=qxLibraryReady.then(async()=>{
  try{
@@ -1441,6 +1513,10 @@ function parseTokenUnits(value,decimals){
  if(raw<=0n||raw>18446744073709551615n)throw new Error("Supply must be greater than zero and fit the SPL token limit.");
  return raw;
 }
+async function qxGetHealthyConnection(){
+ for(const endpoint of RPCS){try{const c=new Connection(endpoint,"confirmed");await c.getLatestBlockhash("confirmed");return c;}catch(_){}}
+ throw new Error("No Solana RPC endpoint is reachable from this browser.");
+}
 async function createQXToken(){
  const button=$("createTokenBtn"),status=$("createTokenStatus"),resultBox=$("createdTokenResult");
  if(button.disabled)return;
@@ -1453,7 +1529,7 @@ async function createQXToken(){
   if(!/^[A-Z0-9]{2,10}$/.test(symbol))throw new Error("Symbol must be 2-10 letters or numbers.");
   const socials={website:qxOptionalUrl("tokenWebsite","Website"),x:qxOptionalUrl("tokenX","X / Twitter"),telegram:qxOptionalUrl("tokenTelegram","Telegram"),discord:qxOptionalUrl("tokenDiscord","Discord"),instagram:qxOptionalUrl("tokenInstagram","Instagram")};
   if(!connected||!walletAddress){await appKit?.open();throw new Error("Choose your Solana wallet in the connection window, then tap Create Token again.");}
-  const owner=new PublicKey(walletAddress),connection=new Connection(RPCS[0],"confirmed"),signer=getActiveWalletProvider();
+  const owner=new PublicKey(walletAddress),connection=await qxGetHealthyConnection(),signer=getActiveWalletProvider();
   if(typeof signer?.signTransaction!=="function")throw new Error("The connected Solana wallet did not provide transaction signing. Reconnect your wallet and try again.");
   button.disabled=true;button.textContent="Preparing token transaction...";resultBox.style.display="none";
   const mint=Keypair.generate(),lamports=await connection.getMinimumBalanceForRentExemption(MINT_SIZE);
@@ -1467,7 +1543,7 @@ async function createQXToken(){
    createMintToInstruction(mint.publicKey,ata,owner,supply,[],TOKEN_PROGRAM_ID)
   );
   createTx.partialSign(mint);
-  status.textContent="Step 1 of 2: review and approve the token creation transaction in Phantom. This transaction creates the mint and initial supply; network fees and rent apply.";
+  status.textContent="Step 1 of 2: review and approve the token creation transaction in your Solana wallet. This transaction creates the mint and initial supply; network fees and rent apply.";
   const signedCreate=await signer.signTransaction(createTx);
   const createSignature=await connection.sendRawTransaction(signedCreate.serialize(),{skipPreflight:false,preflightCommitment:"confirmed"});
   status.textContent="Token transaction sent. Waiting for Solana confirmation...";
@@ -1476,7 +1552,7 @@ async function createQXToken(){
   const mintAddress=mint.publicKey.toBase58();
   const tokenRecord={name,symbol,decimals,mint:mintAddress,owner:walletAddress,signature:createSignature,feeSol:0.30,feeRecipient:QX_TOKEN_FEE_RECIPIENT,feeStatus:"pending",image:qxTokenImageData||"",socials,createdAt:Date.now()};
   const saved=JSON.parse(localStorage.getItem("qxCreatedTokens")||"[]");saved.unshift(tokenRecord);localStorage.setItem("qxCreatedTokens",JSON.stringify(saved.slice(0,20)));
-  status.textContent="Token created successfully. Step 2 of 2: Phantom will now show a separate, clearly identified 0.30 SOL QX creation-fee transfer. Approve it only if the recipient and amount shown are correct.";
+  status.textContent="Token created successfully. Step 2 of 2: your Solana wallet will now show a separate, clearly identified 0.30 SOL QX creation-fee transfer. Approve it only if the recipient and amount shown are correct.";
   button.textContent="Pay QX creation fee";
   // The fee is a separate wallet request so the wallet can inspect it independently from mint creation.
   try{
@@ -1506,6 +1582,93 @@ async function createQXToken(){
  }finally{button.disabled=false;}
 }
 $("createTokenBtn").addEventListener("click",createQXToken);
+
+
+/* QX REAL LAUNCH ENGINE */
+function qxLaunchLamports(sol){
+ const n=Number(sol); if(!Number.isFinite(n)||n<0)throw new Error("Enter a valid SOL amount.");
+ return BigInt(Math.round(n*1e9));
+}
+function qxLaunchUnits(value,decimals){return parseTokenUnits(value,decimals);}
+function qxDataUriMetadata(name,symbol,description,image){
+ const meta={name,symbol,description}; if(image)meta.image=image;
+ return "data:application/json,"+encodeURIComponent(JSON.stringify(meta));
+}
+async function qxSendWalletTx(tx,signer,connection,extraSigners=[]){
+ for(const kp of extraSigners)tx.partialSign(kp);
+ const signed=await signer.signTransaction(tx);
+ const sig=await connection.sendRawTransaction(signed.serialize(),{skipPreflight:false,preflightCommitment:"confirmed"});
+ const bh=tx.recentBlockhash;
+ // The transaction object has the blockhash used to build it; confirm with the same blockhash.
+ const conf=await connection.confirmTransaction({signature:sig,blockhash:bh,lastValidBlockHeight:tx.lastValidBlockHeight},"confirmed");
+ if(conf.value?.err)throw new Error("On-chain transaction failed: "+JSON.stringify(conf.value.err));
+ return sig;
+}
+async function qxLaunchToken(){
+ const btn=$("launchTokenBtn"),status=$("launchStatus"),result=$("launchResult");
+ if(!btn||btn.disabled)return;
+ try{
+  btn.disabled=true;result.style.display="none";
+  status.textContent="Loading the QX real launch engineâ¦";
+  await qxLibraryReady;
+  const dbc=await qxDbcReady;
+  if(!connected||!walletAddress){await appKit?.open();throw new Error("Connect a Solana wallet first, then launch again.");}
+  const signer=getActiveWalletProvider();
+  if(typeof signer?.signTransaction!=="function")throw new Error("The connected wallet does not expose transaction signing. Reconnect it and try again.");
+  const name=$("launchName").value.trim(),symbol=$("launchSymbol").value.trim().toUpperCase();
+  const decimals=Number($("launchDecimals").value),supply=qxLaunchUnits($("launchSupply").value,decimals);
+  const initialMc=Number($("launchInitialMc").value),migrationMc=Number($("launchMigrationMc").value),firstBuy=Number($("launchFirstBuy").value);
+  if(!name||name.length>32)throw new Error("Enter a token name (1-32 characters).");
+  if(!/^[A-Z0-9]{2,10}$/.test(symbol))throw new Error("Symbol must be 2-10 letters or numbers.");
+  if(decimals<6||decimals>9)throw new Error("QX launch decimals must be between 6 and 9.");
+  if(!Number.isFinite(initialMc)||initialMc<=0||!Number.isFinite(migrationMc)||migrationMc<=initialMc)throw new Error("Graduation market cap must be greater than the initial market cap.");
+  if(!Number.isFinite(firstBuy)||firstBuy<0)throw new Error("Enter a valid first-buy amount.");
+  const image=qxOptionalUrl("launchImage","Logo URL");
+  const connection=await qxGetHealthyConnection(),payer=new PublicKey(walletAddress);
+  const client=new dbc.DynamicBondingCurveClient(connection,"confirmed");
+  const BN=dbc.BN;
+  const baseMint=Keypair.generate(),config=Keypair.generate();
+  const curve=dbc.buildCurveWithMarketCap({
+   token:{tokenType:dbc.TokenType.SPLToken,tokenBaseDecimal:decimals,tokenQuoteDecimal:9,tokenAuthorityOption:dbc.TokenAuthorityOption.Immutable,totalTokenSupply:Number($("launchSupply").value),leftover:0},
+   fee:{baseFeeParams:{baseFeeMode:dbc.BaseFeeMode.FeeSchedulerLinear,feeSchedulerParam:{startingFeeBps:100,endingFeeBps:100,numberOfPeriod:0,totalDuration:0}},dynamicFeeEnabled:true,collectFeeMode:dbc.CollectFeeMode.QuoteToken,creatorTradingFeePercentage:50,poolCreationFee:0,enableFirstSwapWithMinFee:true},
+   migration:{migrationOption:dbc.MigrationOption.MET_DAMM_V2,migrationFeeOption:dbc.MigrationFeeOption.Customizable,migrationFee:{feePercentage:0,creatorFeePercentage:0},migratedPoolFee:{collectFeeMode:dbc.MigratedCollectFeeMode.QuoteToken,dynamicFee:dbc.DammV2DynamicFeeMode.Enabled,poolFeeBps:120}},
+   liquidityDistribution:{partnerLiquidityPercentage:0,partnerPermanentLockedLiquidityPercentage:0,creatorLiquidityPercentage:90,creatorPermanentLockedLiquidityPercentage:10},
+   lockedVesting:{totalLockedVestingAmount:0,numberOfVestingPeriod:0,cliffUnlockAmount:0,totalVestingDuration:0,cliffDurationFromMigrationTime:0},
+   activationType:dbc.ActivationType.Timestamp,
+   initialMarketCap:initialMc,migrationMarketCap:migrationMc
+  });
+  const uri=qxDataUriMetadata(name,symbol,"Launched on QX Exchange via a real Solana Dynamic Bonding Curve.",image);
+  const amountIn=firstBuy>0?await dbc.prepareSwapAmountParam(firstBuy, new PublicKey(SOL), connection):new BN(0);
+  let firstBuyParam=undefined;
+  if(firstBuy>0){
+   const simulated=client.pool.getQuoteFromInputAmount({config:curve,swapBaseForQuote:false,amountIn,swapMode:dbc.SwapMode.ExactIn,slippageBps:100,hasReferral:false,eligibleForFirstSwapWithMinFee:true});
+   firstBuyParam={buyer:payer,receiver:payer,buyAmount:amountIn,minimumAmountOut:simulated.minimumAmountOut,referralTokenAccount:null};
+  }
+  status.textContent="Step 1/2: signing the real QX launch configuration transactionâ¦";
+  const pair=await client.partner.createConfigAndPoolWithFirstBuy({payer,config:config.publicKey,feeClaimer:payer,leftoverReceiver:payer,quoteMint:new PublicKey(SOL),...curve,preCreatePoolParam:{baseMint:baseMint.publicKey,name,symbol,uri,poolCreator:payer},firstBuyParam});
+  const configTx=pair.createConfigTx;
+  const configBlock=await connection.getLatestBlockhash("confirmed");configTx.recentBlockhash=configBlock.blockhash;configTx.lastValidBlockHeight=configBlock.lastValidBlockHeight;configTx.feePayer=payer;
+  const configSig=await qxSendWalletTx(configTx,signer,connection,[config]);
+  status.textContent="Step 2/2: signing the real pool creation + first-buy transactionâ¦";
+  const poolTx=pair.createPoolWithFirstBuyTx;
+  const poolBlock=await connection.getLatestBlockhash("confirmed");poolTx.recentBlockhash=poolBlock.blockhash;poolTx.lastValidBlockHeight=poolBlock.lastValidBlockHeight;poolTx.feePayer=payer;
+  poolTx.add(SystemProgram.transfer({fromPubkey:payer,toPubkey:new PublicKey(QX_TOKEN_FEE_RECIPIENT),lamports:QX_TOKEN_FEE_LAMPORTS}));
+  const poolSig=await qxSendWalletTx(poolTx,signer,connection,[baseMint]);
+  const poolState=await client.state.getPoolByBaseMint(baseMint.publicKey);
+  const poolAddress=poolState?.publicKey?.toBase58?.()||poolState?.address?.toBase58?.()||"";
+  const record={name,symbol,decimals,mint:baseMint.publicKey.toBase58(),config:config.publicKey.toBase58(),pool:poolAddress,configSignature:configSig,poolSignature:poolSig,creator:walletAddress,createdAt:Date.now(),launchEngine:"Meteora DBC Mainnet",migrationMarketCap:migrationMc};
+  const saved=JSON.parse(localStorage.getItem("qxRealLaunches")||"[]");saved.unshift(record);localStorage.setItem("qxRealLaunches",JSON.stringify(saved.slice(0,20)));
+  $("launchMint").textContent=record.mint;$("launchConfig").textContent=record.config;$("launchPool").textContent=record.pool||"Loading from chainâ¦";$("launchResultTitle").textContent=name+" ("+symbol+") launched on QX";
+  $("launchMintLink").href="https://solscan.io/token/"+encodeURIComponent(record.mint);
+  $("launchPoolLink").href=record.pool?"https://solscan.io/account/"+encodeURIComponent(record.pool):"https://solscan.io/tx/"+encodeURIComponent(poolSig);
+  $("launchProgress").textContent="Live Â· 0%";result.style.display="block";
+  status.textContent="QX launch confirmed on Solana Mainnet. Mint, config, pool and first buy are on-chain.";
+  btn.textContent="Launch another token";
+ }catch(e){
+  console.error("QX real launch:",e);status.textContent=e?.message||"Real launch failed. No launch success is recorded.";btn.textContent="Connect wallet & launch on Solana";
+ }finally{btn.disabled=false;}
+}
+$("launchTokenBtn")?.addEventListener("click",qxLaunchToken);
 
 /* MARKET DATA */
 function bestPairsByMint(input,includeSol=false){
@@ -1984,8 +2147,8 @@ function updateIndicativeEstimate(){
  const paySymbol=tradeDirection==="buy"?"SOL":(selectedToken?.baseToken?.symbol||"TOKEN");
  const receiveSymbol=tradeDirection==="buy"?(selectedToken?.baseToken?.symbol||"TOKEN"):"SOL";
  const ar=document.documentElement.lang==="ar"||document.documentElement.dir==="rtl";
- if($("qxSolUsd"))$("qxSolUsd").textContent="SOL/USD: "+(solUsd>0?"$"+solUsd.toLocaleString("en-US",{maximumFractionDigits:4}):"Ã¢ÂÂ");
- if($("qxLivePrice"))$("qxLivePrice").textContent=(ar?"\u0633\u0639\u0631 SOL \u0627\u0644\u0645\u0628\u0627\u0634\u0631: ":"Live SOL price: ")+(solUsd>0?"$"+solUsd.toLocaleString("en-US",{maximumFractionDigits:4}):"Ã¢ÂÂ");
+ if($("qxSolUsd"))$("qxSolUsd").textContent="SOL/USD: "+(solUsd>0?"$"+solUsd.toLocaleString("en-US",{maximumFractionDigits:4}):"ÃÂ¢ÃÂÃÂ");
+ if($("qxLivePrice"))$("qxLivePrice").textContent=(ar?"\u0633\u0639\u0631 SOL \u0627\u0644\u0645\u0628\u0627\u0634\u0631: ":"Live SOL price: ")+(solUsd>0?"$"+solUsd.toLocaleString("en-US",{maximumFractionDigits:4}):"ÃÂ¢ÃÂÃÂ");
  if($("tradeAmountSymbol"))$("tradeAmountSymbol").textContent=paySymbol;
  if($("qxReceiveSymbol"))$("qxReceiveSymbol").textContent=receiveSymbol;
  if($("qxPayLabel"))$("qxPayLabel").textContent=ar?"\u0623\u0646\u062A \u062A\u062F\u0641\u0639":"YOU PAY";
