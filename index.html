@@ -767,27 +767,97 @@ header{
 }
 </style>
 
+
+<style id="qx-v43-clean-menu">
+/* QX v43 — clean hamburger menu */
+#qxMainMenu .qx-menu-settings{
+  order:999!important;
+  width:100%!important;
+  margin:4px 0 0!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  display:grid!important;
+  grid-template-columns:1fr 1fr!important;
+  gap:8px!important;
+}
+#qxMainMenu .qx-menu-settings label{
+  margin:0!important;
+  padding:0!important;
+  min-width:0!important;
+}
+#qxMainMenu .qx-menu-settings label > select{
+  height:44px!important;
+  min-height:44px!important;
+  width:100%!important;
+  padding:0 12px!important;
+  border:1px solid rgba(255,255,255,.09)!important;
+  border-radius:12px!important;
+  background:rgba(255,255,255,.045)!important;
+  color:rgba(255,255,255,.92)!important;
+  font-size:12px!important;
+  font-weight:700!important;
+  box-shadow:none!important;
+}
+#qxMainMenu .qx-menu-settings label > select:focus{
+  border-color:rgba(168,107,255,.55)!important;
+  outline:none!important;
+}
+#qxMainMenu .qx-menu-settings label > span{
+  display:none!important;
+}
+/* Wallet popover must not contain duplicate settings */
+#qxWalletPop #qxWalletLanguageMenu,
+#qxWalletPop #qxWalletCurrencyMenu,
+#qxWalletPop label[for="qxWalletLanguageMenu"],
+#qxWalletPop label[for="qxWalletCurrencyMenu"]{
+  display:none!important;
+}
+@media(max-width:720px){
+  #qxMainMenu .qx-menu-settings{grid-template-columns:1fr 1fr!important}
+  #qxMainMenu .qx-menu-settings label > select{height:42px!important;min-height:42px!important}
+}
+</style>
+
+
+<style id="qx-v43-logo">
+.qx-premium-logo-v43{
+  width:54px!important;height:42px!important;min-width:54px!important;
+  display:flex!important;align-items:center!important;justify-content:center!important;
+}
+.qx-premium-logo-v43 svg{
+  width:54px!important;height:40px!important;display:block!important;
+}
+.qx-premium-logo-v43:hover{filter:drop-shadow(0 0 12px rgba(155,91,255,.35))!important}
+@media(max-width:720px){
+  .qx-premium-logo-v43{width:44px!important;height:38px!important;min-width:44px!important}
+  .qx-premium-logo-v43 svg{width:44px!important;height:36px!important}
+}
+</style>
+
 </head>
 <body>
 <div class="wrap">
 <header>
  <a class="brand-lockup" href="#walletPage" aria-label="QX Exchange home">
-  <span class="brand-mark qx-premium-logo" role="img" aria-label="QX logo">
+  <span class="brand-mark qx-premium-logo-v43" role="img" aria-label="QX logo">
    <svg viewBox="0 0 72 48" aria-hidden="true" focusable="false">
     <defs>
-      <linearGradient id="qxPremiumGradient" x1="5" y1="5" x2="67" y2="43" gradientUnits="userSpaceOnUse">
-        <stop stop-color="#E7D7FF"/><stop offset=".42" stop-color="#A86BFF"/><stop offset="1" stop-color="#38F0B5"/>
+      <linearGradient id="qxV43" x1="8" y1="8" x2="64" y2="40" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="#B879FF"/>
+        <stop offset=".55" stop-color="#8A55FF"/>
+        <stop offset="1" stop-color="#38E6B0"/>
       </linearGradient>
-      <filter id="qxPremiumGlow" x="-50%" y="-50%" width="200%" height="200%">
-        <feGaussianBlur stdDeviation="2.2" result="blur"/>
-        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-      </filter>
     </defs>
-    <path d="M8 24c0-10 7-18 18-18s18 8 18 18-7 18-18 18S8 34 8 24Z"
-          fill="none" stroke="url(#qxPremiumGradient)" stroke-width="4" filter="url(#qxPremiumGlow)"/>
-    <path d="M20 15.5 35 32.5" stroke="#F7F4FF" stroke-width="4.2" stroke-linecap="round"/>
-    <path d="M43 8.5 64 39.5M53 9 64 27" stroke="#39EFB6" stroke-width="3.8" stroke-linecap="round"/>
-    <path d="M43 9h10M53 9v10" stroke="#B978FF" stroke-width="3.2" stroke-linecap="round"/>
+    <!-- Clean Q -->
+    <path d="M8 24c0-9.7 6.9-17 16.4-17S40.8 14.3 40.8 24 34 41 24.4 41 8 33.7 8 24Z"
+          fill="none" stroke="url(#qxV43)" stroke-width="4.2"/>
+    <path d="M26 29.5 39.5 43" fill="none" stroke="#F7F3FF" stroke-width="4.1" stroke-linecap="round"/>
+    <!-- X -->
+    <path d="M43 10 63 38" fill="none" stroke="#F7F3FF" stroke-width="4.2" stroke-linecap="round"/>
+    <path d="M63 10 43 38" fill="none" stroke="#39E7B0" stroke-width="4.2" stroke-linecap="round"/>
+    <path d="M43 10h9M63 10h-9" fill="none" stroke="#A96CFF" stroke-width="2.5" stroke-linecap="round"/>
    </svg>
   </span>
   <span class="brand-copy"><span class="brand-name">QX <b>EXCHANGE</b></span><span class="brand-tagline">GLOBAL CRYPTO EXCHANGE</span></span>
@@ -810,46 +880,8 @@ header{
  <div class="qx-menu-head"><div><strong>QX</strong><small>Global navigation</small>
 <div class="qx-menu-settings" data-menu-order="last" id="qxMenuSettingsV40">
   <div>
-    <label for="qxMenuLanguageV40">Language</label>
-    <select id="qxMenuLanguageV40" aria-label="Language"></select>
-  </div>
-  <div>
-    <label for="qxMenuCurrencyV40">Currency</label>
-    <select id="qxMenuCurrencyV40" aria-label="Currency"></select>
-  </div>
-</div>
-</div><button class="qx-menu-close" id="qxMenuClose" type="button" aria-label="Close">×</button></div>
- <div class="qx-menu-section">
-  <div class="qx-menu-section-title">TRADE &amp; DISCOVER</div>
-  <button class="qx-menu-item" data-qx-nav="marketsPage" type="button"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h17M7 15l4-4 3 2 6-7"></path></svg><div><strong>Markets</strong><span>Live Solana markets and token discovery</span></div></button>
-  <button class="qx-menu-item" data-qx-nav="exchangePage" type="button"><svg viewBox="0 0 24 24"><path d="M7 7h10l-3-3m3 3-3 3M17 17H7l3 3m-3-3 3-3"></path></svg><div><strong>Trade</strong><span>Spot trading and QX exchange terminal</span></div></button>
-  <button class="qx-menu-item" data-qx-nav="walletPage" type="button"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="15" rx="3"></rect><path d="M3 9h18M16 14h2"></path></svg><div><strong>My Wallet</strong><span>Assets, balance and wallet activity</span></div></button>
- </div>
- <div class="qx-menu-divider"></div>
- <div class="qx-menu-section">
-  <div class="qx-menu-section-title">CREATE &amp; GROW</div>
-  <button class="qx-menu-item" data-qx-nav="createPage" type="button"><svg viewBox="0 0 24 24"><path d="M12 4v16M4 12h16"></path><circle cx="12" cy="12" r="9"></circle></svg><div><strong>Create Token</strong><span>Create an SPL token from your wallet</span></div></button>
-  <button class="qx-menu-item" data-qx-nav="launchPage" type="button"><svg viewBox="0 0 24 24"><path d="m12 3 2.7 5.5L21 9.4l-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.4l6.3-.9L12 3Z"></path></svg><div><strong>Launch</strong><span>Launch a live Solana token market</span></div></button>
-  <button class="qx-menu-item" data-qx-nav="creatorPage" type="button"><svg viewBox="0 0 24 24"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM4 21a8 8 0 0 1 16 0"></path></svg><div><strong>Creator</strong><span>Creator tools and token activity</span></div></button>
-  <button class="qx-menu-item" data-qx-nav="adsPage" type="button"><svg viewBox="0 0 24 24"><path d="M3 10v4h4l10 5V5L7 10H3Z"></path><path d="m7 14 2 6h4l-2-4M20 9l2-2M20 15l2 2"></path></svg><div><strong>Advertisements</strong><span>Promote a project through QX</span></div></button>
- </div>
- <div class="qx-menu-divider"></div>
- <div class="qx-menu-section">
-  <div class="qx-menu-section-title">ACCOUNT</div>
-  <button class="qx-menu-item" data-qx-nav="walletPage" type="button"><svg viewBox="0 0 24 24"><path d="M6 3h12v18H6zM9 7h6M9 11h6M9 15h4"></path></svg><div><strong>Activity</strong><span>View available wallet activity and records</span></div></button>
-  <button class="qx-menu-item" id="qxMenuWhitePaper" type="button"><svg viewBox="0 0 24 24"><path d="M6 3h12v18H6zM9 8h6M9 12h6M9 16h4"></path></svg><div><strong>White Paper</strong><span>Read the current QX project document</span></div></button>
- </div>
-</div>
-
-<div class="qx-wallet-pop" id="qxWalletPop" aria-hidden="true">
- <div class="qx-wallet-status"><strong id="qxWalletPopTitle">Wallet</strong><span id="qxWalletPopAddress">Not connected</span></div>
- <button class="qx-menu-item" id="qxWalletConnectItem" type="button"><svg viewBox="0 0 24 24"><path d="M8 12h8M13 7l5 5-5 5M18 5h2v14h-2"></path></svg><div><strong id="qxWalletConnectLabel">Connect Wallet</strong><span>Choose your compatible Solana wallet</span></div></button>
- <button class="qx-menu-item" data-qx-nav="walletPage" type="button"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="15" rx="3"></rect><path d="M3 9h18M16 14h2"></path></svg><div><strong>My Wallet</strong><span>Balances and assets</span></div></button>
- <button class="qx-menu-item" id="qxWalletRefreshItem" type="button"><svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0 2 5"></path><path d="M20 4v7h-7"></path></svg><div><strong>Refresh Balance</strong><span>Reload on-chain balances</span></div></button>
- <div class="qx-menu-divider"></div>
- <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:6px 8px 3px">
-  <label class="small" style="font-size:8px">Language<select id="qxWalletLanguageMenu" style="display:block;width:100%;margin-top:5px;background:#090711;color:#fff;border:1px solid #3b2c4d;border-radius:8px;padding:8px"></select></label>
-  <label class="small" style="font-size:8px">Currency<select id="qxWalletCurrencyMenu" style="display:block;width:100%;margin-top:5px;background:#090711;color:#fff;border:1px solid #3b2c4d;border-radius:8px;padding:8px"></select></label>
+    
+  
  </div>
 </div>
 
@@ -3516,11 +3548,11 @@ window.addEventListener("QXWalletConnected",()=>setTimeout(qxCexEnsure,100));
 
   function syncMenu(){
     const lang=current();
-    ["qxMenuLanguageV40","qxWalletLanguageMenu","qxLanguage"].forEach(id=>{
+    ["qxMenuLanguageV40","qxLanguage"].forEach(id=>{
       const el=document.getElementById(id);if(el)el.value=lang;
     });
     const c=localStorage.getItem("qxCurrency")||window.qxCurrency||"USD";
-    ["qxMenuCurrencyV40","qxWalletCurrencyMenu","qxCurrency"].forEach(id=>{
+    ["qxMenuCurrencyV40","qxCurrency"].forEach(id=>{
       const el=document.getElementById(id);if(el)el.value=c;
     });
   }
@@ -3551,12 +3583,12 @@ window.addEventListener("QXWalletConnected",()=>setTimeout(qxCexEnsure,100));
   });
 
   document.addEventListener("change",e=>{
-    if(["qxLanguage","qxMenuLanguageV40","qxWalletLanguageMenu"].includes(e.target?.id)){
+    if(["qxLanguage","qxMenuLanguageV40"].includes(e.target?.id)){
       localStorage.setItem("qxLanguage",e.target.value);
       window.qxLanguage=e.target.value;
       setTimeout(applyGlobal,30);
     }
-    if(["qxCurrency","qxMenuCurrencyV40","qxWalletCurrencyMenu"].includes(e.target?.id)){
+    if(["qxCurrency","qxMenuCurrencyV40"].includes(e.target?.id)){
       localStorage.setItem("qxCurrency",e.target.value);
       window.qxCurrency=e.target.value;
     }
