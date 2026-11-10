@@ -454,6 +454,112 @@ body.qx-menu-open{overflow:hidden}
 .bottom-nav{display:none!important}
 @media(max-width:560px){header{padding:10px 10px}.qx-top-btn{height:38px;padding:0 10px}.qx-top-btn .qx-wallet-label{display:none}.qx-main-menu,.qx-wallet-pop{top:62px;right:10px;width:calc(100vw - 20px)}html[dir="rtl"] .qx-main-menu,html[dir="rtl"] .qx-wallet-pop{right:auto;left:10px}.brand-tagline{display:none}}
 </style>
+
+<style id="qx-premium-header-v40">
+:root{
+  --qx-v40-top-h:78px;
+}
+.qx-header,.qx-topbar,.topbar,header{
+  position:relative;
+}
+.qx-top-actions{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:10px!important;
+  height:100%!important;
+  margin:0!important;
+  padding:0!important;
+  align-self:center!important;
+}
+.qx-top-actions .qx-top-btn{
+  height:44px!important;
+  min-height:44px!important;
+  margin:0!important;
+  padding:0 15px!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  vertical-align:middle!important;
+  transform:none!important;
+  line-height:1!important;
+  border-radius:13px!important;
+}
+.qx-top-actions .qx-top-btn svg{
+  width:17px!important;height:17px!important;flex:0 0 17px!important;
+}
+.qx-connect-top-btn,.qx-wallet-btn{
+  font-weight:700!important;
+  letter-spacing:.01em!important;
+  white-space:nowrap!important;
+}
+.qx-connect-top-btn{min-width:145px!important}
+.qx-wallet-btn{min-width:108px!important}
+#qxMenuTopBtn{
+  width:44px!important;min-width:44px!important;padding:0!important;
+  border-color:rgba(255,255,255,.16)!important;
+}
+.qx-menu-panel{
+  border:1px solid rgba(255,255,255,.13)!important;
+  background:linear-gradient(180deg,rgba(15,14,22,.98),rgba(8,8,13,.99))!important;
+  box-shadow:0 24px 90px rgba(0,0,0,.58),0 0 50px rgba(125,78,255,.08)!important;
+  border-radius:20px!important;
+  overflow:hidden!important;
+}
+.qx-menu-panel .qx-menu-head{
+  padding:18px 20px!important;
+  border-bottom:1px solid rgba(255,255,255,.08)!important;
+}
+.qx-menu-panel .qx-menu-grid{
+  padding:14px!important;
+  display:grid!important;
+  gap:8px!important;
+}
+.qx-menu-panel .qx-menu-item{
+  min-height:48px!important;
+  border-radius:12px!important;
+  border:1px solid transparent!important;
+  transition:.18s ease!important;
+}
+.qx-menu-panel .qx-menu-item:hover{
+  transform:translateX(2px);
+  border-color:rgba(151,105,255,.25)!important;
+  background:rgba(124,76,255,.09)!important;
+}
+.qx-menu-panel .qx-menu-footer{
+  border-top:1px solid rgba(255,255,255,.08)!important;
+  padding:14px 18px!important;
+}
+.qx-menu-settings{
+  display:grid!important;
+  grid-template-columns:1fr 1fr!important;
+  gap:10px!important;
+  padding:14px 16px!important;
+  border-top:1px solid rgba(255,255,255,.07)!important;
+}
+.qx-menu-settings label{
+  display:block!important;
+  font-size:10px!important;
+  text-transform:uppercase!important;
+  letter-spacing:.12em!important;
+  opacity:.55!important;
+  margin-bottom:6px!important;
+}
+.qx-menu-settings select{
+  width:100%!important;
+  height:40px!important;
+  border-radius:10px!important;
+}
+@media(max-width:720px){
+  .qx-top-actions{gap:6px!important}
+  .qx-top-actions .qx-top-btn{height:40px!important;min-height:40px!important;padding:0 10px!important;border-radius:11px!important}
+  .qx-connect-top-btn{min-width:0!important}
+  .qx-connect-top-btn span{font-size:10px!important}
+  .qx-wallet-btn{min-width:0!important}
+  #qxMenuTopBtn{width:40px!important;min-width:40px!important}
+  .qx-menu-settings{grid-template-columns:1fr!important}
+}
+</style>
 </head>
 <body>
 <div class="wrap">
@@ -484,7 +590,18 @@ body.qx-menu-open{overflow:hidden}
 
 <div class="qx-menu-backdrop" id="qxMenuBackdrop"></div>
 <div class="qx-main-menu" id="qxMainMenu" aria-hidden="true">
- <div class="qx-menu-head"><div><strong>QX</strong><small>Global navigation</small></div><button class="qx-menu-close" id="qxMenuClose" type="button" aria-label="Close">×</button></div>
+ <div class="qx-menu-head"><div><strong>QX</strong><small>Global navigation</small>
+<div class="qx-menu-settings" id="qxMenuSettingsV40">
+  <div>
+    <label for="qxMenuLanguageV40">Language</label>
+    <select id="qxMenuLanguageV40" aria-label="Language"></select>
+  </div>
+  <div>
+    <label for="qxMenuCurrencyV40">Currency</label>
+    <select id="qxMenuCurrencyV40" aria-label="Currency"></select>
+  </div>
+</div>
+</div><button class="qx-menu-close" id="qxMenuClose" type="button" aria-label="Close">×</button></div>
  <div class="qx-menu-section">
   <div class="qx-menu-section-title">TRADE &amp; DISCOVER</div>
   <button class="qx-menu-item" data-qx-nav="marketsPage" type="button"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h17M7 15l4-4 3 2 6-7"></path></svg><div><strong>Markets</strong><span>Live Solana markets and token discovery</span></div></button>
@@ -521,7 +638,7 @@ body.qx-menu-open{overflow:hidden}
 
 <main id="walletPage" class="page">
  <div class="hero">
-  <div class="qx-wallet-controls" aria-label="Wallet settings" style="display:none!important;">
+  <div class="qx-wallet-controls" aria-label="Wallet settings" style="display:none!important;" style="display:none!important;">
    <div class="qx-global-settings">
     <label class="small" for="qxLanguage">Language / &#x627;&#x644;&#x644;&#x63A;&#x629;</label>
     <select id="qxLanguage" aria-label="Language / &#x627;&#x644;&#x644;&#x63A;&#x629;"><option value="en">English (EN)</option><option value="ar">&#x627;&#x644;&#x639;&#x631;&#x628;&#x64A;&#x629; (AR)</option></select>
@@ -842,90 +959,89 @@ body.qx-menu-open{overflow:hidden}
 <script>
 (function(){
 "use strict";
-function qxCloseAll(){
- document.getElementById("qxMainMenu")?.classList.remove("open");
- document.getElementById("qxWalletPop")?.classList.remove("open");
- document.getElementById("qxMenuBackdrop")?.classList.remove("open");
- document.body.classList.remove("qx-menu-open");
- document.getElementById("qxMenuTopBtn")?.setAttribute("aria-expanded","false");
- document.getElementById("qxWalletTopBtn")?.setAttribute("aria-expanded","false");
+const $=s=>document.querySelector(s);
+function closeAll(){
+  $("#qxMainMenu")?.classList.remove("open");
+  $("#qxWalletPop")?.classList.remove("open");
+  $("#qxMenuBackdrop")?.classList.remove("open");
+  document.body.classList.remove("qx-menu-open");
+  $("#qxMenuTopBtn")?.setAttribute("aria-expanded","false");
+  $("#qxWalletTopBtn")?.setAttribute("aria-expanded","false");
 }
-function qxOpenMenu(){
- qxCloseAll();
- document.getElementById("qxMainMenu")?.classList.add("open");
- document.getElementById("qxMenuBackdrop")?.classList.add("open");
- document.body.classList.add("qx-menu-open");
- document.getElementById("qxMenuTopBtn")?.setAttribute("aria-expanded","true");
+function openMenu(){
+  closeAll();
+  $("#qxMainMenu")?.classList.add("open");
+  $("#qxMenuBackdrop")?.classList.add("open");
+  document.body.classList.add("qx-menu-open");
+  $("#qxMenuTopBtn")?.setAttribute("aria-expanded","true");
+  syncMenuSettings();
 }
-function qxSyncWalletTop(){
- const address=window.walletAddress||document.getElementById("walletAddress")?.textContent?.trim()||"";
- const connected=!!address;
- const label=document.getElementById("qxTopConnectLabel");
- const btn=document.getElementById("qxTopConnectBtn");
- if(label)label.textContent=connected ? address.slice(0,4)+"…"+address.slice(-4) : "Connect Wallet";
- if(btn)btn.classList.toggle("connected",connected);
- const pop=document.getElementById("qxWalletPopAddress");
- if(pop)pop.textContent=connected?address:"Not connected";
- const popLabel=document.getElementById("qxWalletConnectLabel");
- if(popLabel)popLabel.textContent=connected?"Wallet Connected":"Connect Wallet";
+function openWallet(){
+  closeAll();
+  $("#qxWalletPop")?.classList.add("open");
+  $("#qxMenuBackdrop")?.classList.add("open");
+  document.body.classList.add("qx-menu-open");
+  $("#qxWalletTopBtn")?.setAttribute("aria-expanded","true");
+  syncWallet();
 }
-function qxOpenWallet(){
- qxCloseAll();
- document.getElementById("qxWalletPop")?.classList.add("open");
- document.getElementById("qxMenuBackdrop")?.classList.add("open");
- document.body.classList.add("qx-menu-open");
- document.getElementById("qxWalletTopBtn")?.setAttribute("aria-expanded","true");
- qxSyncWalletTop();
+function connect(){
+  closeAll();
+  const b=$("#connectBtn");
+  if(b){b.click();return;}
+  if(typeof window.QXConnectWallet==="function"){
+    Promise.resolve(window.QXConnectWallet()).catch(console.error);
+  }
 }
-function qxConnect(){
- qxCloseAll();
- const b=document.getElementById("connectBtn");
- if(b){b.click();return;}
- if(typeof window.QXConnectWallet==="function"){
-   Promise.resolve(window.QXConnectWallet()).catch(e=>console.error("QX wallet connect:",e));
- }
+function syncWallet(){
+  const a=window.walletAddress||$("#walletAddress")?.textContent?.trim()||"";
+  const connected=!!a;
+  const label=$("#qxTopConnectLabel");
+  const btn=$("#qxTopConnectBtn");
+  if(label) label.textContent=connected?a.slice(0,4)+"…"+a.slice(-4):"Connect Wallet";
+  if(btn) btn.classList.toggle("connected",connected);
+  if($("#qxWalletPopAddress")) $("#qxWalletPopAddress").textContent=connected?a:"Not connected";
+  if($("#qxWalletConnectLabel")) $("#qxWalletConnectLabel").textContent=connected?"Wallet Connected":"Connect Wallet";
 }
-function qxNav(id){
- const target=document.getElementById(id);
- if(!target)return;
- if(typeof window.showPage==="function")window.showPage(id);
- else document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active",p.id===id));
- qxCloseAll();
- if(id==="exchangePage"&&typeof window.QXExchangeTerminalOpen==="function"){
-   try{window.QXExchangeTerminalOpen();}catch(e){}
- }
- window.scrollTo({top:0,behavior:"smooth"});
+function syncMenuSettings(){
+  const l=$("#qxLanguage"),c=$("#qxCurrency"),lm=$("#qxMenuLanguageV40"),cm=$("#qxMenuCurrencyV40");
+  if(l&&lm){
+    if(!lm.options.length) lm.innerHTML=l.innerHTML;
+    lm.value=l.value;
+  }
+  if(c&&cm){
+    if(!cm.options.length) cm.innerHTML=c.innerHTML;
+    cm.value=c.value;
+  }
+}
+function nav(id){
+  const t=$("#"+id); if(!t)return;
+  if(typeof window.showPage==="function") window.showPage(id);
+  else document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active",p.id===id));
+  closeAll();
+  window.scrollTo({top:0,behavior:"smooth"});
 }
 document.addEventListener("DOMContentLoaded",()=>{
- document.getElementById("qxMenuTopBtn")?.addEventListener("click",qxOpenMenu);
- document.getElementById("qxWalletTopBtn")?.addEventListener("click",qxOpenWallet);
- document.getElementById("qxTopConnectBtn")?.addEventListener("click",qxConnect);
- document.getElementById("qxMenuClose")?.addEventListener("click",qxCloseAll);
- document.getElementById("qxMenuBackdrop")?.addEventListener("click",qxCloseAll);
-
- document.addEventListener("click",e=>{
-   const nav=e.target.closest("[data-qx-nav]");
-   if(nav){e.preventDefault();e.stopPropagation();qxNav(nav.dataset.qxNav);return;}
-   if(e.target.closest("#qxWalletConnectItem")){e.preventDefault();e.stopPropagation();qxConnect();return;}
-   if(e.target.closest("#qxWalletRefreshItem")){e.preventDefault();e.stopPropagation();qxCloseAll();document.getElementById("refreshBtn")?.click();return;}
-   if(e.target.closest("#qxMenuWhitePaper")){e.preventDefault();e.stopPropagation();qxCloseAll();document.getElementById("qxOpenWhitePaper")?.click();return;}
- });
-
- const lang=document.getElementById("qxLanguage"),cur=document.getElementById("qxCurrency");
- const lm=document.getElementById("qxWalletLanguageMenu"),cm=document.getElementById("qxWalletCurrencyMenu");
- if(lang&&lm){
-   lm.innerHTML=lang.innerHTML;lm.value=lang.value;
-   lm.addEventListener("change",()=>{lang.value=lm.value;lang.dispatchEvent(new Event("change",{bubbles:true}));});
- }
- if(cur&&cm){
-   cm.innerHTML=cur.innerHTML;cm.value=cur.value;
-   cm.addEventListener("change",()=>{cur.value=cm.value;cur.dispatchEvent(new Event("change",{bubbles:true}));});
- }
- window.addEventListener("QXWalletConnected",qxSyncWalletTop);
- window.addEventListener("QXWalletDisconnected",qxSyncWalletTop);
- setTimeout(qxSyncWalletTop,300);
- setTimeout(qxSyncWalletTop,1500);
- document.addEventListener("keydown",e=>{if(e.key==="Escape")qxCloseAll();});
+  $("#qxMenuTopBtn")?.addEventListener("click",openMenu);
+  $("#qxWalletTopBtn")?.addEventListener("click",openWallet);
+  $("#qxTopConnectBtn")?.addEventListener("click",connect);
+  $("#qxMenuClose")?.addEventListener("click",closeAll);
+  $("#qxMenuBackdrop")?.addEventListener("click",closeAll);
+  document.addEventListener("click",e=>{
+    const n=e.target.closest("[data-qx-nav]");
+    if(n){e.preventDefault();nav(n.dataset.qxNav);return;}
+    if(e.target.closest("#qxWalletConnectItem")){e.preventDefault();connect();return;}
+    if(e.target.closest("#qxWalletRefreshItem")){e.preventDefault();closeAll();$("#refreshBtn")?.click();return;}
+  });
+  $("#qxMenuLanguageV40")?.addEventListener("change",e=>{
+    const l=$("#qxLanguage"); if(l){l.value=e.target.value;l.dispatchEvent(new Event("change",{bubbles:true}));}
+  });
+  $("#qxMenuCurrencyV40")?.addEventListener("change",e=>{
+    const c=$("#qxCurrency"); if(c){c.value=e.target.value;c.dispatchEvent(new Event("change",{bubbles:true}));}
+  });
+  window.addEventListener("QXWalletConnected",syncWallet);
+  window.addEventListener("QXWalletDisconnected",syncWallet);
+  setTimeout(syncWallet,300);setTimeout(syncWallet,1500);setTimeout(syncMenuSettings,500);
+  document.addEventListener("keydown",e=>{if(e.key==="Escape")closeAll();});
 });
 })();
 </script></script>
