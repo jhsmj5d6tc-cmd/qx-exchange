@@ -2192,74 +2192,70 @@ $("marketTabs").addEventListener("click",event=>{const button=event.target.close
 async function searchMarket(){const query=$("search").value.trim();if(!query){renderMarket();return;}$("tokenResults").innerHTML='<div class="market-empty">Searching live Solana markets…</div>';try{let results=await qxFetchDexSearch(query);if(!results.length){const data=await getJSON(QX_CMC_BASE+"/v1/dex/search?platform=sol&q="+encodeURIComponent(query)+"&limit=100&sort=volume_24h",12000,2);const raw=Array.isArray(data?.data?.tks)?data.data.tks:[];results=raw.map(t=>({chainId:"solana",pairAddress:String(t?.pu||""),baseToken:{address:String(t?.addr||""),name:cleanTokenText(t?.n||"Unknown Token"),symbol:cleanTokenText(t?.s||"TOKEN")},priceUsd:String(t?.p||0),priceChange:{h24:qxNum(t?.pc24h)},volume:{h24:qxNum(t?.v24h)},liquidity:{usd:qxNum(t?.liq)},marketCap:qxNum(t?.mc),fdv:qxNum(t?.fdv),txns:{h24:{buys:0,sells:0}},info:{imageUrl:qxSafeUrl(t?.lg||"")},dexId:"coinmarketcap"})).filter(p=>qxIsValidSolanaMint(p.baseToken.address)&&!qxLooksLikeFakeNative(p));}const meta=await qxFetchJupiterMeta();window.QXPreviousMarketPairs=allPairs;allPairs=bestPairsByMint(qxMergeJupiterMeta(results,meta));currentCategory="all";document.querySelectorAll(".market-tab").forEach(t=>t.classList.toggle("active",t.dataset.category==="all"));renderMarket();}catch(e){console.warn("QX Solana search",e);$("tokenResults").innerHTML='<div class="market-empty">Solana search is temporarily unavailable. Try again shortly.</div>';}}
 $("searchBtn").onclick=searchMarket;$("search").onkeydown=e=>{if(e.key==="Enter")searchMarket();};$("search").oninput=()=>{if(!$("search").value.trim()){if(Array.isArray(window.QXPreviousMarketPairs)){allPairs=window.QXPreviousMarketPairs;delete window.QXPreviousMarketPairs;}renderMarket();}};
 async function qxFetchMarketUniverse(){
- const first=await qxFetchCmcPairs(1);
- const primary=first.pairs;const total=qxNum(first.status?.total_count);
- const starts=[];for(let start=1+QX_CMC_PAGE_SIZE;start<=QX_CMC_PAGE_SIZE*QX_CMC_PAGES;start+=QX_CMC_PAGE_SIZE)starts.push(start);
- const rest=[];for(let i=0;i<starts.length;i+=3){const batch=starts.slice(i,i+3).map(start=>qxFetchCmcPairs(start));const rs=await Promise.allSettled(batch);for(let j=0;j<rs.length;j++){if(rs[j].status==='fulfilled')rest.push(...(rs[j].value?.pairs||[]));else console.warn('QX CMC page failed',starts[i+j],rs[j].reason);}}
- let gecko=[],geckoNew=[];
- try{
-  const jobs=[];
-  for(let page=1;page<=8;page++){
-   jobs.push(qxFetchGecko('/pools?page='+page+'&include=base_token'));
-   jobs.push(qxFetchGecko('/trending_pools?page='+page+'&include=base_token'));
-  }
-  const g=await Promise.allSettled(jobs);
-  for(let i=0;i<g.length;i++){if(g[i].status==='fulfilled')gecko.push(...(g[i].value||[]));}
-  /* New pools are fetched separately and more gently to avoid rate-limit bursts. */
-  for(let page=1;page<=12;page++){
-   try{const fresh=await qxFetchGecko('/new_pools?page='+page+'&include=base_token');geckoNew.push(...fresh||[]);}
-   catch(e){console.warn('QX Gecko new_pools page failed',page,e);if(page>=3)break;}
-  }
- }catch(e){console.warn('QX Gecko enrichment unavailable',e);}
+ const terms=["solana","bonk","wif","jup","ray","pump","meme","dog","cat","ai","pepe","trump","samo","popcat","goat","grass","render","pyth","orca","meteora","degen","moon","frog"];
+ let gecko=[],dex=[];
+ const jobs=[];
+ for(let page=1;page<=10;page++)jobs.push(qxFetchGecko('/pools?page='+page+'&include=base_token'));
+ for(let page=1;page<=6;page++)jobs.push(qxFetchGecko('/trending_pools?page='+page+'&include=base_token'));
+ const g=await Promise.allSettled(jobs);
+ for(const r of g)if(r.status==='fulfilled')gecko.push(...(r.value||[]));
+ const d=await Promise.allSettled(terms.map(q=>qxFetchDexSearch(q)));
+ for(const r of d)if(r.status==='fulfilled')dex.push(...(r.value||[]));
  let meta=new Map();try{meta=await qxFetchJupiterMeta();}catch(e){console.warn('QX Jupiter enrichment unavailable',e);}
- const cmcUniverse=bestPairsByMint(qxMergeMarketSources(primary.concat(rest),gecko));
- const merged=qxMergeJupiterMeta(cmcUniverse,meta);
- const fresh=bestPairsByMint(qxMergeJupiterMeta(geckoNew,meta));
- const recentCmc=merged.filter(p=>{const t=qxNum(p?.pairCreatedAt);return t>0&&t>Date.now()-30*86400000;});
- const newUniverse=bestPairsByMint(fresh.concat(recentCmc));
- return {pairs:merged,gecko:bestPairsByMint(gecko),newPairs:newUniverse,cmcTotal:total};
+ const merged=bestPairsByMint(qxMergeMarketSources(gecko,dex));
+ const withMeta=bestPairsByMint(qxMergeJupiterMeta(merged,meta));
+ await qxEnrichDexTokenMetadata(withMeta);
+ const cutoff=Date.now()-30*86400000;
+ const fresh=withMeta.filter(p=>qxNum(p?.pairCreatedAt)>cutoff);
+ return {pairs:withMeta,gecko:withMeta,newPairs:bestPairsByMint(fresh),cmcTotal:withMeta.length};
 }
-function qxUpdateMarketStatus(source,total){qxLastMarketSource=source;const el=$("marketStatus");if(el)el.textContent="Solana-only LIVE market · "+(total||allPairs.length).toLocaleString()+"+ indexed assets · live on-chain DEX data · updated "+new Date().toLocaleTimeString();}
+function qxUpdateMarketStatus(source,total){qxLastMarketSource=source;const el=$("marketStatus");if(el)el.textContent="Solana-only LIVE market · "+(total||allPairs.length).toLocaleString()+" indexed assets · live DEX data · updated "+new Date().toLocaleTimeString();}
 async function qxLoadFallbackUniverse(){
- const out=[];
- try{for(let page=1;page<=10;page++){const g=await qxFetchGecko('/pools?page='+page+'&include=base_token');out.push(...g);if(g.length<20)break;}}catch(e){console.warn("QX Gecko fallback universe failed",e);}
- const terms=["SOL","USDC","USDT","BONK","JUP","RAY","WIF","PUMP","TRUMP","MELANIA","meme","ai"];
- const rs=await Promise.allSettled(terms.map(q=>qxFetchDexSearch(q)));
- out.push(...rs.filter(x=>x.status==="fulfilled").flatMap(x=>x.value||[]));
+ const terms=["solana","bonk","wif","jup","ray","pump","meme","dog","cat","ai","pepe","trump","samo","popcat","goat","grass","pyth","orca","meteora"];
+ const jobs=[];for(let page=1;page<=10;page++)jobs.push(qxFetchGecko('/pools?page='+page+'&include=base_token'));
+ const rs=await Promise.allSettled(jobs.concat(terms.map(q=>qxFetchDexSearch(q))));
+ const out=[];for(const r of rs)if(r.status==='fulfilled')out.push(...(r.value||[]));
  return bestPairsByMint(out);
 }
 async function loadMarket(){
  if(marketBusy)return;marketBusy=true;const generation=++qxMarketGeneration;
  try{
-  if(!allPairs.length){$("tokenResults").innerHTML='<div class="market-empty">Loading live Solana markets…</div>';$("coinCount").textContent="Loading…";}
-  let first;
-  try{first=await qxFetchCmcPairs(1);}catch(e){console.warn("QX CMC primary unavailable",e);first=null;}
-  if(first?.pairs?.length){
-   allPairs=bestPairsByMint(first.pairs);
-   try{const meta=await qxFetchJupiterMeta();allPairs=bestPairsByMint(qxMergeJupiterMeta(allPairs,meta));}catch(e){console.warn("QX initial Jupiter metadata unavailable",e);}
-   await qxEnrichDexTokenMetadata(allPairs);
+  if(!allPairs.length){$("tokenResults").innerHTML='<div class="market-empty">Loading live Solana markets…</div>';$('coinCount').textContent='Loading…';}
+  /* Initial load uses multiple live Solana sources in parallel. CMC is no longer allowed to
+     become the single point of failure, and New Coins never blocks the main market. */
+  const initialJobs=[];
+  for(let page=1;page<=5;page++)initialJobs.push(qxFetchGecko('/pools?page='+page+'&include=base_token'));
+  for(let page=1;page<=3;page++)initialJobs.push(qxFetchGecko('/trending_pools?page='+page+'&include=base_token'));
+  const initialTerms=['solana','bonk','wif','jup','ray','pump','meme','dog','cat','ai','pepe','trump'];
+  initialJobs.push(...initialTerms.map(q=>qxFetchDexSearch(q)));
+  const results=await Promise.allSettled(initialJobs);
+  const raw=[];for(const r of results)if(r.status==='fulfilled')raw.push(...(r.value||[]));
+  let meta=new Map();try{meta=await qxFetchJupiterMeta();}catch(e){console.warn('QX initial Jupiter metadata unavailable',e);}
+  allPairs=bestPairsByMint(qxMergeJupiterMeta(raw,meta));
+  await qxEnrichDexTokenMetadata(allPairs);
+  if(!allPairs.length){const fallback=await qxLoadFallbackUniverse();allPairs=fallback;}
+  if(!allPairs.length)throw new Error('No live Solana market data returned by the public feeds.');
+  /* Render immediately. Do not wait for New Coins. */
+  newPairs=bestPairsByMint(allPairs.filter(p=>qxNum(p?.pairCreatedAt)>Date.now()-30*86400000));
+  trendingPairs=allPairs.slice().sort((a,b)=>(qxNum(b.volume?.h24)+qxNum(b.txns?.h24?.buys)+qxNum(b.txns?.h24?.sells))-(qxNum(a.volume?.h24)+qxNum(a.txns?.h24?.buys)+qxNum(a.txns?.h24?.sells)));
+  window.QXMarketMainReady=true;window.QXMarketLastSuccess=Date.now();
+  qxUpdateMarketStatus('GeckoTerminal + DexScreener + Jupiter',allPairs.length);renderMarket();
+  /* Background enrichment/expansion. It can fail without breaking the visible market. */
+  Promise.resolve().then(async()=>{
    try{
-    const fresh=[];
-    for(let page=1;page<=8;page++){
-     try{fresh.push(...await qxFetchGecko('/new_pools?page='+page+'&include=base_token'));}
-     catch(e){console.warn('QX initial new_pools page failed',page,e);if(page>=3)break;}
-    }
-    newPairs=bestPairsByMint(fresh);
-   }catch(e){console.warn('QX initial New Coins feed failed',e);}
-   if(!newPairs.length)newPairs=bestPairsByMint(allPairs.filter(p=>qxNum(p?.pairCreatedAt)>Date.now()-30*86400000));
-   if(!newPairs.length){
-    try{
-     const recentTerms=['pump','wif','bonk','jup','ray','sol','meme','dog','cat','ai','trump','pepe'];
-     const rs=await Promise.allSettled(recentTerms.map(q=>qxFetchDexSearch(q)));
-     newPairs=bestPairsByMint(rs.filter(x=>x.status==='fulfilled').flatMap(x=>x.value||[]).filter(p=>qxNum(p?.pairCreatedAt)>Date.now()-30*86400000));
-    }catch(e){console.warn('QX New Coins DexScreener fallback failed',e);}
-   }
-   window.QXMarketMainReady=true;window.QXMarketLastSuccess=Date.now();qxUpdateMarketStatus("CoinMarketCap + GeckoTerminal",first.status?.total_count||allPairs.length);renderMarket();}
-  else{const fallback=await qxLoadFallbackUniverse();if(fallback.length){allPairs=fallback;newPairs=bestPairsByMint(fallback.filter(p=>qxNum(p?.pairCreatedAt)>Date.now()-30*86400000));window.QXMarketMainReady=true;window.QXMarketLastSuccess=Date.now();qxUpdateMarketStatus("DexScreener fallback",allPairs.length);renderMarket();}else throw new Error("No live Solana market data returned by the public feeds.");}
-  try{
-   const result=await qxFetchMarketUniverse();if(generation!==qxMarketGeneration)return;if(result.pairs&&result.pairs.length){allPairs=bestPairsByMint(result.pairs);}else if(!allPairs.length){throw new Error("Market enrichment returned no Solana tokens");}newPairs=bestPairsByMint(result.newPairs||[]);if(!newPairs.length)newPairs=bestPairsByMint((result.gecko||[]).filter(p=>qxNum(p?.pairCreatedAt)>0&&p.pairCreatedAt>Date.now()-30*86400000));if(!newPairs.length){try{const terms=['pump','wif','bonk','jup','ray','sol','meme','dog','cat','ai','trump','pepe'];const rs=await Promise.allSettled(terms.map(q=>qxFetchDexSearch(q)));newPairs=bestPairsByMint(rs.filter(x=>x.status==='fulfilled').flatMap(x=>x.value||[]).filter(p=>qxNum(p?.pairCreatedAt)>Date.now()-30*86400000));}catch(e){console.warn('QX final New Coins fallback failed',e);}}trendingPairs=allPairs.slice().sort((a,b)=>(qxNum(b.volume?.h24)+qxNum(b.txns?.h24?.buys)+qxNum(b.txns?.h24?.sells))-(qxNum(a.volume?.h24)+qxNum(a.txns?.h24?.buys)+qxNum(a.txns?.h24?.sells)));window.QXMarketMainReady=true;window.QXMarketLastSuccess=Date.now();qxUpdateMarketStatus("CoinMarketCap + GeckoTerminal + Jupiter",result.cmcTotal||allPairs.length);console.info("QX market loaded",{all:allPairs.length,newCoins:newPairs.length,source:qxLastMarketSource});renderMarket();
-  }catch(enrichError){console.warn("QX background market enrichment failed",enrichError);renderMarket();}
- }catch(e){console.warn("QX Solana market v21",e);window.QXMarketMainReady=false;const st=$("marketStatus"),box=$("tokenResults");if(st)st.textContent="Solana market retrying automatically · "+(e?.message||"temporary error");if(box&&!allPairs.length)box.innerHTML='<div class="market-empty">Live Solana market is temporarily unavailable. Retrying automatically…</div>';}finally{marketBusy=false;}
+    const universe=await qxFetchMarketUniverse();
+    if(generation!==qxMarketGeneration)return;
+    if(universe.pairs?.length)allPairs=bestPairsByMint(universe.pairs);
+    if(universe.newPairs?.length)newPairs=bestPairsByMint(universe.newPairs);
+    trendingPairs=allPairs.slice().sort((a,b)=>(qxNum(b.volume?.h24)+qxNum(b.txns?.h24?.buys)+qxNum(b.txns?.h24?.sells))-(qxNum(a.volume?.h24)+qxNum(a.txns?.h24?.buys)+qxNum(a.txns?.h24?.sells)));
+    qxUpdateMarketStatus('GeckoTerminal + DexScreener + Jupiter',allPairs.length);renderMarket();
+   }catch(e){console.warn('QX background market expansion failed',e);}
+  });
+ }catch(e){
+  console.warn('QX Solana market',e);window.QXMarketMainReady=false;
+  const st=$("marketStatus"),box=$("tokenResults");if(st)st.textContent='Solana market retrying automatically · '+(e?.message||'temporary error');
+  if(box&&!allPairs.length)box.innerHTML='<div class="market-empty">Live Solana market is temporarily unavailable. Retrying automatically…</div>';
+ }finally{marketBusy=false;}
 }
 setInterval(()=>{if(document.visibilityState!=="hidden")loadMarket();},QX_SOLANA_REFRESH_MS);
 // Start the market only after this module has fully completed its top-level awaits.
