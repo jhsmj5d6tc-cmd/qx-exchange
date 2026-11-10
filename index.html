@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#080711">
 <meta name="google-site-verification" content="A5ntuJ6pvvK-Uo8HHA96o5bUPFGOg_70p-Nh_rsZ8NM">
 <title>QX Exchange — REAL Launch v6 PRO</title>
-<meta name="qx-build" content="QX-REAL-v44-HOME-FIX-v6-PRO">
+<meta name="qx-build" content="QX-REAL-v45-HOME-HARD-FIX-v6-PRO">
 
 <style>
 :root{
@@ -874,6 +874,29 @@ body.qx-token-open #marketsPage>.market-heading { display:none !important; }
 })();
 </script>
 
+
+<style id="qx-v45-home-hard-fix">
+/* QX v45 — hard home visibility fix */
+html body .wrap > main.page{display:none !important;visibility:hidden !important;opacity:1 !important;}
+html body .wrap > #marketsPage{display:block !important;visibility:visible !important;opacity:1 !important;position:relative !important;z-index:1 !important;min-height:calc(100vh - 120px) !important;}
+html body .wrap > #marketsPage > *{visibility:visible !important;opacity:1 !important;}
+html body .wrap > #marketsPage .market-layout{display:grid !important;visibility:visible !important;opacity:1 !important;}
+html body .wrap > #marketsPage .market-list-column{display:block !important;visibility:visible !important;opacity:1 !important;}
+html body .wrap > #marketsPage .market-heading{display:flex !important;visibility:visible !important;opacity:1 !important;}
+html body .wrap > #marketsPage .market-tabs{display:flex !important;visibility:visible !important;opacity:1 !important;}
+html body .wrap > #marketsPage .toolbar,
+html body .wrap > #marketsPage .market-meta,
+html body .wrap > #marketsPage .sort-panel,
+html body .wrap > #marketsPage .list{display:block !important;visibility:visible !important;opacity:1 !important;}
+#qxV45HomeHero{display:flex !important;align-items:center !important;justify-content:space-between !important;gap:14px !important;margin:0 0 16px !important;padding:18px !important;border:1px solid rgba(155,108,255,.35) !important;border-radius:18px !important;background:radial-gradient(circle at 90% 0%,rgba(67,242,181,.13),transparent 34%),linear-gradient(145deg,#171027,#0b0914) !important;box-shadow:0 18px 55px rgba(0,0,0,.24) !important;}
+#qxV45HomeHero .qx-v45-title{font-size:21px !important;font-weight:900 !important;color:#fff !important;margin:0 !important;}
+#qxV45HomeHero .qx-v45-sub{font-size:10px !important;color:#b9a9d4 !important;margin-top:6px !important;line-height:1.5 !important;}
+#qxV45HomeHero .qx-v45-actions{display:flex !important;gap:8px !important;flex-wrap:wrap !important;}
+#qxV45HomeHero button{min-height:40px !important;padding:0 13px !important;border:1px solid #56358b !important;border-radius:10px !important;background:#211633 !important;color:#fff !important;font-weight:900 !important;font-size:10px !important;}
+#qxV45HomeHero button.primary{background:#43ffad !important;border-color:#43ffad !important;color:#06150f !important;}
+@media(max-width:560px){#qxV45HomeHero{align-items:flex-start !important;flex-direction:column !important;padding:15px !important;}#qxV45HomeHero .qx-v45-actions{width:100% !important;}#qxV45HomeHero button{flex:1 1 0 !important;min-width:0 !important;}}
+</style>
+
 </head>
 <body>
 <div class="wrap">
@@ -1036,6 +1059,16 @@ body.qx-token-open #marketsPage>.market-heading { display:none !important; }
 </main>
 
 <main id="marketsPage" class="page active">
+ <section id="qxV45HomeHero" aria-label="QX Exchange home">
+  <div>
+   <div class="qx-v45-title">QX Exchange</div>
+   <div class="qx-v45-sub">Solana trading hub · markets, swaps and on-chain tools</div>
+  </div>
+  <div class="qx-v45-actions">
+   <button type="button" class="primary" onclick="showPage('marketsPage')">MARKETS</button>
+   <button type="button" onclick="showPage('createPage')">CREATE TOKEN</button>
+  </div>
+ </section>
  <div class="market-heading"><h2>Solana Markets</h2><span class="tag">MARKET</span></div>
  <div class="market-layout">
   <div class="market-list-column">
@@ -1069,7 +1102,7 @@ body.qx-token-open #marketsPage>.market-heading { display:none !important; }
     <div class="market-row" style="color:var(--muted);font-size:11px"><span>Token</span><span class="right">Price USD</span><span class="right">24h</span></div>
     <div id="tokenResults" class="market-empty">Loading market...</div>
    </div>
-   <p class="market-status" id="marketStatus">Connecting to live market data...</p><p class="small" style="margin-top:-12px">Holder totals require a dedicated Solana indexing API. QX does not display estimated or fabricated holder counts.</p>
+   <p class="market-status" id="marketStatus">Connecting to live market data...</p>
   </div>
 
   <section id="detail" class="panel" style="display:none">
@@ -3646,6 +3679,3 @@ window.addEventListener("QXWalletConnected",()=>setTimeout(qxCexEnsure,100));
   const mo=new MutationObserver(()=>{clearTimeout(window.__qxV42Timer);window.__qxV42Timer=setTimeout(applyGlobal,80);});
   document.addEventListener("DOMContentLoaded",()=>mo.observe(document.body,{childList:true,subtree:true}));
 })();
-</script>
-
-</body>
