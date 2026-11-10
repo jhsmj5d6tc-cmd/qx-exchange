@@ -408,6 +408,16 @@ body.qx-token-open #getQuoteBtn{display:none!important}
 .token-meta span{white-space:nowrap}
 .market-row-rich .coin-logo,.market-row-rich .coin-fallback{width:42px;height:42px}
 @media(max-width:700px){.token-meta{display:none}.market-row-rich .coin-info strong{max-width:150px}.market-row-rich .coin-info small{max-width:170px}.market-row-rich .coin-logo,.market-row-rich .coin-fallback{width:36px;height:36px}}
+
+/* QX REFERRAL PANEL */
+.qx-referral-panel{max-width:720px;margin:14px auto 0;padding:16px;border:1px solid var(--line);border-radius:14px;background:rgba(17,20,31,.72)}
+.qx-referral-panel[hidden]{display:none!important}
+.qx-referral-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.qx-referral-count{font-size:28px;font-weight:800;color:#42f2b5;margin:8px 0}
+.qx-referral-link{width:100%;box-sizing:border-box;margin-top:8px;padding:11px;border:1px solid var(--line);border-radius:9px;background:#0b0e17;color:#e9e5f5;font-size:12px;direction:ltr;text-align:left}
+.qx-referral-status{min-height:18px;margin:8px 0 0}
+.qx-referral-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+
 </style>
 </head>
 <body>
@@ -447,6 +457,13 @@ body.qx-token-open #getQuoteBtn{display:none!important}
   <div class="wallet-badges"><span class="wallet-badge">* SOLANA WALLET</span><span class="small">Live balance</span></div>
   <p class="small" id="walletStatus">Connect your wallet to view assets.</p>
   <div class="wallet-actions"><button class="btn" id="refreshBtn">Refresh</button></div>
+  <section class="qx-referral-panel" id="qxReferralPanel" hidden aria-label="QX referral program">
+   <div class="qx-referral-head"><div><strong id="qxReferralTitle">Invite friends to QX</strong><div class="small" id="qxReferralDescription">Share your personal link. Only wallets referred by you are counted here.</div></div><div><div class="small" id="qxReferralCountLabel">Your referrals</div><div class="qx-referral-count" id="qxReferralCount">—</div></div></div>
+   <label class="small" for="qxReferralLink" id="qxReferralLinkLabel">Your personal referral link</label>
+   <input class="qx-referral-link" id="qxReferralLink" readonly value="" aria-label="Your personal referral link">
+   <div class="qx-referral-actions"><button class="btn primary" id="qxReferralCopyBtn" type="button">Copy referral link</button><button class="btn" id="qxReferralRefreshBtn" type="button">Refresh count</button></div>
+   <p class="small qx-referral-status" id="qxReferralStatus" role="status" aria-live="polite"></p>
+  </section>
  </div>
  <div class="market-heading"><h2>My Assets</h2><span class="tag">ON-CHAIN</span></div>
  <div class="list">
@@ -1202,6 +1219,7 @@ async function setConnectedWallet(provider,address,name="Wallet"){
  $("swapStatus").textContent="Wallet connected. Select a token and request a fresh quote.";
  updateTradePercentUI();
  await loadPortfolio();
+ if(typeof qxReferralOnWalletConnected==="function")await qxReferralOnWalletConnected(provider||activeWalletProvider,address);
 }
 function clearConnectedWallet(message="Wallet disconnected."){
  connected=false;walletAddress="";activeWalletProvider=null;walletSolBalance=0;selectedTokenBalance=0;
@@ -1480,6 +1498,83 @@ const QX_AD_TREASURY="E4x2DiVVDuVQHSUGgzTPjJMDbiJ6jCRwpEvsvAd31Qs4";
 const QX_ADS_SUPABASE_URL="https://qkazosqvnmknnzkukggj.supabase.co";
 const QX_ADS_SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrYXpvc3F2bm1rbnprdWtnZ2oiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTc5MzYzODQ2MSwiZXhwIjoyMTA5MjE0NDYxfQ.HDZyq99QqTo6kFEm5msYF7CbTOj3QSQfW6PohVixpyg";
 const QX_AD_FUNCTION="qx-ads";
+const QX_REFERRAL_FUNCTION="qx-referrals";
+let qxReferralBusy=false;
+let qxReferralLoadedWallet="";
+const qxReferralPanel=document.getElementById("qxReferralPanel");
+const qxReferralStatus=document.getElementById("qxReferralStatus");
+const qxReferralPendingKey="qx_pending_referral_code";
+function qxReferralText(en,ar){return qxLanguage==="ar"?ar:en;}
+function qxReferralSetStatus(en,ar){if(qxReferralStatus)qxReferralStatus.textContent=qxReferralText(en,ar);}
+function qxReferralPendingCode(){
+ try{
+  const params=new URLSearchParams(location.search),fromUrl=(params.get("ref")||"").trim().toUpperCase();
+  if(/^[A-Z0-9]{8,16}$/.test(fromUrl)){localStorage.setItem(qxReferralPendingKey,fromUrl);return fromUrl;}
+  const saved=(localStorage.getItem(qxReferralPendingKey)||"").trim().toUpperCase();
+  return /^[A-Z0-9]{8,16}$/.test(saved)?saved:"";
+ }catch(_){return "";}
+}
+async function qxReferralRequest(payload){
+ const response=await fetch(QX_ADS_SUPABASE_URL+"/functions/v1/"+QX_REFERRAL_FUNCTION,{method:"POST",headers:{"Content-Type":"application/json","apikey":QX_ADS_SUPABASE_ANON_KEY,"Authorization":"Bearer "+QX_ADS_SUPABASE_ANON_KEY},body:JSON.stringify(payload)});
+ const data=await response.json().catch(()=>({}));if(!response.ok||data.error)throw new Error(data.error||"Referral service is temporarily unavailable.");return data;
+}
+function qxReferralProvider(preferred){
+ if(preferred&&typeof preferred.signMessage==="function")return preferred;
+ const injected=getInjectedWallets().find(x=>x.provider.publicKey?.toString()===walletAddress&&typeof x.provider.signMessage==="function");if(injected)return injected.provider;
+ try{const p=appKit?.getWalletProvider?.();if(p&&typeof p.signMessage==="function")return p;}catch(_){}return null;
+}
+function qxReferralSignatureBase64(signature){
+ const bytes=signature?.signature||signature;if(!(bytes instanceof Uint8Array)&&!ArrayBuffer.isView(bytes))throw new Error("The wallet did not return a valid message signature.");
+ const view=new Uint8Array(bytes.buffer,bytes.byteOffset,bytes.byteLength);let binary="";for(let i=0;i<view.length;i++)binary+=String.fromCharCode(view[i]);return btoa(binary);
+}
+async function qxReferralVerify(preferredProvider,referralCode=""){
+ if(!connected||!walletAddress)throw new Error("Connect your Solana wallet first.");if(qxReferralBusy)return;
+ const signer=qxReferralProvider(preferredProvider);if(!signer)throw new Error("This wallet does not support free message signing. Try Phantom or Solflare.");
+ qxReferralBusy=true;const button=document.getElementById("qxReferralBtn");if(button)button.disabled=true;
+ qxReferralSetStatus("Preparing a free wallet verification message…","جارٍ تجهيز رسالة تحقق مجانية للمحفظة…");
+ try{
+  const challenge=await qxReferralRequest({action:"challenge",wallet:walletAddress,referralCode});
+  qxReferralSetStatus("Approve the message signature in your wallet. This is NOT a transaction and transfers no funds.","وافق على توقيع الرسالة في محفظتك. هذا ليس معاملة ولا يحوّل أي أموال.");
+  const signed=await signer.signMessage(new TextEncoder().encode(challenge.message));
+  const result=await qxReferralRequest({action:"complete",wallet:walletAddress,signature:qxReferralSignatureBase64(signed)});
+  const url=new URL(location.href);url.search="";url.hash="";url.searchParams.set("ref",result.referralCode);
+  const link=document.getElementById("qxReferralLink");if(link)link.value=url.toString();
+  const count=document.getElementById("qxReferralCount");if(count)count.textContent=String(result.referralCount??0);
+  if(qxReferralPanel)qxReferralPanel.hidden=false;qxReferralLoadedWallet=walletAddress;
+  if(referralCode){
+   try{localStorage.removeItem(qxReferralPendingKey);}catch(_){}
+   try{const cleanUrl=new URL(location.href);cleanUrl.searchParams.delete("ref");history.replaceState({},"",cleanUrl.toString());}catch(_){}
+  }
+  qxReferralSetStatus("Your referral link is ready. The count includes unique wallets attributed to your link only.","رابط الإحالة جاهز. العدد يعرض المحافظ الفريدة المسجلة عن طريق رابطك فقط.");return result;
+ }finally{qxReferralBusy=false;if(button)button.disabled=false;}
+}
+async function qxReferralOnWalletConnected(provider,address){
+ const pending=qxReferralPendingCode();if(pending){if(qxReferralPanel)qxReferralPanel.hidden=false;
+  qxReferralSetStatus("Referral link detected. Your wallet will ask for a free message signature to credit this referral; no transaction or payment is involved.","تم اكتشاف رابط إحالة. ستطلب محفظتك توقيع رسالة مجانية لتسجيل الإحالة؛ لا توجد معاملة أو دفعة.");
+  try{await qxReferralVerify(provider,pending);}catch(error){qxReferralSetStatus(error.message,"تعذر تسجيل الإحالة: "+error.message);}
+ }else if(qxReferralLoadedWallet!==address){qxReferralLoadedWallet="";}
+}
+const qxReferralButton=document.createElement("button");qxReferralButton.type="button";qxReferralButton.className="btn";qxReferralButton.id="qxReferralBtn";qxReferralButton.textContent="My Referral Link";
+const refreshButton=document.getElementById("refreshBtn");if(refreshButton&&refreshButton.parentElement&&!document.getElementById("qxReferralBtn"))refreshButton.parentElement.appendChild(qxReferralButton);
+qxReferralButton.addEventListener("click",async()=>{
+ if(qxReferralPanel)qxReferralPanel.hidden=false;if(!connected){qxReferralSetStatus("Connect your wallet to create and view your personal referral link.","اربط محفظتك لإنشاء وعرض رابط الإحالة الخاص بك.");return;}
+ if(qxReferralLoadedWallet===walletAddress&&document.getElementById("qxReferralLink")?.value){qxReferralSetStatus("Your referral link and personal count are shown above.","رابطك وعدد إحالاتك ظاهران أعلاه.");return;}
+ try{await qxReferralVerify(getActiveWalletProvider(),qxReferralPendingCode());}catch(error){qxReferralSetStatus(error.message,"تعذر تحميل الإحالات: "+error.message);}
+});
+document.getElementById("qxReferralRefreshBtn")?.addEventListener("click",async()=>{qxReferralLoadedWallet="";try{await qxReferralVerify(getActiveWalletProvider(),"");}catch(error){qxReferralSetStatus(error.message,"تعذر تحديث الإحالات: "+error.message);}});
+document.getElementById("qxReferralCopyBtn")?.addEventListener("click",async()=>{
+ const link=document.getElementById("qxReferralLink")?.value||"";if(!link){qxReferralSetStatus("Create your referral link first.","أنشئ رابط الإحالة أولاً.");return;}
+ try{await navigator.clipboard.writeText(link);qxReferralSetStatus("Referral link copied. Share it with your friends.","تم نسخ رابط الإحالة. أرسله لأصدقائك.");}
+ catch(_){document.getElementById("qxReferralLink")?.select();qxReferralSetStatus("Select and copy your referral link.","حدد رابط الإحالة وانسخه.");}
+});
+document.getElementById("qxLanguage")?.addEventListener("change",()=>{
+ const ar=qxLanguage==="ar";const set=(id,value)=>{const e=document.getElementById(id);if(e)e.textContent=value;};
+ set("qxReferralBtn",ar?"رابط الإحالة الخاص بي":"My Referral Link");set("qxReferralTitle",ar?"ادعُ أصدقاءك إلى QX":"Invite friends to QX");
+ set("qxReferralDescription",ar?"شارك رابطك الشخصي. سيظهر هنا فقط عدد المحافظ التي جاءت عن طريقك.":"Share your personal link. Only wallets referred by you are counted here.");
+ set("qxReferralCountLabel",ar?"إحالاتك":"Your referrals");set("qxReferralLinkLabel",ar?"رابط الإحالة الخاص بك":"Your personal referral link");
+ set("qxReferralCopyBtn",ar?"نسخ رابط الإحالة":"Copy referral link");set("qxReferralRefreshBtn",ar?"تحديث العدد":"Refresh count");
+});
+document.getElementById("qxLanguage")?.dispatchEvent(new Event("change"));
 const QX_AD_PACKAGES={1:{usd:49.99,label:"1 hour"},3:{usd:99.99,label:"3 hours"},9:{usd:179.99,label:"9 hours"},24:{usd:299.99,label:"24 hours"},72:{usd:599.99,label:"3 days"}};
 const adEl=id=>document.getElementById(id);
 let adBusy=false;
