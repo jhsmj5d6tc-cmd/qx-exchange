@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#080711">
 <meta name="google-site-verification" content="A5ntuJ6pvvK-Uo8HHA96o5bUPFGOg_70p-Nh_rsZ8NM">
 <title>QX Exchange — REAL Launch v6 PRO</title>
-<meta name="qx-build" content="QX-REAL-v45-HOME-HARD-FIX-v6-PRO">
+<meta name="qx-build" content="QX-REAL-v46-FINAL-HOME-RENDER-v6-PRO">
 
 <style>
 :root{
@@ -897,6 +897,32 @@ html body .wrap > #marketsPage .list{display:block !important;visibility:visible
 @media(max-width:560px){#qxV45HomeHero{align-items:flex-start !important;flex-direction:column !important;padding:15px !important;}#qxV45HomeHero .qx-v45-actions{width:100% !important;}#qxV45HomeHero button{flex:1 1 0 !important;min-width:0 !important;}}
 </style>
 
+
+<style id="qx-v46-final-home-render">
+/* QX v46 — final render reset: remove inherited page hiding/layout traps */
+html,body{min-height:100%!important;}
+body{overflow-x:hidden!important;}
+.wrap{display:block!important;visibility:visible!important;opacity:1!important;position:relative!important;min-height:100vh!important;}
+.wrap>header{display:flex!important;visibility:visible!important;opacity:1!important;position:relative!important;z-index:100!important;}
+.wrap>main.page{visibility:hidden!important;opacity:0!important;display:none!important;position:relative!important;}
+.wrap>main#marketsPage.page{display:block!important;visibility:visible!important;opacity:1!important;position:relative!important;z-index:10!important;width:100%!important;min-height:0!important;margin:0!important;padding:0 0 105px!important;transform:none!important;}
+#marketsPage #qxV45HomeHero{display:flex!important;visibility:visible!important;opacity:1!important;position:relative!important;z-index:11!important;}
+#marketsPage .market-heading,#marketsPage .market-layout,#marketsPage .market-list-column,#marketsPage .market-tabs,#marketsPage .toolbar,#marketsPage .market-meta,#marketsPage .sort-panel,#marketsPage .list,#marketsPage .market-status{visibility:visible!important;opacity:1!important;}
+#marketsPage .market-layout{display:grid!important;position:relative!important;}
+#marketsPage .market-list-column{display:block!important;}
+#marketsPage .market-heading{display:flex!important;}
+#marketsPage .market-tabs{display:flex!important;}
+#marketsPage .toolbar{display:grid!important;}
+#marketsPage .market-meta{display:flex!important;}
+#marketsPage .sort-panel{display:block!important;}
+#marketsPage .list{display:block!important;}
+#marketsPage #detail{display:none!important;}
+body.qx-token-open #marketsPage #detail{display:block!important;position:fixed!important;inset:0!important;z-index:5000!important;}
+body.qx-token-open .wrap>header{display:none!important;}
+body.qx-token-open #marketsPage .market-list-column,body.qx-token-open #marketsPage>.market-heading,body.qx-token-open #marketsPage #qxV45HomeHero{display:none!important;}
+/* Never allow a transparent/empty overlay to cover the market workspace. */
+.qx-menu-backdrop{display:none;}
+</style>
 </head>
 <body>
 <div class="wrap">
@@ -3679,3 +3705,6 @@ window.addEventListener("QXWalletConnected",()=>setTimeout(qxCexEnsure,100));
   const mo=new MutationObserver(()=>{clearTimeout(window.__qxV42Timer);window.__qxV42Timer=setTimeout(applyGlobal,80);});
   document.addEventListener("DOMContentLoaded",()=>mo.observe(document.body,{childList:true,subtree:true}));
 })();
+</script>
+
+</body>
