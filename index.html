@@ -2633,13 +2633,13 @@ window.addEventListener("QXWalletDisconnected",qx6Render);
 </script>
 
 
-<!-- QX LIVE CEX CORE CONNECTOR v1 -->
+<!-- QX LIVE CEX CORE CONNECTOR v2 -->
 <style>
 #qxCexCore{margin:14px 0;padding:15px;border:1px solid rgba(98,70,150,.75);border-radius:17px;background:linear-gradient(160deg,rgba(20,14,34,.98),rgba(10,8,18,.98));box-shadow:0 16px 44px rgba(0,0,0,.18)}
 .qx-cex-head{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
 .qx-cex-title{font-weight:900;font-size:16px}.qx-cex-sub{font-size:10px;color:#a99db8;margin-top:4px}
 .qx-cex-badge{font-size:10px;padding:6px 9px;border-radius:999px;border:1px solid #315d50;background:#10251f;color:#68e6b1}
-.qx-cex-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:12px;margin-top:13px}
+.qx-cex-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:12px;margin-top:13px}
 .qx-cex-card{border:1px solid #332647;border-radius:13px;padding:12px;background:#0e0b17}
 .qx-cex-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .qx-cex-card label{display:block;font-size:10px;color:#a99db8;margin:0 0 6px}
@@ -2650,6 +2650,10 @@ window.addEventListener("QXWalletDisconnected",qx6Render);
 .qx-cex-status{font-size:10px;color:#b9afc5;line-height:1.5;margin-top:9px;overflow-wrap:anywhere}
 .qx-cex-book{width:100%;border-collapse:collapse;font-size:10px}.qx-cex-book th,.qx-cex-book td{padding:6px;border-bottom:1px solid #241b32;text-align:right}.qx-cex-book th:first-child,.qx-cex-book td:first-child{text-align:left}
 .qx-cex-note{font-size:9px;color:#8f839e;margin-top:8px;line-height:1.45}
+.qx-cex-open{margin-top:12px;display:none}
+.qx-cex-open table{width:100%;border-collapse:collapse;font-size:9px}
+.qx-cex-open th,.qx-cex-open td{padding:6px;border-bottom:1px solid #241b32;text-align:left}
+.qx-cex-open button{border:1px solid #4a365d;background:#171022;color:#fff;border-radius:7px;padding:5px 8px;cursor:pointer}
 @media(max-width:720px){.qx-cex-grid{grid-template-columns:1fr}}
 </style>
 <script>
@@ -2685,7 +2689,7 @@ async function qxCexBook(market){
 function qxCexEnsure(){
  const page=document.getElementById("exchangePage");if(!page||document.getElementById("qxCexCore"))return;
  const box=document.createElement("section");box.id="qxCexCore";box.innerHTML=`
- <div class="qx-cex-head"><div><div class="qx-cex-title">QX Live CEX Engine</div><div class="qx-cex-sub">Server-side accounts · balances · limit orders · matching · trade ledger</div></div><span id="qxCexBadge" class="qx-cex-badge">ENGINE ONLINE</span></div>
+ <div class="qx-cex-head"><div><div class="qx-cex-title">QX Live CEX Engine</div><div class="qx-cex-sub">Server-side accounts · balances · limit & market orders · matching · trade ledger</div></div><span id="qxCexBadge" class="qx-cex-badge">ENGINE ONLINE</span></div>
  <div class="qx-cex-grid">
   <div class="qx-cex-card">
    <div class="qx-cex-row">
@@ -2693,35 +2697,58 @@ function qxCexEnsure(){
     <div><label>Side</label><select id="qxCexSide"><option value="buy">BUY</option><option value="sell">SELL</option></select></div>
    </div>
    <div class="qx-cex-row" style="margin-top:8px">
-    <div><label>Limit price</label><input id="qxCexPrice" inputmode="decimal" placeholder="Price"></div>
-    <div><label>Quantity</label><input id="qxCexQty" inputmode="decimal" placeholder="SOL amount"></div>
+    <div><label>Order type</label><select id="qxCexType"><option value="limit">LIMIT</option><option value="market">MARKET</option></select></div>
+    <div><label id="qxCexPriceLabel">Limit price</label><input id="qxCexPrice" inputmode="decimal" placeholder="Price"></div>
    </div>
+   <div style="margin-top:8px"><label>Quantity</label><input id="qxCexQty" inputmode="decimal" placeholder="SOL amount"></div>
    <div class="qx-cex-actions"><button id="qxCexBuy" class="qx-cex-buy">PLACE BUY</button><button id="qxCexSell" class="qx-cex-sell">PLACE SELL</button></div>
    <div id="qxCexStatus" class="qx-cex-status">Wallet authentication is requested only when you use the server-side account.</div>
   </div>
   <div class="qx-cex-card">
    <label>Live order book</label>
    <table class="qx-cex-book"><thead><tr><th>Side</th><th>Price</th><th>Qty</th></tr></thead><tbody id="qxCexBookBody"><tr><td colspan="3">Loading…</td></tr></tbody></table>
-   <div class="qx-cex-note">Orders are stored and matched on QX's server-side ledger. A real deposit must be credited before an order can spend that asset.</div>
+   <div class="qx-cex-note">QX matches orders on the server. Limit orders reserve funds; completed buys automatically release any unused quote amount caused by execution below the limit price.</div>
   </div>
+ </div>
+ <div class="qx-cex-card qx-cex-open" id="qxCexOpenWrap">
+  <label>My open orders</label>
+  <table><thead><tr><th>Market</th><th>Side</th><th>Price</th><th>Remaining</th><th></th></tr></thead><tbody id="qxCexOpenBody"></tbody></table>
  </div>`;
  page.prepend(box);
+
  const status=document.getElementById("qxCexStatus");
+ const type=document.getElementById("qxCexType");
+ const price=document.getElementById("qxCexPrice");
+ const priceLabel=document.getElementById("qxCexPriceLabel");
+
+ function syncType(){
+   const market=type.value==="market";
+   price.disabled=market;
+   price.required=!market;
+   price.placeholder=market?"Market execution":"Price";
+   priceLabel.textContent=market?"Execution price":"Limit price";
+ }
+ type.onchange=syncType;syncType();
+
  async function place(side){
   try{
    const market=document.getElementById("qxCexMarket").value.trim().toUpperCase();
-   const price=Number(document.getElementById("qxCexPrice").value),qty=Number(document.getElementById("qxCexQty").value);
-   if(!market||!Number.isFinite(price)||price<=0||!Number.isFinite(qty)||qty<=0)throw new Error("Enter market, limit price and quantity.");
+   const orderType=type.value;
+   const p=Number(price.value),qty=Number(document.getElementById("qxCexQty").value);
+   if(!market||!Number.isFinite(qty)||qty<=0||orderType==="limit"&&(!Number.isFinite(p)||p<=0))throw new Error("Enter a valid market and quantity.");
    status.textContent="Sign the QX wallet authentication message…";
    const a=await qxCexAuth();
    status.textContent="Submitting the order to the QX matching engine…";
-   const r=await qxCexPost({action:"place-order",wallet:a.wallet,signature:a.signature,market,side,order_type:"limit",price,quantity:qty});
+   const payload={action:"place-order",wallet:a.wallet,signature:a.signature,market,side,order_type:orderType,quantity:qty};
+   if(orderType==="limit")payload.price=p;
+   const r=await qxCexPost(payload);
    status.textContent="Order accepted · "+JSON.stringify(r.result);
    await renderBook();
   }catch(e){status.textContent=e?.message||"Order failed."}
  }
  document.getElementById("qxCexBuy").onclick=()=>place("buy");
  document.getElementById("qxCexSell").onclick=()=>place("sell");
+
  async function renderBook(){
   const market=document.getElementById("qxCexMarket").value.trim().toUpperCase();
   const body=document.getElementById("qxCexBookBody");
@@ -2737,11 +2764,9 @@ function qxCexEnsure(){
 }
 const oldOpenExchange=window.QXExchangeTerminalOpen;
 window.QXExchangeTerminalOpen=function(){if(typeof oldOpenExchange==="function")oldOpenExchange();qxCexEnsure()};
-document.addEventListener("DOMContentLoaded",()=>{setTimeout(qxCexEnsure,500)});
+document.addEventListener("DOMContentLoaded",()=>setTimeout(qxCexEnsure,500));
 window.addEventListener("QXWalletConnected",()=>setTimeout(qxCexEnsure,100));
 })();
 </script>
 
 </body>
-</html>
-
