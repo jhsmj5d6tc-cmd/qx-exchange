@@ -8,8 +8,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#080711">
 <meta name="google-site-verification" content="A5ntuJ6pvvK-Uo8HHA96o5bUPFGOg_70p-Nh_rsZ8NM">
-<title>QX Exchange — REAL Launch v47</title>
-<meta name="qx-build" content="QX-REAL-v47-ROOT-FIX">
+<title>QX Exchange — REAL Launch v6 PRO</title>
+<meta name="qx-build" content="QX-REAL-v6-PRO">
 
 <style>
 :root{
@@ -767,75 +767,26 @@ header{
 }
 </style>
 
-
-<style id="qx-v43-clean-menu">
-/* QX v43 — clean hamburger menu */
-#qxMainMenu .qx-menu-settings{
-  order:999!important;
-  width:100%!important;
-  margin:4px 0 0!important;
-  padding:0!important;
-  border:0!important;
-  background:transparent!important;
-  box-shadow:none!important;
-  display:grid!important;
-  grid-template-columns:1fr 1fr!important;
-  gap:8px!important;
-}
-#qxMainMenu .qx-menu-settings label{
-  margin:0!important;
-  padding:0!important;
-  min-width:0!important;
-}
-#qxMainMenu .qx-menu-settings label > select{
-  height:44px!important;
-  min-height:44px!important;
-  width:100%!important;
-  padding:0 12px!important;
-  border:1px solid rgba(255,255,255,.09)!important;
-  border-radius:12px!important;
-  background:rgba(255,255,255,.045)!important;
-  color:rgba(255,255,255,.92)!important;
-  font-size:12px!important;
-  font-weight:700!important;
-  box-shadow:none!important;
-}
-#qxMainMenu .qx-menu-settings label > select:focus{
-  border-color:rgba(168,107,255,.55)!important;
-  outline:none!important;
-}
-#qxMainMenu .qx-menu-settings label > span{
-  display:none!important;
-}
-/* Wallet popover must not contain duplicate settings */
-#qxWalletPop #qxWalletLanguageMenu,
-#qxWalletPop #qxWalletCurrencyMenu,
-#qxWalletPop label[for="qxWalletLanguageMenu"],
-#qxWalletPop label[for="qxWalletCurrencyMenu"]{
-  display:none!important;
-}
-@media(max-width:720px){
-  #qxMainMenu .qx-menu-settings{grid-template-columns:1fr 1fr!important}
-  #qxMainMenu .qx-menu-settings label > select{height:42px!important;min-height:42px!important}
-}
+<style id="qx-v48-structure-sanity">
+/* QX v48: structural layout only. Does not replace page content or market logic. */
+.qx-main-menu{z-index:10050!important;}
+.qx-wallet-pop{z-index:10060!important;}
+.qx-menu-backdrop{z-index:10040!important;}
+.page{position:relative;}
+#marketsPage.page.active{display:block;}
+#marketsPage .market-layout{min-width:0;}
+@media(max-width:760px){#marketsPage .market-layout{display:flex!important;flex-direction:column!important;}#marketsPage .market-list-column{width:100%!important;order:1!important;}#marketsPage #detail{order:-1!important;width:100%!important;}}
 </style>
-
-
-<style id="qx-v43-logo">
-.qx-premium-logo-v43{
-  width:54px!important;height:42px!important;min-width:54px!important;
-  display:flex!important;align-items:center!important;justify-content:center!important;
-}
-.qx-premium-logo-v43 svg{
-  width:54px!important;height:40px!important;display:block!important;
-}
-.qx-premium-logo-v43:hover{filter:drop-shadow(0 0 12px rgba(155,91,255,.35))!important}
-@media(max-width:720px){
-  .qx-premium-logo-v43{width:44px!important;height:38px!important;min-width:44px!important}
-  .qx-premium-logo-v43 svg{width:44px!important;height:36px!important}
-}
+<style id="qx-v43-clean-menu-restored">
+#qxMainMenu .qx-menu-settings{width:100%!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important;}
+#qxMainMenu .qx-menu-settings label{display:block!important;margin:0!important;padding:0!important;min-width:0!important;font-size:9px!important;color:#9f93ad!important;}
+#qxMainMenu .qx-menu-settings label > select{display:block!important;width:100%!important;height:44px!important;min-height:44px!important;margin-top:5px!important;padding:0 12px!important;border:1px solid rgba(255,255,255,.09)!important;border-radius:12px!important;background:rgba(255,255,255,.045)!important;color:rgba(255,255,255,.92)!important;font-size:12px!important;font-weight:700!important;box-shadow:none!important;}
+#qxMainMenu .qx-menu-settings label > select:focus{border-color:rgba(168,107,255,.55)!important;outline:none!important;}
+.qx-premium-logo-v43{width:54px!important;height:42px!important;min-width:54px!important;display:flex!important;align-items:center!important;justify-content:center!important;}
+.qx-premium-logo-v43 svg{width:54px!important;height:40px!important;display:block!important;}
+.qx-premium-logo-v43:hover{filter:drop-shadow(0 0 12px rgba(155,91,255,.35))!important;}
+@media(max-width:720px){#qxMainMenu .qx-menu-settings{grid-template-columns:1fr!important;}#qxMainMenu .qx-menu-settings label > select{height:42px!important;min-height:42px!important;}.qx-premium-logo-v43{width:44px!important;height:38px!important;min-width:44px!important}.qx-premium-logo-v43 svg{width:44px!important;height:36px!important;}}
 </style>
-
 </head>
 <body>
 <div class="wrap">
@@ -850,11 +801,8 @@ header{
         <stop offset="1" stop-color="#38E6B0"/>
       </linearGradient>
     </defs>
-    <!-- Clean Q -->
-    <path d="M8 24c0-9.7 6.9-17 16.4-17S40.8 14.3 40.8 24 34 41 24.4 41 8 33.7 8 24Z"
-          fill="none" stroke="url(#qxV43)" stroke-width="4.2"/>
+    <path d="M8 24c0-9.7 6.9-17 16.4-17S40.8 14.3 40.8 24 34 41 24.4 41 8 33.7 8 24Z" fill="none" stroke="url(#qxV43)" stroke-width="4.2"/>
     <path d="M26 29.5 39.5 43" fill="none" stroke="#F7F3FF" stroke-width="4.1" stroke-linecap="round"/>
-    <!-- X -->
     <path d="M43 10 63 38" fill="none" stroke="#F7F3FF" stroke-width="4.2" stroke-linecap="round"/>
     <path d="M63 10 43 38" fill="none" stroke="#39E7B0" stroke-width="4.2" stroke-linecap="round"/>
     <path d="M43 10h9M63 10h-9" fill="none" stroke="#A96CFF" stroke-width="2.5" stroke-linecap="round"/>
@@ -878,7 +826,7 @@ header{
 <div class="qx-menu-backdrop" id="qxMenuBackdrop"></div>
 <div class="qx-main-menu" id="qxMainMenu" aria-hidden="true">
  <div class="qx-menu-head"><div><strong>QX</strong><small>Global navigation</small>
-<button class="qx-menu-close" id="qxMenuClose" type="button" aria-label="Close">×</button></div></div>
+</div><button class="qx-menu-close" id="qxMenuClose" type="button" aria-label="Close">×</button></div>
  <div class="qx-menu-section">
   <div class="qx-menu-section-title">TRADE &amp; DISCOVER</div>
   <button class="qx-menu-item" data-qx-nav="marketsPage" type="button"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h17M7 15l4-4 3 2 6-7"></path></svg><div><strong>Markets</strong><span>Live Solana markets and token discovery</span></div></button>
@@ -900,18 +848,22 @@ header{
   <button class="qx-menu-item" id="qxMenuWhitePaper" type="button"><svg viewBox="0 0 24 24"><path d="M6 3h12v18H6zM9 8h6M9 12h6M9 16h4"></path></svg><div><strong>White Paper</strong><span>Read the current QX project document</span></div></button>
  </div>
  <div class="qx-menu-divider"></div>
- <div class="qx-menu-section qx-menu-settings" data-menu-order="last" id="qxMenuSettingsV40">
-  <div>
-   <label for="qxMenuLanguageV40">Language</label>
-   <select id="qxMenuLanguageV40" aria-label="Language"></select>
-  </div>
-  <div>
-   <label for="qxMenuCurrencyV40">Currency</label>
-   <select id="qxMenuCurrencyV40" aria-label="Currency"></select>
+ <div class="qx-menu-section qx-menu-settings-section">
+  <div class="qx-menu-section-title">PREFERENCES</div>
+  <div class="qx-menu-settings" data-menu-order="last" id="qxMenuSettingsV40">
+   <label for="qxMenuLanguageV40">Language<select id="qxMenuLanguageV40" aria-label="Language"></select></label>
+   <label for="qxMenuCurrencyV40">Currency<select id="qxMenuCurrencyV40" aria-label="Currency"></select></label>
   </div>
  </div>
 </div>
 
+<div class="qx-wallet-pop" id="qxWalletPop" aria-hidden="true">
+ <div class="qx-wallet-status"><strong id="qxWalletPopTitle">Wallet</strong><span id="qxWalletPopAddress">Not connected</span></div>
+ <button class="qx-menu-item" id="qxWalletConnectItem" type="button"><svg viewBox="0 0 24 24"><path d="M8 12h8M13 7l5 5-5 5M18 5h2v14h-2"></path></svg><div><strong id="qxWalletConnectLabel">Connect Wallet</strong><span>Choose your compatible Solana wallet</span></div></button>
+ <button class="qx-menu-item" data-qx-nav="walletPage" type="button"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="15" rx="3"></rect><path d="M3 9h18M16 14h2"></path></svg><div><strong>My Wallet</strong><span>Balances and assets</span></div></button>
+ <button class="qx-menu-item" id="qxWalletRefreshItem" type="button"><svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0 2 5"></path><path d="M20 4v7h-7"></path></svg><div><strong>Refresh Balance</strong><span>Reload on-chain balances</span></div></button>
+ <div class="qx-menu-divider"></div>
+</div>
 
 <main id="walletPage" class="page">
  <div class="hero">
@@ -1325,14 +1277,18 @@ document.addEventListener("DOMContentLoaded",()=>{
 
 <script>
 function showPage(id){
- document.body.classList.toggle("qx-wallet-active",id==="walletPage");
- document.body.classList.toggle("qx-ads-active",id==="adsPage");
- document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active",p.id===id));
- document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.page===id));
+ const target=document.getElementById(id)||document.getElementById("marketsPage");
+ if(!target)return;
+ document.body.classList.toggle("qx-wallet-active",target.id==="walletPage");
+ document.body.classList.toggle("qx-ads-active",target.id==="adsPage");
+ document.body.classList.remove("qx-token-open");
+ document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active",p===target));
+ document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.page===target.id));
  window.scrollTo({top:0,behavior:"smooth"});
 }
 document.querySelectorAll(".nav-btn").forEach(b=>b.addEventListener("click",()=>showPage(b.dataset.page)));
 document.body.classList.remove("qx-wallet-active","qx-ads-active","qx-token-open");
+const qxInitialMarkets=document.getElementById("marketsPage"); if(qxInitialMarkets) qxInitialMarkets.classList.add("active");
 
 const qxWpModal=document.getElementById("qxWhitePaperModal");
 const qxWpOpen=document.getElementById("qxOpenWhitePaper");
@@ -3059,71 +3015,4 @@ loadMarket();
 .qx6-input{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(180,92,255,.3);background:#0d0918;color:#fff;outline:none}
 .qx6-notice{padding:10px 12px;border-radius:10px;background:rgba(180,92,255,.08);border:1px solid rgba(180,92,255,.18);font-size:12px}
 @media(max-width:900px){.qx6-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:560px){.qx6-grid{grid-template-columns:1fr}.qx6-table{min-width:640px}.qx6-scroll{overflow:auto}}
-</style>
-
-<section id="qx6Page" class="page">
-  <div class="market-heading"><h2>QX Pro Control</h2><span class="tag">SPOT · WALLET · ORDERS · RISK</span></div>
-
-  <div class="qx6-grid">
-    <div class="qx6-card"><div class="qx6-muted">Wallet</div><div id="qx6Wallet" class="qx6-big">Not connected</div></div>
-    <div class="qx6-card"><div class="qx6-muted">Spot execution</div><div class="qx6-big">LIVE</div><span class="qx6-pill qx6-ok">Jupiter</span></div>
-    <div class="qx6-card"><div class="qx6-muted">Persistent history</div><div id="qx6HistoryMode" class="qx6-big">Browser</div></div>
-    <div class="qx6-card"><div class="qx6-muted">CEX engine</div><div id="qx6CexMode" class="qx6-big">Backend required</div></div>
-  </div>
-
-  <div class="qx6-card">
-    <h3>Open orders & triggers</h3>
-    <div class="qx6-notice">QX can monitor live market prices in the browser. A wallet transaction still requires wallet approval; this page never silently signs or spends user funds.</div>
-    <div class="qx6-actions" style="margin-top:10px">
-      <button class="qx6-btn" id="qx6RefreshOrders">Refresh</button>
-      <button class="qx6-btn danger" id="qx6ClearOrders">Clear local triggers</button>
-    </div>
-    <div class="qx6-scroll" style="margin-top:10px"><table class="qx6-table"><thead><tr><th>Asset</th><th>Side</th><th>Trigger</th><th>Status</th><th>Created</th></tr></thead><tbody id="qx6Orders"></tbody></table></div>
-  </div>
-
-  <div class="qx6-card">
-    <h3>Trade journal</h3>
-    <div class="qx6-scroll"><table class="qx6-table"><thead><tr><th>Side</th><th>Asset</th><th>Amount</th><th>Signature</th><th>Time</th></tr></thead><tbody id="qx6Trades"></tbody></table></div>
-  </div>
-
-  <div class="qx6-grid">
-    <div class="qx6-card">
-      <h3>Wallet transfers</h3>
-      <div class="qx6-muted" style="margin-bottom:8px">Non-custodial SOL transfer from the connected wallet.</div>
-      <input class="qx6-input" id="qx6To" placeholder="Destination Solana address">
-      <input class="qx6-input" id="qx6Amount" type="number" min="0" step="0.000000001" placeholder="SOL amount" style="margin-top:8px">
-      <button class="qx6-btn primary" id="qx6SendSol" style="margin-top:8px">Send SOL in wallet</button>
-      <div id="qx6SendStatus" class="qx6-muted" style="margin-top:8px"></div>
-    </div>
-
-    <div class="qx6-card">
-      <h3>Risk / margin</h3>
-      <div class="qx6-muted">Calculator only until a protected lending, collateral, borrow and liquidation backend is connected.</div>
-      <input class="qx6-input" id="qx6Collateral" type="number" min="0" placeholder="Collateral USD" style="margin-top:8px">
-      <input class="qx6-input" id="qx6Leverage" type="number" min="1" max="20" step="0.1" placeholder="Leverage" style="margin-top:8px">
-      <div id="qx6MarginResult" class="qx6-big" style="margin-top:8px">—</div>
-    </div>
-  </div>
-
-  <div class="qx6-card">
-    <h3>Production readiness</h3>
-    <div class="qx6-grid" style="margin:0">
-      <div><span class="qx6-pill qx6-ok">Spot swaps</span><div class="qx6-muted">Real Solana transaction signing.</div></div>
-      <div><span class="qx6-pill qx6-ok">Ads backend</span><div class="qx6-muted">Existing QX Ads Edge Function.</div></div>
-      <div><span class="qx6-pill qx6-ok">Referral backend</span><div class="qx6-muted">Existing QX referral service.</div></div>
-      <div><span class="qx6-pill qx6-warn">CEX matching</span><div class="qx6-muted">Requires protected server-side engine.</div></div>
-      <div><span class="qx6-pill qx6-warn">Margin</span><div class="qx6-muted">Requires lending/risk/liquidation engine.</div></div>
-      <div><span class="qx6-pill qx6-warn">Custody</span><div class="qx6-muted">Not enabled; wallet remains user-controlled.</div></div>
-    </div>
-  </div>
-</section>
-
-<script>
-(function(){
-"use strict";
-const QX6_KEY="qx_v6_pro_state";
-function qx6State(){
-  try{return Object.assign({orders:[],trades:[],watch:[]},JSON.parse(localStorage.getItem(QX6_KEY)||"{}"));}catch(_){return {orders:[],trades:[],watch:[]};}
-}
-function qx6Save(s){try{localStorage.setItem(QX6_KEY,JSON.stringify(s));}catch(_){}}
+@media(max-width:560px){.qx6-grid{grid-template-columns:1fr}.qx6-table{min-width:640px
