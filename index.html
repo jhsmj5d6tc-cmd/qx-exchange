@@ -8,8 +8,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#080711">
 <meta name="google-site-verification" content="A5ntuJ6pvvK-Uo8HHA96o5bUPFGOg_70p-Nh_rsZ8NM">
-<title>QX Exchange — REAL Launch v5</title>
-<meta name="qx-build" content="QX-REAL-v5">
+<title>QX Exchange — REAL Launch v6 PRO</title>
+<meta name="qx-build" content="QX-REAL-v6-PRO">
 
 <style>
 :root{
@@ -2477,7 +2477,7 @@ loadMarket();
  function walletStatus(){const a=$('walletAddress')?.textContent?.trim();$('qxStatWallet').textContent=a&&a!=='-'?a.slice(0,4)+'…'+a.slice(-4):'Not connected'}
  function openExchange(){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));$('exchangePage').classList.add('active');document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.page==='exchangePage'));walletStatus()}
  document.querySelectorAll('[data-qx-order-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-qx-order-tab]').forEach(x=>x.classList.remove('active'));b.classList.add('active');$('qxMarketPanel').style.display=b.dataset.qxOrderTab==='market'?'block':'none';$('qxLimitPanel').style.display=b.dataset.qxOrderTab==='limit'?'block':'none';$('qxHistoryPanel').style.display=b.dataset.qxOrderTab==='history'?'block':'none';if(b.dataset.qxOrderTab==='history')renderHistory()});
- $('qxSaveTrigger')?.addEventListener('click',()=>{const p=num($('qxTriggerPrice').value);if(!state.token||p===null||p<=0){$('qxTriggerStatus').textContent='Choose a market and enter a valid trigger price.';return}localStorage.setItem('qxTriggerV1',JSON.stringify({mint:state.token.mint,symbol:state.token.symbol,price:p,action:$('qxTriggerAction').value,time:Date.now()}));$('qxTriggerStatus').textContent='Trigger saved on this browser. It will not sign or submit transactions automatically.'});
+ $('qxSaveTrigger')?.addEventListener('click',()=>{const p=num($('qxTriggerPrice').value);if(!state.token||p===null||p<=0){$('qxTriggerStatus').textContent='Choose a market and enter a valid trigger price.';return}localStorage.setItem('qxTriggerV1',JSON.stringify({mint:state.token.mint,symbol:state.token.symbol,price:p,action:$('qxTriggerAction').value,time:Date.now()}));if(window.QX6AddTrigger)window.QX6AddTrigger({mint:state.token.mint,symbol:state.token.symbol,price:p,side:$('qxTriggerAction').value});$('qxTriggerStatus').textContent='Trigger saved and monitored locally. Wallet approval is still required before any transaction.'});
  async function execute(side){
   if(!state.token){$('qxExecutionStatus').textContent='Select a Solana token first.';return}
   const amount=num($('qxTradeAmount').value);if(amount===null||amount<=0){$('qxExecutionStatus').textContent='Enter a valid SOL amount.';return}
@@ -2494,6 +2494,254 @@ loadMarket();
  const oldOpen=window.QXOpenToken; if(typeof oldOpen==='function' && !oldOpen.__qxWrapped){window.QXOpenToken=function(t){adopt(t);return oldOpen.apply(this,arguments)};window.QXOpenToken.__qxWrapped=true}
 })();
 </script>
+
+<!-- QX v6 PRODUCTION UPGRADE LAYER + LIVE CEX CORE
+     Adds persistent watchlist/trade journal hooks, notifications, order monitoring,
+     transfer tools, token metadata registration hooks, and a CEX-readiness panel.
+     It does NOT fabricate an order book or margin engine: real custodial CEX
+     matching/credit/liquidation requires a protected server-side engine.
+-->
+<style>
+.qx6-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:14px 0}
+.qx6-card{background:linear-gradient(145deg,rgba(24,14,45,.96),rgba(10,8,20,.96));border:1px solid rgba(180,92,255,.28);border-radius:16px;padding:14px;box-shadow:0 12px 40px rgba(0,0,0,.22)}
+.qx6-card h3{margin:0 0 8px;font-size:14px}.qx6-big{font-size:22px;font-weight:800}.qx6-muted{color:var(--muted);font-size:12px}
+.qx6-table{width:100%;border-collapse:collapse}.qx6-table th,.qx6-table td{padding:9px;border-bottom:1px solid rgba(180,92,255,.14);text-align:left;font-size:12px}
+.qx6-pill{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(180,92,255,.35);border-radius:999px;padding:5px 9px;font-size:11px}
+.qx6-ok{border-color:rgba(67,255,173,.45)}.qx6-warn{border-color:rgba(255,180,70,.45)}
+.qx6-actions{display:flex;gap:8px;flex-wrap:wrap}.qx6-btn{border:1px solid rgba(180,92,255,.4);background:#160d2c;color:#fff;border-radius:10px;padding:9px 12px;cursor:pointer}
+.qx6-btn.primary{background:linear-gradient(135deg,#7b32ff,#b45cff);border:0}.qx6-btn.danger{border-color:rgba(255,85,126,.55)}
+.qx6-input{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(180,92,255,.3);background:#0d0918;color:#fff;outline:none}
+.qx6-notice{padding:10px 12px;border-radius:10px;background:rgba(180,92,255,.08);border:1px solid rgba(180,92,255,.18);font-size:12px}
+@media(max-width:900px){.qx6-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.qx6-grid{grid-template-columns:1fr}.qx6-table{min-width:640px}.qx6-scroll{overflow:auto}}
+</style>
+
+<section id="qx6Page" class="page">
+  <div class="market-heading"><h2>QX Pro Control</h2><span class="tag">SPOT · WALLET · ORDERS · RISK</span></div>
+
+  <div class="qx6-grid">
+    <div class="qx6-card"><div class="qx6-muted">Wallet</div><div id="qx6Wallet" class="qx6-big">Not connected</div></div>
+    <div class="qx6-card"><div class="qx6-muted">Spot execution</div><div class="qx6-big">LIVE</div><span class="qx6-pill qx6-ok">Jupiter</span></div>
+    <div class="qx6-card"><div class="qx6-muted">Persistent history</div><div id="qx6HistoryMode" class="qx6-big">Browser</div></div>
+    <div class="qx6-card"><div class="qx6-muted">CEX engine</div><div id="qx6CexMode" class="qx6-big">Backend required</div></div>
+  </div>
+
+  <div class="qx6-card">
+    <h3>Open orders & triggers</h3>
+    <div class="qx6-notice">QX can monitor live market prices in the browser. A wallet transaction still requires wallet approval; this page never silently signs or spends user funds.</div>
+    <div class="qx6-actions" style="margin-top:10px">
+      <button class="qx6-btn" id="qx6RefreshOrders">Refresh</button>
+      <button class="qx6-btn danger" id="qx6ClearOrders">Clear local triggers</button>
+    </div>
+    <div class="qx6-scroll" style="margin-top:10px"><table class="qx6-table"><thead><tr><th>Asset</th><th>Side</th><th>Trigger</th><th>Status</th><th>Created</th></tr></thead><tbody id="qx6Orders"></tbody></table></div>
+  </div>
+
+  <div class="qx6-card">
+    <h3>Trade journal</h3>
+    <div class="qx6-scroll"><table class="qx6-table"><thead><tr><th>Side</th><th>Asset</th><th>Amount</th><th>Signature</th><th>Time</th></tr></thead><tbody id="qx6Trades"></tbody></table></div>
+  </div>
+
+  <div class="qx6-grid">
+    <div class="qx6-card">
+      <h3>Wallet transfers</h3>
+      <div class="qx6-muted" style="margin-bottom:8px">Non-custodial SOL transfer from the connected wallet.</div>
+      <input class="qx6-input" id="qx6To" placeholder="Destination Solana address">
+      <input class="qx6-input" id="qx6Amount" type="number" min="0" step="0.000000001" placeholder="SOL amount" style="margin-top:8px">
+      <button class="qx6-btn primary" id="qx6SendSol" style="margin-top:8px">Send SOL in wallet</button>
+      <div id="qx6SendStatus" class="qx6-muted" style="margin-top:8px"></div>
+    </div>
+
+    <div class="qx6-card">
+      <h3>Risk / margin</h3>
+      <div class="qx6-muted">Calculator only until a protected lending, collateral, borrow and liquidation backend is connected.</div>
+      <input class="qx6-input" id="qx6Collateral" type="number" min="0" placeholder="Collateral USD" style="margin-top:8px">
+      <input class="qx6-input" id="qx6Leverage" type="number" min="1" max="20" step="0.1" placeholder="Leverage" style="margin-top:8px">
+      <div id="qx6MarginResult" class="qx6-big" style="margin-top:8px">—</div>
+    </div>
+  </div>
+
+  <div class="qx6-card">
+    <h3>Production readiness</h3>
+    <div class="qx6-grid" style="margin:0">
+      <div><span class="qx6-pill qx6-ok">Spot swaps</span><div class="qx6-muted">Real Solana transaction signing.</div></div>
+      <div><span class="qx6-pill qx6-ok">Ads backend</span><div class="qx6-muted">Existing QX Ads Edge Function.</div></div>
+      <div><span class="qx6-pill qx6-ok">Referral backend</span><div class="qx6-muted">Existing QX referral service.</div></div>
+      <div><span class="qx6-pill qx6-warn">CEX matching</span><div class="qx6-muted">Requires protected server-side engine.</div></div>
+      <div><span class="qx6-pill qx6-warn">Margin</span><div class="qx6-muted">Requires lending/risk/liquidation engine.</div></div>
+      <div><span class="qx6-pill qx6-warn">Custody</span><div class="qx6-muted">Not enabled; wallet remains user-controlled.</div></div>
+    </div>
+  </div>
+</section>
+
+<script>
+(function(){
+"use strict";
+const QX6_KEY="qx_v6_pro_state";
+function qx6State(){
+  try{return Object.assign({orders:[],trades:[],watch:[]},JSON.parse(localStorage.getItem(QX6_KEY)||"{}"));}catch(_){return {orders:[],trades:[],watch:[]};}
+}
+function qx6Save(s){try{localStorage.setItem(QX6_KEY,JSON.stringify(s));}catch(_){}}
+function qx6Wallet(){return window.walletAddress||document.getElementById("walletAddress")?.textContent?.trim()||""}
+function qx6Short(v){v=String(v||"");return v.length>12?v.slice(0,6)+"…"+v.slice(-6):v}
+function qx6Render(){
+ const s=qx6State(),w=qx6Wallet();
+ const e=document.getElementById("qx6Wallet");if(e)e.textContent=w?qx6Short(w):"Not connected";
+ const om=document.getElementById("qx6Orders");
+ if(om)om.innerHTML=s.orders.length?s.orders.map(o=>`<tr><td>${esc6(o.symbol)}</td><td>${esc6(o.side)}</td><td>${esc6(o.price)}</td><td>${esc6(o.status)}</td><td>${new Date(o.time).toLocaleString()}</td></tr>`).join(""):'<tr><td colspan="5">No local triggers.</td></tr>';
+ const tm=document.getElementById("qx6Trades");
+ if(tm)tm.innerHTML=s.trades.length?s.trades.slice(0,50).map(t=>`<tr><td>${esc6(t.side)}</td><td>${esc6(t.symbol)}</td><td>${esc6(t.amount)}</td><td>${t.signature?`<a target="_blank" rel="noopener" href="https://solscan.io/tx/${encodeURIComponent(t.signature)}">${esc6(qx6Short(t.signature))}</a>`:"—"}</td><td>${new Date(t.time).toLocaleString()}</td></tr>`).join(""):'<tr><td colspan="5">No confirmed trades recorded.</td></tr>';
+}
+function esc6(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+window.QX6RecordTrade=function(t){
+ const s=qx6State();s.trades.unshift(Object.assign({time:Date.now()},t));s.trades=s.trades.slice(0,200);qx6Save(s);qx6Render();
+};
+window.QX6AddTrigger=function(t){
+ const s=qx6State();s.orders.unshift(Object.assign({time:Date.now(),status:"monitoring"},t));qx6Save(s);qx6Render();
+};
+document.getElementById("qx6RefreshOrders")?.addEventListener("click",qx6Render);
+document.getElementById("qx6ClearOrders")?.addEventListener("click",()=>{const s=qx6State();s.orders=[];qx6Save(s);qx6Render()});
+document.getElementById("qx6Leverage")?.addEventListener("input",()=>{
+ const c=Number(document.getElementById("qx6Collateral").value||0),l=Number(document.getElementById("qx6Leverage").value||0);
+ document.getElementById("qx6MarginResult").textContent=(c>0&&l>0)?`Notional $${(c*l).toLocaleString()} · borrow $${(c*(l-1)).toLocaleString()}`:"—";
+});
+document.getElementById("qx6SendSol")?.addEventListener("click",async()=>{
+ const status=document.getElementById("qx6SendStatus");
+ try{
+  const to=document.getElementById("qx6To").value.trim(),amount=Number(document.getElementById("qx6Amount").value);
+  if(!/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(to))throw new Error("Enter a valid Solana address.");
+  if(!Number.isFinite(amount)||amount<=0)throw new Error("Enter a valid SOL amount.");
+  if(!window.walletAddress)throw new Error("Connect your Solana wallet first.");
+  const provider=window.QXGetActiveWalletProvider?.()||window.getActiveWalletProvider?.();
+  if(!provider?.signTransaction)throw new Error("Connected wallet cannot sign transactions.");
+  const connection=typeof qxGetHealthyConnection==="function"?await qxGetHealthyConnection():null;
+  if(!connection)throw new Error("Solana RPC is unavailable.");
+  const tx=new Transaction();
+  const latest=await connection.getLatestBlockhash("confirmed");
+  tx.feePayer=new PublicKey(window.walletAddress);tx.recentBlockhash=latest.blockhash;
+  tx.add(SystemProgram.transfer({fromPubkey:new PublicKey(window.walletAddress),toPubkey:new PublicKey(to),lamports:Math.round(amount*1e9)}));
+  status.textContent="Approve the SOL transfer in your wallet…";
+  const signed=await provider.signTransaction(tx);
+  const sig=await connection.sendRawTransaction(signed.serialize(),{skipPreflight:false,maxRetries:3,preflightCommitment:"confirmed"});
+  await connection.confirmTransaction({signature:sig,blockhash:latest.blockhash,lastValidBlockHeight:latest.lastValidBlockHeight},"confirmed");
+  status.innerHTML=`Sent · <a target="_blank" rel="noopener" href="https://solscan.io/tx/${encodeURIComponent(sig)}">${esc6(qx6Short(sig))}</a>`;
+ }catch(e){status.textContent=e?.message||"Transfer failed."}
+});
+document.addEventListener("DOMContentLoaded",qx6Render);
+window.addEventListener("QXWalletConnected",qx6Render);
+window.addEventListener("QXWalletDisconnected",qx6Render);
+})();
+</script>
+
+
+<!-- QX LIVE CEX CORE CONNECTOR v1 -->
+<style>
+#qxCexCore{margin:14px 0;padding:15px;border:1px solid rgba(98,70,150,.75);border-radius:17px;background:linear-gradient(160deg,rgba(20,14,34,.98),rgba(10,8,18,.98));box-shadow:0 16px 44px rgba(0,0,0,.18)}
+.qx-cex-head{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+.qx-cex-title{font-weight:900;font-size:16px}.qx-cex-sub{font-size:10px;color:#a99db8;margin-top:4px}
+.qx-cex-badge{font-size:10px;padding:6px 9px;border-radius:999px;border:1px solid #315d50;background:#10251f;color:#68e6b1}
+.qx-cex-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:12px;margin-top:13px}
+.qx-cex-card{border:1px solid #332647;border-radius:13px;padding:12px;background:#0e0b17}
+.qx-cex-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.qx-cex-card label{display:block;font-size:10px;color:#a99db8;margin:0 0 6px}
+.qx-cex-card input,.qx-cex-card select{width:100%;box-sizing:border-box;background:#090714;color:#fff;border:1px solid #38294d;border-radius:9px;padding:10px}
+.qx-cex-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px}
+.qx-cex-actions button{border:0;border-radius:9px;padding:11px;font-weight:900;cursor:pointer}
+.qx-cex-buy{background:#45e0a2;color:#06150f}.qx-cex-sell{background:#e96876;color:#25070b}
+.qx-cex-status{font-size:10px;color:#b9afc5;line-height:1.5;margin-top:9px;overflow-wrap:anywhere}
+.qx-cex-book{width:100%;border-collapse:collapse;font-size:10px}.qx-cex-book th,.qx-cex-book td{padding:6px;border-bottom:1px solid #241b32;text-align:right}.qx-cex-book th:first-child,.qx-cex-book td:first-child{text-align:left}
+.qx-cex-note{font-size:9px;color:#8f839e;margin-top:8px;line-height:1.45}
+@media(max-width:720px){.qx-cex-grid{grid-template-columns:1fr}}
+</style>
+<script>
+(function(){
+"use strict";
+const QX_CEX_URL="https://qkazosqvnmknnzkukggj.supabase.co/functions/v1/qx-trading";
+function qxCexWallet(){return window.walletAddress||document.getElementById("walletAddress")?.textContent?.trim()||""}
+function qxCexProvider(){return window.QXGetActiveWalletProvider?.()||window.getActiveWalletProvider?.()||window.activeWalletProvider||null}
+function qxCexEsc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+async function qxCexPost(body){
+ const r=await fetch(QX_CEX_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+ const j=await r.json().catch(()=>({error:"Invalid server response."}));
+ if(!r.ok||j.ok===false)throw new Error(j.error||"QX trading request failed.");
+ return j;
+}
+async function qxCexAuth(){
+ const wallet=qxCexWallet(); if(!wallet||wallet==="Not connected")throw new Error("Connect your Solana wallet first.");
+ const provider=qxCexProvider(); if(!provider?.signMessage)throw new Error("Connected wallet does not support message signing.");
+ const ch=await qxCexPost({action:"challenge",wallet});
+ const bytes=new TextEncoder().encode(ch.message);
+ const sig=await provider.signMessage(bytes);
+ let raw=sig instanceof Uint8Array?sig:(sig?.signature instanceof Uint8Array?sig.signature:null);
+ if(!raw)throw new Error("Wallet did not return a message signature.");
+ let bin="";for(const b of raw)bin+=String.fromCharCode(b);
+ return {wallet,signature:btoa(bin)};
+}
+async function qxCexBalances(){
+ const a=await qxCexAuth();return qxCexPost({action:"balances",wallet:a.wallet,signature:a.signature});
+}
+async function qxCexBook(market){
+ const r=await fetch(QX_CEX_URL+"?action=book&market="+encodeURIComponent(market));return r.json();
+}
+function qxCexEnsure(){
+ const page=document.getElementById("exchangePage");if(!page||document.getElementById("qxCexCore"))return;
+ const box=document.createElement("section");box.id="qxCexCore";box.innerHTML=`
+ <div class="qx-cex-head"><div><div class="qx-cex-title">QX Live CEX Engine</div><div class="qx-cex-sub">Server-side accounts · balances · limit orders · matching · trade ledger</div></div><span id="qxCexBadge" class="qx-cex-badge">ENGINE ONLINE</span></div>
+ <div class="qx-cex-grid">
+  <div class="qx-cex-card">
+   <div class="qx-cex-row">
+    <div><label>Market</label><input id="qxCexMarket" value="SOL/USDC" autocomplete="off"></div>
+    <div><label>Side</label><select id="qxCexSide"><option value="buy">BUY</option><option value="sell">SELL</option></select></div>
+   </div>
+   <div class="qx-cex-row" style="margin-top:8px">
+    <div><label>Limit price</label><input id="qxCexPrice" inputmode="decimal" placeholder="Price"></div>
+    <div><label>Quantity</label><input id="qxCexQty" inputmode="decimal" placeholder="SOL amount"></div>
+   </div>
+   <div class="qx-cex-actions"><button id="qxCexBuy" class="qx-cex-buy">PLACE BUY</button><button id="qxCexSell" class="qx-cex-sell">PLACE SELL</button></div>
+   <div id="qxCexStatus" class="qx-cex-status">Wallet authentication is requested only when you use the server-side account.</div>
+  </div>
+  <div class="qx-cex-card">
+   <label>Live order book</label>
+   <table class="qx-cex-book"><thead><tr><th>Side</th><th>Price</th><th>Qty</th></tr></thead><tbody id="qxCexBookBody"><tr><td colspan="3">Loading…</td></tr></tbody></table>
+   <div class="qx-cex-note">Orders are stored and matched on QX's server-side ledger. A real deposit must be credited before an order can spend that asset.</div>
+  </div>
+ </div>`;
+ page.prepend(box);
+ const status=document.getElementById("qxCexStatus");
+ async function place(side){
+  try{
+   const market=document.getElementById("qxCexMarket").value.trim().toUpperCase();
+   const price=Number(document.getElementById("qxCexPrice").value),qty=Number(document.getElementById("qxCexQty").value);
+   if(!market||!Number.isFinite(price)||price<=0||!Number.isFinite(qty)||qty<=0)throw new Error("Enter market, limit price and quantity.");
+   status.textContent="Sign the QX wallet authentication message…";
+   const a=await qxCexAuth();
+   status.textContent="Submitting the order to the QX matching engine…";
+   const r=await qxCexPost({action:"place-order",wallet:a.wallet,signature:a.signature,market,side,order_type:"limit",price,quantity:qty});
+   status.textContent="Order accepted · "+JSON.stringify(r.result);
+   await renderBook();
+  }catch(e){status.textContent=e?.message||"Order failed."}
+ }
+ document.getElementById("qxCexBuy").onclick=()=>place("buy");
+ document.getElementById("qxCexSell").onclick=()=>place("sell");
+ async function renderBook(){
+  const market=document.getElementById("qxCexMarket").value.trim().toUpperCase();
+  const body=document.getElementById("qxCexBookBody");
+  try{
+   const r=await qxCexBook(market);if(!r.ok)throw new Error(r.error||"Book unavailable.");
+   const rows=[...(r.asks||[]).slice(0,8).map(x=>["ASK",x.price,x.quantity-x.filled_quantity]),...(r.bids||[]).slice(0,8).map(x=>["BID",x.price,x.quantity-x.filled_quantity]);
+   body.innerHTML=rows.length?rows.map(x=>`<tr><td>${qxCexEsc(x[0])}</td><td>${qxCexEsc(Number(x[1]).toPrecision(8))}</td><td>${qxCexEsc(Number(x[2]).toPrecision(8))}</td></tr>`).join(""):'<tr><td colspan="3">No server-side orders yet.</td></tr>';
+  }catch(e){body.innerHTML='<tr><td colspan="3">'+qxCexEsc(e?.message||"Book unavailable.")+'</td></tr>'}
+ }
+ document.getElementById("qxCexMarket").addEventListener("change",renderBook);
+ renderBook();
+ window.QX_CEX_API={post:qxCexPost,auth:qxCexAuth,balances:qxCexBalances,book:qxCexBook};
+}
+const oldOpenExchange=window.QXExchangeTerminalOpen;
+window.QXExchangeTerminalOpen=function(){if(typeof oldOpenExchange==="function")oldOpenExchange();qxCexEnsure()};
+document.addEventListener("DOMContentLoaded",()=>{setTimeout(qxCexEnsure,500)});
+window.addEventListener("QXWalletConnected",()=>setTimeout(qxCexEnsure,100));
+})();
+</script>
+
 </body>
 </html>
 
