@@ -1076,13 +1076,13 @@ header{
       <div class="qx-swap-sub" id="qxLivePrice">Live SOL price: loading...</div>
      </div>
     </div>
-    <div class="swap-quote"><span>QX commission</span><strong id="qxFeeDisplay">1.00% | fee setup required</strong></div>
+    <div class="swap-quote"><span>QX commission</span><strong id="qxFeeDisplay">Not enabled · referral account verification required</strong></div>
     <div class="swap-quote"><span>Route</span><strong id="swapRoute">QX best available route</strong></div>
     <div class="swap-quote"><span>Wallet</span><strong id="swapWallet">Not connected</strong></div>
     <button class="swap-action" id="getQuoteBtn"><span>UPDATE LIVE QUOTE</span><small>Live Jupiter price | inside QX</small></button>
     <button class="swap-action swap-secondary" id="confirmSwapBtn" type="button">GET LIVE QUOTE FIRST</button>
-    <p class="fee-note">QX fee: <strong>1%</strong> per completed swap. The live quote must confirm the full fee before wallet signing. No fee is charged when a swap is not completed.</p>
-    <p class="swap-status" id="swapStatus">Connect your wallet, enter an amount, then review the live quote and confirm in your wallet.</p>
+    <p class="fee-note">Only fees explicitly returned in the live Jupiter order are included in the displayed quote. QX referral commission is not enabled until its referral account and token accounts are verified; no QX commission is claimed or charged before that setup is confirmed.</p>
+    <p class="swap-status" id="swapStatus">Choose a token and enter an amount to receive a live Jupiter quote. Connect a wallet to sign and execute the swap.</p>
    </div>
   </section>
   
@@ -1442,7 +1442,7 @@ window.QXConnectWallet=async function(){
 // prevent the public market, search, navigation, or other page buttons from running.
 let createAppKit,SolanaAdapter,solana;
 let Connection,PublicKey,Keypair,SystemProgram,Transaction,VersionedTransaction;
-let MINT_SIZE,TOKEN_PROGRAM_ID,getAssociatedTokenAddress,createInitializeMintInstruction,createAssociatedTokenAccountInstruction,createMintToInstruction;
+let MINT_SIZE,TOKEN_PROGRAM_ID,TOKEN_2022_PROGRAM_ID,getAssociatedTokenAddress,createInitializeMintInstruction,createAssociatedTokenAccountInstruction,createMintToInstruction;
 // Load only the three required Reown modules first. Keep the actual CDN error so
 // Safari shows the failing package instead of a misleading generic message.
 const qxLibraryReady = (async()=>{
@@ -1473,7 +1473,7 @@ const qxLibraryReady = (async()=>{
   import("https://esm.sh/@solana/spl-token@0.4.15?target=es2022&deps=@solana/web3.js@1.98.4,@solana/buffer-layout@4.0.1")
  ]);
  ({Connection,PublicKey,Keypair,SystemProgram,Transaction,VersionedTransaction}=optional[0]);
- ({MINT_SIZE,TOKEN_PROGRAM_ID,getAssociatedTokenAddress,createInitializeMintInstruction,createAssociatedTokenAccountInstruction,createMintToInstruction}=optional[1]);
+ ({MINT_SIZE,TOKEN_PROGRAM_ID,TOKEN_2022_PROGRAM_ID,getAssociatedTokenAddress,createInitializeMintInstruction,createAssociatedTokenAccountInstruction,createMintToInstruction}=optional[1]);
  if(!Connection||!PublicKey||!Keypair||!SystemProgram||!Transaction||!MINT_SIZE||!TOKEN_PROGRAM_ID){
   throw new Error("Required Solana libraries loaded without the required exports.");
  }
@@ -1532,10 +1532,10 @@ function qxApplyLanguage(){
   createTitle:"\u0623\u0646\u0634\u0626 \u0639\u0645\u0644\u062A\u0643",launch:"\u0625\u0637\u0644\u0627\u0642 \u0639\u0645\u0644\u0629 SPL",createDesc:"\u0623\u0646\u0634\u0626 \u0627\u0644\u0639\u0645\u0644\u0629 \u0648\u0627\u0644\u0643\u0645\u064A\u0629 \u0627\u0644\u0623\u0648\u0644\u064A\u0629 \u0645\u0628\u0627\u0634\u0631\u0629 \u0645\u0646 \u0645\u062D\u0641\u0638\u0629 \u0633\u0648\u0644\u0627\u0646\u0627 \u0627\u0644\u0645\u062A\u0635\u0644\u0629. \u0633\u062A\u0637\u0644\u0628 \u0645\u0646\u0643 \u0627\u0644\u0645\u062D\u0641\u0638\u0629 \u0627\u0644\u0645\u0648\u0627\u0641\u0642\u0629 \u0639\u0644\u0649 \u0627\u0644\u0645\u0639\u0627\u0645\u0644\u0629.",tokenFee:"\u0631\u0633\u0648\u0645 \u0625\u0646\u0634\u0627\u0621 QX: 0.30 SOL. \u0631\u0633\u0648\u0645 \u0634\u0628\u0643\u0629 \u0633\u0648\u0644\u0627\u0646\u0627 \u0648\u062d\u062c\u0632 \u062d\u0633\u0627\u0628 \u0627\u0644\u0639\u0645\u0644\u0629 \u0625\u0636\u0627\u0641\u064a\u0629.",tokenName:"\u0627\u0633\u0645 \u0627\u0644\u0639\u0645\u0644\u0629",symbol:"\u0627\u0644\u0631\u0645\u0632",supply:"\u0627\u0644\u0643\u0645\u064A\u0629 \u0627\u0644\u0623\u0648\u0644\u064A\u0629",decimals:"\u0627\u0644\u062E\u0627\u0646\u0627\u062A \u0627\u0644\u0639\u0634\u0631\u064A\u0629",createButton:"\u0627\u0631\u0628\u0637 \u0627\u0644\u0645\u062D\u0641\u0638\u0629 \u0648\u0623\u0646\u0634\u0626 \u0627\u0644\u0639\u0645\u0644\u0629",createHint:"\u0627\u0631\u0628\u0637 \u0645\u062D\u0641\u0638\u062A\u0643 \u0623\u0648\u0644\u0627\u064B. \u0631\u0633\u0648\u0645 \u0625\u0646\u0634\u0627\u0621 QX \u0647\u064A 0.30 SOL \u0628\u0627\u0644\u0625\u0636\u0627\u0641\u0629 \u0625\u0644\u0649 \u0631\u0633\u0648\u0645 \u0627\u0644\u0634\u0628\u0643\u0629 \u0648\u0627\u0644\u062D\u062C\u0632.",created:"\u062A\u0645 \u0625\u0646\u0634\u0627\u0621 \u0627\u0644\u0639\u0645\u0644\u0629",viewTx:"\u0639\u0631\u0636 \u0627\u0644\u0645\u0639\u0627\u0645\u0644\u0629 \u0639\u0644\u0649 Solscan",createNote:"\u0645\u0644\u0627\u062D\u0638\u0629: \u0647\u0630\u0627 \u0627\u0644\u0625\u062C\u0631\u0627\u0621 \u064A\u0646\u0634\u0626 \u0625\u0635\u062F\u0627\u0631 SPL \u0648\u0627\u0644\u0643\u0645\u064A\u0629 \u0627\u0644\u0623\u0648\u0644\u064A\u0629 \u0639\u0644\u0649 \u0627\u0644\u0634\u0628\u0643\u0629. \u0646\u0634\u0631 \u0627\u0644\u0627\u0633\u0645 \u0648\u0627\u0644\u0631\u0645\u0632 \u0648\u0627\u0644\u0634\u0639\u0627\u0631 \u0641\u064A \u062F\u0644\u064A\u0644 \u0639\u0627\u0644\u0645\u064A \u064A\u062A\u0637\u0644\u0628 \u062E\u062F\u0645\u0629 \u0628\u064A\u0627\u0646\u0627\u062A \u0648\u0635\u0641\u064A\u0629 \u0648\u0641\u0647\u0631\u0633\u0629.",
   marketTitle:"\u0623\u0633\u0648\u0627\u0642 \u0633\u0648\u0644\u0627\u0646\u0627",liveMarket:"\u0627\u0644\u0633\u0648\u0642 \u0627\u0644\u0645\u0628\u0627\u0634\u0631",all:"\u0643\u0644 \u0627\u0644\u0639\u0645\u0644\u0627\u062A",new:"\u0639\u0645\u0644\u0627\u062A \u062C\u062F\u064A\u062F\u0629",gainers:"\u0627\u0644\u0623\u0639\u0644\u0649 \u0627\u0631\u062A\u0641\u0627\u0639\u0627\u064B",losers:"\u0627\u0644\u0623\u0639\u0644\u0649 \u0627\u0646\u062E\u0641\u0627\u0636\u0627\u064B",trending:"\u0627\u0644\u0631\u0627\u0626\u062C\u0629",volume:"\u0627\u0644\u0623\u0639\u0644\u0649 \u062A\u062F\u0627\u0648\u0644\u0627\u064B",search:"\u0628\u062D\u062B",searchPlaceholder:"\u0627\u0628\u062D\u062B \u0628\u0627\u0644\u0627\u0633\u0645 \u0623\u0648 \u0627\u0644\u0631\u0645\u0632 \u0623\u0648 \u0639\u0646\u0648\u0627\u0646 \u0627\u0644\u0639\u0642\u062F",allSol:"\u0643\u0644 \u0639\u0645\u0644\u0627\u062A \u0633\u0648\u0644\u0627\u0646\u0627",loading:"\u062C\u0627\u0631\u064D \u0627\u0644\u062A\u062D\u0645\u064A\u0644...",sort:"\u062A\u0631\u062A\u064A\u0628 \u0627\u0644\u0633\u0648\u0642",defaultSort:"\u0627\u0644\u062A\u0631\u062A\u064A\u0628 \u0627\u0644\u0627\u0641\u062A\u0631\u0627\u0636\u064A",price:"\u0627\u0644\u0633\u0639\u0631",change:"\u0627\u0644\u062A\u063A\u064A\u0631",marketCap:"\u0627\u0644\u0642\u064A\u0645\u0629 \u0627\u0644\u0633\u0648\u0642\u064A\u0629",liquidity:"\u0627\u0644\u0633\u064A\u0648\u0644\u0629",token:"\u0627\u0644\u0639\u0645\u0644\u0629",priceUsd:"\u0627\u0644\u0633\u0639\u0631",day:"24 \u0633\u0627\u0639\u0629",marketLoading:"\u062C\u0627\u0631\u064D \u062A\u062D\u0645\u064A\u0644 \u0627\u0644\u0633\u0648\u0642...",marketConnecting:"\u062C\u0627\u0631\u064D \u0627\u0644\u0627\u062A\u0635\u0627\u0644 \u0628\u0628\u064A\u0627\u0646\u0627\u062A \u0627\u0644\u0633\u0648\u0642 \u0627\u0644\u0645\u0628\u0627\u0634\u0631\u0629...",holdersNote:"\u064A\u062A\u0637\u0644\u0628 \u0639\u0631\u0636 \u0639\u062F\u062F \u0627\u0644\u0645\u0627\u0644\u0643\u064A\u0646 \u0631\u0628\u0637 \u062E\u062F\u0645\u0629 \u0641\u0647\u0631\u0633\u0629 \u0645\u062A\u062E\u0635\u0635\u0629 \u0644\u0634\u0628\u0643\u0629 \u0633\u0648\u0644\u0627\u0646\u0627. \u0644\u0627 \u062A\u0639\u0631\u0636 QX \u0623\u0631\u0642\u0627\u0645\u0627\u064B \u062A\u0642\u062F\u064A\u0631\u064A\u0629 \u0623\u0648 \u063A\u064A\u0631 \u062D\u0642\u064A\u0642\u064A\u0629.",
   adsTitle:"\u0627\u0644\u0625\u0639\u0644\u0627\u0646\u0627\u062A",sponsored:"\u0625\u0639\u0644\u0627\u0646\u0627\u062A \u0645\u0645\u0648\u0644\u0629",featured:"\u0645\u0634\u0627\u0631\u064A\u0639 \u0645\u0645\u064A\u0632\u0629",addAd:"+ \u0623\u0636\u0641 \u0625\u0639\u0644\u0627\u0646\u0627\u064B",noAds:"\u0644\u0627 \u062A\u0648\u062C\u062F \u0625\u0639\u0644\u0627\u0646\u0627\u062A \u0645\u0645\u0648\u0644\u0629 \u062D\u0627\u0644\u064A\u0627\u064B.",adsHelp:"\u0631\u0648\u0651\u062C \u0644\u0645\u0634\u0631\u0648\u0639\u0643 \u0623\u0645\u0627\u0645 \u0645\u062C\u062A\u0645\u0639 QX.",
-  backMarkets:"\u0627\u0644\u0639\u0648\u062F\u0629 \u0625\u0644\u0649 \u0627\u0644\u0623\u0633\u0648\u0627\u0642",marketCapFdv:"\u0627\u0644\u0642\u064A\u0645\u0629 \u0627\u0644\u0633\u0648\u0642\u064A\u0629 / \u0627\u0644\u062A\u0642\u064A\u064A\u0645 \u0627\u0644\u0645\u062E\u0641\u0641",transactions:"\u0645\u0639\u0627\u0645\u0644\u0627\u062A 24 \u0633\u0627\u0639\u0629",holders:"\u0627\u0644\u0645\u0627\u0644\u0643\u0648\u0646",indexer:"\u064A\u062A\u0637\u0644\u0628 \u0645\u0641\u0647\u0631\u0633 \u0628\u064A\u0627\u0646\u0627\u062A",chart:"\u0627\u0644\u0631\u0633\u0645 \u0627\u0644\u0628\u064A\u0627\u0646\u064A \u0627\u0644\u0645\u0628\u0627\u0634\u0631 \u0645\u0646 QX",solscan:"\u0639\u0631\u0636 \u0627\u0644\u0639\u0642\u062F \u0639\u0644\u0649 Solscan",buy:"\u0634\u0631\u0627\u0621",sell:"\u0628\u064A\u0639",youPay:"\u0623\u0646\u062A \u062A\u062F\u0641\u0639",receive:"\u0627\u0644\u0643\u0645\u064A\u0629 \u0627\u0644\u0645\u062A\u0648\u0642\u0639\u0629",fee:"\u0639\u0645\u0648\u0644\u0629 QX",route:"\u0645\u0633\u0627\u0631 \u0627\u0644\u062A\u062F\u0627\u0648\u0644",notConnected:"\u063A\u064A\u0631 \u0645\u062A\u0635\u0644",bestPrice:"\u0623\u0641\u0636\u0644 \u0633\u0639\u0631",getQuote:"\u0627\u062D\u0635\u0644 \u0639\u0644\u0649 \u0623\u0641\u0636\u0644 \u0633\u0639\u0631",confirm:"\u062A\u0623\u0643\u064A\u062F \u0627\u0644\u0645\u0628\u0627\u062F\u0644\u0629",feeNote:"\u0631\u0633\u0648\u0645 QX: \u200F1% \u0639\u0644\u0649 \u0643\u0644 \u0639\u0645\u0644\u064A\u0629 \u0645\u0628\u0627\u062F\u0644\u0629 \u0645\u0643\u062A\u0645\u0644\u0629. \u064A\u062C\u0628 \u0623\u0646 \u064A\u0624\u0643\u062F \u0639\u0631\u0636 \u0627\u0644\u0633\u0639\u0631 \u0627\u0644\u0645\u0628\u0627\u0634\u0631 \u0627\u0644\u0631\u0633\u0648\u0645 \u0643\u0627\u0645\u0644\u0629 \u0642\u0628\u0644 \u062A\u0648\u0642\u064A\u0639 \u0627\u0644\u0645\u062D\u0641\u0638\u0629. \u0644\u0627 \u062A\u064F\u0641\u0631\u0636 \u0631\u0633\u0648\u0645 \u0625\u0630\u0627 \u0644\u0645 \u062A\u0643\u062A\u0645\u0644 \u0627\u0644\u0639\u0645\u0644\u064A\u0629.",
+  backMarkets:"\u0627\u0644\u0639\u0648\u062F\u0629 \u0625\u0644\u0649 \u0627\u0644\u0623\u0633\u0648\u0627\u0642",marketCapFdv:"\u0627\u0644\u0642\u064A\u0645\u0629 \u0627\u0644\u0633\u0648\u0642\u064A\u0629 / \u0627\u0644\u062A\u0642\u064A\u064A\u0645 \u0627\u0644\u0645\u062E\u0641\u0641",transactions:"\u0645\u0639\u0627\u0645\u0644\u0627\u062A 24 \u0633\u0627\u0639\u0629",holders:"\u0627\u0644\u0645\u0627\u0644\u0643\u0648\u0646",indexer:"\u064A\u062A\u0637\u0644\u0628 \u0645\u0641\u0647\u0631\u0633 \u0628\u064A\u0627\u0646\u0627\u062A",chart:"\u0627\u0644\u0631\u0633\u0645 \u0627\u0644\u0628\u064A\u0627\u0646\u064A \u0627\u0644\u0645\u0628\u0627\u0634\u0631 \u0645\u0646 QX",solscan:"\u0639\u0631\u0636 \u0627\u0644\u0639\u0642\u062F \u0639\u0644\u0649 Solscan",buy:"\u0634\u0631\u0627\u0621",sell:"\u0628\u064A\u0639",youPay:"\u0623\u0646\u062A \u062A\u062F\u0641\u0639",receive:"\u0627\u0644\u0643\u0645\u064A\u0629 \u0627\u0644\u0645\u062A\u0648\u0642\u0639\u0629",fee:"\u0639\u0645\u0648\u0644\u0629 QX",route:"\u0645\u0633\u0627\u0631 \u0627\u0644\u062A\u062F\u0627\u0648\u0644",notConnected:"\u063A\u064A\u0631 \u0645\u062A\u0635\u0644",bestPrice:"\u0623\u0641\u0636\u0644 \u0633\u0639\u0631",getQuote:"\u0627\u062D\u0635\u0644 \u0639\u0644\u0649 \u0623\u0641\u0636\u0644 \u0633\u0639\u0631",confirm:"\u062A\u0623\u0643\u064A\u062F \u0627\u0644\u0645\u0628\u0627\u062F\u0644\u0629",feeNote:"\u0627\u0644\u0631\u0633\u0648\u0645 \u0627\u0644\u0638\u0627\u0647\u0631\u0629 \u0647\u064A \u0627\u0644\u0631\u0633\u0648\u0645 \u0627\u0644\u062A\u064A \u0623\u0643\u062F\u0647\u0627 \u0637\u0644\u0628 Jupiter \u0627\u0644\u0645\u0628\u0627\u0634\u0631. \u0639\u0645\u0648\u0644\u0629 QX \u063A\u064A\u0631 \u0645\u0641\u0639\u0644\u0629 \u062D\u062A\u0649 \u064A\u062A\u0645 \u0627\u0644\u062A\u062D\u0642\u0642 \u0645\u0646 \u062D\u0633\u0627\u0628 \u0627\u0644\u0625\u062D\u0627\u0644\u0627\u062A \u0648\u062D\u0633\u0627\u0628\u0627\u062A \u0627\u0644\u0631\u0633\u0648\u0645 \u0627\u0644\u062A\u0627\u0628\u0639\u0629 \u0644\u0647\u0627.",
   adDuration:"\u0645\u062F\u0629 \u0627\u0644\u0625\u0639\u0644\u0627\u0646",totalPrice:"\u0627\u0644\u0633\u0639\u0631 \u0627\u0644\u0625\u062C\u0645\u0627\u0644\u064A",solPayment:"\u0627\u0644\u062F\u0641\u0639 \u0627\u0644\u062A\u0642\u062F\u064A\u0631\u064A \u0628\u0639\u0645\u0644\u0629 SOL",adHeadline:"\u0639\u0646\u0648\u0627\u0646 \u0627\u0644\u0625\u0639\u0644\u0627\u0646",adText:"\u0627\u0643\u062A\u0628 \u0646\u0635 \u0627\u0644\u0625\u0639\u0644\u0627\u0646",adLink:"\u0631\u0627\u0628\u0637 \u0627\u0644\u0645\u0648\u0642\u0639 \u0623\u0648 \u0627\u0644\u0645\u0634\u0631\u0648\u0639",adImage:"\u0631\u0627\u0628\u0637 \u0627\u0644\u0635\u0648\u0631\u0629 (\u0627\u062E\u062A\u064A\u0627\u0631\u064A)",adNote:"\u0633\u064A\u064F\u0637\u0644\u0628 \u0627\u0644\u062F\u0641\u0639 \u0645\u0646 \u0627\u0644\u0645\u062D\u0641\u0638\u0629 \u0627\u0644\u0645\u062A\u0635\u0644\u0629 \u0628\u0640 QX. \u0644\u0646 \u064A\u064F\u0646\u0634\u0631 \u0627\u0644\u0625\u0639\u0644\u0627\u0646 \u0625\u0644\u0627 \u0628\u0639\u062F \u0623\u0646 \u062A\u062A\u062D\u0642\u0642 QX \u0645\u0646 \u0627\u0644\u062F\u0641\u0639.",payAd:"\u0627\u062F\u0641\u0639 \u0628\u0627\u0644\u0645\u062D\u0641\u0638\u0629 \u0627\u0644\u0645\u062A\u0635\u0644\u0629",close:"\u0625\u063A\u0644\u0627\u0642",language:"\u0627\u0644\u0644\u063A\u0629",currency:"\u0627\u0644\u0639\u0645\u0644\u0629"
  }:{
-  connect:"Connect Wallet",wallet:"Wallet",create:"Create Token",markets:"Markets",ads:"Advertisements",assets:"My Assets",portfolio:"TOTAL PORTFOLIO VALUE | USD ESTIMATE",liveBalance:"Live balance",refresh:"Refresh",onchain:"ON-CHAIN",asset:"Asset",balance:"Balance",value:"Value",connectAssets:"Connect your wallet to view assets.",createTitle:"Create Your Token",launch:"Launch an SPL token",createDesc:"Create the token mint and initial supply directly from your connected Solana wallet. Your wallet will ask you to approve the transaction.",tokenFee:"QX creation fee: 0.30 SOL. Solana network fees and mint-account rent are additional.",tokenName:"Token name",symbol:"Symbol",supply:"Initial supply",decimals:"Decimals",createButton:"Connect wallet & create token",createHint:"Connect your wallet first. The QX creation fee is 0.30 SOL, plus Solana network fees and mint-account rent.",created:"Token created",viewTx:"View transaction on Solscan",createNote:"Note: this creates an on-chain SPL mint and initial supply. Publishing the name, symbol and logo in a global directory requires a metadata and indexing service.",marketTitle:"Solana Markets",liveMarket:"MARKET",all:"All Coins",new:"New Coins",gainers:"Top Gainers",losers:"Top Losers",trending:"Trending",volume:"Top Volume",search:"Search",searchPlaceholder:"Search name, symbol or contract",allSol:"All Solana tokens",loading:"Loading...",sort:"SORT MARKET",defaultSort:"Default order",price:"Price",change:"Change",marketCap:"Market Cap",liquidity:"Liquidity",token:"Token",priceUsd:"Price USD",day:"24h",marketLoading:"Loading market...",marketConnecting:"Connecting to live market data...",holdersNote:"Holder totals require a dedicated Solana indexing API. QX does not display estimated or fabricated holder counts.",adsTitle:"Advertisements",sponsored:"Sponsored",featured:"Featured projects",addAd:"+ Add advertisement",noAds:"No sponsored advertisements yet.",adsHelp:"Promote your project to the QX community.",backMarkets:"BACK TO MARKETS",marketCapFdv:"Market Cap / FDV",transactions:"24h Transactions",holders:"Holders",indexer:"Indexer required",chart:"QX LIVE CHART",solscan:"View contract on Solscan",buy:"BUY",sell:"SELL",youPay:"YOU PAY",receive:"Estimated receive",fee:"QX commission",route:"Route",notConnected:"Not connected",bestPrice:"GET BEST PRICE",getQuote:"GET BEST PRICE",confirm:"CONFIRM SWAP",feeNote:"QX fee: 1% per completed swap. The live quote must confirm the full fee before wallet signing. No fee is charged when a swap is not completed.",adDuration:"Advertisement duration",totalPrice:"Total price",solPayment:"Estimated SOL payment",adHeadline:"Advertisement title",adText:"Paste your advertisement",adLink:"Website or project link",adImage:"Image URL (optional)",adNote:"Payment is requested from the wallet already connected to QX. The advertisement is published only after payment is verified by QX.",payAd:"PAY WITH CONNECTED WALLET",close:"Close",language:"Language",currency:"Currency"
+  connect:"Connect Wallet",wallet:"Wallet",create:"Create Token",markets:"Markets",ads:"Advertisements",assets:"My Assets",portfolio:"TOTAL PORTFOLIO VALUE | USD ESTIMATE",liveBalance:"Live balance",refresh:"Refresh",onchain:"ON-CHAIN",asset:"Asset",balance:"Balance",value:"Value",connectAssets:"Connect your wallet to view assets.",createTitle:"Create Your Token",launch:"Launch an SPL token",createDesc:"Create the token mint and initial supply directly from your connected Solana wallet. Your wallet will ask you to approve the transaction.",tokenFee:"QX creation fee: 0.30 SOL. Solana network fees and mint-account rent are additional.",tokenName:"Token name",symbol:"Symbol",supply:"Initial supply",decimals:"Decimals",createButton:"Connect wallet & create token",createHint:"Connect your wallet first. The QX creation fee is 0.30 SOL, plus Solana network fees and mint-account rent.",created:"Token created",viewTx:"View transaction on Solscan",createNote:"Note: this creates an on-chain SPL mint and initial supply. Publishing the name, symbol and logo in a global directory requires a metadata and indexing service.",marketTitle:"Solana Markets",liveMarket:"MARKET",all:"All Coins",new:"New Coins",gainers:"Top Gainers",losers:"Top Losers",trending:"Trending",volume:"Top Volume",search:"Search",searchPlaceholder:"Search name, symbol or contract",allSol:"All Solana tokens",loading:"Loading...",sort:"SORT MARKET",defaultSort:"Default order",price:"Price",change:"Change",marketCap:"Market Cap",liquidity:"Liquidity",token:"Token",priceUsd:"Price USD",day:"24h",marketLoading:"Loading market...",marketConnecting:"Connecting to live market data...",holdersNote:"Holder totals require a dedicated Solana indexing API. QX does not display estimated or fabricated holder counts.",adsTitle:"Advertisements",sponsored:"Sponsored",featured:"Featured projects",addAd:"+ Add advertisement",noAds:"No sponsored advertisements yet.",adsHelp:"Promote your project to the QX community.",backMarkets:"BACK TO MARKETS",marketCapFdv:"Market Cap / FDV",transactions:"24h Transactions",holders:"Holders",indexer:"Indexer required",chart:"QX LIVE CHART",solscan:"View contract on Solscan",buy:"BUY",sell:"SELL",youPay:"YOU PAY",receive:"Estimated receive",fee:"QX commission",route:"Route",notConnected:"Not connected",bestPrice:"GET BEST PRICE",getQuote:"GET BEST PRICE",confirm:"CONFIRM SWAP",feeNote:"Only fees explicitly returned in the live Jupiter order are included. QX referral commission is not enabled until its referral account and fee token accounts are verified; no QX fee is claimed or charged before then.",adDuration:"Advertisement duration",totalPrice:"Total price",solPayment:"Estimated SOL payment",adHeadline:"Advertisement title",adText:"Paste your advertisement",adLink:"Website or project link",adImage:"Image URL (optional)",adNote:"Payment is requested from the wallet already connected to QX. The advertisement is published only after payment is verified by QX.",payAd:"PAY WITH CONNECTED WALLET",close:"Close",language:"Language",currency:"Currency"
  };
  const connect=$("connectBtn");if(connect&&!document.body.classList.contains("qx-wallet-active"))connect.textContent=L.connect;
  t("#walletPage .hero > .small", "TOTAL PORTFOLIO VALUE | USD ESTIMATE", L.portfolio);
@@ -1650,24 +1650,25 @@ async function getJSON(url){
 async function rpc(method,params){
  let lastError;
  for(const endpoint of RPCS){
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),9000);
   try{
-   const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),9000);
    const response=await fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({jsonrpc:"2.0",id:1,method,params}),signal:controller.signal});
-   clearTimeout(timer);
-   if(!response.ok)throw new Error("HTTP "+response.status);
+   if(!response.ok)throw new Error(endpoint.replace(/^https?:\/\//,"")+" returned HTTP "+response.status);
    const data=await response.json();
    if(Object.prototype.hasOwnProperty.call(data,"result"))return data.result;
-   lastError=new Error(data.error?.message||"RPC request failed");
-  }catch(e){lastError=e;}
+   throw new Error(data.error?.message||"Solana RPC returned no result.");
+  }catch(e){lastError=e?.name==="AbortError"?new Error("Solana RPC timed out at "+endpoint.replace(/^https?:\/\//,"")):e;}
+  finally{clearTimeout(timer);}
  }
- throw lastError||new Error("RPC unavailable");
+ throw new Error("All Solana RPC endpoints failed. Last error: "+(lastError?.message||"RPC unavailable"));
 }
 
 function clearPendingSwap(message=""){
  pendingSwapOrder=null;
  const confirm=$("confirmSwapBtn");if(confirm){confirm.disabled=true;confirm.textContent="GET LIVE QUOTE FIRST";}
  const receive=$("swapReceive");if(receive)receive.textContent="Enter amount to estimate";
- const fee=$("qxFeeDisplay");if(fee)fee.textContent="1.00% · live quote required";
+ const fee=$("qxFeeDisplay");if(fee)fee.textContent="Not enabled · referral account verification required";
  const route=$("swapRoute");if(route)route.textContent="QX best available Jupiter route";
  if(message)qxSetSwapStatus(message);
 }
@@ -1893,7 +1894,7 @@ for(const {provider,name} of getInjectedWallets()){
 async function loadSolPrice(refreshWallet=false){
  const liveLabel=$("qxLivePrice"),usdLabel=$("qxSolUsd");
  try{
-  const data=await getJSON("https://api.dexscreener.com/latest/dex/tokens/"+SOL,12000,1);
+  const data=await getJSON("https://api.dexscreener.com/latest/dex/tokens/"+SOL);
   const best=(data.pairs||[])
    .filter(p=>p.chainId==="solana"&&p.baseToken?.address===SOL&&Number(p.priceUsd)>0)
    .sort((a,b)=>Number(b.liquidity?.usd||0)-Number(a.liquidity?.usd||0))[0];
@@ -2532,23 +2533,45 @@ $("launchTokenBtn")?.addEventListener("click",qxLaunchToken);
 
 /* QX SWAP + TOKEN DETAIL RUNTIME HELPERS */
 function qxSetSwapStatus(message){const el=$("swapStatus");if(el)el.textContent=String(message||"");}
-function qxTokenDecimals(token){const d=Number(token?.tokenDecimals);return Number.isInteger(d)&&d>=0&&d<=18?d:9;}
+const qxMintDecimalsCache=new Map([[SOL,9]]);
+function qxTokenDecimals(token){const d=Number(token?.tokenDecimals??token?.baseToken?.decimals);return Number.isInteger(d)&&d>=0&&d<=18?d:9;}
+async function qxResolveTokenDecimals(mint,token){
+ if(mint===SOL)return 9;
+ if(qxMintDecimalsCache.has(mint))return qxMintDecimalsCache.get(mint);
+ const hinted=Number(token?.tokenDecimals??token?.baseToken?.decimals);
+ if(Number.isInteger(hinted)&&hinted>=0&&hinted<=18){qxMintDecimalsCache.set(mint,hinted);return hinted;}
+ const supply=await rpc("getTokenSupply",[mint,{commitment:"confirmed"}]);
+ const decimals=Number(supply?.value?.decimals);
+ if(!Number.isInteger(decimals)||decimals<0||decimals>18)throw new Error("Could not verify the token decimals on Solana. Quote stopped to prevent a wrong amount.");
+ qxMintDecimalsCache.set(mint,decimals);
+ if(token)token.tokenDecimals=decimals;
+ return decimals;
+}
 function qxToRawAmount(value,decimals){
  const text=String(value||"").trim();if(!/^\d+(?:\.\d+)?$/.test(text))throw new Error("Enter a valid amount.");
  const [whole,frac=""]=text.split(".");if(frac.length>decimals)throw new Error("Amount has more decimal places than this token supports.");
  return (BigInt(whole)*10n**BigInt(decimals)+BigInt((frac+"0".repeat(decimals)).slice(0,decimals)||"0")).toString();
 }
 function qxFromRaw(raw,decimals){return Number(raw)/10**decimals;}
+function qxFormatRaw(raw,decimals,maxFraction=decimals){
+ const n=BigInt(String(raw||"0"));const base=10n**BigInt(decimals);const whole=(n/base).toString();
+ const frac=decimals?((n%base).toString().padStart(decimals,"0").slice(0,Math.max(0,Math.min(decimals,maxFraction))).replace(/0+$/,"")):"";
+ const grouped=whole.replace(/\B(?=(\d{3})+(?!\d))/g,",");return frac?grouped+"."+frac:grouped;
+}
 async function qxEnsureFeeAccount(mint){
  const connection=await qxGetHealthyConnection();
  const owner=new PublicKey(QX_TOKEN_FEE_RECIPIENT),mintPk=new PublicKey(mint);
- const ata=await getAssociatedTokenAddress(mintPk,owner,false,TOKEN_PROGRAM_ID);
+ const mintInfo=await connection.getAccountInfo(mintPk,"confirmed");
+ if(!mintInfo)throw new Error("The selected token mint could not be verified on Solana.");
+ const tokenProgram=mintInfo.owner.equals(TOKEN_2022_PROGRAM_ID)?TOKEN_2022_PROGRAM_ID:TOKEN_PROGRAM_ID;
+ if(!mintInfo.owner.equals(TOKEN_PROGRAM_ID)&&!mintInfo.owner.equals(TOKEN_2022_PROGRAM_ID))throw new Error("This mint is not owned by a supported Solana token program.");
+ const ata=await getAssociatedTokenAddress(mintPk,owner,false,tokenProgram);
  const info=await connection.getAccountInfo(ata,"confirmed");
  if(info)return ata;
  if(!connected||!walletAddress)throw new Error("Connect your wallet before preparing the QX fee account.");
  const payer=new PublicKey(walletAddress),block=await connection.getLatestBlockhash("confirmed");
  const tx=new Transaction({feePayer:payer,recentBlockhash:block.blockhash});
- tx.add(createAssociatedTokenAccountInstruction(payer,ata,owner,mintPk,TOKEN_PROGRAM_ID));
+ tx.add(createAssociatedTokenAccountInstruction(payer,ata,owner,mintPk,tokenProgram));
  const provider=window.QXGetActiveWalletProvider?.()||null;
  if(typeof provider?.signTransaction!=="function")throw new Error("The connected wallet cannot sign the fee-account setup transaction. Reconnect and try again.");
  const signed=await provider.signTransaction(tx);
@@ -2561,62 +2584,109 @@ function qxB64ToBytes(b64){const bin=atob(b64);const out=new Uint8Array(bin.leng
 function qxBytesToB64(bytes){let s="";const a=bytes instanceof Uint8Array?bytes:new Uint8Array(bytes);for(let i=0;i<a.length;i+=0x8000)s+=String.fromCharCode(...a.subarray(i,i+0x8000));return btoa(s);}
 async function qxBuildJupiterQuote(){
  if(!selectedToken)throw new Error("Select a Solana token first.");
- if(!connected||!walletAddress)throw new Error("Connect your Solana wallet first.");
- const amount=Number($("tradeAmountInput")?.value||0);if(!Number.isFinite(amount)||amount<=0)throw new Error("Enter a trade amount greater than zero.");
- const inputMint=tradeDirection==="buy"?SOL:selectedToken.baseToken.address;
- const outputMint=tradeDirection==="buy"?selectedToken.baseToken.address:SOL;
- const inputDecimals=tradeDirection==="buy"?9:qxTokenDecimals(selectedToken);
- const raw=qxToRawAmount(amount,inputDecimals);
- if(tradeDirection==="buy"&&amount>Math.max(0,walletSolBalance-SOL_RESERVE))throw new Error("The amount exceeds your available SOL after the QX reserve.");
- if(tradeDirection==="sell"&&amount>selectedTokenBalance)throw new Error("The amount exceeds your available token balance.");
- const params=new URLSearchParams({inputMint,outputMint,amount:raw,slippageBps:"50",instructionVersion:"V2",platformFeeBps:"100"});
- const response=await fetch("https://api.jup.ag/swap/v1/quote?"+params.toString(),{headers:{accept:"application/json","x-api-key":QX_JUP_API_KEY}});
- const quote=await response.json();if(!response.ok||quote.error)throw new Error(quote.error||quote.errorMessage||"Jupiter quote failed.");
- if(!quote.outAmount)throw new Error("Jupiter returned no executable output for this token.");
- return {quote,inputMint,outputMint,raw,amount,inputDecimals};
+ const amount=Number($("tradeAmountInput")?.value||0);
+ if(!Number.isFinite(amount)||amount<=0)throw new Error("Enter a trade amount greater than zero.");
+ const mint=String(selectedToken.baseToken?.address||"");
+ if(!mint)throw new Error("The selected Solana token mint is missing.");
+ const inputMint=tradeDirection==="buy"?SOL:mint;
+ const outputMint=tradeDirection==="buy"?mint:SOL;
+ const tokenDecimals=await qxResolveTokenDecimals(mint,selectedToken);
+ const inputDecimals=tradeDirection==="buy"?9:tokenDecimals;
+ const raw=qxToRawAmount($("tradeAmountInput")?.value||"",inputDecimals);
+ const params=new URLSearchParams({inputMint,outputMint,amount:raw});
+ // A taker enables an executable order. Without a connected wallet, /order still returns a live price quote.
+ if(connected&&walletAddress)params.set("taker",walletAddress);
+ // QX's Jupiter referral account is deliberately not fabricated. Add referralAccount/referralFee only
+ // after the real referral account and all supported referral token accounts are verified on-chain.
+ const response=await fetch("https://api.jup.ag/swap/v2/order?"+params.toString(),{headers:{accept:"application/json","x-api-key":QX_JUP_API_KEY}});
+ const body=await response.text();let order;
+ try{order=JSON.parse(body);}catch(_){throw new Error("Jupiter returned an unreadable order response (HTTP "+response.status+").");}
+ if(!response.ok)throw new Error(order.errorMessage||order.error||"Jupiter live order failed (HTTP "+response.status+").");
+ if(!order.outAmount)throw new Error(order.errorMessage||"Jupiter did not return a live output amount for this pair.");
+ const executable=typeof order.transaction==="string"&&order.transaction.length>0&&!!order.requestId;
+ return {order,inputMint,outputMint,tokenMint:mint,direction:tradeDirection,raw,amount,inputDecimals,tokenDecimals,createdAt:Date.now(),executable};
 }
 async function qxRequestLiveQuote(){
- if(quoteBusy)return;quoteBusy=true;const btn=$("getQuoteBtn");if(btn)btn.disabled=true;
+ if(quoteBusy){if(qxAutoQuoteTimer)clearTimeout(qxAutoQuoteTimer);qxAutoQuoteTimer=setTimeout(()=>qxRequestLiveQuote(),350);return;}quoteBusy=true;const btn=$("getQuoteBtn");if(btn)btn.disabled=true;
  try{
-  qxSetSwapStatus("Requesting a fresh executable Jupiter quote with the QX 1% fee…");
-  const q=await qxBuildJupiterQuote();pendingSwapOrder=q;
-  const out=qxFromRaw(q.quote.outAmount,qxTokenDecimals(q.outputMint===SOL?{tokenDecimals:9}:selectedToken));
-  const outSymbol=tradeDirection==="buy"?selectedToken.baseToken.symbol:"SOL";
-  $("swapReceive").textContent=out.toLocaleString(undefined,{maximumFractionDigits:Math.min(9,qxTokenDecimals(q.outputMint===SOL?{tokenDecimals:9}:selectedToken))})+" "+outSymbol;
-  $("swapPay").textContent=q.amount+" "+(tradeDirection==="buy"?"SOL":selectedToken.baseToken.symbol);
-  $("qxFeeDisplay").textContent="1.00% · included in executable quote";
-  $("swapRoute").textContent=(q.quote.routePlan||[]).map(x=>x?.swapInfo?.label||x?.swapInfo?.ammKey||"Jupiter").filter(Boolean).join(" → ")||"Jupiter best route";
-  $("confirmSwapBtn").textContent="CONFIRM SWAP IN WALLET";
-  $("confirmSwapBtn").disabled=false;
-  qxSetSwapStatus("Quote ready. Review the 1% QX fee, route and receive amount, then confirm in your wallet.");
- }catch(e){pendingSwapOrder=null;$("confirmSwapBtn").disabled=true;qxSetSwapStatus(e?.message||"Could not obtain a live quote.");}
- finally{quoteBusy=false;if(btn)btn.disabled=false;}
+  pendingSwapOrder=null;
+  const confirm=$("confirmSwapBtn");if(confirm){confirm.disabled=true;confirm.textContent="WAITING FOR LIVE ORDER";}
+  qxSetSwapStatus("Getting a live executable order from Jupiter across available Solana routes…");
+  const q=await qxBuildJupiterQuote();
+  // Ignore a response if the user changed token/direction/amount while the request was in flight.
+  const currentAmount=Number($("tradeAmountInput")?.value||0);
+  if(!selectedToken||selectedToken.baseToken?.address!==q.tokenMint||tradeDirection!==q.direction||currentAmount!==q.amount){
+   throw new Error("Trade details changed while the quote was loading. Request a fresh quote.");
+  }
+  pendingSwapOrder=q;
+  const outTextAmount=qxFormatRaw(q.order.outAmount,q.outputMint===SOL?9:q.tokenDecimals,Math.min(12,q.outputMint===SOL?9:q.tokenDecimals));
+  const outSymbol=q.direction==="buy"?selectedToken.baseToken.symbol:"SOL";
+  const outText=outTextAmount+" "+outSymbol;
+  $("swapReceive").textContent=outText;
+  $("swapPay").textContent=q.amount+" "+(q.direction==="buy"?"SOL":selectedToken.baseToken.symbol);
+  const pf=q.order.platformFee;
+  if(pf&&pf.amount){
+   const feeMint=String(pf.feeMint||q.order.feeMint||"");
+   const feeDecimals=feeMint===SOL?9:feeMint===USDC?6:(feeMint===q.inputMint||feeMint===q.outputMint?q.tokenDecimals:0);
+   const feeAmount=feeDecimals?qxFormatRaw(pf.amount,feeDecimals,Math.min(9,feeDecimals)):String(pf.amount)+" raw units";
+   const feeSymbol=feeMint===SOL?"SOL":feeMint===USDC?"USDC":feeMint===q.inputMint?(tradeDirection==="buy"?"SOL":selectedToken.baseToken.symbol):feeMint===q.outputMint?(tradeDirection==="buy"?selectedToken.baseToken.symbol:"SOL"):short(feeMint);
+   $("qxFeeDisplay").textContent="Jupiter fee: "+(Number(pf.feeBps||0)/100).toFixed(2)+"% ("+feeAmount+" "+feeSymbol+") · QX fee not enabled";
+  }else{
+   $("qxFeeDisplay").textContent="Jupiter fee: "+(Number(q.order.feeBps||0)/100).toFixed(2)+"% total · QX referral fee not connected";
+  }
+  $("swapRoute").textContent="Jupiter best route · "+String(q.order.router||"aggregator").toUpperCase();
+  if(q.executable){
+   $("confirmSwapBtn").textContent="CONFIRM SWAP IN WALLET";
+   $("confirmSwapBtn").disabled=false;
+   qxSetSwapStatus("Live Jupiter order ready. Expected receive: "+outText+". Route: "+String(q.order.router||"Jupiter")+". Review the wallet transaction and sign promptly; execution price can change.");
+  }else{
+   $("confirmSwapBtn").textContent="CONNECT WALLET TO SWAP";
+   $("confirmSwapBtn").disabled=true;
+   qxSetSwapStatus("Live price quote received: "+outText+". Connect a Solana wallet to request an executable order. No transaction has been signed or sent.");
+  }
+ }catch(e){
+  pendingSwapOrder=null;const confirm=$("confirmSwapBtn");if(confirm){confirm.disabled=true;confirm.textContent="GET LIVE QUOTE FIRST";}
+  qxSetSwapStatus(e?.message||"Could not obtain a live Jupiter order.");
+ }finally{quoteBusy=false;if(btn)btn.disabled=false;}
 }
 async function qxExecuteSwap(){
- if(swapBusy)return;if(!pendingSwapOrder)throw new Error("Get a fresh live quote first.");
+ if(swapBusy)return;
+ const q=pendingSwapOrder;
+ if(!q||!q.executable||!q.order?.transaction||!q.order?.requestId)throw new Error("Get a fresh executable Jupiter order first.");
+ if(!connected||!walletAddress)throw new Error("Connect your Solana wallet before signing.");
+ if(Date.now()-Number(q.createdAt||0)>15000)throw new Error("This live order may be stale. Request a fresh quote and review the new receive amount.");
  swapBusy=true;const btn=$("confirmSwapBtn");if(btn)btn.disabled=true;
  try{
-  const q=await qxBuildJupiterQuote();pendingSwapOrder=q;
-  const feeAccount=await qxEnsureFeeAccount(q.outputMint);
-  qxSetSwapStatus("Building the real on-chain Jupiter transaction…");
-  const r=await fetch("https://api.jup.ag/swap/v1/swap",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":QX_JUP_API_KEY},body:JSON.stringify({quoteResponse:q.quote,userPublicKey:walletAddress,wrapAndUnwrapSol:true,feeAccount:feeAccount.toBase58(),trackingAccount:QX_TOKEN_FEE_RECIPIENT,dynamicComputeUnitLimit:true,prioritizationFeeLamports:{priorityLevelWithMaxLamports:{priorityLevel:"veryHigh",maxLamports:1000000}}})});
-  const data=await r.json();if(!r.ok||data.error)throw new Error(data.error||data.errorMessage||"Jupiter swap transaction build failed.");
-  if(!data.swapTransaction)throw new Error("Jupiter did not return a transaction to sign.");
-  const provider=window.QXGetActiveWalletProvider?.()||null;if(typeof provider?.signTransaction!=="function")throw new Error("Connected wallet cannot sign the swap transaction. Reconnect the wallet and try again.");
-  const tx=VersionedTransaction.deserialize(qxB64ToBytes(data.swapTransaction));
-  qxSetSwapStatus("Review and approve the real swap transaction in your wallet…");
+  const provider=window.QXGetActiveWalletProvider?.()||null;
+  if(typeof provider?.signTransaction!=="function")throw new Error("Connected wallet cannot sign this transaction. Reconnect your wallet and try again.");
+  qxSetSwapStatus("Preparing the real Jupiter transaction for wallet approval…");
+  const tx=VersionedTransaction.deserialize(qxB64ToBytes(q.order.transaction));
   const signed=await provider.signTransaction(tx);
-  const connection=await qxGetHealthyConnection();
-  const sig=await connection.sendRawTransaction(signed.serialize(),{skipPreflight:false,maxRetries:3,preflightCommitment:"confirmed"});
-  qxSetSwapStatus("Swap sent. Waiting for Solana confirmation…");
-  const conf=await connection.confirmTransaction({signature:sig,blockhash:tx.message.recentBlockhash,lastValidBlockHeight:data.lastValidBlockHeight},"confirmed");
-  if(conf.value?.err)throw new Error("Swap failed on-chain: "+JSON.stringify(conf.value.err));
-  pendingSwapOrder=null;$("swapReceive").textContent="Confirmed on Solana";$("confirmSwapBtn").textContent="SWAP CONFIRMED";$("qxFeeDisplay").textContent="1.00% · QX fee account: "+short(feeAccount.toBase58());
-  qxSetSwapStatus("Swap confirmed on Solana. Transaction: "+sig);
-  const link=$("solscanLink");if(link)link.href="https://solscan.io/token/"+encodeURIComponent(selectedToken?.baseToken?.address||"");
+  const signedTransaction=qxBytesToB64(signed.serialize());
+  qxSetSwapStatus("Wallet signed. Sending the signed order to Jupiter for managed Solana execution…");
+  const response=await fetch("https://api.jup.ag/swap/v2/execute",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":QX_JUP_API_KEY},body:JSON.stringify({signedTransaction,requestId:q.order.requestId})});
+  const body=await response.text();let result;
+  try{result=JSON.parse(body);}catch(_){throw new Error("Jupiter execution returned an unreadable response (HTTP "+response.status+").");}
+  if(!response.ok)throw new Error(result.error||result.errorMessage||"Jupiter execution failed (HTTP "+response.status+").");
+  if(result.status!=="Success"||Number(result.code)!==0)throw new Error(result.error||("Swap was not confirmed by Jupiter. Execution code: "+String(result.code??"unknown")));
+  pendingSwapOrder=null;
+  const finalRaw=result.totalOutputAmount||result.outputAmountResult||q.order.outAmount;
+  const finalDecimals=q.outputMint===SOL?9:q.tokenDecimals;
+  const finalAmount=qxFormatRaw(finalRaw,finalDecimals,Math.min(12,finalDecimals));
+  const finalSymbol=tradeDirection==="buy"?selectedToken.baseToken.symbol:"SOL";
+  $("swapReceive").textContent=finalAmount+" "+finalSymbol+" · confirmed";
+  $("confirmSwapBtn").textContent="SWAP CONFIRMED";
+  $("confirmSwapBtn").disabled=true;
+  const sig=String(result.signature||"");
+  qxSetSwapStatus("Swap confirmed by Jupiter on Solana. Final received amount: "+finalAmount+" "+finalSymbol+(sig?" · Transaction: "+sig:"")+(sig?" · https://solscan.io/tx/"+sig:""));
+  if(sig){const link=$("solscanLink");if(link)link.href="https://solscan.io/tx/"+encodeURIComponent(sig);}
   await refreshTradeBalances();
-  setTimeout(()=>{if(btn)btn.disabled=false;},900);
- }catch(e){qxSetSwapStatus(e?.message||"Swap failed. No success was recorded.");if(btn)btn.disabled=false;throw e;}finally{swapBusy=false;}
+ }catch(e){
+  qxSetSwapStatus(e?.message||"Swap failed. No successful execution was recorded.");
+  if(btn){btn.disabled=false;btn.textContent="GET LIVE QUOTE FIRST";}
+  pendingSwapOrder=null;
+  throw e;
+ }finally{swapBusy=false;}
 }
 async function refreshTradeBalances(){
  if(!selectedToken)return;
@@ -2624,7 +2694,7 @@ async function refreshTradeBalances(){
  if(!connected||!walletAddress){if(label)label.textContent="Connect wallet to view available balance";return;}
  try{
   const sol=await rpc("getBalance",[walletAddress,{commitment:"confirmed"}]);walletSolBalance=Number(sol?.value||0)/1e9;
-  const mint=selectedToken.baseToken.address;selectedTokenBalance=0;selectedTokenDecimals=qxTokenDecimals(selectedToken);
+  const mint=selectedToken.baseToken.address;selectedTokenBalance=0;selectedTokenDecimals=await qxResolveTokenDecimals(mint,selectedToken);
   const res=await rpc("getTokenAccountsByOwner",[walletAddress,{mint},{encoding:"jsonParsed",commitment:"confirmed"}]);
   for(const item of (res?.value||[]))selectedTokenBalance+=Number(item?.account?.data?.parsed?.info?.tokenAmount?.uiAmountString||0);
   const available=tradeDirection==="buy"?Math.max(0,walletSolBalance-SOL_RESERVE):selectedTokenBalance;
@@ -2632,7 +2702,7 @@ async function refreshTradeBalances(){
   updateTradePercentUI();
  }catch(e){
   console.warn("QX trade balance refresh",e);
-  if(label)label.textContent="Balance temporarily unavailable — tap Refresh";
+  if(label)label.textContent="Balance unavailable: "+String(e?.message||"Solana RPC error").slice(0,150)+" · tap Refresh";
  }
 }
 
@@ -2653,7 +2723,7 @@ function setTradeDirection(dir){
  tradeDirection=dir==="sell"?"sell":"buy";
  $("buyBtn")?.classList.toggle("active",tradeDirection==="buy");$("sellBtn")?.classList.toggle("active",tradeDirection==="sell");
  $("tradeTitle").textContent=tradeDirection==="buy"?"Buy this token with SOL":"Sell this token for SOL";
- pendingSwapOrder=null;$("confirmSwapBtn").disabled=true;$("confirmSwapBtn").textContent="GET LIVE QUOTE FIRST";$("swapReceive").textContent="Enter amount to estimate";qxSetSwapStatus("Direction changed. Get a fresh live quote before signing.");updateTradePercentUI();refreshTradeBalances();qxSetupChartRanges(token);qxLoadLiveChart(token,"1H");qxLoadCmcTokenDetail(token);
+ pendingSwapOrder=null;$("confirmSwapBtn").disabled=true;$("confirmSwapBtn").textContent="GET LIVE QUOTE FIRST";$("swapReceive").textContent="Updating live quote…";qxSetSwapStatus("Direction changed. Refreshing the live Jupiter quote…");updateTradePercentUI();refreshTradeBalances();qxScheduleLiveQuote();qxSetupChartRanges(selectedToken);qxLoadLiveChart(selectedToken,"1H");qxLoadCmcTokenDetail(selectedToken);
 }
 async function qxLoadCmcTokenDetail(token){
  const mint=String(token?.baseToken?.address||"");if(!qxIsValidSolanaMint(mint))return;
@@ -2686,7 +2756,7 @@ async function qxLoadLiveChart(token,range="1H"){
 }
 function qxSetupChartRanges(token){document.querySelectorAll("#chartRanges [data-chart-range]").forEach(b=>b.onclick=()=>{document.querySelectorAll("#chartRanges [data-chart-range]").forEach(x=>x.classList.toggle("active",x===b));qxLoadLiveChart(token,b.dataset.chartRange);});}
 function openToken(token){
- selectedToken=token;selectedTokenDecimals=qxTokenDecimals(token);tradeDirection="buy";document.body.classList.add("qx-token-open");
+ selectedToken=token;selectedTokenDecimals=qxTokenDecimals(token);tradeDirection="buy";pendingSwapOrder=null;document.body.classList.add("qx-token-open");
  const detail=$("detail");if(!detail)return;detail.style.display="block";
  $("detailName").textContent=cleanTokenText(token.baseToken?.name,"Unknown Token");$("detailSymbol").textContent=cleanTokenText(token.baseToken?.symbol,"TOKEN");$("detailPrice").textContent=usd(token.priceUsd);
  const ch=qxNum(token.priceChange?.h24);$("detailChange").textContent=ch?(ch>0?"+":"")+ch.toFixed(2)+"%":"—";$("detailChange").className="detail-change "+(ch>0?"up":ch<0?"down":"neutral");
@@ -2697,8 +2767,8 @@ function openToken(token){
  const link=$("solscanLink");if(link)link.href="https://solscan.io/token/"+encodeURIComponent(token.baseToken.address);
  $("swapWallet").textContent=connected?short(walletAddress):"Not connected";
  $("swapDirectionBtn").hidden=false;$("swapDirectionBtn").textContent="REVERSE SWAP DIRECTION | SOL ↔ TOKEN";
- $("confirmSwapBtn").disabled=true;$("confirmSwapBtn").textContent="GET LIVE QUOTE FIRST";$("qxFeeDisplay").textContent="1.00% · live quote required";$("swapRoute").textContent="QX best available Jupiter route";
- updateTradePercentUI();refreshTradeBalances();
+ $("confirmSwapBtn").disabled=true;$("confirmSwapBtn").textContent="GET LIVE QUOTE FIRST";$("qxFeeDisplay").textContent="Not enabled · referral account verification required";$("swapRoute").textContent="QX best available Jupiter route";
+ updateTradePercentUI();refreshTradeBalances();qxSetupChartRanges(token);qxLoadLiveChart(token,"1H");qxLoadCmcTokenDetail(token);if(Number($("tradeAmountInput")?.value||0)>0)qxScheduleLiveQuote();
 }
 window.QXOpenToken=openToken;
 window.QXAdoptMarketFallback=function(pairs){
@@ -2710,12 +2780,31 @@ window.QXAdoptMarketFallback=function(pairs){
  const st=$("marketStatus");if(st)st.textContent="Solana-only LIVE market · fallback feed · "+allPairs.length.toLocaleString()+" tokens · "+new Date().toLocaleTimeString();
  renderMarket();
 };
-$("tokenBackBtn")?.addEventListener("click",()=>{document.body.classList.remove("qx-token-open");$("detail").style.display="none";selectedToken=null;pendingSwapOrder=null;});
+$("tokenBackBtn")?.addEventListener("click",()=>{document.body.classList.remove("qx-token-open");$("detail").style.display="none";selectedToken=null;pendingSwapOrder=null;if(qxAutoQuoteTimer)clearTimeout(qxAutoQuoteTimer);});
 $("buyBtn")?.addEventListener("click",()=>setTradeDirection("buy"));$("sellBtn")?.addEventListener("click",()=>setTradeDirection("sell"));
 $("swapDirectionBtn")?.addEventListener("click",()=>setTradeDirection(tradeDirection==="buy"?"sell":"buy"));
 $("getQuoteBtn")?.addEventListener("click",()=>qxRequestLiveQuote());$("confirmSwapBtn")?.addEventListener("click",()=>qxExecuteSwap().catch(()=>{}));
-$("tradeAmountInput")?.addEventListener("input",()=>{pendingSwapOrder=null;$("confirmSwapBtn").disabled=true;$("confirmSwapBtn").textContent="GET LIVE QUOTE FIRST";updateIndicativeEstimate();});
-$("percentRange")?.addEventListener("input",()=>{tradePercent=Number($("percentRange").value);$("percentValue").textContent=tradePercent+"%";const available=tradeDirection==="buy"?Math.max(0,walletSolBalance-SOL_RESERVE):selectedTokenBalance;$("tradeAmountInput").value=Number((available*tradePercent/100).toFixed(9))||"";pendingSwapOrder=null;$("confirmSwapBtn").disabled=true;$("confirmSwapBtn").textContent="GET LIVE QUOTE FIRST";updateIndicativeEstimate();});
+$("refreshBtn")?.addEventListener("click",async()=>{
+ const btn=$("refreshBtn");if(btn?.disabled)return;if(btn){btn.disabled=true;btn.textContent="Refreshing…";}
+ try{
+  await loadSolPrice(false);
+  if(connected)await loadPortfolio();
+  if(selectedToken)await refreshTradeBalances();
+ }catch(e){console.warn("QX manual refresh failed",e);if($("walletStatus"))$("walletStatus").textContent="Refresh failed: "+(e?.message||"Solana RPC unavailable");}
+ finally{if(btn){btn.disabled=false;btn.textContent="Refresh";}}
+});
+let qxAutoQuoteTimer=null;
+function qxScheduleLiveQuote(){
+ if(qxAutoQuoteTimer)clearTimeout(qxAutoQuoteTimer);
+ pendingSwapOrder=null;
+ const confirm=$("confirmSwapBtn");if(confirm){confirm.disabled=true;confirm.textContent="GET LIVE QUOTE FIRST";}
+ const amount=Number($("tradeAmountInput")?.value||0);
+ if(!selectedToken||!Number.isFinite(amount)||amount<=0){if($("swapReceive"))$("swapReceive").textContent="Enter amount to get a live quote";return;}
+ if($("swapReceive"))$("swapReceive").textContent="Updating live Jupiter quote…";
+ qxAutoQuoteTimer=setTimeout(()=>qxRequestLiveQuote(),700);
+}
+$("tradeAmountInput")?.addEventListener("input",()=>{updateIndicativeEstimate();qxScheduleLiveQuote();});
+$("percentRange")?.addEventListener("input",()=>{tradePercent=Number($("percentRange").value);$("percentValue").textContent=tradePercent+"%";const available=tradeDirection==="buy"?Math.max(0,walletSolBalance-SOL_RESERVE):selectedTokenBalance;$("tradeAmountInput").value=Number((available*tradePercent/100).toFixed(9))||"";updateIndicativeEstimate();qxScheduleLiveQuote();});
 document.querySelectorAll(".percent-btn").forEach(b=>b.addEventListener("click",()=>{$("percentRange").value=b.dataset.percent;$("percentRange").dispatchEvent(new Event("input"));}));
 $("sortOptions")?.addEventListener("click",e=>{const b=e.target.closest("button[data-sort]");if(!b)return;const m=b.dataset.sort;if(sortMetric===m)sortDirection=sortDirection==="desc"?"asc":"desc";else{sortMetric=m;sortDirection="desc";}document.querySelectorAll("#sortOptions button").forEach(x=>x.classList.toggle("active",x===b));$("sortLabel").textContent=m+" "+(sortDirection==="desc"?"descending":"ascending");renderMarket();});
 
@@ -3693,5 +3782,3 @@ window.addEventListener("QXWalletConnected",()=>setTimeout(qxCexEnsure,100));
   document.addEventListener("DOMContentLoaded",()=>mo.observe(document.body,{childList:true,subtree:true}));
 })();
 </script>
-
-</body>
