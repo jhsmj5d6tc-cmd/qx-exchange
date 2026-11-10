@@ -709,17 +709,85 @@ header{
 }
 </style>
 
+
+<style id="qx-v42-menu-logo-polish">
+.qx-premium-logo{
+  width:54px!important;height:42px!important;min-width:54px!important;
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  filter:drop-shadow(0 0 10px rgba(155,94,255,.25))!important;
+}
+.qx-premium-logo svg{width:54px!important;height:42px!important;display:block!important}
+.brand-name{letter-spacing:.08em!important}
+.brand-name b{letter-spacing:.12em!important}
+.qx-main-menu .qx-menu-settings{
+  order:99!important;
+  margin-top:10px!important;
+  padding:12px 10px!important;
+  border-top:1px solid rgba(255,255,255,.08)!important;
+  background:rgba(255,255,255,.018)!important;
+  border-radius:16px!important;
+  display:grid!important;
+  grid-template-columns:1fr 1fr!important;
+  gap:9px!important;
+}
+.qx-main-menu .qx-menu-settings label{
+  display:flex!important;flex-direction:column!important;gap:6px!important;
+  color:rgba(255,255,255,.58)!important;
+  font-size:10px!important;font-weight:800!important;letter-spacing:.06em!important;
+  text-transform:uppercase!important;
+}
+.qx-main-menu .qx-menu-settings select,
+.qx-wallet-pop select,
+#qxLanguage,#qxCurrency{
+  width:100%!important;height:40px!important;min-height:40px!important;
+  border:1px solid rgba(255,255,255,.10)!important;
+  border-radius:11px!important;
+  background:rgba(255,255,255,.055)!important;
+  color:#fff!important;
+  outline:none!important;
+  box-shadow:none!important;
+  font-weight:700!important;
+  appearance:auto!important;
+}
+.qx-main-menu .qx-menu-settings select option,
+.qx-wallet-pop select option,
+#qxLanguage option,#qxCurrency option{
+  background:#15111e!important;color:#fff!important;
+}
+.qx-main-menu .qx-menu-settings:after{
+  content:"";
+  display:block;
+  grid-column:1/-1;
+  height:0;
+}
+@media(max-width:720px){
+  .qx-premium-logo{width:44px!important;height:38px!important;min-width:44px!important}
+  .qx-premium-logo svg{width:44px!important;height:38px!important}
+  .qx-main-menu .qx-menu-settings{grid-template-columns:1fr 1fr!important}
+}
+</style>
+
 </head>
 <body>
 <div class="wrap">
 <header>
  <a class="brand-lockup" href="#walletPage" aria-label="QX Exchange home">
-  <span class="brand-mark" role="img" aria-label="QX logo">
-   <svg viewBox="0 0 64 64" aria-hidden="true" focusable="false">
-    <defs><linearGradient id="qxMarkGradient" x1="7" y1="5" x2="57" y2="59" gradientUnits="userSpaceOnUse"><stop stop-color="#C18BFF"/><stop offset=".52" stop-color="#8050F5"/><stop offset="1" stop-color="#35E6B0"/></linearGradient></defs>
-    <path d="M32 5.5 53.5 17.8v24.4L32 54.5 10.5 42.2V17.8L32 5.5Z" fill="none" stroke="url(#qxMarkGradient)" stroke-width="3.5" stroke-linejoin="round"/>
-    <path d="M28.8 40.5a11.7 11.7 0 1 1 7.8-3l7 7" fill="none" stroke="#F8F5FF" stroke-width="5.2" stroke-linecap="round"/>
-    <path d="m34.5 26 11 11m0-11-11 11" fill="none" stroke="#42F2B5" stroke-width="4.2" stroke-linecap="round"/>
+  <span class="brand-mark qx-premium-logo" role="img" aria-label="QX logo">
+   <svg viewBox="0 0 72 48" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="qxPremiumGradient" x1="5" y1="5" x2="67" y2="43" gradientUnits="userSpaceOnUse">
+        <stop stop-color="#E7D7FF"/><stop offset=".42" stop-color="#A86BFF"/><stop offset="1" stop-color="#38F0B5"/>
+      </linearGradient>
+      <filter id="qxPremiumGlow" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur stdDeviation="2.2" result="blur"/>
+        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <path d="M8 24c0-10 7-18 18-18s18 8 18 18-7 18-18 18S8 34 8 24Z"
+          fill="none" stroke="url(#qxPremiumGradient)" stroke-width="4" filter="url(#qxPremiumGlow)"/>
+    <path d="M20 15.5 35 32.5" stroke="#F7F4FF" stroke-width="4.2" stroke-linecap="round"/>
+    <path d="M43 8.5 64 39.5M53 9 64 27" stroke="#39EFB6" stroke-width="3.8" stroke-linecap="round"/>
+    <path d="M43 9h10M53 9v10" stroke="#B978FF" stroke-width="3.2" stroke-linecap="round"/>
    </svg>
   </span>
   <span class="brand-copy"><span class="brand-name">QX <b>EXCHANGE</b></span><span class="brand-tagline">GLOBAL CRYPTO EXCHANGE</span></span>
@@ -740,7 +808,7 @@ header{
 <div class="qx-menu-backdrop" id="qxMenuBackdrop"></div>
 <div class="qx-main-menu" id="qxMainMenu" aria-hidden="true">
  <div class="qx-menu-head"><div><strong>QX</strong><small>Global navigation</small>
-<div class="qx-menu-settings" id="qxMenuSettingsV40">
+<div class="qx-menu-settings" data-menu-order="last" id="qxMenuSettingsV40">
   <div>
     <label for="qxMenuLanguageV40">Language</label>
     <select id="qxMenuLanguageV40" aria-label="Language"></select>
@@ -898,7 +966,7 @@ header{
 </main>
 
 <main id="marketsPage" class="page active">
- <div class="market-heading"><h2>Solana Markets</h2><span class="tag">LIVE MARKET</span></div>
+ <div class="market-heading"><h2>Solana Markets</h2><span class="tag">MARKET</span></div>
  <div class="market-layout">
   <div class="market-list-column">
    <div class="market-tabs" id="marketTabs">
@@ -1419,7 +1487,7 @@ function qxApplyLanguage(){
   backMarkets:"\u0627\u0644\u0639\u0648\u062F\u0629 \u0625\u0644\u0649 \u0627\u0644\u0623\u0633\u0648\u0627\u0642",marketCapFdv:"\u0627\u0644\u0642\u064A\u0645\u0629 \u0627\u0644\u0633\u0648\u0642\u064A\u0629 / \u0627\u0644\u062A\u0642\u064A\u064A\u0645 \u0627\u0644\u0645\u062E\u0641\u0641",transactions:"\u0645\u0639\u0627\u0645\u0644\u0627\u062A 24 \u0633\u0627\u0639\u0629",holders:"\u0627\u0644\u0645\u0627\u0644\u0643\u0648\u0646",indexer:"\u064A\u062A\u0637\u0644\u0628 \u0645\u0641\u0647\u0631\u0633 \u0628\u064A\u0627\u0646\u0627\u062A",chart:"\u0627\u0644\u0631\u0633\u0645 \u0627\u0644\u0628\u064A\u0627\u0646\u064A \u0627\u0644\u0645\u0628\u0627\u0634\u0631 \u0645\u0646 QX",solscan:"\u0639\u0631\u0636 \u0627\u0644\u0639\u0642\u062F \u0639\u0644\u0649 Solscan",buy:"\u0634\u0631\u0627\u0621",sell:"\u0628\u064A\u0639",youPay:"\u0623\u0646\u062A \u062A\u062F\u0641\u0639",receive:"\u0627\u0644\u0643\u0645\u064A\u0629 \u0627\u0644\u0645\u062A\u0648\u0642\u0639\u0629",fee:"\u0639\u0645\u0648\u0644\u0629 QX",route:"\u0645\u0633\u0627\u0631 \u0627\u0644\u062A\u062F\u0627\u0648\u0644",notConnected:"\u063A\u064A\u0631 \u0645\u062A\u0635\u0644",bestPrice:"\u0623\u0641\u0636\u0644 \u0633\u0639\u0631",getQuote:"\u0627\u062D\u0635\u0644 \u0639\u0644\u0649 \u0623\u0641\u0636\u0644 \u0633\u0639\u0631",confirm:"\u062A\u0623\u0643\u064A\u062F \u0627\u0644\u0645\u0628\u0627\u062F\u0644\u0629",feeNote:"\u0631\u0633\u0648\u0645 QX: \u200F1% \u0639\u0644\u0649 \u0643\u0644 \u0639\u0645\u0644\u064A\u0629 \u0645\u0628\u0627\u062F\u0644\u0629 \u0645\u0643\u062A\u0645\u0644\u0629. \u064A\u062C\u0628 \u0623\u0646 \u064A\u0624\u0643\u062F \u0639\u0631\u0636 \u0627\u0644\u0633\u0639\u0631 \u0627\u0644\u0645\u0628\u0627\u0634\u0631 \u0627\u0644\u0631\u0633\u0648\u0645 \u0643\u0627\u0645\u0644\u0629 \u0642\u0628\u0644 \u062A\u0648\u0642\u064A\u0639 \u0627\u0644\u0645\u062D\u0641\u0638\u0629. \u0644\u0627 \u062A\u064F\u0641\u0631\u0636 \u0631\u0633\u0648\u0645 \u0625\u0630\u0627 \u0644\u0645 \u062A\u0643\u062A\u0645\u0644 \u0627\u0644\u0639\u0645\u0644\u064A\u0629.",
   adDuration:"\u0645\u062F\u0629 \u0627\u0644\u0625\u0639\u0644\u0627\u0646",totalPrice:"\u0627\u0644\u0633\u0639\u0631 \u0627\u0644\u0625\u062C\u0645\u0627\u0644\u064A",solPayment:"\u0627\u0644\u062F\u0641\u0639 \u0627\u0644\u062A\u0642\u062F\u064A\u0631\u064A \u0628\u0639\u0645\u0644\u0629 SOL",adHeadline:"\u0639\u0646\u0648\u0627\u0646 \u0627\u0644\u0625\u0639\u0644\u0627\u0646",adText:"\u0627\u0643\u062A\u0628 \u0646\u0635 \u0627\u0644\u0625\u0639\u0644\u0627\u0646",adLink:"\u0631\u0627\u0628\u0637 \u0627\u0644\u0645\u0648\u0642\u0639 \u0623\u0648 \u0627\u0644\u0645\u0634\u0631\u0648\u0639",adImage:"\u0631\u0627\u0628\u0637 \u0627\u0644\u0635\u0648\u0631\u0629 (\u0627\u062E\u062A\u064A\u0627\u0631\u064A)",adNote:"\u0633\u064A\u064F\u0637\u0644\u0628 \u0627\u0644\u062F\u0641\u0639 \u0645\u0646 \u0627\u0644\u0645\u062D\u0641\u0638\u0629 \u0627\u0644\u0645\u062A\u0635\u0644\u0629 \u0628\u0640 QX. \u0644\u0646 \u064A\u064F\u0646\u0634\u0631 \u0627\u0644\u0625\u0639\u0644\u0627\u0646 \u0625\u0644\u0627 \u0628\u0639\u062F \u0623\u0646 \u062A\u062A\u062D\u0642\u0642 QX \u0645\u0646 \u0627\u0644\u062F\u0641\u0639.",payAd:"\u0627\u062F\u0641\u0639 \u0628\u0627\u0644\u0645\u062D\u0641\u0638\u0629 \u0627\u0644\u0645\u062A\u0635\u0644\u0629",close:"\u0625\u063A\u0644\u0627\u0642",language:"\u0627\u0644\u0644\u063A\u0629",currency:"\u0627\u0644\u0639\u0645\u0644\u0629"
  }:{
-  connect:"Connect Wallet",wallet:"Wallet",create:"Create Token",markets:"Markets",ads:"Advertisements",assets:"My Assets",portfolio:"TOTAL PORTFOLIO VALUE | USD ESTIMATE",liveBalance:"Live balance",refresh:"Refresh",onchain:"ON-CHAIN",asset:"Asset",balance:"Balance",value:"Value",connectAssets:"Connect your wallet to view assets.",createTitle:"Create Your Token",launch:"Launch an SPL token",createDesc:"Create the token mint and initial supply directly from your connected Solana wallet. Your wallet will ask you to approve the transaction.",tokenFee:"QX creation fee: 0.30 SOL. Solana network fees and mint-account rent are additional.",tokenName:"Token name",symbol:"Symbol",supply:"Initial supply",decimals:"Decimals",createButton:"Connect wallet & create token",createHint:"Connect your wallet first. The QX creation fee is 0.30 SOL, plus Solana network fees and mint-account rent.",created:"Token created",viewTx:"View transaction on Solscan",createNote:"Note: this creates an on-chain SPL mint and initial supply. Publishing the name, symbol and logo in a global directory requires a metadata and indexing service.",marketTitle:"Solana Markets",liveMarket:"LIVE MARKET",all:"All Coins",new:"New Coins",gainers:"Top Gainers",losers:"Top Losers",trending:"Trending",volume:"Top Volume",search:"Search",searchPlaceholder:"Search name, symbol or contract",allSol:"All Solana tokens",loading:"Loading...",sort:"SORT MARKET",defaultSort:"Default order",price:"Price",change:"Change",marketCap:"Market Cap",liquidity:"Liquidity",token:"Token",priceUsd:"Price USD",day:"24h",marketLoading:"Loading market...",marketConnecting:"Connecting to live market data...",holdersNote:"Holder totals require a dedicated Solana indexing API. QX does not display estimated or fabricated holder counts.",adsTitle:"Advertisements",sponsored:"Sponsored",featured:"Featured projects",addAd:"+ Add advertisement",noAds:"No sponsored advertisements yet.",adsHelp:"Promote your project to the QX community.",backMarkets:"BACK TO MARKETS",marketCapFdv:"Market Cap / FDV",transactions:"24h Transactions",holders:"Holders",indexer:"Indexer required",chart:"QX LIVE CHART",solscan:"View contract on Solscan",buy:"BUY",sell:"SELL",youPay:"YOU PAY",receive:"Estimated receive",fee:"QX commission",route:"Route",notConnected:"Not connected",bestPrice:"GET BEST PRICE",getQuote:"GET BEST PRICE",confirm:"CONFIRM SWAP",feeNote:"QX fee: 1% per completed swap. The live quote must confirm the full fee before wallet signing. No fee is charged when a swap is not completed.",adDuration:"Advertisement duration",totalPrice:"Total price",solPayment:"Estimated SOL payment",adHeadline:"Advertisement title",adText:"Paste your advertisement",adLink:"Website or project link",adImage:"Image URL (optional)",adNote:"Payment is requested from the wallet already connected to QX. The advertisement is published only after payment is verified by QX.",payAd:"PAY WITH CONNECTED WALLET",close:"Close",language:"Language",currency:"Currency"
+  connect:"Connect Wallet",wallet:"Wallet",create:"Create Token",markets:"Markets",ads:"Advertisements",assets:"My Assets",portfolio:"TOTAL PORTFOLIO VALUE | USD ESTIMATE",liveBalance:"Live balance",refresh:"Refresh",onchain:"ON-CHAIN",asset:"Asset",balance:"Balance",value:"Value",connectAssets:"Connect your wallet to view assets.",createTitle:"Create Your Token",launch:"Launch an SPL token",createDesc:"Create the token mint and initial supply directly from your connected Solana wallet. Your wallet will ask you to approve the transaction.",tokenFee:"QX creation fee: 0.30 SOL. Solana network fees and mint-account rent are additional.",tokenName:"Token name",symbol:"Symbol",supply:"Initial supply",decimals:"Decimals",createButton:"Connect wallet & create token",createHint:"Connect your wallet first. The QX creation fee is 0.30 SOL, plus Solana network fees and mint-account rent.",created:"Token created",viewTx:"View transaction on Solscan",createNote:"Note: this creates an on-chain SPL mint and initial supply. Publishing the name, symbol and logo in a global directory requires a metadata and indexing service.",marketTitle:"Solana Markets",liveMarket:"MARKET",all:"All Coins",new:"New Coins",gainers:"Top Gainers",losers:"Top Losers",trending:"Trending",volume:"Top Volume",search:"Search",searchPlaceholder:"Search name, symbol or contract",allSol:"All Solana tokens",loading:"Loading...",sort:"SORT MARKET",defaultSort:"Default order",price:"Price",change:"Change",marketCap:"Market Cap",liquidity:"Liquidity",token:"Token",priceUsd:"Price USD",day:"24h",marketLoading:"Loading market...",marketConnecting:"Connecting to live market data...",holdersNote:"Holder totals require a dedicated Solana indexing API. QX does not display estimated or fabricated holder counts.",adsTitle:"Advertisements",sponsored:"Sponsored",featured:"Featured projects",addAd:"+ Add advertisement",noAds:"No sponsored advertisements yet.",adsHelp:"Promote your project to the QX community.",backMarkets:"BACK TO MARKETS",marketCapFdv:"Market Cap / FDV",transactions:"24h Transactions",holders:"Holders",indexer:"Indexer required",chart:"QX LIVE CHART",solscan:"View contract on Solscan",buy:"BUY",sell:"SELL",youPay:"YOU PAY",receive:"Estimated receive",fee:"QX commission",route:"Route",notConnected:"Not connected",bestPrice:"GET BEST PRICE",getQuote:"GET BEST PRICE",confirm:"CONFIRM SWAP",feeNote:"QX fee: 1% per completed swap. The live quote must confirm the full fee before wallet signing. No fee is charged when a swap is not completed.",adDuration:"Advertisement duration",totalPrice:"Total price",solPayment:"Estimated SOL payment",adHeadline:"Advertisement title",adText:"Paste your advertisement",adLink:"Website or project link",adImage:"Image URL (optional)",adNote:"Payment is requested from the wallet already connected to QX. The advertisement is published only after payment is verified by QX.",payAd:"PAY WITH CONNECTED WALLET",close:"Close",language:"Language",currency:"Currency"
  };
  const connect=$("connectBtn");if(connect&&!document.body.classList.contains("qx-wallet-active"))connect.textContent=L.connect;
  t("#walletPage .hero > .small", "TOTAL PORTFOLIO VALUE | USD ESTIMATE", L.portfolio);
@@ -1440,7 +1508,7 @@ function qxApplyLanguage(){
  const createStatus=$("createTokenStatus");if(createStatus&&(!createStatus.dataset.runtime||createStatus.dataset.runtime!=="1"))createStatus.textContent=L.createHint;
  t("#createdTokenResult strong","Token created",L.created);t("#createdTokenSolscan","View transaction on Solscan",L.viewTx);
  const note=document.querySelector("#createPage .panel > p:last-child");if(note)note.textContent=L.createNote;
- t("#marketsPage > .market-heading h2","Solana Markets",L.marketTitle);t("#marketsPage > .market-heading .tag","LIVE MARKET",L.liveMarket);
+ t("#marketsPage > .market-heading h2","Solana Markets",L.marketTitle);t("#marketsPage > .market-heading .tag","MARKET",L.liveMarket);
  const cats=[["all","All Coins",L.all],["new","New Coins",L.new],["gainers","Top Gainers",L.gainers],["losers","Top Losers",L.losers],["trending","Trending",L.trending],["volume","Top Volume",L.volume]];
  cats.forEach(([key,en,arText])=>{const b=document.querySelector(`#marketTabs [data-category="${key}"]`);if(b){const live=b.querySelector(".new-live-tag");b.textContent=ar?arText:en;if(live){live.textContent="\u0645\u0628\u0627\u0634\u0631";b.appendChild(live);}}});
  ph("search","Search name, symbol or contract",L.searchPlaceholder);t("#searchBtn","Search",L.search);
@@ -3356,6 +3424,147 @@ window.addEventListener("QXWalletConnected",()=>setTimeout(qxCexEnsure,100));
 
   document.addEventListener("DOMContentLoaded",()=>{bind();setTimeout(apply,80);setTimeout(apply,700);});
   window.QXApplyV41Language=apply;
+})();
+</script>
+
+
+<script id="qx-v42-global-language-runtime">
+(function(){
+  const V={
+    zh:{
+      "Connect Wallet":"连接钱包","Wallet":"钱包","Markets":"市场","Exchange":"交易","Trade":"交易",
+      "Create Token":"创建代币","Launch":"发布","Creator":"创作者","Advertisements":"广告",
+      "Sponsored":"推广","Featured projects":"精选项目","White Paper":"白皮书","Activity":"活动",
+      "Refresh":"刷新","Language":"语言","Currency":"货币","Search":"搜索","All Coins":"全部代币",
+      "New Coins":"新代币","Top Gainers":"涨幅榜","Top Losers":"跌幅榜","Trending":"热门",
+      "Top Volume":"交易量","Price":"价格","Change":"涨跌","Market Cap":"市值","Liquidity":"流动性",
+      "Token":"代币","Price USD":"美元价格","24h":"24小时","BUY":"买入","SELL":"卖出","Buy":"买入",
+      "Sell":"卖出","YOU PAY":"支付","Estimated receive":"预计到账","GET BEST PRICE":"获取最佳价格",
+      "CONFIRM SWAP":"确认兑换","Close":"关闭","BACK TO MARKETS":"返回市场","Search name, symbol or contract":"搜索名称、代码或合约",
+      "My Assets":"我的资产","Live balance":"实时余额","TOTAL PORTFOLIO VALUE | USD ESTIMATE":"总资产价值 | 美元估算",
+      "Create Your Token":"创建你的代币","Launch an SPL token":"发布 SPL 代币","Token name":"代币名称",
+      "Symbol":"代号","Initial supply":"初始供应量","Decimals":"小数位","Create token":"创建代币",
+      "Create":"创建","Token created":"代币已创建","View transaction on Solscan":"在 Solscan 查看交易",
+      "Solana Markets":"Solana 市场","MARKET":"实时市场","All Solana tokens":"全部 Solana 代币",
+      "SORT MARKET":"市场排序","Default order":"默认排序","QX LIVE CHART":"QX 实时图表",
+      "View contract on Solscan":"在 Solscan 查看合约","QX commission":"QX 手续费","Route":"路径",
+      "Not connected":"未连接","Advertisements":"广告","Add advertisement":"添加广告",
+      "No sponsored advertisements yet.":"暂无赞助广告。","Promote your project to the QX community.":"向 QX 社区推广你的项目。",
+      "Advertisement duration":"广告时长","Total price":"总价","Estimated SOL payment":"预计 SOL 支付",
+      "Advertisement title":"广告标题","Paste your advertisement":"输入广告内容","Website or project link":"网站或项目链接",
+      "Image URL (optional)":"图片链接（可选）","PAY WITH CONNECTED WALLET":"使用已连接钱包支付",
+      "Close":"关闭"
+    },
+    hi:{
+      "Connect Wallet":"वॉलेट कनेक्ट करें","Wallet":"वॉलेट","Markets":"मार्केट","Exchange":"एक्सचेंज","Trade":"ट्रेड",
+      "Create Token":"टोकन बनाएं","Launch":"लॉन्च","Creator":"क्रिएटर","Advertisements":"विज्ञापन",
+      "Sponsored":"प्रायोजित","Featured projects":"विशेष प्रोजेक्ट","White Paper":"व्हाइट पेपर","Activity":"गतिविधि",
+      "Refresh":"रीफ्रेश","Language":"भाषा","Currency":"मुद्रा","Search":"खोजें","All Coins":"सभी कॉइन",
+      "New Coins":"नए कॉइन","Top Gainers":"सबसे ज्यादा बढ़त","Top Losers":"सबसे ज्यादा गिरावट","Trending":"ट्रेंडिंग",
+      "Top Volume":"टॉप वॉल्यूम","Price":"कीमत","Change":"बदलाव","Market Cap":"मार्केट कैप","Liquidity":"लिक्विडिटी",
+      "Token":"टोकन","Price USD":"USD कीमत","24h":"24 घंटे","BUY":"खरीदें","SELL":"बेचें","Buy":"खरीदें","Sell":"बेचें",
+      "YOU PAY":"आप भुगतान करें","Estimated receive":"अनुमानित प्राप्ति","GET BEST PRICE":"सर्वोत्तम कीमत",
+      "CONFIRM SWAP":"स्वैप की पुष्टि","Close":"बंद करें","BACK TO MARKETS":"मार्केट पर लौटें",
+      "Search name, symbol or contract":"नाम, कोड या कॉन्ट्रैक्ट खोजें","My Assets":"मेरी एसेट्स","Live balance":"लाइव बैलेंस",
+      "TOTAL PORTFOLIO VALUE | USD ESTIMATE":"कुल पोर्टफोलियो मूल्य | USD अनुमान","Create Your Token":"अपना टोकन बनाएं",
+      "Launch an SPL token":"SPL टोकन लॉन्च करें","Token name":"टोकन नाम","Symbol":"प्रतीक","Initial supply":"प्रारंभिक सप्लाई",
+      "Decimals":"दशमलव","Create token":"टोकन बनाएं","Create":"बनाएं","Token created":"टोकन बनाया गया",
+      "View transaction on Solscan":"Solscan पर ट्रांज़ैक्शन देखें","Solana Markets":"Solana मार्केट",
+      "MARKET":"लाइव मार्केट","All Solana tokens":"सभी Solana टोकन","SORT MARKET":"मार्केट सॉर्ट",
+      "Default order":"डिफ़ॉल्ट क्रम","QX LIVE CHART":"QX लाइव चार्ट","View contract on Solscan":"Solscan पर कॉन्ट्रैक्ट देखें",
+      "QX commission":"QX कमीशन","Route":"रूट","Not connected":"कनेक्ट नहीं है","Add advertisement":"विज्ञापन जोड़ें",
+      "No sponsored advertisements yet.":"अभी कोई प्रायोजित विज्ञापन नहीं।","Promote your project to the QX community.":"अपने प्रोजेक्ट को QX समुदाय में प्रमोट करें।",
+      "Advertisement duration":"विज्ञापन अवधि","Total price":"कुल कीमत","Estimated SOL payment":"अनुमानित SOL भुगतान",
+      "Advertisement title":"विज्ञापन शीर्षक","Paste your advertisement":"विज्ञापन टेक्स्ट डालें",
+      "Website or project link":"वेबसाइट या प्रोजेक्ट लिंक","Image URL (optional)":"इमेज URL (वैकल्पिक)",
+      "PAY WITH CONNECTED WALLET":"कनेक्टेड वॉलेट से भुगतान करें"
+    }
+  };
+
+  function current(){return localStorage.getItem("qxLanguage")||window.qxLanguage||"en";}
+  function walk(root,lang){
+    const map=V[lang]; if(!map)return;
+    const skip=new Set(["SCRIPT","STYLE","NOSCRIPT","TEXTAREA"]);
+    const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{
+      acceptNode(n){
+        if(!n.nodeValue.trim())return NodeFilter.FILTER_REJECT;
+        const p=n.parentElement;if(!p||skip.has(p.tagName))return NodeFilter.FILTER_REJECT;
+        if(p.closest("input,textarea,script,style,option"))return NodeFilter.FILTER_REJECT;
+        return NodeFilter.FILTER_ACCEPT;
+      }
+    });
+    const nodes=[];
+    while(walker.nextNode())nodes.push(walker.currentNode);
+    nodes.forEach(n=>{
+      const raw=n.nodeValue.trim();
+      const val=map[raw];
+      if(val){
+        const lead=n.nodeValue.match(/^\s*/)?.[0]||"";
+        const tail=n.nodeValue.match(/\s*$/)?.[0]||"";
+        n.nodeValue=lead+val+tail;
+      }
+    });
+    document.querySelectorAll("input[placeholder],textarea[placeholder]").forEach(el=>{
+      const v=map[el.getAttribute("placeholder")]; if(v)el.setAttribute("placeholder",v);
+    });
+    document.querySelectorAll("[title]").forEach(el=>{
+      const v=map[el.getAttribute("title")]; if(v)el.setAttribute("title",v);
+    });
+    document.documentElement.lang=lang;
+    document.documentElement.dir=lang==="ar"?"rtl":"ltr";
+  }
+
+  function syncMenu(){
+    const lang=current();
+    ["qxMenuLanguageV40","qxWalletLanguageMenu","qxLanguage"].forEach(id=>{
+      const el=document.getElementById(id);if(el)el.value=lang;
+    });
+    const c=localStorage.getItem("qxCurrency")||window.qxCurrency||"USD";
+    ["qxMenuCurrencyV40","qxWalletCurrencyMenu","qxCurrency"].forEach(id=>{
+      const el=document.getElementById(id);if(el)el.value=c;
+    });
+  }
+
+  function applyGlobal(){
+    syncMenu();
+    if(typeof window.QXApplyV41Language==="function"){
+      try{window.QXApplyV41Language();}catch(_){}
+    }
+    const lang=current();
+    if(lang==="zh"||lang==="hi")walk(document.body,lang);
+  }
+
+  const hook=()=>{
+    if(typeof window.qxApplyLanguage==="function"&&!window.qxApplyLanguage.__qxv42){
+      const old=window.qxApplyLanguage;
+      const wrapped=function(){old.apply(this,arguments);setTimeout(applyGlobal,0);};
+      wrapped.__qxv42=true;
+      window.qxApplyLanguage=wrapped;
+    }
+  };
+
+  document.addEventListener("DOMContentLoaded",()=>{
+    hook();
+    setTimeout(applyGlobal,100);
+    setTimeout(applyGlobal,700);
+    setTimeout(applyGlobal,1800);
+  });
+
+  document.addEventListener("change",e=>{
+    if(["qxLanguage","qxMenuLanguageV40","qxWalletLanguageMenu"].includes(e.target?.id)){
+      localStorage.setItem("qxLanguage",e.target.value);
+      window.qxLanguage=e.target.value;
+      setTimeout(applyGlobal,30);
+    }
+    if(["qxCurrency","qxMenuCurrencyV40","qxWalletCurrencyMenu"].includes(e.target?.id)){
+      localStorage.setItem("qxCurrency",e.target.value);
+      window.qxCurrency=e.target.value;
+    }
+  });
+
+  // Re-apply when a page/modal is opened because some page content is created lazily.
+  const mo=new MutationObserver(()=>{clearTimeout(window.__qxV42Timer);window.__qxV42Timer=setTimeout(applyGlobal,80);});
+  document.addEventListener("DOMContentLoaded",()=>mo.observe(document.body,{childList:true,subtree:true}));
 })();
 </script>
 
