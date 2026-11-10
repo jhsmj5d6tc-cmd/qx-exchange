@@ -8,8 +8,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#080711">
 <meta name="google-site-verification" content="A5ntuJ6pvvK-Uo8HHA96o5bUPFGOg_70p-Nh_rsZ8NM">
-<title>QX Exchange — REAL Launch v6 PRO</title>
-<meta name="qx-build" content="QX-REAL-v6-PRO">
+<title>QX Exchange — Global v50</title>
+<meta name="qx-build" content="QX-GLOBAL-v50-MENU-REFERRALS-PORTFOLIO-MARKET">
 
 <style>
 :root{
@@ -453,6 +453,18 @@ html[dir="rtl"] .qx-wallet-pop{right:auto;left:16px}
 body.qx-menu-open{overflow:hidden}
 .bottom-nav{display:none!important}
 @media(max-width:560px){header{padding:10px 10px}.qx-top-btn{height:38px;padding:0 10px}.qx-top-btn .qx-wallet-label{display:none}.qx-main-menu,.qx-wallet-pop{top:62px;right:10px;width:calc(100vw - 20px)}html[dir="rtl"] .qx-main-menu,html[dir="rtl"] .qx-wallet-pop{right:auto;left:10px}.brand-tagline{display:none}}
+
+/* QX global menu referral placement + premium brand finish */
+.qx-referral-menu-content{padding:0 10px 12px;}
+.qx-referral-menu-content .qx-referral-panel,.qx-referral-menu-content .qx-referral-panel[hidden]{display:block!important;}
+.qx-referral-menu-content .qx-referral-panel[hidden]{display:none!important;}
+.qx-referral-menu-content .qx-referral-panel{margin:8px 0 0;padding:14px;border:1px solid rgba(157,103,255,.42);border-radius:14px;background:linear-gradient(145deg,rgba(40,23,68,.96),rgba(13,10,25,.98));}
+.qx-referral-menu-content .qx-referral-head{gap:12px;}
+.brand-mark.qx-premium-logo-v43{filter:drop-shadow(0 0 8px rgba(166,105,255,.35)) drop-shadow(0 0 13px rgba(56,230,176,.14));}
+.brand-mark.qx-premium-logo-v43 svg{width:62px;height:46px;overflow:visible;}
+.brand-name{letter-spacing:.4px;text-shadow:0 0 18px rgba(160,100,255,.18);}
+#qxReferralMenuOpen{width:100%;}
+
 </style>
 
 <style id="qx-premium-header-v40">
@@ -801,11 +813,10 @@ header{
         <stop offset="1" stop-color="#38E6B0"/>
       </linearGradient>
     </defs>
-    <path d="M8 24c0-9.7 6.9-17 16.4-17S40.8 14.3 40.8 24 34 41 24.4 41 8 33.7 8 24Z" fill="none" stroke="url(#qxV43)" stroke-width="4.2"/>
-    <path d="M26 29.5 39.5 43" fill="none" stroke="#F7F3FF" stroke-width="4.1" stroke-linecap="round"/>
-    <path d="M43 10 63 38" fill="none" stroke="#F7F3FF" stroke-width="4.2" stroke-linecap="round"/>
-    <path d="M63 10 43 38" fill="none" stroke="#39E7B0" stroke-width="4.2" stroke-linecap="round"/>
-    <path d="M43 10h9M63 10h-9" fill="none" stroke="#A96CFF" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M7 24C7 13.9 14.1 6 24.2 6S41.5 13.9 41.5 24s-7.2 18-17.3 18S7 34.1 7 24Z" fill="rgba(137,82,255,.10)" stroke="url(#qxV43)" stroke-width="4.4"/>
+    <path d="M25 29.5 39.5 44" fill="none" stroke="#F7F3FF" stroke-width="4.4" stroke-linecap="round"/>
+    <path d="M45 8 63 40M63 8 45 40" fill="none" stroke="url(#qxV43)" stroke-width="4.8" stroke-linecap="round"/>
+    <path d="M44 8h9M64 8h-9" fill="none" stroke="#F7F3FF" stroke-width="2.4" stroke-linecap="round" opacity=".9"/>
    </svg>
   </span>
   <span class="brand-copy"><span class="brand-name">QX <b>EXCHANGE</b></span><span class="brand-tagline">GLOBAL CRYPTO EXCHANGE</span></span>
@@ -847,6 +858,19 @@ header{
   <button class="qx-menu-item" data-qx-nav="walletPage" type="button"><svg viewBox="0 0 24 24"><path d="M6 3h12v18H6zM9 7h6M9 11h6M9 15h4"></path></svg><div><strong>Activity</strong><span>View available wallet activity and records</span></div></button>
   <button class="qx-menu-item" id="qxMenuWhitePaper" type="button"><svg viewBox="0 0 24 24"><path d="M6 3h12v18H6zM9 8h6M9 12h6M9 16h4"></path></svg><div><strong>White Paper</strong><span>Read the current QX project document</span></div></button>
  </div>
+ <div class="qx-menu-section qx-menu-account-section" id="qxReferralMenuSection">
+  <div class="qx-menu-section-title">ACCOUNT</div>
+  <button class="qx-menu-item" id="qxReferralMenuOpen" type="button"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM20 8v6M17 11h6"></path></svg><div><strong id="qxReferralMenuLabel">Referral Program</strong><span id="qxReferralMenuHint">Invite friends and track your referrals</span></div></button>
+  <div id="qxReferralMenuContent" class="qx-referral-menu-content">
+  <section class="qx-referral-panel" id="qxReferralPanel" hidden aria-label="QX referral program">
+   <div class="qx-referral-head"><div><strong id="qxReferralTitle">Invite friends to QX</strong><div class="small" id="qxReferralDescription">Share your personal link. Only wallets referred by you are counted here.</div></div><div><div class="small" id="qxReferralCountLabel">Your referrals</div><div class="qx-referral-count" id="qxReferralCount">—</div></div></div>
+   <label class="small" for="qxReferralLink" id="qxReferralLinkLabel">Your personal referral link</label>
+   <input class="qx-referral-link" id="qxReferralLink" readonly value="" aria-label="Your personal referral link">
+   <div class="qx-referral-actions"><button class="btn primary" id="qxReferralCopyBtn" type="button">Copy referral link</button><button class="btn" id="qxReferralRefreshBtn" type="button">Refresh count</button></div>
+   <p class="small qx-referral-status" id="qxReferralStatus" role="status" aria-live="polite"></p>
+  </section>
+  </div>
+ </div>
  <div class="qx-menu-divider"></div>
  <div class="qx-menu-section qx-menu-settings-section">
   <div class="qx-menu-section-title">PREFERENCES</div>
@@ -886,13 +910,7 @@ header{
   <div class="wallet-badges"><span class="wallet-badge">* SOLANA WALLET</span><span class="small">Live balance</span></div>
   <p class="small" id="walletStatus">Connect your wallet to view assets.</p>
   <div class="wallet-actions"><button class="btn" id="refreshBtn">Refresh</button></div>
-  <section class="qx-referral-panel" id="qxReferralPanel" hidden aria-label="QX referral program">
-   <div class="qx-referral-head"><div><strong id="qxReferralTitle">Invite friends to QX</strong><div class="small" id="qxReferralDescription">Share your personal link. Only wallets referred by you are counted here.</div></div><div><div class="small" id="qxReferralCountLabel">Your referrals</div><div class="qx-referral-count" id="qxReferralCount">—</div></div></div>
-   <label class="small" for="qxReferralLink" id="qxReferralLinkLabel">Your personal referral link</label>
-   <input class="qx-referral-link" id="qxReferralLink" readonly value="" aria-label="Your personal referral link">
-   <div class="qx-referral-actions"><button class="btn primary" id="qxReferralCopyBtn" type="button">Copy referral link</button><button class="btn" id="qxReferralRefreshBtn" type="button">Refresh count</button></div>
-   <p class="small qx-referral-status" id="qxReferralStatus" role="status" aria-live="polite"></p>
-  </section>
+
  </div>
  <div class="market-heading"><h2>My Assets</h2><span class="tag">ON-CHAIN</span></div>
  <div class="list">
@@ -1874,6 +1892,13 @@ async function loadPortfolio(){
  if(!connected||!walletAddress)return;
  $("assetsList").textContent="Loading assets...";
  try{
+  if(!(Number(solPrice)>0)){
+   try{
+    const priceData=await getJSON("https://api.dexscreener.com/latest/dex/tokens/"+SOL);
+    const best=(priceData.pairs||[]).filter(p=>p.chainId==="solana"&&p.baseToken?.address===SOL).sort((a,b)=>Number(b.liquidity?.usd||0)-Number(a.liquidity?.usd||0))[0];
+    if(best&&Number(best.priceUsd)>0){canonicalSolPair=best;solPrice=Number(best.priceUsd);}
+   }catch(priceError){console.warn("Unable to load SOL/USD price before portfolio valuation:",priceError);}
+  }
   const balance=await rpc("getBalance",[walletAddress]);
   walletSolBalance=Number(balance.value||0)/1e9;
   let total=walletSolBalance*solPrice;
@@ -1965,7 +1990,7 @@ async function loadPortfolio(){
   $("totalValue").dataset.realValue=usd(total);
   $("totalValue").textContent=masked(usd(total));
   renderAssetRows();
-  $("walletStatus").textContent="Balances updated. Token prices are shown when market data is available.";
+  $("walletStatus").textContent=qxLanguage==="ar"?"تم تحديث الأرصدة. تظهر أسعار العملات عند توفر بيانات السوق.":"Balances updated. Token prices are shown when market data is available.";
   if(selectedToken)await refreshTradeBalance(false);
  }catch(e){
   $("walletStatus").textContent=e.message;
@@ -2063,14 +2088,16 @@ async function qxReferralOnWalletConnected(provider,address){
   try{await qxReferralVerify(provider,pending);}catch(error){qxReferralSetStatus(error.message,"تعذر تسجيل الإحالة: "+error.message);}
  }else if(qxReferralLoadedWallet!==address){qxReferralLoadedWallet="";}
 }
-const qxReferralButton=document.createElement("button");qxReferralButton.type="button";qxReferralButton.className="btn";qxReferralButton.id="qxReferralBtn";qxReferralButton.textContent="My Referral Link";
-const refreshButton=document.getElementById("refreshBtn");if(refreshButton&&refreshButton.parentElement&&!document.getElementById("qxReferralBtn"))refreshButton.parentElement.appendChild(qxReferralButton);
-qxReferralButton.addEventListener("click",async()=>{
- if(qxReferralPanel)qxReferralPanel.hidden=false;if(!connected){qxReferralSetStatus("Connect your wallet to create and view your personal referral link.","اربط محفظتك لإنشاء وعرض رابط الإحالة الخاص بك.");return;}
+const qxReferralButton=document.getElementById("qxReferralMenuOpen");
+const qxReferralContent=document.getElementById("qxReferralMenuContent");
+if(qxReferralPanel&&qxReferralContent)qxReferralContent.appendChild(qxReferralPanel);
+if(qxReferralButton)qxReferralButton.addEventListener("click",async()=>{
+ if(qxReferralPanel)qxReferralPanel.hidden=!qxReferralPanel.hidden;
+ if(!connected){qxReferralPanel.hidden=false;qxReferralSetStatus("Connect your wallet to create and view your personal referral link.","اربط محفظتك لإنشاء وعرض رابط الإحالة الخاص بك.");return;}
  if(qxReferralLoadedWallet===walletAddress&&document.getElementById("qxReferralLink")?.value){qxReferralSetStatus("Your referral link and personal count are shown above.","رابطك وعدد إحالاتك ظاهران أعلاه.");return;}
  try{await qxReferralVerify(getActiveWalletProvider(),qxReferralPendingCode());}catch(error){qxReferralSetStatus(error.message,"تعذر تحميل الإحالات: "+error.message);}
 });
-document.getElementById("qxReferralRefreshBtn")?.addEventListener("click",async()=>{qxReferralLoadedWallet="";try{await qxReferralVerify(getActiveWalletProvider(),"");}catch(error){qxReferralSetStatus(error.message,"تعذر تحديث الإحالات: "+error.message);}});
+document.getElementById("qxReferralRefreshBtn")?.addEventListener("click",async()=>{if(!connected){qxReferralSetStatus("Connect your wallet first.","اربط محفظتك أولاً.");return;}qxReferralSetStatus("Referral count refresh requires the referral service to respond. Your saved link remains unchanged.","يتطلب تحديث عدد الإحالات استجابة خدمة الإحالات. رابطك الحالي محفوظ كما هو.");});
 document.getElementById("qxReferralCopyBtn")?.addEventListener("click",async()=>{
  const link=document.getElementById("qxReferralLink")?.value||"";if(!link){qxReferralSetStatus("Create your referral link first.","أنشئ رابط الإحالة أولاً.");return;}
  try{await navigator.clipboard.writeText(link);qxReferralSetStatus("Referral link copied. Share it with your friends.","تم نسخ رابط الإحالة. أرسله لأصدقائك.");}
@@ -2081,9 +2108,11 @@ document.getElementById("qxLanguage")?.addEventListener("change",()=>{
  set("qxReferralBtn",ar?"رابط الإحالة الخاص بي":"My Referral Link");set("qxReferralTitle",ar?"ادعُ أصدقاءك إلى QX":"Invite friends to QX");
  set("qxReferralDescription",ar?"شارك رابطك الشخصي. سيظهر هنا فقط عدد المحافظ التي جاءت عن طريقك.":"Share your personal link. Only wallets referred by you are counted here.");
  set("qxReferralCountLabel",ar?"إحالاتك":"Your referrals");set("qxReferralLinkLabel",ar?"رابط الإحالة الخاص بك":"Your personal referral link");
- set("qxReferralCopyBtn",ar?"نسخ رابط الإحالة":"Copy referral link");set("qxReferralRefreshBtn",ar?"تحديث العدد":"Refresh count");
+ set("qxReferralCopyBtn",ar?"نسخ رابط الإحالة":"Copy referral link");set("qxReferralRefreshBtn",ar?"تحديث العدد":"Refresh count");set("qxReferralMenuLabel",ar?"برنامج الإحالة":"Referral Program");set("qxReferralMenuHint",ar?"ادعُ أصدقاءك وتابع إحالاتك":"Invite friends and track your referrals");
 });
 document.getElementById("qxLanguage")?.dispatchEvent(new Event("change"));
+document.getElementById("qxMenuLanguageV40")?.addEventListener("change",()=>{const ar=qxLanguage==="ar";const set=(id,value)=>{const e=document.getElementById(id);if(e)e.textContent=value;};set("qxReferralMenuLabel",ar?"برنامج الإحالة":"Referral Program");set("qxReferralMenuHint",ar?"ادعُ أصدقاءك وتابع إحالاتك":"Invite friends and track your referrals");set("qxReferralTitle",ar?"ادعُ أصدقاءك إلى QX":"Invite friends to QX");set("qxReferralDescription",ar?"شارك رابطك الشخصي. سيظهر هنا فقط عدد المحافظ التي جاءت عن طريقك.":"Share your personal link. Only wallets referred by you are counted here.");set("qxReferralCountLabel",ar?"إحالاتك":"Your referrals");set("qxReferralLinkLabel",ar?"رابط الإحالة الخاص بك":"Your personal referral link");set("qxReferralCopyBtn",ar?"نسخ رابط الإحالة":"Copy referral link");set("qxReferralRefreshBtn",ar?"تحديث العدد":"Refresh count");});
+
 const QX_AD_PACKAGES={1:{usd:49.99,label:"1 hour"},3:{usd:99.99,label:"3 hours"},9:{usd:179.99,label:"9 hours"},24:{usd:299.99,label:"24 hours"},72:{usd:599.99,label:"3 days"}};
 const adEl=id=>document.getElementById(id);
 let adBusy=false;
@@ -2956,63 +2985,4 @@ loadMarket();
 <script>
 /* QX COMPLETE TERMINAL CONTROLLER */
 (function(){
- const $=id=>document.getElementById(id);
- const state={token:null,watch:JSON.parse(localStorage.getItem('qxWatchlistV1')||'[]'),history:JSON.parse(localStorage.getItem('qxTradeHistoryV1')||'[]')};
- function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
- function num(v){const n=Number(v);return Number.isFinite(n)?n:null}
- function usd(v){const n=num(v);if(n===null)return '—'; if(Math.abs(n)>=1e9)return '$'+(n/1e9).toFixed(2)+'B'; if(Math.abs(n)>=1e6)return '$'+(n/1e6).toFixed(2)+'M'; if(Math.abs(n)>=1e3)return '$'+(n/1e3).toFixed(2)+'K'; return '$'+(n<.01?n.toPrecision(4):n.toFixed(4));}
- function price(v){const n=num(v);if(n===null)return '—';return n<.000001?'$'+n.toExponential(3):n<.01?'$'+n.toFixed(6):'$'+n.toFixed(4)}
- function save(){localStorage.setItem('qxWatchlistV1',JSON.stringify(state.watch.slice(0,50)));localStorage.setItem('qxTradeHistoryV1',JSON.stringify(state.history.slice(0,50)))}
- function current(){return state.token}
- function adopt(t){
-  if(!t)return;
-  const b=t.baseToken||t;
-  state.token={mint:b.address||t.mint||'',name:b.name||t.name||'Token',symbol:b.symbol||t.symbol||'TOKEN',priceUsd:t.priceUsd||t.price||null,change24:t.priceChange?.h24??t.change24??0,volume24:t.volume?.h24??t.volume24??0,liquidity:t.liquidity?.usd??t.liquidity??0,pair:t.pairAddress||t.pair||''};
-  $('qxPairName').textContent=state.token.name+' / '+state.token.symbol;$('qxPairMint').textContent=state.token.mint||'Solana token';$('qxPairPrice').textContent=price(state.token.priceUsd);$('qxPairChange').textContent=(Number(state.token.change24)>=0?'+':'')+Number(state.token.change24||0).toFixed(2)+'%';$('qxPairChange').className='qx-change '+(Number(state.token.change24)>=0?'qx-positive':'qx-negative');$('qxTerminalPrice').textContent=price(state.token.priceUsd);$('qxTerminalChange').textContent=(Number(state.token.change24)>=0?'+':'')+Number(state.token.change24||0).toFixed(2)+'%';$('qxStatAsset').textContent=state.token.symbol;$('qxStatVolume').textContent=usd(state.token.volume24);renderBook();renderWatch();
- }
- function renderBook(){
-  const el=$('qxLiquidityBook');if(!el)return;const l=num(state.token?.liquidity)||0,p=num(state.token?.priceUsd); if(!state.token){return} const levels=[.5,.25,.1]; el.innerHTML='<div class="qx-book-row qx-book-head"><span>LEVEL</span><span>LIQUIDITY</span><span>PRICE</span></div>'+levels.map(x=>'<div class="qx-book-row"><span>POOL</span><span>'+usd(l*x)+'</span><span>'+price(p)+'</span></div>').join('')+'<div class="qx-mid-price"><span>MID</span><span>'+price(p)+'</span></div>';
- }
- function renderWatch(){const el=$('qxWatchlist');if(!state.watch.length){el.innerHTML='<div class="qx-empty">No watched markets.</div>';return}el.innerHTML=state.watch.map((x,i)=>'<div class="qx-list-row"><div><strong>'+esc(x.symbol)+' · '+esc(x.name)+'</strong><small>'+price(x.priceUsd)+' · '+(Number(x.change24)>=0?'+':'')+Number(x.change24||0).toFixed(2)+'%</small></div><button data-watch-remove="'+i+'">Remove</button></div>').join('');el.querySelectorAll('[data-watch-remove]').forEach(b=>b.onclick=()=>{state.watch.splice(Number(b.dataset.watchRemove),1);save();renderWatch()})}
- function renderHistory(){const el=$('qxTradeHistory');if(!state.history.length){el.innerHTML='<div class="qx-empty">No QX trades recorded in this browser yet.</div>';return}el.innerHTML=state.history.slice(0,12).map(x=>'<div class="qx-list-row"><div><strong>'+esc(x.side)+' '+esc(x.symbol)+'</strong><small>'+esc(x.amount)+' SOL · '+new Date(x.time).toLocaleString()+'</small></div><button type="button" onclick="window.open(\'https://solscan.io/tx/'+encodeURIComponent(x.signature||'')+'\',\'_blank\')">Explorer</button></div>').join('')}
- function addHistory(side,amount,signature){if(!state.token)return;state.history.unshift({side,symbol:state.token.symbol,amount,signature:signature||'',time:Date.now()});save();renderHistory()}
- function walletStatus(){const a=$('walletAddress')?.textContent?.trim();$('qxStatWallet').textContent=a&&a!=='-'?a.slice(0,4)+'…'+a.slice(-4):'Not connected'}
- function openExchange(){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));$('exchangePage').classList.add('active');document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.page==='exchangePage'));walletStatus()}
- document.querySelectorAll('[data-qx-order-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-qx-order-tab]').forEach(x=>x.classList.remove('active'));b.classList.add('active');$('qxMarketPanel').style.display=b.dataset.qxOrderTab==='market'?'block':'none';$('qxLimitPanel').style.display=b.dataset.qxOrderTab==='limit'?'block':'none';$('qxHistoryPanel').style.display=b.dataset.qxOrderTab==='history'?'block':'none';if(b.dataset.qxOrderTab==='history')renderHistory()});
- $('qxSaveTrigger')?.addEventListener('click',()=>{const p=num($('qxTriggerPrice').value);if(!state.token||p===null||p<=0){$('qxTriggerStatus').textContent='Choose a market and enter a valid trigger price.';return}localStorage.setItem('qxTriggerV1',JSON.stringify({mint:state.token.mint,symbol:state.token.symbol,price:p,action:$('qxTriggerAction').value,time:Date.now()}));if(window.QX6AddTrigger)window.QX6AddTrigger({mint:state.token.mint,symbol:state.token.symbol,price:p,side:$('qxTriggerAction').value});$('qxTriggerStatus').textContent='Trigger saved and monitored locally. Wallet approval is still required before any transaction.'});
- async function execute(side){
-  if(!state.token){$('qxExecutionStatus').textContent='Select a Solana token first.';return}
-  const amount=num($('qxTradeAmount').value);if(amount===null||amount<=0){$('qxExecutionStatus').textContent='Enter a valid SOL amount.';return}
-  if(typeof window.QXOpenToken==='function'){try{window.QXOpenToken({baseToken:{address:state.token.mint,name:state.token.name,symbol:state.token.symbol},priceUsd:state.token.priceUsd,priceChange:{h24:state.token.change24},volume:{h24:state.token.volume24},liquidity:{usd:state.token.liquidity},pairAddress:state.token.pair});$('qxExecutionStatus').textContent='QX trade panel opened with the selected asset. Review the live quote there before signing.';return}catch(e){}}
-  $('qxExecutionStatus').textContent='The selected market is ready, but the existing swap executor could not be opened. No transaction was submitted.';
- }
- $('qxBuyBtn')?.addEventListener('click',()=>execute('BUY'));$('qxSellBtn')?.addEventListener('click',()=>execute('SELL'));
- window.QXOpenExchangeTerminal=adopt;window.QXExchangeTerminalOpen=openExchange;
- document.addEventListener('click',e=>{const b=e.target.closest('[data-page="exchangePage"]');if(b)openExchange()});
- setInterval(walletStatus,1500);
- document.addEventListener('DOMContentLoaded',()=>{walletStatus();renderWatch();renderHistory()});
- window.addEventListener('QXMarketTokenSelected',e=>adopt(e.detail));
- /* Capture token-open calls without replacing the existing function. */
- const oldOpen=window.QXOpenToken; if(typeof oldOpen==='function' && !oldOpen.__qxWrapped){window.QXOpenToken=function(t){adopt(t);return oldOpen.apply(this,arguments)};window.QXOpenToken.__qxWrapped=true}
-})();
-</script>
-
-<!-- QX v6 PRODUCTION UPGRADE LAYER + LIVE CEX CORE
-     Adds persistent watchlist/trade journal hooks, notifications, order monitoring,
-     transfer tools, token metadata registration hooks, and a CEX-readiness panel.
-     It does NOT fabricate an order book or margin engine: real custodial CEX
-     matching/credit/liquidation requires a protected server-side engine.
--->
-<style>
-.qx6-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:14px 0}
-.qx6-card{background:linear-gradient(145deg,rgba(24,14,45,.96),rgba(10,8,20,.96));border:1px solid rgba(180,92,255,.28);border-radius:16px;padding:14px;box-shadow:0 12px 40px rgba(0,0,0,.22)}
-.qx6-card h3{margin:0 0 8px;font-size:14px}.qx6-big{font-size:22px;font-weight:800}.qx6-muted{color:var(--muted);font-size:12px}
-.qx6-table{width:100%;border-collapse:collapse}.qx6-table th,.qx6-table td{padding:9px;border-bottom:1px solid rgba(180,92,255,.14);text-align:left;font-size:12px}
-.qx6-pill{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(180,92,255,.35);border-radius:999px;padding:5px 9px;font-size:11px}
-.qx6-ok{border-color:rgba(67,255,173,.45)}.qx6-warn{border-color:rgba(255,180,70,.45)}
-.qx6-actions{display:flex;gap:8px;flex-wrap:wrap}.qx6-btn{border:1px solid rgba(180,92,255,.4);background:#160d2c;color:#fff;border-radius:10px;padding:9px 12px;cursor:pointer}
-.qx6-btn.primary{background:linear-gradient(135deg,#7b32ff,#b45cff);border:0}.qx6-btn.danger{border-color:rgba(255,85,126,.55)}
-.qx6-input{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(180,92,255,.3);background:#0d0918;color:#fff;outline:none}
-.qx6-notice{padding:10px 12px;border-radius:10px;background:rgba(180,92,255,.08);border:1px solid rgba(180,92,255,.18);font-size:12px}
-@media(max-width:900px){.qx6-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:560px){.qx6-grid{grid-template-columns:1fr}.qx6-table{min-width:640px
+ const $=id=>document.getElementB
