@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#080711">
 <meta name="google-site-verification" content="A5ntuJ6pvvK-Uo8HHA96o5bUPFGOg_70p-Nh_rsZ8NM">
 <title>QX Exchange — REAL Launch v6 PRO</title>
-<meta name="qx-build" content="QX-REAL-v6-PRO">
+<meta name="qx-build" content="QX-REAL-v44-HOME-FIX-v6-PRO">
 
 <style>
 :root{
@@ -836,6 +836,44 @@ header{
 }
 </style>
 
+
+<style id="qx-v44-home-recovery">
+/* QX v44 — home/market recovery layer */
+#marketsPage.page.active { display:block !important; visibility:visible !important; opacity:1 !important; }
+#marketsPage .market-layout { display:grid !important; visibility:visible !important; }
+#marketsPage .market-list-column { display:block !important; visibility:visible !important; min-width:0; }
+#marketsPage .market-heading { display:flex !important; visibility:visible !important; }
+#marketsPage #tokenResults { min-height:80px; }
+body:not(.qx-token-open) #marketsPage #detail { display:none !important; }
+body.qx-token-open #marketsPage .market-list-column { display:none !important; }
+body.qx-token-open #marketsPage>.market-heading { display:none !important; }
+</style>
+<script id="qx-v44-home-recovery-script">
+(function(){
+  "use strict";
+  function qxV44ResetHome(){
+    var detail=document.getElementById("detail");
+    var markets=document.getElementById("marketsPage");
+    if(!markets) return;
+    /* Never allow a stale token-detail class to blank the home page after load. */
+    if(!document.body.classList.contains("qx-token-open")){
+      if(detail) detail.style.display="none";
+      markets.classList.add("active");
+    }
+  }
+  window.addEventListener("DOMContentLoaded", function(){
+    document.body.classList.remove("qx-token-open");
+    qxV44ResetHome();
+    setTimeout(qxV44ResetHome, 250);
+    setTimeout(qxV44ResetHome, 1000);
+  });
+  window.addEventListener("pageshow", function(){
+    if(!document.body.classList.contains("qx-token-open")) qxV44ResetHome();
+  });
+  window.qxV44ResetHome=qxV44ResetHome;
+})();
+</script>
+
 </head>
 <body>
 <div class="wrap">
@@ -1293,18 +1331,28 @@ document.addEventListener("DOMContentLoaded",()=>{
   document.addEventListener("keydown",e=>{if(e.key==="Escape")closeAll();});
 });
 })();
-</script></script>
+</script>
 
 <script>
 function showPage(id){
+ if(!document.getElementById(id)) id="marketsPage";
+ document.body.classList.remove("qx-token-open");
  document.body.classList.toggle("qx-wallet-active",id==="walletPage");
  document.body.classList.toggle("qx-ads-active",id==="adsPage");
- document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active",p.id===id));
- document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.page===id));
+ var detail=document.getElementById("detail");
+ if(detail) detail.style.display=(id==="marketsPage" && document.body.classList.contains("qx-token-open"))?"block":"none";
+ document.querySelectorAll(".page").forEach(function(p){p.classList.toggle("active",p.id===id);});
+ document.querySelectorAll(".nav-btn").forEach(function(b){b.classList.toggle("active",b.dataset.page===id);});
+ if(id==="marketsPage"){
+   var mp=document.getElementById("marketsPage");
+   if(mp) mp.classList.add("active");
+   if(window.qxV44ResetHome) window.qxV44ResetHome();
+ }
  window.scrollTo({top:0,behavior:"smooth"});
 }
 document.querySelectorAll(".nav-btn").forEach(b=>b.addEventListener("click",()=>showPage(b.dataset.page)));
-document.body.classList.remove("qx-wallet-active","qx-ads-active");
+document.body.classList.remove("qx-wallet-active","qx-ads-active","qx-token-open");
+if(document.getElementById("marketsPage")) document.getElementById("marketsPage").classList.add("active");
 
 const qxWpModal=document.getElementById("qxWhitePaperModal");
 const qxWpOpen=document.getElementById("qxOpenWhitePaper");
