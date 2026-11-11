@@ -117,7 +117,7 @@ input{width:100%;min-width:0;background:#0c0920;color:white;border:1px solid var
 .qx-drawer-link{border:1px solid transparent;background:transparent;color:#fff;text-align:left;padding:13px 14px;border-radius:12px;display:flex;flex-direction:column;gap:4px;cursor:pointer}
 .qx-drawer-link span{font-size:14px;font-weight:900}.qx-drawer-link small{font-size:10px;color:var(--muted)}
 .qx-drawer-link:hover,.qx-drawer-link.active{background:linear-gradient(145deg,#1c1430,#120c1f);border-color:#49336b}.qx-drawer-link.active{box-shadow:inset 3px 0 0 var(--green)}
-.qx-drawer-footer{margin-top:auto;padding:16px 4px;color:var(--muted);font-size:11px;display:flex;justify-content:space-between;gap:8px;border-top:1px solid rgba(86,53,139,.35)}.qx-drawer-footer span{color:var(--green);font-weight:900}
+.qx-drawer-footer{margin-top:auto;padding:16px 4px;color:var(--muted);font-size:11px;display:flex;justify-content:space-between;gap:8px;border-top:1px solid rgba(86,53,139,.35)}.qx-drawer-footer span{color:var(--green);font-weight:900}.qx-drawer-settings{padding:14px 2px 0;display:grid;gap:9px}.qx-drawer-setting{display:grid;gap:5px}.qx-drawer-setting label{font-size:9px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.6px}.qx-drawer-setting select{width:100%;background:#0d0918;color:#fff;border:1px solid #49336b;border-radius:9px;padding:9px 10px;font:inherit;font-size:10px}
 .market-list-column{display:flex;flex-direction:column}.market-tabs{margin-top:2px}.qx-market-toolbar{margin-top:0}.market-list-column .sort-panel{margin-top:0;border-radius:12px}.market-list-column .list{margin-top:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:rgba(13,9,23,.62)}
 .ads-shell{margin-bottom:11px}.ads-shell + .market-tabs{margin-top:0}
 @media(max-width:560px){.brand-copy .brand-tagline{display:none}.brand-name{font-size:20px}.qx-menu-btn{width:42px;height:42px}.market-tabs{gap:6px;padding-bottom:9px}.market-tab{padding:9px 11px;font-size:11px}.sort-panel{padding:9px}.sort-options{gap:5px}.sort-option{padding:4px 6px 4px 8px}.sort-option button{width:27px;height:27px}.market-row{grid-template-columns:minmax(0,1.35fr) minmax(72px,.8fr) minmax(62px,.65fr);padding:11px 9px}}
@@ -465,8 +465,50 @@ body.qx-token-open #getQuoteBtn{display:none!important}
   <button class="qx-drawer-link" data-page="createPage"><span>Create Token</span><small>Launch a Solana token</small></button>
   <button class="qx-drawer-link" data-page="creatorPage"><span>Creator</span><small>Creator dashboard</small></button>
  </nav>
+ <div class="qx-drawer-settings">
+  <div class="qx-drawer-setting"><label for="qxMenuLanguage">Language</label><select id="qxMenuLanguage"><option value="en">English (EN)</option><option value="ar">العربية (AR)</option></select></div>
+  <div class="qx-drawer-setting"><label for="qxMenuCurrency">Currency</label><select id="qxMenuCurrency"><option value="USD">USD — US Dollar ($)</option><option value="AED">AED — UAE Dirham (د.إ)</option><option value="EUR">EUR — Euro (€)</option><option value="GBP">GBP — British Pound (£)</option><option value="JPY">JPY — Japanese Yen (¥)</option></select></div>
+ </div>
  <div class="qx-drawer-footer"><span>QX</span><small>Solana trading platform</small></div>
 </aside>
+
+<main id="exchangePage" class="page">
+ <div class="qx-exchange-page">
+  <section class="qx-exchange-hero">
+   <div><h2>QX Exchange</h2><p>Trade Solana tokens with a professional QX trading terminal.</p></div>
+   <div class="qx-live-pill"><span class="qx-live-dot"></span>MARKET READY</div>
+  </section>
+  <div class="qx-terminal-grid">
+   <section class="qx-terminal-card">
+    <div class="qx-pair-head"><div><div class="qx-pair-name" id="qxPairName">Select a market</div><div class="qx-pair-sub" id="qxPairMint">Choose a Solana token from Markets</div></div><div><div class="qx-price" id="qxPairPrice">—</div><div class="qx-change qx-positive" id="qxPairChange">0.00%</div></div></div>
+    <div class="qx-terminal-tabs"><button class="qx-terminal-tab active" type="button">Market</button><button class="qx-terminal-tab" type="button">Limit</button><button class="qx-terminal-tab" type="button">History</button></div>
+    <div class="qx-book" id="qxLiquidityBook"><div class="qx-empty">Select a token from Markets to load liquidity.</div></div>
+    <div class="qx-depth-note">Live market data is loaded from the selected Solana market. Orders are reviewed before any wallet signature is requested.</div>
+   </section>
+   <section class="qx-terminal-card">
+    <h3>Trade</h3>
+    <div class="qx-order-form">
+     <div class="qx-field"><label>ORDER TYPE</label><select id="qxTradeType"><option>Market</option><option>Limit</option></select></div>
+     <div class="qx-field"><label>AMOUNT IN SOL</label><input id="qxTradeAmount" inputmode="decimal" type="number" min="0" step="any" placeholder="0.00"></div>
+     <div class="qx-field"><label>ESTIMATED PRICE</label><div class="qx-stat"><strong id="qxTerminalPrice">—</strong><small id="qxTerminalChange">0.00%</small></div></div>
+     <div class="qx-side-actions"><button class="qx-action-buy" id="qxBuyBtn" type="button">BUY</button><button class="qx-action-sell" id="qxSellBtn" type="button">SELL</button></div>
+     <div class="qx-terminal-message" id="qxExecutionStatus">Select a market from Markets, enter an amount, then choose Buy or Sell.</div>
+    </div>
+   </section>
+  </div>
+  <div class="qx-stats">
+   <div class="qx-stat"><small>ASSET</small><strong id="qxStatAsset">—</strong></div>
+   <div class="qx-stat"><small>24H VOLUME</small><strong id="qxStatVolume">—</strong></div>
+   <div class="qx-stat"><small>WALLET</small><strong id="qxStatWallet">Not connected</strong></div>
+   <div class="qx-stat"><small>NETWORK</small><strong>Solana</strong></div>
+  </div>
+  <div class="qx-portfolio-grid">
+   <section class="qx-terminal-card"><h3>Watchlist</h3><div id="qxWatchlist" class="qx-list"><div class="qx-empty">No watched markets.</div></div></section>
+   <section class="qx-terminal-card"><h3>Trade History</h3><div id="qxTradeHistory" class="qx-list"><div class="qx-empty">No QX trades recorded in this browser yet.</div></div></section>
+  </div>
+  <div class="qx-security"><b>QX execution</b><br>Wallet signatures remain under your control. The trading terminal does not silently submit a transaction.</div>
+ </div>
+</main>
 
 <main id="walletPage" class="page">
  <div class="hero">
@@ -791,6 +833,14 @@ function showPage(id){
  closeQXMenu();
  window.scrollTo({top:0,behavior:"smooth"});
 }
+const qxMenuLanguage=document.getElementById("qxMenuLanguage");
+const qxMenuCurrency=document.getElementById("qxMenuCurrency");
+const qxWalletLanguage=document.getElementById("qxLanguage");
+const qxWalletCurrency=document.getElementById("qxCurrency");
+qxMenuLanguage?.addEventListener("change",()=>{if(qxWalletLanguage){qxWalletLanguage.value=qxMenuLanguage.value;qxWalletLanguage.dispatchEvent(new Event("change",{bubbles:true}));}});
+qxMenuCurrency?.addEventListener("change",()=>{if(qxWalletCurrency){qxWalletCurrency.value=qxMenuCurrency.value;qxWalletCurrency.dispatchEvent(new Event("change",{bubbles:true}));}});
+qxWalletLanguage?.addEventListener("change",()=>{if(qxMenuLanguage)qxMenuLanguage.value=qxWalletLanguage.value;});
+qxWalletCurrency?.addEventListener("change",()=>{if(qxMenuCurrency)qxMenuCurrency.value=qxWalletCurrency.value;});
 const qxMenuBtn=document.getElementById("qxMenuBtn");
 const qxMenuClose=document.getElementById("qxMenuClose");
 const qxDrawer=document.getElementById("qxDrawer");
