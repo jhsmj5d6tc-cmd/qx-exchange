@@ -34,7 +34,7 @@ body{background-image:radial-gradient(ellipse at 50% -18%,rgba(111,69,217,.28),t
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
 button,input{font:inherit}
 button{cursor:pointer}
-.wrap{max-width:1000px;margin:auto;padding:14px 14px 105px}
+.wrap{max-width:1000px;margin:auto;padding:14px 14px 32px}
 header{display:flex;align-items:center;justify-content:space-between;padding:12px 0 25px}
 .logo{font-size:26px;font-weight:900}
 .logo span{color:var(--green)}
@@ -99,15 +99,28 @@ h2{font-size:19px}
 .toolbar{display:flex;gap:8px;margin-bottom:12px}
 input{width:100%;min-width:0;background:#0c0920;color:white;border:1px solid var(--line);border-radius:10px;padding:13px}
 .tag{color:var(--green);font-size:11px;background:#193d35;padding:6px 9px;border-radius:7px}
-.bottom-nav{
- position:fixed;left:0;right:0;bottom:0;z-index:999;display:grid;
- grid-template-columns:repeat(6,minmax(0,1fr));background:rgba(8,7,17,.97);
- border-top:1px solid var(--line);padding:8px 10px calc(8px + env(safe-area-inset-bottom));min-height:72px
-}
-.nav-btn{border:0;background:none;color:#b8aec9;font-size:12px;font-weight:700;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:7px 4px;min-height:56px;line-height:1.2;-webkit-tap-highlight-color:transparent}
-.nav-btn .nav-icon{width:23px;height:23px;display:block;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.nav-btn.active{color:var(--green)}
-.nav-btn:focus-visible{outline:2px solid var(--green);outline-offset:2px;border-radius:9px}
+
+/* QX premium top navigation + organized Markets layout */
+.qx-menu-btn{width:46px;height:46px;border:1px solid rgba(150,108,224,.55);border-radius:13px;background:linear-gradient(145deg,#1b122d,#100b1b);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;box-shadow:0 10px 26px rgba(0,0,0,.28);cursor:pointer}
+.qx-menu-btn span{display:block;width:20px;height:2px;border-radius:3px;background:#f8f5ff;transition:transform .18s ease,opacity .18s ease}
+.qx-menu-btn[aria-expanded="true"] span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.qx-menu-btn[aria-expanded="true"] span:nth-child(2){opacity:0}
+.qx-menu-btn[aria-expanded="true"] span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+.qx-menu-backdrop{display:none;position:fixed;inset:0;background:rgba(3,2,8,.58);backdrop-filter:blur(5px);z-index:1098}
+.qx-menu-backdrop.open{display:block}
+.qx-drawer{position:fixed;top:0;right:-330px;width:min(330px,88vw);height:100dvh;background:linear-gradient(180deg,#120c20,#080611);border-left:1px solid #49336b;z-index:1099;padding:20px 16px;box-shadow:-20px 0 60px rgba(0,0,0,.45);transition:right .24s ease;display:flex;flex-direction:column}
+.qx-drawer.open{right:0}
+.qx-drawer-head{display:flex;align-items:center;justify-content:space-between;padding:2px 2px 20px;border-bottom:1px solid rgba(86,53,139,.55)}
+.qx-drawer-brand{font-weight:950;font-size:18px;letter-spacing:.8px}.qx-drawer-brand span{color:var(--green);font-weight:800}
+.qx-drawer-head button{width:38px;height:38px;border:1px solid #49336b;border-radius:10px;background:#1a1228;color:#fff;font-size:16px}
+.qx-drawer-nav{display:flex;flex-direction:column;gap:7px;padding-top:18px}
+.qx-drawer-link{border:1px solid transparent;background:transparent;color:#fff;text-align:left;padding:13px 14px;border-radius:12px;display:flex;flex-direction:column;gap:4px;cursor:pointer}
+.qx-drawer-link span{font-size:14px;font-weight:900}.qx-drawer-link small{font-size:10px;color:var(--muted)}
+.qx-drawer-link:hover,.qx-drawer-link.active{background:linear-gradient(145deg,#1c1430,#120c1f);border-color:#49336b}.qx-drawer-link.active{box-shadow:inset 3px 0 0 var(--green)}
+.qx-drawer-footer{margin-top:auto;padding:16px 4px;color:var(--muted);font-size:11px;display:flex;justify-content:space-between;gap:8px;border-top:1px solid rgba(86,53,139,.35)}.qx-drawer-footer span{color:var(--green);font-weight:900}
+.market-list-column{display:flex;flex-direction:column}.market-tabs{margin-top:2px}.qx-market-toolbar{margin-top:0}.market-list-column .sort-panel{margin-top:0;border-radius:12px}.market-list-column .list{margin-top:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:rgba(13,9,23,.62)}
+.ads-shell{margin-bottom:11px}.ads-shell + .market-tabs{margin-top:0}
+@media(max-width:560px){.brand-copy .brand-tagline{display:none}.brand-name{font-size:20px}.qx-menu-btn{width:42px;height:42px}.market-tabs{gap:6px;padding-bottom:9px}.market-tab{padding:9px 11px;font-size:11px}.sort-panel{padding:9px}.sort-options{gap:5px}.sort-option{padding:4px 6px 4px 8px}.sort-option button{width:27px;height:27px}.market-row{grid-template-columns:minmax(0,1.35fr) minmax(72px,.8fr) minmax(62px,.65fr);padding:11px 9px}}
 footer{text-align:center;color:var(--muted);padding:25px;font-size:11px}
 .market-heading{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .market-tabs{display:flex;gap:8px;overflow-x:auto;padding:4px 0 13px;scrollbar-width:none}
@@ -290,7 +303,7 @@ header{padding:15px 0 25px}
 .token-back-btn{display:flex;align-items:center;gap:9px;border:1px solid #49336b;background:#171126;color:#e9ddfb;border-radius:10px;padding:10px 13px;font-size:11px;font-weight:900;letter-spacing:.6px;margin:0 0 16px;cursor:pointer}
 .token-back-btn span{font-size:19px;line-height:12px;color:var(--green)}
 body.qx-token-open{overflow:hidden}
-body.qx-token-open .wrap>header,body.qx-token-open .bottom-nav,body.qx-token-open .qx-social,body.qx-token-open footer{display:none!important}
+body.qx-token-open .wrap>header,body.qx-token-open .qx-social,body.qx-token-open footer{display:none!important}
 body.qx-token-open #marketsPage>.market-heading{display:none!important}
 body.qx-token-open #marketsPage .market-list-column{display:none!important}
 body.qx-token-open #detail{display:block!important;position:fixed!important;inset:0!important;z-index:2000!important;width:100%!important;max-width:1000px!important;height:100dvh!important;max-height:100dvh!important;overflow-y:auto!important;overscroll-behavior:contain;background:radial-gradient(ellipse at 50% -15%,rgba(123,57,210,.22),transparent 48%),#090712!important;border:0!important;border-radius:0!important;margin:0 auto!important;padding:max(14px,env(safe-area-inset-top)) 14px calc(30px + env(safe-area-inset-bottom))!important;box-shadow:0 0 0 100vmax #090712}
@@ -429,18 +442,31 @@ body.qx-token-open #getQuoteBtn{display:none!important}
 <body>
 <div class="wrap">
 <header>
- <a class="brand-lockup" href="#walletPage" aria-label="QX Exchange home">
+ <a class="brand-lockup" href="#marketsPage" aria-label="QX Exchange home">
   <span class="brand-mark" role="img" aria-label="QX logo">
    <svg viewBox="0 0 64 64" aria-hidden="true" focusable="false">
-    <defs><linearGradient id="qxMarkGradient" x1="7" y1="5" x2="57" y2="59" gradientUnits="userSpaceOnUse"><stop stop-color="#C18BFF"/><stop offset=".52" stop-color="#8050F5"/><stop offset="1" stop-color="#35E6B0"/></linearGradient></defs>
-    <path d="M32 5.5 53.5 17.8v24.4L32 54.5 10.5 42.2V17.8L32 5.5Z" fill="none" stroke="url(#qxMarkGradient)" stroke-width="3.5" stroke-linejoin="round"/>
+    <defs><linearGradient id="qxMarkGradient" x1="7" y1="5" x2="57" y2="59" gradientUnits="userSpaceOnUse"><stop stop-color="#D7A6FF"/><stop offset=".52" stop-color="#8B5CF6"/><stop offset="1" stop-color="#35E6B0"/></linearGradient></defs>
+    <path d="M32 5.5 53.5 17.8v24.4L32 54.5 10.5 42.2V17.8L32 5.5Z" fill="none" stroke="url(#qxMarkGradient)" stroke-width="3.8" stroke-linejoin="round"/>
     <path d="M28.8 40.5a11.7 11.7 0 1 1 7.8-3l7 7" fill="none" stroke="#F8F5FF" stroke-width="5.2" stroke-linecap="round"/>
     <path d="m34.5 26 11 11m0-11-11 11" fill="none" stroke="#42F2B5" stroke-width="4.2" stroke-linecap="round"/>
    </svg>
   </span>
   <span class="brand-copy"><span class="brand-name">QX <b>EXCHANGE</b></span><span class="brand-tagline">GLOBAL CRYPTO EXCHANGE</span></span>
  </a>
+ <button class="qx-menu-btn" id="qxMenuBtn" type="button" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
 </header>
+<div class="qx-menu-backdrop" id="qxMenuBackdrop" aria-hidden="true"></div>
+<aside class="qx-drawer" id="qxDrawer" aria-hidden="true" aria-label="Main menu">
+ <div class="qx-drawer-head"><div class="qx-drawer-brand">QX <span>EXCHANGE</span></div><button id="qxMenuClose" type="button" aria-label="Close menu">&#10005;</button></div>
+ <nav class="qx-drawer-nav">
+  <button class="qx-drawer-link active" data-page="marketsPage"><span>Markets</span><small>Market overview</small></button>
+  <button class="qx-drawer-link" data-page="exchangePage"><span>Exchange</span><small>Trade tokens</small></button>
+  <button class="qx-drawer-link" data-page="walletPage"><span>Wallet</span><small>Balance & activity</small></button>
+  <button class="qx-drawer-link" data-page="createPage"><span>Create Token</span><small>Launch a Solana token</small></button>
+  <button class="qx-drawer-link" data-page="creatorPage"><span>Creator</span><small>Creator dashboard</small></button>
+ </nav>
+ <div class="qx-drawer-footer"><span>QX</span><small>Solana trading platform</small></div>
+</aside>
 
 <main id="walletPage" class="page">
  <div class="hero">
@@ -555,9 +581,19 @@ body.qx-token-open #getQuoteBtn{display:none!important}
 </main>
 
 <main id="marketsPage" class="page active">
- <div class="market-heading"><h2>Solana Markets</h2><span class="tag">LIVE MARKET</span></div>
+ <div class="market-heading"><h2>Markets</h2></div>
  <div class="market-layout">
   <div class="market-list-column">
+   <section class="ads-shell" aria-label="Featured sponsored projects">
+    <div class="ads-head">
+     <div><div class="ads-title">Featured</div><div class="ads-sub">Sponsored projects</div></div>
+     <div class="ads-menu-wrap">
+      <button class="ads-menu-btn" id="adsMenuBtn" aria-label="Advertisement options" aria-expanded="false">&#8942;</button>
+      <div class="ads-menu" id="adsMenu"><button type="button" id="addAdMenuBtn">+ Add advertisement</button></div>
+     </div>
+    </div>
+    <div class="ads-list" id="publicAdsList"><div class="ad-empty">No sponsored advertisements yet.</div></div>
+   </section>
    <div class="market-tabs" id="marketTabs">
     <button class="market-tab active" data-category="all">All Coins</button>
     <button class="market-tab" data-category="new">New Coins <span class="new-live-tag"><i class="new-live-dot"></i>LIVE</span></button>
@@ -566,7 +602,7 @@ body.qx-token-open #getQuoteBtn{display:none!important}
     <button class="market-tab" data-category="trending">Trending</button>
     <button class="market-tab" data-category="volume">Top Volume</button>
    </div>
-   <div class="toolbar">
+   <div class="toolbar qx-market-toolbar">
     <input id="search" placeholder="Search name, symbol or contract">
     <button class="btn primary" id="searchBtn">Search</button>
    </div>
@@ -575,7 +611,7 @@ body.qx-token-open #getQuoteBtn{display:none!important}
     <span class="small" id="coinCount">Loading...</span>
    </div>
    <div class="sort-panel">
-    <div class="sort-title">SORT MARKET <span id="sortLabel">Default order</span></div>
+    <div class="sort-title"><span>Sort</span><span id="sortLabel">Default order</span></div>
     <div class="sort-options" id="sortOptions">
      <div class="sort-option"><span>Price</span><button data-sort="price" aria-label="Sort price"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10l-3-3m3 3-3 3M17 17H7l3 3m-3-3 3-3"/></svg></button></div>
      <div class="sort-option"><span>Change</span><button data-sort="change" aria-label="Sort change"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10l-3-3m3 3-3 3M17 17H7l3 3m-3-3 3-3"/></svg></button></div>
@@ -681,21 +717,6 @@ body.qx-token-open #getQuoteBtn{display:none!important}
  </section>
 </main>
 
-<main id="adsPage" class="page">
- <div class="market-heading"><h2 id="adsPageTitle">Advertisements</h2><span class="tag">QX ADS</span></div>
- <section class="ads-shell" aria-label="Sponsored advertisements">
-  <div class="ads-head">
-   <div><div class="ads-title">Sponsored</div><div class="ads-sub">Featured projects</div></div>
-   <div class="ads-menu-wrap">
-    <button class="ads-menu-btn" id="adsMenuBtn" aria-label="Advertisement options" aria-expanded="false">&#8942;</button>
-    <div class="ads-menu" id="adsMenu"><button type="button" id="addAdMenuBtn">+ Add advertisement</button></div>
-   </div>
-  </div>
-  <div class="ads-list" id="publicAdsList"><div class="ad-empty">No sponsored advertisements yet.</div></div>
- </section>
- <p class="small" id="adsPageHelp">Promote your project to the QX community.</p>
-</main>
-
 <div class="ad-modal-backdrop" id="adModalBackdrop" role="dialog" aria-modal="true" aria-labelledby="adModalTitle">
  <div class="ad-modal">
   <div class="ad-modal-head"><h3 id="adModalTitle">Add advertisement</h3><button class="ad-close" id="adCloseBtn" type="button" aria-label="Close">&#xD7;</button></div>
@@ -725,22 +746,7 @@ body.qx-token-open #getQuoteBtn{display:none!important}
 <footer>QX Exchange | Solana</footer>
 </div>
 
-<nav class="bottom-nav" aria-label="Main navigation">
- <button class="nav-btn" data-page="exchangePage" aria-label="Exchange Terminal"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10l-3-3m3 3-3 3M17 17H7l3 3m-3-3 3-3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Exchange</span></button>
- <button class="nav-btn" data-page="walletPage" aria-label="Wallet">
-  <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="15" rx="3"/><path d="M3 9h18M16 14h2"/></svg><span>Wallet</span>
- </button>
- <button class="nav-btn" data-page="createPage" aria-label="Create Token">
-  <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v16M4 12h16"/><circle cx="12" cy="12" r="9"/></svg><span>Create Token</span>
- </button>
- <button class="nav-btn active" data-page="marketsPage" aria-label="Markets">
-  <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5M4 19h17M7 15l4-4 3 2 6-7"/></svg><span>Markets</span>
- </button>
- <button class="nav-btn" data-page="creatorPage" aria-label="Creator Dashboard"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM4 21a8 8 0 0 1 16 0"/></svg><span>Creator</span></button>
- <button class="nav-btn" data-page="adsPage" aria-label="Advertisements">
-  <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10v4h4l10 5V5L7 10H3Z"/><path d="m7 14 2 6h4l-2-4M20 9l2-2M20 15l2 2"/></svg><span>Ads</span>
- </button>
-</nav>
+
 
 <div class="qx-wp-modal" id="qxWhitePaperModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="qxWpTitle">
  <section class="qx-wp-panel">
@@ -780,13 +786,24 @@ body.qx-token-open #getQuoteBtn{display:none!important}
 <script>
 function showPage(id){
  document.body.classList.toggle("qx-wallet-active",id==="walletPage");
- document.body.classList.toggle("qx-ads-active",id==="adsPage");
  document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active",p.id===id));
- document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.page===id));
+ document.querySelectorAll(".qx-drawer-link").forEach(b=>b.classList.toggle("active",b.dataset.page===id));
+ closeQXMenu();
  window.scrollTo({top:0,behavior:"smooth"});
 }
-document.querySelectorAll(".nav-btn").forEach(b=>b.addEventListener("click",()=>showPage(b.dataset.page)));
+const qxMenuBtn=document.getElementById("qxMenuBtn");
+const qxMenuClose=document.getElementById("qxMenuClose");
+const qxDrawer=document.getElementById("qxDrawer");
+const qxMenuBackdrop=document.getElementById("qxMenuBackdrop");
+function openQXMenu(){if(!qxDrawer)return;qxDrawer.classList.add("open");qxMenuBackdrop?.classList.add("open");qxDrawer.setAttribute("aria-hidden","false");qxMenuBackdrop?.setAttribute("aria-hidden","false");qxMenuBtn?.setAttribute("aria-expanded","true");}
+function closeQXMenu(){if(!qxDrawer)return;qxDrawer.classList.remove("open");qxMenuBackdrop?.classList.remove("open");qxDrawer.setAttribute("aria-hidden","true");qxMenuBackdrop?.setAttribute("aria-hidden","true");qxMenuBtn?.setAttribute("aria-expanded","false");}
+qxMenuBtn?.addEventListener("click",()=>qxDrawer.classList.contains("open")?closeQXMenu():openQXMenu());
+qxMenuClose?.addEventListener("click",closeQXMenu);
+qxMenuBackdrop?.addEventListener("click",closeQXMenu);
+document.querySelectorAll(".qx-drawer-link").forEach(b=>b.addEventListener("click",()=>showPage(b.dataset.page)));
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeQXMenu();});
 document.body.classList.remove("qx-wallet-active","qx-ads-active");
+showPage("marketsPage");
 
 const qxWpModal=document.getElementById("qxWhitePaperModal");
 const qxWpOpen=document.getElementById("qxOpenWhitePaper");
@@ -1002,7 +1019,7 @@ function qxApplyLanguage(){
   backMarkets:"\u0627\u0644\u0639\u0648\u062F\u0629 \u0625\u0644\u0649 \u0627\u0644\u0623\u0633\u0648\u0627\u0642",marketCapFdv:"\u0627\u0644\u0642\u064A\u0645\u0629 \u0627\u0644\u0633\u0648\u0642\u064A\u0629 / \u0627\u0644\u062A\u0642\u064A\u064A\u0645 \u0627\u0644\u0645\u062E\u0641\u0641",transactions:"\u0645\u0639\u0627\u0645\u0644\u0627\u062A 24 \u0633\u0627\u0639\u0629",holders:"\u0627\u0644\u0645\u0627\u0644\u0643\u0648\u0646",indexer:"\u064A\u062A\u0637\u0644\u0628 \u0645\u0641\u0647\u0631\u0633 \u0628\u064A\u0627\u0646\u0627\u062A",chart:"\u0627\u0644\u0631\u0633\u0645 \u0627\u0644\u0628\u064A\u0627\u0646\u064A \u0627\u0644\u0645\u0628\u0627\u0634\u0631 \u0645\u0646 QX",solscan:"\u0639\u0631\u0636 \u0627\u0644\u0639\u0642\u062F \u0639\u0644\u0649 Solscan",buy:"\u0634\u0631\u0627\u0621",sell:"\u0628\u064A\u0639",youPay:"\u0623\u0646\u062A \u062A\u062F\u0641\u0639",receive:"\u0627\u0644\u0643\u0645\u064A\u0629 \u0627\u0644\u0645\u062A\u0648\u0642\u0639\u0629",fee:"\u0639\u0645\u0648\u0644\u0629 QX",route:"\u0645\u0633\u0627\u0631 \u0627\u0644\u062A\u062F\u0627\u0648\u0644",notConnected:"\u063A\u064A\u0631 \u0645\u062A\u0635\u0644",bestPrice:"\u0623\u0641\u0636\u0644 \u0633\u0639\u0631",getQuote:"\u0627\u062D\u0635\u0644 \u0639\u0644\u0649 \u0623\u0641\u0636\u0644 \u0633\u0639\u0631",confirm:"\u062A\u0623\u0643\u064A\u062F \u0627\u0644\u0645\u0628\u0627\u062F\u0644\u0629",feeNote:"\u0631\u0633\u0648\u0645 QX: \u200F1% \u0639\u0644\u0649 \u0643\u0644 \u0639\u0645\u0644\u064A\u0629 \u0645\u0628\u0627\u062F\u0644\u0629 \u0645\u0643\u062A\u0645\u0644\u0629. \u064A\u062C\u0628 \u0623\u0646 \u064A\u0624\u0643\u062F \u0639\u0631\u0636 \u0627\u0644\u0633\u0639\u0631 \u0627\u0644\u0645\u0628\u0627\u0634\u0631 \u0627\u0644\u0631\u0633\u0648\u0645 \u0643\u0627\u0645\u0644\u0629 \u0642\u0628\u0644 \u062A\u0648\u0642\u064A\u0639 \u0627\u0644\u0645\u062D\u0641\u0638\u0629. \u0644\u0627 \u062A\u064F\u0641\u0631\u0636 \u0631\u0633\u0648\u0645 \u0625\u0630\u0627 \u0644\u0645 \u062A\u0643\u062A\u0645\u0644 \u0627\u0644\u0639\u0645\u0644\u064A\u0629.",
   adDuration:"\u0645\u062F\u0629 \u0627\u0644\u0625\u0639\u0644\u0627\u0646",totalPrice:"\u0627\u0644\u0633\u0639\u0631 \u0627\u0644\u0625\u062C\u0645\u0627\u0644\u064A",solPayment:"\u0627\u0644\u062F\u0641\u0639 \u0627\u0644\u062A\u0642\u062F\u064A\u0631\u064A \u0628\u0639\u0645\u0644\u0629 SOL",adHeadline:"\u0639\u0646\u0648\u0627\u0646 \u0627\u0644\u0625\u0639\u0644\u0627\u0646",adText:"\u0627\u0643\u062A\u0628 \u0646\u0635 \u0627\u0644\u0625\u0639\u0644\u0627\u0646",adLink:"\u0631\u0627\u0628\u0637 \u0627\u0644\u0645\u0648\u0642\u0639 \u0623\u0648 \u0627\u0644\u0645\u0634\u0631\u0648\u0639",adImage:"\u0631\u0627\u0628\u0637 \u0627\u0644\u0635\u0648\u0631\u0629 (\u0627\u062E\u062A\u064A\u0627\u0631\u064A)",adNote:"\u0633\u064A\u064F\u0637\u0644\u0628 \u0627\u0644\u062F\u0641\u0639 \u0645\u0646 \u0627\u0644\u0645\u062D\u0641\u0638\u0629 \u0627\u0644\u0645\u062A\u0635\u0644\u0629 \u0628\u0640 QX. \u0644\u0646 \u064A\u064F\u0646\u0634\u0631 \u0627\u0644\u0625\u0639\u0644\u0627\u0646 \u0625\u0644\u0627 \u0628\u0639\u062F \u0623\u0646 \u062A\u062A\u062D\u0642\u0642 QX \u0645\u0646 \u0627\u0644\u062F\u0641\u0639.",payAd:"\u0627\u062F\u0641\u0639 \u0628\u0627\u0644\u0645\u062D\u0641\u0638\u0629 \u0627\u0644\u0645\u062A\u0635\u0644\u0629",close:"\u0625\u063A\u0644\u0627\u0642",language:"\u0627\u0644\u0644\u063A\u0629",currency:"\u0627\u0644\u0639\u0645\u0644\u0629"
  }:{
-  connect:"Connect Wallet",wallet:"Wallet",create:"Create Token",markets:"Markets",ads:"Advertisements",assets:"My Assets",portfolio:"TOTAL PORTFOLIO VALUE | USD ESTIMATE",liveBalance:"Live balance",refresh:"Refresh",onchain:"ON-CHAIN",asset:"Asset",balance:"Balance",value:"Value",connectAssets:"Connect your wallet to view assets.",createTitle:"Create Your Token",launch:"Launch an SPL token",createDesc:"Create the token mint and initial supply directly from your connected Solana wallet. Your wallet will ask you to approve the transaction.",tokenFee:"QX creation fee: 0.30 SOL. Solana network fees and mint-account rent are additional.",tokenName:"Token name",symbol:"Symbol",supply:"Initial supply",decimals:"Decimals",createButton:"Connect wallet & create token",createHint:"Connect your wallet first. The QX creation fee is 0.30 SOL, plus Solana network fees and mint-account rent.",created:"Token created",viewTx:"View transaction on Solscan",createNote:"Note: this creates an on-chain SPL mint and initial supply. Publishing the name, symbol and logo in a global directory requires a metadata and indexing service.",marketTitle:"Solana Markets",liveMarket:"LIVE MARKET",all:"All Coins",new:"New Coins",gainers:"Top Gainers",losers:"Top Losers",trending:"Trending",volume:"Top Volume",search:"Search",searchPlaceholder:"Search name, symbol or contract",allSol:"All Solana tokens",loading:"Loading...",sort:"SORT MARKET",defaultSort:"Default order",price:"Price",change:"Change",marketCap:"Market Cap",liquidity:"Liquidity",token:"Token",priceUsd:"Price USD",day:"24h",marketLoading:"Loading market...",marketConnecting:"Connecting to live market data...",holdersNote:"Holder totals require a dedicated Solana indexing API. QX does not display estimated or fabricated holder counts.",adsTitle:"Advertisements",sponsored:"Sponsored",featured:"Featured projects",addAd:"+ Add advertisement",noAds:"No sponsored advertisements yet.",adsHelp:"Promote your project to the QX community.",backMarkets:"BACK TO MARKETS",marketCapFdv:"Market Cap / FDV",transactions:"24h Transactions",holders:"Holders",indexer:"Indexer required",chart:"QX LIVE CHART",solscan:"View contract on Solscan",buy:"BUY",sell:"SELL",youPay:"YOU PAY",receive:"Estimated receive",fee:"QX commission",route:"Route",notConnected:"Not connected",bestPrice:"GET BEST PRICE",getQuote:"GET BEST PRICE",confirm:"CONFIRM SWAP",feeNote:"QX fee: 1% per completed swap. The live quote must confirm the full fee before wallet signing. No fee is charged when a swap is not completed.",adDuration:"Advertisement duration",totalPrice:"Total price",solPayment:"Estimated SOL payment",adHeadline:"Advertisement title",adText:"Paste your advertisement",adLink:"Website or project link",adImage:"Image URL (optional)",adNote:"Payment is requested from the wallet already connected to QX. The advertisement is published only after payment is verified by QX.",payAd:"PAY WITH CONNECTED WALLET",close:"Close",language:"Language",currency:"Currency"
+  connect:"Connect Wallet",wallet:"Wallet",create:"Create Token",markets:"Markets",ads:"Advertisements",assets:"My Assets",portfolio:"TOTAL PORTFOLIO VALUE | USD ESTIMATE",liveBalance:"Live balance",refresh:"Refresh",onchain:"ON-CHAIN",asset:"Asset",balance:"Balance",value:"Value",connectAssets:"Connect your wallet to view assets.",createTitle:"Create Your Token",launch:"Launch an SPL token",createDesc:"Create the token mint and initial supply directly from your connected Solana wallet. Your wallet will ask you to approve the transaction.",tokenFee:"QX creation fee: 0.30 SOL. Solana network fees and mint-account rent are additional.",tokenName:"Token name",symbol:"Symbol",supply:"Initial supply",decimals:"Decimals",createButton:"Connect wallet & create token",createHint:"Connect your wallet first. The QX creation fee is 0.30 SOL, plus Solana network fees and mint-account rent.",created:"Token created",viewTx:"View transaction on Solscan",createNote:"Note: this creates an on-chain SPL mint and initial supply. Publishing the name, symbol and logo in a global directory requires a metadata and indexing service.",marketTitle:"Markets",markets:"Markets",liveMarket:"LIVE MARKET",all:"All Coins",new:"New Coins",gainers:"Top Gainers",losers:"Top Losers",trending:"Trending",volume:"Top Volume",search:"Search",searchPlaceholder:"Search name, symbol or contract",allSol:"All Solana tokens",loading:"Loading...",sort:"Sort",defaultSort:"Default order",price:"Price",change:"Change",marketCap:"Market Cap",liquidity:"Liquidity",token:"Token",priceUsd:"Price USD",day:"24h",marketLoading:"Loading market...",marketConnecting:"Connecting to live market data...",holdersNote:"Holder totals require a dedicated Solana indexing API. QX does not display estimated or fabricated holder counts.",adsTitle:"Advertisements",sponsored:"Sponsored",featured:"Featured projects",addAd:"+ Add advertisement",noAds:"No sponsored advertisements yet.",adsHelp:"Promote your project to the QX community.",backMarkets:"BACK TO MARKETS",marketCapFdv:"Market Cap / FDV",transactions:"24h Transactions",holders:"Holders",indexer:"Indexer required",chart:"QX LIVE CHART",solscan:"View contract on Solscan",buy:"BUY",sell:"SELL",youPay:"YOU PAY",receive:"Estimated receive",fee:"QX commission",route:"Route",notConnected:"Not connected",bestPrice:"GET BEST PRICE",getQuote:"GET BEST PRICE",confirm:"CONFIRM SWAP",feeNote:"QX fee: 1% per completed swap. The live quote must confirm the full fee before wallet signing. No fee is charged when a swap is not completed.",adDuration:"Advertisement duration",totalPrice:"Total price",solPayment:"Estimated SOL payment",adHeadline:"Advertisement title",adText:"Paste your advertisement",adLink:"Website or project link",adImage:"Image URL (optional)",adNote:"Payment is requested from the wallet already connected to QX. The advertisement is published only after payment is verified by QX.",payAd:"PAY WITH CONNECTED WALLET",close:"Close",language:"Language",currency:"Currency"
  };
  const connect=$("connectBtn");if(connect&&!document.body.classList.contains("qx-wallet-active"))connect.textContent=L.connect;
  t("#walletPage .hero > .small", "TOTAL PORTFOLIO VALUE | USD ESTIMATE", L.portfolio);
@@ -1023,7 +1040,7 @@ function qxApplyLanguage(){
  const createStatus=$("createTokenStatus");if(createStatus&&(!createStatus.dataset.runtime||createStatus.dataset.runtime!=="1"))createStatus.textContent=L.createHint;
  t("#createdTokenResult strong","Token created",L.created);t("#createdTokenSolscan","View transaction on Solscan",L.viewTx);
  const note=document.querySelector("#createPage .panel > p:last-child");if(note)note.textContent=L.createNote;
- t("#marketsPage > .market-heading h2","Solana Markets",L.marketTitle);t("#marketsPage > .market-heading .tag","LIVE MARKET",L.liveMarket);
+ t("#marketsPage > .market-heading h2","Markets",L.markets);
  const cats=[["all","All Coins",L.all],["new","New Coins",L.new],["gainers","Top Gainers",L.gainers],["losers","Top Losers",L.losers],["trending","Trending",L.trending],["volume","Top Volume",L.volume]];
  cats.forEach(([key,en,arText])=>{const b=document.querySelector(`#marketTabs [data-category="${key}"]`);if(b){const live=b.querySelector(".new-live-tag");b.textContent=ar?arText:en;if(live){live.textContent="\u0645\u0628\u0627\u0634\u0631";b.appendChild(live);}}});
  ph("search","Search name, symbol or contract",L.searchPlaceholder);t("#searchBtn","Search",L.search);
@@ -1033,7 +1050,7 @@ function qxApplyLanguage(){
  const marketResults=$("tokenResults");if(marketResults&&marketResults.classList.contains("market-empty")&&/Loading market/.test(marketResults.textContent))marketResults.textContent=L.marketLoading;
  const marketStatus=$("marketStatus");if(marketStatus&&/Connecting to live market/.test(marketStatus.textContent))marketStatus.textContent=L.marketConnecting;
  const holdersNote=document.querySelector("#marketsPage .market-list-column > p.small");if(holdersNote)holdersNote.textContent=L.holdersNote;
- t("#adsPageTitle","Advertisements",L.ads);t(".ads-title","Sponsored",L.sponsored);t(".ads-sub","Featured projects",L.featured);t("#addAdMenuBtn","+ Add advertisement",L.addAd);t("#publicAdsList .ad-empty","No sponsored advertisements yet.",L.noAds);t("#adsPageHelp","Promote your project to the QX community.",L.adsHelp);
+ t(".ads-title","Featured",L.featured);t(".ads-sub","Sponsored projects",L.sponsored);t("#addAdMenuBtn","+ Add advertisement",L.addAd);t("#publicAdsList .ad-empty","No sponsored advertisements yet.",L.noAds);
  t("#tokenBackBtn","BACK TO MARKETS",L.backMarkets);t(".detail-stat:nth-child(1) small","Market Cap / FDV",L.marketCapFdv);t(".detail-stat:nth-child(2) small","Liquidity",L.liquidity);t(".detail-stat:nth-child(3) small","24h Volume", "\u062D\u062C\u0645 \u0627\u0644\u062A\u062F\u0627\u0648\u0644 \u062E\u0644\u0627\u0644 24 \u0633\u0627\u0639\u0629");t(".detail-stat:nth-child(4) small","24h Transactions",L.transactions);t(".detail-stat:nth-child(5) small","Holders",L.holders);
  const chartTitle=document.querySelector(".chart-toolbar > strong");if(chartTitle)chartTitle.textContent=L.chart;t("#solscanLink","View contract on Solscan ->",L.solscan);
  const swapKicker=document.querySelector(".qx-swap-kicker");if(swapKicker)swapKicker.textContent=ar?"QX EXCHANGE / \u062A\u062F\u0627\u0648\u0644 \u0641\u0648\u0631\u064A":"QX EXCHANGE / INSTANT TRADE";
@@ -1059,7 +1076,7 @@ function qxApplyLanguage(){
  const walletStatus=$("walletStatus");if(walletStatus&&!connected)walletStatus.textContent=ar?"\u0627\u0631\u0628\u0637 \u0645\u062D\u0641\u0638\u062A\u0643 \u0644\u0639\u0631\u0636 \u0627\u0644\u0623\u0635\u0648\u0644.":"Connect your wallet to view assets.";
  const adStatus=$("adStatus");if(adStatus&&!adStatus.textContent.trim())adStatus.textContent="";
  document.querySelectorAll(".nav-btn").forEach(b=>{const id=b.dataset.page;const span=b.querySelector("span");if(span)span.textContent=id==="walletPage"?L.wallet:id==="createPage"?L.create:id==="marketsPage"?L.markets:L.ads;b.setAttribute("aria-label",span?.textContent||"");});
- const nav=document.querySelector(".bottom-nav");if(nav)nav.setAttribute("aria-label",ar?"\u0627\u0644\u062A\u0646\u0642\u0644 \u0627\u0644\u0631\u0626\u064A\u0633\u064A":"Main navigation");
+
  const footer=document.querySelector("footer");if(footer)footer.textContent=ar?"QX Exchange | \u0633\u0648\u0644\u0627\u0646\u0627":"QX Exchange | Solana";
  document.querySelector(".ads-shell")?.setAttribute("aria-label",ar?"\u0627\u0644\u0625\u0639\u0644\u0627\u0646\u0627\u062A \u0627\u0644\u0645\u0645\u0648\u0644\u0629":"Sponsored advertisements");
 }
