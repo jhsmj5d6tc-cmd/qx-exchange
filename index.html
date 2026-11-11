@@ -34,7 +34,7 @@ body{background-image:radial-gradient(ellipse at 50% -18%,rgba(111,69,217,.28),t
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
 button,input{font:inherit}
 button{cursor:pointer}
-.wrap{max-width:1000px;margin:auto;padding:14px 14px 105px}
+.wrap{max-width:1000px;margin:auto;padding:14px 14px 32px}
 header{display:flex;align-items:center;justify-content:space-between;padding:12px 0 25px}
 .logo{font-size:26px;font-weight:900}
 .logo span{color:var(--green)}
@@ -99,15 +99,28 @@ h2{font-size:19px}
 .toolbar{display:flex;gap:8px;margin-bottom:12px}
 input{width:100%;min-width:0;background:#0c0920;color:white;border:1px solid var(--line);border-radius:10px;padding:13px}
 .tag{color:var(--green);font-size:11px;background:#193d35;padding:6px 9px;border-radius:7px}
-.bottom-nav{
- position:fixed;left:0;right:0;bottom:0;z-index:999;display:grid;
- grid-template-columns:repeat(6,minmax(0,1fr));background:rgba(8,7,17,.97);
- border-top:1px solid var(--line);padding:8px 10px calc(8px + env(safe-area-inset-bottom));min-height:72px
-}
-.nav-btn{border:0;background:none;color:#b8aec9;font-size:12px;font-weight:700;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:7px 4px;min-height:56px;line-height:1.2;-webkit-tap-highlight-color:transparent}
-.nav-btn .nav-icon{width:23px;height:23px;display:block;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.nav-btn.active{color:var(--green)}
-.nav-btn:focus-visible{outline:2px solid var(--green);outline-offset:2px;border-radius:9px}
+
+/* QX premium top navigation + organized Markets layout */
+.qx-menu-btn{width:46px;height:46px;border:1px solid rgba(150,108,224,.55);border-radius:13px;background:linear-gradient(145deg,#1b122d,#100b1b);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;box-shadow:0 10px 26px rgba(0,0,0,.28);cursor:pointer}
+.qx-menu-btn span{display:block;width:20px;height:2px;border-radius:3px;background:#f8f5ff;transition:transform .18s ease,opacity .18s ease}
+.qx-menu-btn[aria-expanded="true"] span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.qx-menu-btn[aria-expanded="true"] span:nth-child(2){opacity:0}
+.qx-menu-btn[aria-expanded="true"] span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+.qx-menu-backdrop{display:none;position:fixed;inset:0;background:rgba(3,2,8,.58);backdrop-filter:blur(5px);z-index:1098}
+.qx-menu-backdrop.open{display:block}
+.qx-drawer{position:fixed;top:0;right:-330px;width:min(330px,88vw);height:100dvh;background:linear-gradient(180deg,#120c20,#080611);border-left:1px solid #49336b;z-index:1099;padding:20px 16px;box-shadow:-20px 0 60px rgba(0,0,0,.45);transition:right .24s ease;display:flex;flex-direction:column}
+.qx-drawer.open{right:0}
+.qx-drawer-head{display:flex;align-items:center;justify-content:space-between;padding:2px 2px 20px;border-bottom:1px solid rgba(86,53,139,.55)}
+.qx-drawer-brand{font-weight:950;font-size:18px;letter-spacing:.8px}.qx-drawer-brand span{color:var(--green);font-weight:800}
+.qx-drawer-head button{width:38px;height:38px;border:1px solid #49336b;border-radius:10px;background:#1a1228;color:#fff;font-size:16px}
+.qx-drawer-nav{display:flex;flex-direction:column;gap:7px;padding-top:18px}
+.qx-drawer-link{border:1px solid transparent;background:transparent;color:#fff;text-align:left;padding:13px 14px;border-radius:12px;display:flex;flex-direction:column;gap:4px;cursor:pointer}
+.qx-drawer-link span{font-size:14px;font-weight:900}.qx-drawer-link small{font-size:10px;color:var(--muted)}
+.qx-drawer-link:hover,.qx-drawer-link.active{background:linear-gradient(145deg,#1c1430,#120c1f);border-color:#49336b}.qx-drawer-link.active{box-shadow:inset 3px 0 0 var(--green)}
+.qx-drawer-footer{margin-top:auto;padding:16px 4px;color:var(--muted);font-size:11px;display:flex;justify-content:space-between;gap:8px;border-top:1px solid rgba(86,53,139,.35)}.qx-drawer-footer span{color:var(--green);font-weight:900}.qx-drawer-settings{padding:14px 2px 0;display:grid;gap:9px}.qx-drawer-setting{display:grid;gap:5px}.qx-drawer-setting label{font-size:9px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.6px}.qx-drawer-setting select{width:100%;background:#0d0918;color:#fff;border:1px solid #49336b;border-radius:9px;padding:9px 10px;font:inherit;font-size:10px}
+.market-list-column{display:flex;flex-direction:column}.market-tabs{margin-top:2px}.qx-market-toolbar{margin-top:0}.market-list-column .sort-panel{margin-top:0;border-radius:12px}.market-list-column .list{margin-top:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:rgba(13,9,23,.62)}
+.ads-shell{margin-bottom:11px}.ads-shell + .market-tabs{margin-top:0}
+@media(max-width:560px){.brand-copy .brand-tagline{display:none}.brand-name{font-size:20px}.qx-menu-btn{width:42px;height:42px}.market-tabs{gap:6px;padding-bottom:9px}.market-tab{padding:9px 11px;font-size:11px}.sort-panel{padding:9px}.sort-options{gap:5px}.sort-option{padding:4px 6px 4px 8px}.sort-option button{width:27px;height:27px}.market-row{grid-template-columns:minmax(0,1.35fr) minmax(72px,.8fr) minmax(62px,.65fr);padding:11px 9px}}
 footer{text-align:center;color:var(--muted);padding:25px;font-size:11px}
 .market-heading{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .market-tabs{display:flex;gap:8px;overflow-x:auto;padding:4px 0 13px;scrollbar-width:none}
@@ -290,7 +303,7 @@ header{padding:15px 0 25px}
 .token-back-btn{display:flex;align-items:center;gap:9px;border:1px solid #49336b;background:#171126;color:#e9ddfb;border-radius:10px;padding:10px 13px;font-size:11px;font-weight:900;letter-spacing:.6px;margin:0 0 16px;cursor:pointer}
 .token-back-btn span{font-size:19px;line-height:12px;color:var(--green)}
 body.qx-token-open{overflow:hidden}
-body.qx-token-open .wrap>header,body.qx-token-open .bottom-nav,body.qx-token-open .qx-social,body.qx-token-open footer{display:none!important}
+body.qx-token-open .wrap>header,body.qx-token-open .qx-social,body.qx-token-open footer{display:none!important}
 body.qx-token-open #marketsPage>.market-heading{display:none!important}
 body.qx-token-open #marketsPage .market-list-column{display:none!important}
 body.qx-token-open #detail{display:block!important;position:fixed!important;inset:0!important;z-index:2000!important;width:100%!important;max-width:1000px!important;height:100dvh!important;max-height:100dvh!important;overflow-y:auto!important;overscroll-behavior:contain;background:radial-gradient(ellipse at 50% -15%,rgba(123,57,210,.22),transparent 48%),#090712!important;border:0!important;border-radius:0!important;margin:0 auto!important;padding:max(14px,env(safe-area-inset-top)) 14px calc(30px + env(safe-area-inset-bottom))!important;box-shadow:0 0 0 100vmax #090712}
@@ -429,18 +442,73 @@ body.qx-token-open #getQuoteBtn{display:none!important}
 <body>
 <div class="wrap">
 <header>
- <a class="brand-lockup" href="#walletPage" aria-label="QX Exchange home">
+ <a class="brand-lockup" href="#marketsPage" aria-label="QX Exchange home">
   <span class="brand-mark" role="img" aria-label="QX logo">
    <svg viewBox="0 0 64 64" aria-hidden="true" focusable="false">
-    <defs><linearGradient id="qxMarkGradient" x1="7" y1="5" x2="57" y2="59" gradientUnits="userSpaceOnUse"><stop stop-color="#C18BFF"/><stop offset=".52" stop-color="#8050F5"/><stop offset="1" stop-color="#35E6B0"/></linearGradient></defs>
-    <path d="M32 5.5 53.5 17.8v24.4L32 54.5 10.5 42.2V17.8L32 5.5Z" fill="none" stroke="url(#qxMarkGradient)" stroke-width="3.5" stroke-linejoin="round"/>
+    <defs><linearGradient id="qxMarkGradient" x1="7" y1="5" x2="57" y2="59" gradientUnits="userSpaceOnUse"><stop stop-color="#D7A6FF"/><stop offset=".52" stop-color="#8B5CF6"/><stop offset="1" stop-color="#35E6B0"/></linearGradient></defs>
+    <path d="M32 5.5 53.5 17.8v24.4L32 54.5 10.5 42.2V17.8L32 5.5Z" fill="none" stroke="url(#qxMarkGradient)" stroke-width="3.8" stroke-linejoin="round"/>
     <path d="M28.8 40.5a11.7 11.7 0 1 1 7.8-3l7 7" fill="none" stroke="#F8F5FF" stroke-width="5.2" stroke-linecap="round"/>
     <path d="m34.5 26 11 11m0-11-11 11" fill="none" stroke="#42F2B5" stroke-width="4.2" stroke-linecap="round"/>
    </svg>
   </span>
   <span class="brand-copy"><span class="brand-name">QX <b>EXCHANGE</b></span><span class="brand-tagline">GLOBAL CRYPTO EXCHANGE</span></span>
  </a>
+ <button class="qx-menu-btn" id="qxMenuBtn" type="button" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
 </header>
+<div class="qx-menu-backdrop" id="qxMenuBackdrop" aria-hidden="true"></div>
+<aside class="qx-drawer" id="qxDrawer" aria-hidden="true" aria-label="Main menu">
+ <div class="qx-drawer-head"><div class="qx-drawer-brand">QX <span>EXCHANGE</span></div><button id="qxMenuClose" type="button" aria-label="Close menu">&#10005;</button></div>
+ <nav class="qx-drawer-nav">
+  <button class="qx-drawer-link active" data-page="marketsPage"><span>Markets</span><small>Market overview</small></button>
+  <button class="qx-drawer-link" data-page="exchangePage"><span>Exchange</span><small>Trade tokens</small></button>
+  <button class="qx-drawer-link" data-page="walletPage"><span>Wallet</span><small>Balance & activity</small></button>
+  <button class="qx-drawer-link" data-page="createPage"><span>Create Token</span><small>Launch a Solana token</small></button>
+  <button class="qx-drawer-link" data-page="creatorPage"><span>Creator</span><small>Creator dashboard</small></button>
+ </nav>
+ <div class="qx-drawer-settings">
+  <div class="qx-drawer-setting"><label for="qxMenuLanguage">Language</label><select id="qxMenuLanguage"><option value="en">English (EN)</option><option value="ar">العربية (AR)</option></select></div>
+  <div class="qx-drawer-setting"><label for="qxMenuCurrency">Currency</label><select id="qxMenuCurrency"><option value="USD">USD — US Dollar ($)</option><option value="AED">AED — UAE Dirham (د.إ)</option><option value="EUR">EUR — Euro (€)</option><option value="GBP">GBP — British Pound (£)</option><option value="JPY">JPY — Japanese Yen (¥)</option></select></div>
+ </div>
+ <div class="qx-drawer-footer"><span>QX</span><small>Solana trading platform</small></div>
+</aside>
+
+<main id="exchangePage" class="page">
+ <div class="qx-exchange-page">
+  <section class="qx-exchange-hero">
+   <div><h2>QX Exchange</h2><p>Trade Solana tokens with a professional QX trading terminal.</p></div>
+   <div class="qx-live-pill"><span class="qx-live-dot"></span>MARKET READY</div>
+  </section>
+  <div class="qx-terminal-grid">
+   <section class="qx-terminal-card">
+    <div class="qx-pair-head"><div><div class="qx-pair-name" id="qxPairName">Select a market</div><div class="qx-pair-sub" id="qxPairMint">Choose a Solana token from Markets</div></div><div><div class="qx-price" id="qxPairPrice">—</div><div class="qx-change qx-positive" id="qxPairChange">0.00%</div></div></div>
+    <div class="qx-terminal-tabs"><button class="qx-terminal-tab active" type="button">Market</button><button class="qx-terminal-tab" type="button">Limit</button><button class="qx-terminal-tab" type="button">History</button></div>
+    <div class="qx-book" id="qxLiquidityBook"><div class="qx-empty">Select a token from Markets to load liquidity.</div></div>
+    <div class="qx-depth-note">Live market data is loaded from the selected Solana market. Orders are reviewed before any wallet signature is requested.</div>
+   </section>
+   <section class="qx-terminal-card">
+    <h3>Trade</h3>
+    <div class="qx-order-form">
+     <div class="qx-field"><label>ORDER TYPE</label><select id="qxTradeType"><option>Market</option><option>Limit</option></select></div>
+     <div class="qx-field"><label>AMOUNT IN SOL</label><input id="qxTradeAmount" inputmode="decimal" type="number" min="0" step="any" placeholder="0.00"></div>
+     <div class="qx-field"><label>ESTIMATED PRICE</label><div class="qx-stat"><strong id="qxTerminalPrice">—</strong><small id="qxTerminalChange">0.00%</small></div></div>
+     <div class="qx-side-actions"><button class="qx-action-buy" id="qxBuyBtn" type="button">BUY</button><button class="qx-action-sell" id="qxSellBtn" type="button">SELL</button></div>
+     <div class="qx-terminal-message" id="qxExecutionStatus">Select a market from Markets, enter an amount, then choose Buy or Sell.</div>
+    </div>
+   </section>
+  </div>
+  <div class="qx-stats">
+   <div class="qx-stat"><small>ASSET</small><strong id="qxStatAsset">—</strong></div>
+   <div class="qx-stat"><small>24H VOLUME</small><strong id="qxStatVolume">—</strong></div>
+   <div class="qx-stat"><small>WALLET</small><strong id="qxStatWallet">Not connected</strong></div>
+   <div class="qx-stat"><small>NETWORK</small><strong>Solana</strong></div>
+  </div>
+  <div class="qx-portfolio-grid">
+   <section class="qx-terminal-card"><h3>Watchlist</h3><div id="qxWatchlist" class="qx-list"><div class="qx-empty">No watched markets.</div></div></section>
+   <section class="qx-terminal-card"><h3>Trade History</h3><div id="qxTradeHistory" class="qx-list"><div class="qx-empty">No QX trades recorded in this browser yet.</div></div></section>
+  </div>
+  <div class="qx-security"><b>QX execution</b><br>Wallet signatures remain under your control. The trading terminal does not silently submit a transaction.</div>
+ </div>
+</main>
 
 <main id="walletPage" class="page">
  <div class="hero">
@@ -554,9 +622,19 @@ body.qx-token-open #getQuoteBtn{display:none!important}
 </main>
 
 <main id="marketsPage" class="page active">
- <div class="market-heading"><h2>Solana Markets</h2><span class="tag">LIVE MARKET</span></div>
+ <div class="market-heading"><h2>Markets</h2></div>
  <div class="market-layout">
   <div class="market-list-column">
+   <section class="ads-shell" aria-label="Featured sponsored projects">
+    <div class="ads-head">
+     <div><div class="ads-title">Featured</div><div class="ads-sub">Sponsored projects</div></div>
+     <div class="ads-menu-wrap">
+      <button class="ads-menu-btn" id="adsMenuBtn" aria-label="Advertisement options" aria-expanded="false">&#8942;</button>
+      <div class="ads-menu" id="adsMenu"><button type="button" id="addAdMenuBtn">+ Add advertisement</button></div>
+     </div>
+    </div>
+    <div class="ads-list" id="publicAdsList"><div class="ad-empty">No sponsored advertisements yet.</div></div>
+   </section>
    <div class="market-tabs" id="marketTabs">
     <button class="market-tab active" data-category="all">All Coins</button>
     <button class="market-tab" data-category="new">New Coins <span class="new-live-tag"><i class="new-live-dot"></i>LIVE</span></button>
@@ -565,7 +643,7 @@ body.qx-token-open #getQuoteBtn{display:none!important}
     <button class="market-tab" data-category="trending">Trending</button>
     <button class="market-tab" data-category="volume">Top Volume</button>
    </div>
-   <div class="toolbar">
+   <div class="toolbar qx-market-toolbar">
     <input id="search" placeholder="Search name, symbol or contract">
     <button class="btn primary" id="searchBtn">Search</button>
    </div>
@@ -574,7 +652,7 @@ body.qx-token-open #getQuoteBtn{display:none!important}
     <span class="small" id="coinCount">Loading...</span>
    </div>
    <div class="sort-panel">
-    <div class="sort-title">SORT MARKET <span id="sortLabel">Default order</span></div>
+    <div class="sort-title"><span>Sort</span><span id="sortLabel">Default order</span></div>
     <div class="sort-options" id="sortOptions">
      <div class="sort-option"><span>Price</span><button data-sort="price" aria-label="Sort price"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10l-3-3m3 3-3 3M17 17H7l3 3m-3-3 3-3"/></svg></button></div>
      <div class="sort-option"><span>Change</span><button data-sort="change" aria-label="Sort change"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10l-3-3m3 3-3 3M17 17H7l3 3m-3-3 3-3"/></svg></button></div>
@@ -680,85 +758,6 @@ body.qx-token-open #getQuoteBtn{display:none!important}
  </section>
 </main>
 
-<main id="exchangePage" class="page">
- <section class="qx-exchange-page">
-  <div class="qx-exchange-hero">
-   <div>
-    <div class="qx-live-pill"><span class="qx-live-dot"></span> QX EXCHANGE</div>
-    <h2>Trade Solana Tokens</h2>
-    <p>Spot-style token trading terminal. Select a market from Markets to load its live quote and trade controls.</p>
-   </div>
-   <div style="text-align:right"><div class="qx-pair-name" id="qxPairName">Select a market</div><div class="qx-pair-sub" id="qxPairMint">Solana token</div></div>
-  </div>
-
-  <div class="qx-stats">
-   <div class="qx-stat"><small>PRICE</small><strong id="qxTerminalPrice">—</strong></div>
-   <div class="qx-stat"><small>24H CHANGE</small><strong id="qxTerminalChange">—</strong></div>
-   <div class="qx-stat"><small>VOLUME 24H</small><strong id="qxStatVolume">—</strong></div>
-   <div class="qx-stat"><small>WALLET</small><strong id="qxStatWallet">Not connected</strong></div>
-  </div>
-
-  <div class="qx-terminal-grid">
-   <section class="qx-terminal-card">
-    <div class="qx-pair-head">
-     <div><div class="qx-pair-name" id="qxPairNameSecondary">Market</div><div class="qx-pair-sub">Live Solana market</div></div>
-     <div style="text-align:right"><div class="qx-price" id="qxPairPrice">—</div><div class="qx-change" id="qxPairChange">—</div></div>
-    </div>
-    <div class="qx-terminal-tabs">
-     <button type="button" class="qx-terminal-tab active" data-qx-order-tab="market">Market</button>
-     <button type="button" class="qx-terminal-tab" data-qx-order-tab="limit">Limit</button>
-     <button type="button" class="qx-terminal-tab" data-qx-order-tab="history">History</button>
-    </div>
-    <div id="qxMarketPanel">
-     <div class="qx-book" id="qxLiquidityBook"><div class="qx-book-row qx-book-head"><span>LEVEL</span><span>LIQUIDITY</span><span>PRICE</span></div><div class="qx-empty">Select a Solana market from Markets to load liquidity.</div></div>
-     <div class="qx-depth-note">Liquidity levels are derived from the selected market data. The wallet will ask you to approve any real transaction.</div>
-    </div>
-    <div id="qxLimitPanel" style="display:none">
-     <div class="qx-order-form">
-      <div class="qx-field"><label for="qxTriggerPrice">Limit price</label><input id="qxTriggerPrice" type="number" min="0" step="any" placeholder="Enter target price"></div>
-      <div class="qx-field"><label for="qxTriggerAction">Action</label><select id="qxTriggerAction"><option value="BUY">Buy</option><option value="SELL">Sell</option></select></div>
-      <button class="btn primary" id="qxSaveTrigger" type="button">Save Limit Trigger</button>
-      <div class="qx-terminal-message" id="qxTriggerStatus"></div>
-     </div>
-    </div>
-    <div id="qxHistoryPanel" style="display:none">
-     <div class="qx-list" id="qxTradeHistory"></div>
-    </div>
-   </section>
-
-   <aside class="qx-terminal-card">
-    <h3>ORDER ENTRY</h3>
-    <div class="qx-order-form">
-     <div class="qx-field"><label for="qxTradeAmount">Amount in SOL</label><input id="qxTradeAmount" type="number" min="0" step="any" placeholder="0.00"></div>
-     <div class="qx-side-actions"><button class="qx-action-buy" id="qxBuyBtn" type="button">BUY</button><button class="qx-action-sell" id="qxSellBtn" type="button">SELL</button></div>
-     <div class="qx-terminal-message" id="qxExecutionStatus">Select a market from Markets to begin.</div>
-    </div>
-    <div class="qx-security"><b>QX Trading</b><br>Only the connected wallet can approve and sign transactions. No transaction is submitted automatically.</div>
-   </aside>
-  </div>
-
-  <div class="qx-portfolio-grid">
-   <section class="qx-terminal-card"><h3>WATCHLIST</h3><div class="qx-list" id="qxWatchlist"><div class="qx-empty">No watched markets.</div></div></section>
-   <section class="qx-terminal-card"><h3>QUICK ACCESS</h3><div class="qx-feature-strip" style="margin-top:0"><div class="qx-feature"><strong>Markets</strong><span>Choose a Solana token from the live market.</span></div><div class="qx-feature"><strong>Wallet</strong><span>Connect your wallet before signing a trade.</span></div><div class="qx-feature"><strong>On-chain</strong><span>Transactions require wallet approval.</span></div></div></section>
-  </div>
- </section>
-</main>
-
-<main id="adsPage" class="page">
- <div class="market-heading"><h2 id="adsPageTitle">Advertisements</h2><span class="tag">QX ADS</span></div>
- <section class="ads-shell" aria-label="Sponsored advertisements">
-  <div class="ads-head">
-   <div><div class="ads-title">Sponsored</div><div class="ads-sub">Featured projects</div></div>
-   <div class="ads-menu-wrap">
-    <button class="ads-menu-btn" id="adsMenuBtn" aria-label="Advertisement options" aria-expanded="false">&#8942;</button>
-    <div class="ads-menu" id="adsMenu"><button type="button" id="addAdMenuBtn">+ Add advertisement</button></div>
-   </div>
-  </div>
-  <div class="ads-list" id="publicAdsList"><div class="ad-empty">No sponsored advertisements yet.</div></div>
- </section>
- <p class="small" id="adsPageHelp">Promote your project to the QX community.</p>
-</main>
-
 <div class="ad-modal-backdrop" id="adModalBackdrop" role="dialog" aria-modal="true" aria-labelledby="adModalTitle">
  <div class="ad-modal">
   <div class="ad-modal-head"><h3 id="adModalTitle">Add advertisement</h3><button class="ad-close" id="adCloseBtn" type="button" aria-label="Close">&#xD7;</button></div>
@@ -788,22 +787,7 @@ body.qx-token-open #getQuoteBtn{display:none!important}
 <footer>QX Exchange | Solana</footer>
 </div>
 
-<nav class="bottom-nav" aria-label="Main navigation">
- <button class="nav-btn" data-page="exchangePage" aria-label="Exchange Terminal"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10l-3-3m3 3-3 3M17 17H7l3 3m-3-3 3-3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Exchange</span></button>
- <button class="nav-btn" data-page="walletPage" aria-label="Wallet">
-  <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="15" rx="3"/><path d="M3 9h18M16 14h2"/></svg><span>Wallet</span>
- </button>
- <button class="nav-btn" data-page="createPage" aria-label="Create Token">
-  <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v16M4 12h16"/><circle cx="12" cy="12" r="9"/></svg><span>Create Token</span>
- </button>
- <button class="nav-btn active" data-page="marketsPage" aria-label="Markets">
-  <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5M4 19h17M7 15l4-4 3 2 6-7"/></svg><span>Markets</span>
- </button>
- <button class="nav-btn" data-page="creatorPage" aria-label="Creator Dashboard"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM4 21a8 8 0 0 1 16 0"/></svg><span>Creator</span></button>
- <button class="nav-btn" data-page="adsPage" aria-label="Advertisements">
-  <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10v4h4l10 5V5L7 10H3Z"/><path d="m7 14 2 6h4l-2-4M20 9l2-2M20 15l2 2"/></svg><span>Ads</span>
- </button>
-</nav>
+
 
 <div class="qx-wp-modal" id="qxWhitePaperModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="qxWpTitle">
  <section class="qx-wp-panel">
@@ -843,13 +827,32 @@ body.qx-token-open #getQuoteBtn{display:none!important}
 <script>
 function showPage(id){
  document.body.classList.toggle("qx-wallet-active",id==="walletPage");
- document.body.classList.toggle("qx-ads-active",id==="adsPage");
  document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active",p.id===id));
- document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.page===id));
+ document.querySelectorAll(".qx-drawer-link").forEach(b=>b.classList.toggle("active",b.dataset.page===id));
+ closeQXMenu();
  window.scrollTo({top:0,behavior:"smooth"});
 }
-document.querySelectorAll(".nav-btn").forEach(b=>b.addEventListener("click",()=>showPage(b.dataset.page)));
+const qxMenuLanguage=document.getElementById("qxMenuLanguage");
+const qxMenuCurrency=document.getElementById("qxMenuCurrency");
+const qxWalletLanguage=document.getElementById("qxLanguage");
+const qxWalletCurrency=document.getElementById("qxCurrency");
+qxMenuLanguage?.addEventListener("change",()=>{if(qxWalletLanguage){qxWalletLanguage.value=qxMenuLanguage.value;qxWalletLanguage.dispatchEvent(new Event("change",{bubbles:true}));}});
+qxMenuCurrency?.addEventListener("change",()=>{if(qxWalletCurrency){qxWalletCurrency.value=qxMenuCurrency.value;qxWalletCurrency.dispatchEvent(new Event("change",{bubbles:true}));}});
+qxWalletLanguage?.addEventListener("change",()=>{if(qxMenuLanguage)qxMenuLanguage.value=qxWalletLanguage.value;});
+qxWalletCurrency?.addEventListener("change",()=>{if(qxMenuCurrency)qxMenuCurrency.value=qxWalletCurrency.value;});
+const qxMenuBtn=document.getElementById("qxMenuBtn");
+const qxMenuClose=document.getElementById("qxMenuClose");
+const qxDrawer=document.getElementById("qxDrawer");
+const qxMenuBackdrop=document.getElementById("qxMenuBackdrop");
+function openQXMenu(){if(!qxDrawer)return;qxDrawer.classList.add("open");qxMenuBackdrop?.classList.add("open");qxDrawer.setAttribute("aria-hidden","false");qxMenuBackdrop?.setAttribute("aria-hidden","false");qxMenuBtn?.setAttribute("aria-expanded","true");}
+function closeQXMenu(){if(!qxDrawer)return;qxDrawer.classList.remove("open");qxMenuBackdrop?.classList.remove("open");qxDrawer.setAttribute("aria-hidden","true");qxMenuBackdrop?.setAttribute("aria-hidden","true");qxMenuBtn?.setAttribute("aria-expanded","false");}
+qxMenuBtn?.addEventListener("click",()=>qxDrawer.classList.contains("open")?closeQXMenu():openQXMenu());
+qxMenuClose?.addEventListener("click",closeQXMenu);
+qxMenuBackdrop?.addEventListener("click",closeQXMenu);
+document.querySelectorAll(".qx-drawer-link").forEach(b=>b.addEventListener("click",()=>showPage(b.dataset.page)));
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeQXMenu();});
 document.body.classList.remove("qx-wallet-active","qx-ads-active");
+showPage("marketsPage");
 
 const qxWpModal=document.getElementById("qxWhitePaperModal");
 const qxWpOpen=document.getElementById("qxOpenWhitePaper");
@@ -1059,13 +1062,13 @@ function qxApplyLanguage(){
  const L=ar?{
   connect:"\u0631\u0628\u0637 \u0627\u0644\u0645\u062D\u0641\u0638\u0629",wallet:"\u0627\u0644\u0645\u062D\u0641\u0638\u0629",create:"\u0625\u0646\u0634\u0627\u0621 \u0639\u0645\u0644\u0629",markets:"\u0627\u0644\u0623\u0633\u0648\u0627\u0642",ads:"\u0627\u0644\u0625\u0639\u0644\u0627\u0646\u0627\u062A",
   assets:"\u0623\u0635\u0648\u0644\u064A",portfolio:"\u0625\u062C\u0645\u0627\u0644\u064A \u0642\u064A\u0645\u0629 \u0627\u0644\u0645\u062D\u0641\u0638\u0629 | \u062A\u0642\u062F\u064A\u0631 \u0628\u0627\u0644\u062F\u0648\u0644\u0627\u0631",liveBalance:"\u0627\u0644\u0631\u0635\u064A\u062F \u0627\u0644\u0645\u0628\u0627\u0634\u0631",refresh:"\u062A\u062D\u062F\u064A\u062B",onchain:"\u0639\u0644\u0649 \u0627\u0644\u0634\u0628\u0643\u0629",asset:"\u0627\u0644\u0623\u0635\u0644",balance:"\u0627\u0644\u0631\u0635\u064A\u062F",value:"\u0627\u0644\u0642\u064A\u0645\u0629",connectAssets:"\u0627\u0631\u0628\u0637 \u0645\u062D\u0641\u0638\u062A\u0643 \u0644\u0639\u0631\u0636 \u0627\u0644\u0623\u0635\u0648\u0644.",
-  createTitle:"\u0623\u0646\u0634\u0626 \u0639\u0645\u0644\u062A\u0643",launch:"\u0625\u0637\u0644\u0627\u0642 \u0639\u0645\u0644\u0629 SPL",createDesc:"\u0623\u0646\u0634\u0626 \u0627\u0644\u0639\u0645\u0644\u0629 \u0648\u0627\u0644\u0643\u0645\u064A\u0629 \u0627\u0644\u0623\u0648\u0644\u064A\u0629 \u0645\u0628\u0627\u0634\u0631\u0629 \u0645\u0646 \u0645\u062D\u0641\u0638\u0629 \u0633\u0648\u0644\u0627\u0646\u0627 \u0627\u0644\u0645\u062A\u0635\u0644\u0629. \u0633\u062A\u0637\u0644\u0628 \u0645\u0646\u0643 \u0627\u0644\u0645\u062D\u0641\u0638\u0629 \u0627\u0644\u0645\u0648\u0627\u0641\u0642\u0629 \u0639\u0644\u0649 \u0627\u0644\u0645\u0639\u0627\u0645\u0644\u0629.",tokenFee:"\u0631\u0633\u0648\u0645 \u0625\u0646\u0634\u0627\u0621 QX: 0.30 SOL. \u0631\u0633\u0648\u0645 \u0634\u0628\u0643\u0629 \u0633\u0648\u0644\u0627\u0646\u0627 \u0648\u062d\u062c\u0632 \u062d\u0633\u0627\u0628 \u0627\u0644\u0639\u0645\u0644\u0629 \u0625\u0636\u0627\u0641\u064a\u0629.",tokenName:"\u0627\u0633\u0645 \u0627\u0644\u0639\u0645\u0644\u0629",symbol:"\u0627\u0644\u0631\u0645\u0632",supply:"\u0627\u0644\u0643\u0645\u064A\u0629 \u0627\u0644\u0623\u0648\u0644\u064A\u0629",decimals:"\u0627\u0644\u062E\u0627\u0646\u0627\u062A \u0627\u0644\u0639\u0634\u0631\u064A\u0629",createButton:"\u0627\u0631\u0628\u0637 \u0627\u0644\u0645\u062D\u0641\u0638\u0629 \u0648\u0623\u0646\u0634\u0626 \u0627\u0644\u0639\u0645\u0644\u0629",createHint:"\u0627\u0631\u0628\u0637 \u0645\u062D\u0641\u0638\u062A\u0643 \u0623\u0648\u0644\u0627\u064B.",created:"\u062A\u0645 \u0625\u0646\u0634\u0627\u0621 \u0627\u0644\u0639\u0645\u0644\u0629",viewTx:"\u0639\u0631\u0636 \u0627\u0644\u0645\u0639\u0627\u0645\u0644\u0629 \u0639\u0644\u0649 Solscan",createNote:"\u0645\u0644\u0627\u062D\u0638\u0629: \u0647\u0630\u0627 \u0627\u0644\u0625\u062C\u0631\u0627\u0621 \u064A\u0646\u0634\u0626 \u0625\u0635\u062F\u0627\u0631 SPL \u0648\u0627\u0644\u0643\u0645\u064A\u0629 \u0627\u0644\u0623\u0648\u0644\u064A\u0629 \u0639\u0644\u0649 \u0627\u0644\u0634\u0628\u0643\u0629. \u0646\u0634\u0631 \u0627\u0644\u0627\u0633\u0645 \u0648\u0627\u0644\u0631\u0645\u0632 \u0648\u0627\u0644\u0634\u0639\u0627\u0631 \u0641\u064A \u062F\u0644\u064A\u0644 \u0639\u0627\u0644\u0645\u064A \u064A\u062A\u0637\u0644\u0628 \u062E\u062F\u0645\u0629 \u0628\u064A\u0627\u0646\u0627\u062A \u0648\u0635\u0641\u064A\u0629 \u0648\u0641\u0647\u0631\u0633\u0629.",
+  createTitle:"\u0623\u0646\u0634\u0626 \u0639\u0645\u0644\u062A\u0643",launch:"\u0625\u0637\u0644\u0627\u0642 \u0639\u0645\u0644\u0629 SPL",createDesc:"\u0623\u0646\u0634\u0626 \u0627\u0644\u0639\u0645\u0644\u0629 \u0648\u0627\u0644\u0643\u0645\u064A\u0629 \u0627\u0644\u0623\u0648\u0644\u064A\u0629 \u0645\u0628\u0627\u0634\u0631\u0629 \u0645\u0646 \u0645\u062D\u0641\u0638\u0629 \u0633\u0648\u0644\u0627\u0646\u0627 \u0627\u0644\u0645\u062A\u0635\u0644\u0629. \u0633\u062A\u0637\u0644\u0628 \u0645\u0646\u0643 \u0627\u0644\u0645\u062D\u0641\u0638\u0629 \u0627\u0644\u0645\u0648\u0627\u0641\u0642\u0629 \u0639\u0644\u0649 \u0627\u0644\u0645\u0639\u0627\u0645\u0644\u0629.",tokenFee:"",tokenName:"\u0627\u0633\u0645 \u0627\u0644\u0639\u0645\u0644\u0629",symbol:"\u0627\u0644\u0631\u0645\u0632",supply:"\u0627\u0644\u0643\u0645\u064A\u0629 \u0627\u0644\u0623\u0648\u0644\u064A\u0629",decimals:"\u0627\u0644\u062E\u0627\u0646\u0627\u062A \u0627\u0644\u0639\u0634\u0631\u064A\u0629",createButton:"\u0627\u0631\u0628\u0637 \u0627\u0644\u0645\u062D\u0641\u0638\u0629 \u0648\u0623\u0646\u0634\u0626 \u0627\u0644\u0639\u0645\u0644\u0629",createHint:"",created:"\u062A\u0645 \u0625\u0646\u0634\u0627\u0621 \u0627\u0644\u0639\u0645\u0644\u0629",viewTx:"\u0639\u0631\u0636 \u0627\u0644\u0645\u0639\u0627\u0645\u0644\u0629 \u0639\u0644\u0649 Solscan",createNote:"\u0645\u0644\u0627\u062D\u0638\u0629: \u0647\u0630\u0627 \u0627\u0644\u0625\u062C\u0631\u0627\u0621 \u064A\u0646\u0634\u0626 \u0625\u0635\u062F\u0627\u0631 SPL \u0648\u0627\u0644\u0643\u0645\u064A\u0629 \u0627\u0644\u0623\u0648\u0644\u064A\u0629 \u0639\u0644\u0649 \u0627\u0644\u0634\u0628\u0643\u0629. \u0646\u0634\u0631 \u0627\u0644\u0627\u0633\u0645 \u0648\u0627\u0644\u0631\u0645\u0632 \u0648\u0627\u0644\u0634\u0639\u0627\u0631 \u0641\u064A \u062F\u0644\u064A\u0644 \u0639\u0627\u0644\u0645\u064A \u064A\u062A\u0637\u0644\u0628 \u062E\u062F\u0645\u0629 \u0628\u064A\u0627\u0646\u0627\u062A \u0648\u0635\u0641\u064A\u0629 \u0648\u0641\u0647\u0631\u0633\u0629.",
   marketTitle:"\u0623\u0633\u0648\u0627\u0642 \u0633\u0648\u0644\u0627\u0646\u0627",liveMarket:"\u0627\u0644\u0633\u0648\u0642 \u0627\u0644\u0645\u0628\u0627\u0634\u0631",all:"\u0643\u0644 \u0627\u0644\u0639\u0645\u0644\u0627\u062A",new:"\u0639\u0645\u0644\u0627\u062A \u062C\u062F\u064A\u062F\u0629",gainers:"\u0627\u0644\u0623\u0639\u0644\u0649 \u0627\u0631\u062A\u0641\u0627\u0639\u0627\u064B",losers:"\u0627\u0644\u0623\u0639\u0644\u0649 \u0627\u0646\u062E\u0641\u0627\u0636\u0627\u064B",trending:"\u0627\u0644\u0631\u0627\u0626\u062C\u0629",volume:"\u0627\u0644\u0623\u0639\u0644\u0649 \u062A\u062F\u0627\u0648\u0644\u0627\u064B",search:"\u0628\u062D\u062B",searchPlaceholder:"\u0627\u0628\u062D\u062B \u0628\u0627\u0644\u0627\u0633\u0645 \u0623\u0648 \u0627\u0644\u0631\u0645\u0632 \u0623\u0648 \u0639\u0646\u0648\u0627\u0646 \u0627\u0644\u0639\u0642\u062F",allSol:"\u0643\u0644 \u0639\u0645\u0644\u0627\u062A \u0633\u0648\u0644\u0627\u0646\u0627",loading:"\u062C\u0627\u0631\u064D \u0627\u0644\u062A\u062D\u0645\u064A\u0644...",sort:"\u062A\u0631\u062A\u064A\u0628 \u0627\u0644\u0633\u0648\u0642",defaultSort:"\u0627\u0644\u062A\u0631\u062A\u064A\u0628 \u0627\u0644\u0627\u0641\u062A\u0631\u0627\u0636\u064A",price:"\u0627\u0644\u0633\u0639\u0631",change:"\u0627\u0644\u062A\u063A\u064A\u0631",marketCap:"\u0627\u0644\u0642\u064A\u0645\u0629 \u0627\u0644\u0633\u0648\u0642\u064A\u0629",liquidity:"\u0627\u0644\u0633\u064A\u0648\u0644\u0629",token:"\u0627\u0644\u0639\u0645\u0644\u0629",priceUsd:"\u0627\u0644\u0633\u0639\u0631",day:"24 \u0633\u0627\u0639\u0629",marketLoading:"\u062C\u0627\u0631\u064D \u062A\u062D\u0645\u064A\u0644 \u0627\u0644\u0633\u0648\u0642...",marketConnecting:"\u062C\u0627\u0631\u064D \u0627\u0644\u0627\u062A\u0635\u0627\u0644 \u0628\u0628\u064A\u0627\u0646\u0627\u062A \u0627\u0644\u0633\u0648\u0642 \u0627\u0644\u0645\u0628\u0627\u0634\u0631\u0629...",holdersNote:"\u064A\u062A\u0637\u0644\u0628 \u0639\u0631\u0636 \u0639\u062F\u062F \u0627\u0644\u0645\u0627\u0644\u0643\u064A\u0646 \u0631\u0628\u0637 \u062E\u062F\u0645\u0629 \u0641\u0647\u0631\u0633\u0629 \u0645\u062A\u062E\u0635\u0635\u0629 \u0644\u0634\u0628\u0643\u0629 \u0633\u0648\u0644\u0627\u0646\u0627. \u0644\u0627 \u062A\u0639\u0631\u0636 QX \u0623\u0631\u0642\u0627\u0645\u0627\u064B \u062A\u0642\u062F\u064A\u0631\u064A\u0629 \u0623\u0648 \u063A\u064A\u0631 \u062D\u0642\u064A\u0642\u064A\u0629.",
   adsTitle:"\u0627\u0644\u0625\u0639\u0644\u0627\u0646\u0627\u062A",sponsored:"\u0625\u0639\u0644\u0627\u0646\u0627\u062A \u0645\u0645\u0648\u0644\u0629",featured:"\u0645\u0634\u0627\u0631\u064A\u0639 \u0645\u0645\u064A\u0632\u0629",addAd:"+ \u0623\u0636\u0641 \u0625\u0639\u0644\u0627\u0646\u0627\u064B",noAds:"\u0644\u0627 \u062A\u0648\u062C\u062F \u0625\u0639\u0644\u0627\u0646\u0627\u062A \u0645\u0645\u0648\u0644\u0629 \u062D\u0627\u0644\u064A\u0627\u064B.",adsHelp:"\u0631\u0648\u0651\u062C \u0644\u0645\u0634\u0631\u0648\u0639\u0643 \u0623\u0645\u0627\u0645 \u0645\u062C\u062A\u0645\u0639 QX.",
   backMarkets:"\u0627\u0644\u0639\u0648\u062F\u0629 \u0625\u0644\u0649 \u0627\u0644\u0623\u0633\u0648\u0627\u0642",marketCapFdv:"\u0627\u0644\u0642\u064A\u0645\u0629 \u0627\u0644\u0633\u0648\u0642\u064A\u0629 / \u0627\u0644\u062A\u0642\u064A\u064A\u0645 \u0627\u0644\u0645\u062E\u0641\u0641",transactions:"\u0645\u0639\u0627\u0645\u0644\u0627\u062A 24 \u0633\u0627\u0639\u0629",holders:"\u0627\u0644\u0645\u0627\u0644\u0643\u0648\u0646",indexer:"\u064A\u062A\u0637\u0644\u0628 \u0645\u0641\u0647\u0631\u0633 \u0628\u064A\u0627\u0646\u0627\u062A",chart:"\u0627\u0644\u0631\u0633\u0645 \u0627\u0644\u0628\u064A\u0627\u0646\u064A \u0627\u0644\u0645\u0628\u0627\u0634\u0631 \u0645\u0646 QX",solscan:"\u0639\u0631\u0636 \u0627\u0644\u0639\u0642\u062F \u0639\u0644\u0649 Solscan",buy:"\u0634\u0631\u0627\u0621",sell:"\u0628\u064A\u0639",youPay:"\u0623\u0646\u062A \u062A\u062F\u0641\u0639",receive:"\u0627\u0644\u0643\u0645\u064A\u0629 \u0627\u0644\u0645\u062A\u0648\u0642\u0639\u0629",fee:"\u0639\u0645\u0648\u0644\u0629 QX",route:"\u0645\u0633\u0627\u0631 \u0627\u0644\u062A\u062F\u0627\u0648\u0644",notConnected:"\u063A\u064A\u0631 \u0645\u062A\u0635\u0644",bestPrice:"\u0623\u0641\u0636\u0644 \u0633\u0639\u0631",getQuote:"\u0627\u062D\u0635\u0644 \u0639\u0644\u0649 \u0623\u0641\u0636\u0644 \u0633\u0639\u0631",confirm:"\u062A\u0623\u0643\u064A\u062F \u0627\u0644\u0645\u0628\u0627\u062F\u0644\u0629",feeNote:"\u0631\u0633\u0648\u0645 QX: \u200F1% \u0639\u0644\u0649 \u0643\u0644 \u0639\u0645\u0644\u064A\u0629 \u0645\u0628\u0627\u062F\u0644\u0629 \u0645\u0643\u062A\u0645\u0644\u0629. \u064A\u062C\u0628 \u0623\u0646 \u064A\u0624\u0643\u062F \u0639\u0631\u0636 \u0627\u0644\u0633\u0639\u0631 \u0627\u0644\u0645\u0628\u0627\u0634\u0631 \u0627\u0644\u0631\u0633\u0648\u0645 \u0643\u0627\u0645\u0644\u0629 \u0642\u0628\u0644 \u062A\u0648\u0642\u064A\u0639 \u0627\u0644\u0645\u062D\u0641\u0638\u0629. \u0644\u0627 \u062A\u064F\u0641\u0631\u0636 \u0631\u0633\u0648\u0645 \u0625\u0630\u0627 \u0644\u0645 \u062A\u0643\u062A\u0645\u0644 \u0627\u0644\u0639\u0645\u0644\u064A\u0629.",
   adDuration:"\u0645\u062F\u0629 \u0627\u0644\u0625\u0639\u0644\u0627\u0646",totalPrice:"\u0627\u0644\u0633\u0639\u0631 \u0627\u0644\u0625\u062C\u0645\u0627\u0644\u064A",solPayment:"\u0627\u0644\u062F\u0641\u0639 \u0627\u0644\u062A\u0642\u062F\u064A\u0631\u064A \u0628\u0639\u0645\u0644\u0629 SOL",adHeadline:"\u0639\u0646\u0648\u0627\u0646 \u0627\u0644\u0625\u0639\u0644\u0627\u0646",adText:"\u0627\u0643\u062A\u0628 \u0646\u0635 \u0627\u0644\u0625\u0639\u0644\u0627\u0646",adLink:"\u0631\u0627\u0628\u0637 \u0627\u0644\u0645\u0648\u0642\u0639 \u0623\u0648 \u0627\u0644\u0645\u0634\u0631\u0648\u0639",adImage:"\u0631\u0627\u0628\u0637 \u0627\u0644\u0635\u0648\u0631\u0629 (\u0627\u062E\u062A\u064A\u0627\u0631\u064A)",adNote:"\u0633\u064A\u064F\u0637\u0644\u0628 \u0627\u0644\u062F\u0641\u0639 \u0645\u0646 \u0627\u0644\u0645\u062D\u0641\u0638\u0629 \u0627\u0644\u0645\u062A\u0635\u0644\u0629 \u0628\u0640 QX. \u0644\u0646 \u064A\u064F\u0646\u0634\u0631 \u0627\u0644\u0625\u0639\u0644\u0627\u0646 \u0625\u0644\u0627 \u0628\u0639\u062F \u0623\u0646 \u062A\u062A\u062D\u0642\u0642 QX \u0645\u0646 \u0627\u0644\u062F\u0641\u0639.",payAd:"\u0627\u062F\u0641\u0639 \u0628\u0627\u0644\u0645\u062D\u0641\u0638\u0629 \u0627\u0644\u0645\u062A\u0635\u0644\u0629",close:"\u0625\u063A\u0644\u0627\u0642",language:"\u0627\u0644\u0644\u063A\u0629",currency:"\u0627\u0644\u0639\u0645\u0644\u0629"
  }:{
-  connect:"Connect Wallet",wallet:"Wallet",create:"Create Token",markets:"Markets",ads:"Advertisements",assets:"My Assets",portfolio:"TOTAL PORTFOLIO VALUE | USD ESTIMATE",liveBalance:"Live balance",refresh:"Refresh",onchain:"ON-CHAIN",asset:"Asset",balance:"Balance",value:"Value",connectAssets:"Connect your wallet to view assets.",createTitle:"Create Your Token",launch:"Launch an SPL token",createDesc:"Create the token mint and initial supply directly from your connected Solana wallet. Your wallet will ask you to approve the transaction.",tokenFee:"",tokenName:"Token name",symbol:"Symbol",supply:"Initial supply",decimals:"Decimals",createButton:"Connect wallet & create token",createHint:"Connect your wallet first.",created:"Token created",viewTx:"View transaction on Solscan",createNote:"Note: this creates an on-chain SPL mint and initial supply. Publishing the name, symbol and logo in a global directory requires a metadata and indexing service.",marketTitle:"Solana Markets",liveMarket:"LIVE MARKET",all:"All Coins",new:"New Coins",gainers:"Top Gainers",losers:"Top Losers",trending:"Trending",volume:"Top Volume",search:"Search",searchPlaceholder:"Search name, symbol or contract",allSol:"All Solana tokens",loading:"Loading...",sort:"SORT MARKET",defaultSort:"Default order",price:"Price",change:"Change",marketCap:"Market Cap",liquidity:"Liquidity",token:"Token",priceUsd:"Price USD",day:"24h",marketLoading:"Loading market...",marketConnecting:"Connecting to live market data...",holdersNote:"Holder totals require a dedicated Solana indexing API. QX does not display estimated or fabricated holder counts.",adsTitle:"Advertisements",sponsored:"Sponsored",featured:"Featured projects",addAd:"+ Add advertisement",noAds:"No sponsored advertisements yet.",adsHelp:"Promote your project to the QX community.",backMarkets:"BACK TO MARKETS",marketCapFdv:"Market Cap / FDV",transactions:"24h Transactions",holders:"Holders",indexer:"Indexer required",chart:"QX LIVE CHART",solscan:"View contract on Solscan",buy:"BUY",sell:"SELL",youPay:"YOU PAY",receive:"Estimated receive",fee:"QX commission",route:"Route",notConnected:"Not connected",bestPrice:"GET BEST PRICE",getQuote:"GET BEST PRICE",confirm:"CONFIRM SWAP",feeNote:"QX fee: 1% per completed swap. The live quote must confirm the full fee before wallet signing. No fee is charged when a swap is not completed.",adDuration:"Advertisement duration",totalPrice:"Total price",solPayment:"Estimated SOL payment",adHeadline:"Advertisement title",adText:"Paste your advertisement",adLink:"Website or project link",adImage:"Image URL (optional)",adNote:"Payment is requested from the wallet already connected to QX. The advertisement is published only after payment is verified by QX.",payAd:"PAY WITH CONNECTED WALLET",close:"Close",language:"Language",currency:"Currency"
+  connect:"Connect Wallet",wallet:"Wallet",create:"Create Token",markets:"Markets",ads:"Advertisements",assets:"My Assets",portfolio:"TOTAL PORTFOLIO VALUE | USD ESTIMATE",liveBalance:"Live balance",refresh:"Refresh",onchain:"ON-CHAIN",asset:"Asset",balance:"Balance",value:"Value",connectAssets:"Connect your wallet to view assets.",createTitle:"Create Your Token",launch:"Launch an SPL token",createDesc:"Create the token mint and initial supply directly from your connected Solana wallet. Your wallet will ask you to approve the transaction.",tokenFee:"",tokenName:"Token name",symbol:"Symbol",supply:"Initial supply",decimals:"Decimals",createButton:"Connect wallet & create token",createHint:"",created:"Token created",viewTx:"View transaction on Solscan",createNote:"Note: this creates an on-chain SPL mint and initial supply. Publishing the name, symbol and logo in a global directory requires a metadata and indexing service.",marketTitle:"Markets",markets:"Markets",liveMarket:"LIVE MARKET",all:"All Coins",new:"New Coins",gainers:"Top Gainers",losers:"Top Losers",trending:"Trending",volume:"Top Volume",search:"Search",searchPlaceholder:"Search name, symbol or contract",allSol:"All Solana tokens",loading:"Loading...",sort:"Sort",defaultSort:"Default order",price:"Price",change:"Change",marketCap:"Market Cap",liquidity:"Liquidity",token:"Token",priceUsd:"Price USD",day:"24h",marketLoading:"Loading market...",marketConnecting:"Connecting to live market data...",holdersNote:"Holder totals require a dedicated Solana indexing API. QX does not display estimated or fabricated holder counts.",adsTitle:"Advertisements",sponsored:"Sponsored",featured:"Featured projects",addAd:"+ Add advertisement",noAds:"No sponsored advertisements yet.",adsHelp:"Promote your project to the QX community.",backMarkets:"BACK TO MARKETS",marketCapFdv:"Market Cap / FDV",transactions:"24h Transactions",holders:"Holders",indexer:"Indexer required",chart:"QX LIVE CHART",solscan:"View contract on Solscan",buy:"BUY",sell:"SELL",youPay:"YOU PAY",receive:"Estimated receive",fee:"QX commission",route:"Route",notConnected:"Not connected",bestPrice:"GET BEST PRICE",getQuote:"GET BEST PRICE",confirm:"CONFIRM SWAP",feeNote:"QX fee: 1% per completed swap. The live quote must confirm the full fee before wallet signing. No fee is charged when a swap is not completed.",adDuration:"Advertisement duration",totalPrice:"Total price",solPayment:"Estimated SOL payment",adHeadline:"Advertisement title",adText:"Paste your advertisement",adLink:"Website or project link",adImage:"Image URL (optional)",adNote:"Payment is requested from the wallet already connected to QX. The advertisement is published only after payment is verified by QX.",payAd:"PAY WITH CONNECTED WALLET",close:"Close",language:"Language",currency:"Currency"
  };
  const connect=$("connectBtn");if(connect&&!document.body.classList.contains("qx-wallet-active"))connect.textContent=L.connect;
  t("#walletPage .hero > .small", "TOTAL PORTFOLIO VALUE | USD ESTIMATE", L.portfolio);
@@ -1080,13 +1083,12 @@ function qxApplyLanguage(){
  t("#createPage .panel > .tag","QX TOKEN CREATOR","\u0645\u0646\u0634\u0626 \u0639\u0645\u0644\u0627\u062A QX");
  t("#createPage .panel h2","Launch an SPL token",L.launch);
  t("#tokenCreateDescription","Create the token mint and initial supply directly from your connected Solana wallet. Your wallet will ask you to approve the transaction.",L.createDesc);
-
  const createLabels=[L.tokenName,L.symbol,L.supply,L.decimals];document.querySelectorAll("#createPage .panel label").forEach((el,i)=>{if(createLabels[i])el.childNodes[0].textContent=createLabels[i];});
  const createBtn=$("createTokenBtn");if(createBtn)createBtn.textContent=L.createButton;
  const createStatus=$("createTokenStatus");if(createStatus&&(!createStatus.dataset.runtime||createStatus.dataset.runtime!=="1"))createStatus.textContent=L.createHint;
  t("#createdTokenResult strong","Token created",L.created);t("#createdTokenSolscan","View transaction on Solscan",L.viewTx);
  const note=document.querySelector("#createPage .panel > p:last-child");if(note)note.textContent=L.createNote;
- t("#marketsPage > .market-heading h2","Solana Markets",L.marketTitle);t("#marketsPage > .market-heading .tag","LIVE MARKET",L.liveMarket);
+ t("#marketsPage > .market-heading h2","Markets",L.markets);
  const cats=[["all","All Coins",L.all],["new","New Coins",L.new],["gainers","Top Gainers",L.gainers],["losers","Top Losers",L.losers],["trending","Trending",L.trending],["volume","Top Volume",L.volume]];
  cats.forEach(([key,en,arText])=>{const b=document.querySelector(`#marketTabs [data-category="${key}"]`);if(b){const live=b.querySelector(".new-live-tag");b.textContent=ar?arText:en;if(live){live.textContent="\u0645\u0628\u0627\u0634\u0631";b.appendChild(live);}}});
  ph("search","Search name, symbol or contract",L.searchPlaceholder);t("#searchBtn","Search",L.search);
@@ -1096,7 +1098,7 @@ function qxApplyLanguage(){
  const marketResults=$("tokenResults");if(marketResults&&marketResults.classList.contains("market-empty")&&/Loading market/.test(marketResults.textContent))marketResults.textContent=L.marketLoading;
  const marketStatus=$("marketStatus");if(marketStatus&&/Connecting to live market/.test(marketStatus.textContent))marketStatus.textContent=L.marketConnecting;
  const holdersNote=document.querySelector("#marketsPage .market-list-column > p.small");if(holdersNote)holdersNote.textContent=L.holdersNote;
- t("#adsPageTitle","Advertisements",L.ads);t(".ads-title","Sponsored",L.sponsored);t(".ads-sub","Featured projects",L.featured);t("#addAdMenuBtn","+ Add advertisement",L.addAd);t("#publicAdsList .ad-empty","No sponsored advertisements yet.",L.noAds);t("#adsPageHelp","Promote your project to the QX community.",L.adsHelp);
+ t(".ads-title","Featured",L.featured);t(".ads-sub","Sponsored projects",L.sponsored);t("#addAdMenuBtn","+ Add advertisement",L.addAd);t("#publicAdsList .ad-empty","No sponsored advertisements yet.",L.noAds);
  t("#tokenBackBtn","BACK TO MARKETS",L.backMarkets);t(".detail-stat:nth-child(1) small","Market Cap / FDV",L.marketCapFdv);t(".detail-stat:nth-child(2) small","Liquidity",L.liquidity);t(".detail-stat:nth-child(3) small","24h Volume", "\u062D\u062C\u0645 \u0627\u0644\u062A\u062F\u0627\u0648\u0644 \u062E\u0644\u0627\u0644 24 \u0633\u0627\u0639\u0629");t(".detail-stat:nth-child(4) small","24h Transactions",L.transactions);t(".detail-stat:nth-child(5) small","Holders",L.holders);
  const chartTitle=document.querySelector(".chart-toolbar > strong");if(chartTitle)chartTitle.textContent=L.chart;t("#solscanLink","View contract on Solscan ->",L.solscan);
  const swapKicker=document.querySelector(".qx-swap-kicker");if(swapKicker)swapKicker.textContent=ar?"QX EXCHANGE / \u062A\u062F\u0627\u0648\u0644 \u0641\u0648\u0631\u064A":"QX EXCHANGE / INSTANT TRADE";
@@ -1122,7 +1124,7 @@ function qxApplyLanguage(){
  const walletStatus=$("walletStatus");if(walletStatus&&!connected)walletStatus.textContent=ar?"\u0627\u0631\u0628\u0637 \u0645\u062D\u0641\u0638\u062A\u0643 \u0644\u0639\u0631\u0636 \u0627\u0644\u0623\u0635\u0648\u0644.":"Connect your wallet to view assets.";
  const adStatus=$("adStatus");if(adStatus&&!adStatus.textContent.trim())adStatus.textContent="";
  document.querySelectorAll(".nav-btn").forEach(b=>{const id=b.dataset.page;const span=b.querySelector("span");if(span)span.textContent=id==="walletPage"?L.wallet:id==="createPage"?L.create:id==="marketsPage"?L.markets:L.ads;b.setAttribute("aria-label",span?.textContent||"");});
- const nav=document.querySelector(".bottom-nav");if(nav)nav.setAttribute("aria-label",ar?"\u0627\u0644\u062A\u0646\u0642\u0644 \u0627\u0644\u0631\u0626\u064A\u0633\u064A":"Main navigation");
+
  const footer=document.querySelector("footer");if(footer)footer.textContent=ar?"QX Exchange | \u0633\u0648\u0644\u0627\u0646\u0627":"QX Exchange | Solana";
  document.querySelector(".ads-shell")?.setAttribute("aria-label",ar?"\u0627\u0644\u0625\u0639\u0644\u0627\u0646\u0627\u062A \u0627\u0644\u0645\u0645\u0648\u0644\u0629":"Sponsored advertisements");
 }
@@ -2179,384 +2181,3 @@ function openToken(token){
  $("confirmSwapBtn").disabled=true;$("confirmSwapBtn").textContent="GET LIVE QUOTE FIRST";$("qxFeeDisplay").textContent="1.00% · live quote required";$("swapRoute").textContent="QX best available Jupiter route";
  updateTradePercentUI();refreshTradeBalances();
 }
-window.QXOpenToken=openToken;
-window.QXAdoptMarketFallback=function(pairs){
- const list=Array.isArray(pairs)?pairs:[];
- if(!list.length)return;
- allPairs=bestPairsByMint(list);
- newPairs=allPairs.filter(p=>qxNum(p?.pairCreatedAt)>Date.now()-14*86400000);
- trendingPairs=allPairs.slice().sort((a,b)=>(qxNum(b?.volume?.h24)+qxNum(b?.txns?.h24?.buys)+qxNum(b?.txns?.h24?.sells))-(qxNum(a?.volume?.h24)+qxNum(a?.txns?.h24?.buys)+qxNum(a?.txns?.h24?.sells)));
- const st=$("marketStatus");if(st)st.textContent="Solana-only LIVE market · fallback feed · "+allPairs.length.toLocaleString()+" tokens · "+new Date().toLocaleTimeString();
- renderMarket();
-};
-$("tokenBackBtn")?.addEventListener("click",()=>{document.body.classList.remove("qx-token-open");$("detail").style.display="none";selectedToken=null;pendingSwapOrder=null;});
-$("buyBtn")?.addEventListener("click",()=>setTradeDirection("buy"));$("sellBtn")?.addEventListener("click",()=>setTradeDirection("sell"));
-$("swapDirectionBtn")?.addEventListener("click",()=>setTradeDirection(tradeDirection==="buy"?"sell":"buy"));
-$("getQuoteBtn")?.addEventListener("click",()=>qxRequestLiveQuote());$("confirmSwapBtn")?.addEventListener("click",()=>qxExecuteSwap().catch(()=>{}));
-$("tradeAmountInput")?.addEventListener("input",()=>{pendingSwapOrder=null;$("confirmSwapBtn").disabled=true;});
-$("percentRange")?.addEventListener("input",()=>{tradePercent=Number($("percentRange").value);$("percentValue").textContent=tradePercent+"%";const available=tradeDirection==="buy"?Math.max(0,walletSolBalance-SOL_RESERVE):selectedTokenBalance;$("tradeAmountInput").value=Number((available*tradePercent/100).toFixed(9))||"";});
-document.querySelectorAll(".percent-btn").forEach(b=>b.addEventListener("click",()=>{$("percentRange").value=b.dataset.percent;$("percentRange").dispatchEvent(new Event("input"));}));
-$("sortOptions")?.addEventListener("click",e=>{const b=e.target.closest("button[data-sort]");if(!b)return;const m=b.dataset.sort;if(sortMetric===m)sortDirection=sortDirection==="desc"?"asc":"desc";else{sortMetric=m;sortDirection="desc";}document.querySelectorAll("#sortOptions button").forEach(x=>x.classList.toggle("active",x===b));$("sortLabel").textContent=m+" "+(sortDirection==="desc"?"descending":"ascending");renderMarket();});
-
-/* MARKET DATA — QX SOLANA GLOBAL MARKET v21
-   Primary source: CoinMarketCap keyless DEX pair feed.
-   Secondary sources: GeckoTerminal + DexScreener + Jupiter metadata.
-   IMPORTANT: market rendering is never blocked by enrichment.
-*/
-const QX_CMC_BASE="https://pro-api.coinmarketcap.com/public-api";
-const QX_GECKO_BASE="https://api.geckoterminal.com/api/v2/networks/solana";
-const QX_JUP_TOKENS="https://tokens.jup.ag/tokens?tags=verified";
-const QX_DEX_SEARCH="https://api.dexscreener.com/latest/dex/search?q=";
-const QX_DEX_TOKENS="https://api.dexscreener.com/tokens/v1/solana/";
-const QX_SOLANA_REFRESH_MS=60000;
-const QX_CMC_PAGE_SIZE=250;
-const QX_CMC_PAGES=20;
-const QX_CMC_DEX_SLUGS=["raydium","orca","meteora","pump-swap","lifinity","phoenix","jupiter","openbook"];
-let qxJupiterMeta=null;
-let qxMarketGeneration=0;
-let qxLastMarketSource="";
-
-function qxNum(v){const n=Number(v);return Number.isFinite(n)?n:0;}
-function qxSafeUrl(v){try{const u=new URL(String(v||""));return /^https?:$/i.test(u.protocol)?u.href:"";}catch(_){return "";}}
-function qxIsValidSolanaMint(mint){return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(String(mint||""));}
-function normalizedTokenLabel(value){return cleanTokenText(value||"").toLowerCase().replace(/\s+/g," ").trim();}
-function qxLooksLikeFakeNative(p){
- const mint=String(p?.baseToken?.address||"");
- const name=normalizedTokenLabel(p?.baseToken?.name||"");
- const symbol=normalizedTokenLabel(p?.baseToken?.symbol||"");
- if(!qxIsValidSolanaMint(mint))return true;
- if(mint!==SOL&&(symbol==="sol"||symbol==="wsol"||name==="solana"||name==="wrapped solana"||name==="wrapped sol"))return true;
- if(/erc20|ethereum|bsc|binance|polygon|arbitrum|optimism|base network|wormhole.*eth|ethereum.*wrapped|wrapped.*ethereum/i.test(name+" "+symbol))return true;
- return false;
-}
-function qxCmcPairToPair(item){
- const q=Array.isArray(item?.quote)?(item.quote.find(x=>String(x?.convert_id||x?.convertId||"")==="2781")||item.quote[0]||{}):{};
- const mint=String(item?.base_asset_contract_address||"");
- if(!qxIsValidSolanaMint(mint)||mint===SOL)return null;
- const pair={
-  chainId:"solana",pairAddress:String(item?.contract_address||""),cmcPairAddress:String(item?.contract_address||""),
-  baseToken:{address:mint,name:cleanTokenText(item?.base_asset_name||"Unknown Token"),symbol:cleanTokenText(item?.base_asset_symbol||"TOKEN")},
-  quoteToken:{address:String(item?.quote_asset_contract_address||""),name:cleanTokenText(item?.quote_asset_name||""),symbol:cleanTokenText(item?.quote_asset_symbol||"SOL")},
-  priceUsd:String(q?.price??0),
-  priceChange:{h24:qxNum(q?.percent_change_price_24h)},
-  volume:{h24:qxNum(q?.volume_24h)},
-  liquidity:{usd:qxNum(q?.liquidity)},
-  marketCap:0,fdv:qxNum(q?.fully_diluted_value),
-  txns:{h24:{buys:qxNum(item?.["24h_no_of_buys"]),sells:qxNum(item?.["24h_no_of_sells"])}},
-  pairCreatedAt:item?.pool_created?Date.parse(item.pool_created):0,
-  info:{imageUrl:""},dexId:item?.dex_slug||item?.dex_id||"coinmarketcap"
- };
- return qxLooksLikeFakeNative(pair)?null:pair;
-}
-async function qxFetchCmcPairs(start){
- const base={network_slug:"solana",limit:String(QX_CMC_PAGE_SIZE),start:String(start),sort:"volume_24h",sort_dir:"desc",convert_id:"2781",aux:"pool_created,num_transactions_24h,holders,24h_no_of_buys,24h_no_of_sells"};
- const make=async extra=>{const params=new URLSearchParams({...base,...extra});const data=await getJSON(QX_CMC_BASE+"/v4/dex/spot-pairs/latest?"+params.toString(),14000,2);return {raw:Array.isArray(data?.data)?data.data:[],status:data?.status||{}};};
- try{
-  const r=await make({});
-  const pairs=r.raw.map(qxCmcPairToPair).filter(Boolean);
-  if(pairs.length)return {pairs,status:r.status};
- }catch(e){console.warn("QX CMC generic Solana feed failed; trying DEX-specific feeds",e);}
- const merged=[];let lastStatus={};
- for(const dex of QX_CMC_DEX_SLUGS){
-  try{const r=await make({dex_slug:dex});lastStatus=r.status;merged.push(...r.raw.map(qxCmcPairToPair).filter(Boolean));}
-  catch(e){console.warn("QX CMC DEX page failed",dex,start,e);}
- }
- return {pairs:bestPairsByMint(merged),status:lastStatus};
-}
-function qxGeckoPoolToPair(item,included){
- const a=item?.attributes||{};const rel=item?.relationships?.base_token?.data?.id||"";
- const token=(included||[]).find(x=>x?.type==="tokens"&&x?.id===rel)?.attributes||{};
- const mint=String(token?.address||rel.split("_").pop()||"");
- if(!qxIsValidSolanaMint(mint)||mint===SOL)return null;
- const pair={chainId:"solana",pairAddress:item.id?.split("_").pop()||a.address||"",
-  baseToken:{address:mint,name:cleanTokenText(a.base_token_name||token.name||"Unknown Token"),symbol:cleanTokenText(a.base_token_symbol||token.symbol||"TOKEN")},
-  quoteToken:{address:String(item?.relationships?.quote_token?.data?.id||"").split("_").pop()||"",symbol:cleanTokenText(a.quote_token_symbol||"SOL")},
-  priceUsd:qxNum(a.base_token_price_usd)?String(a.base_token_price_usd):"0",priceChange:{h24:qxNum(a.price_change_percentage?.h24)},
-  volume:{h24:qxNum(a.volume_usd?.h24)},liquidity:{usd:qxNum(a.reserve_in_usd)},marketCap:qxNum(a.market_cap_usd),fdv:qxNum(a.fdv_usd),
-  txns:{h24:{buys:qxNum(a.transactions?.h24?.buys),sells:qxNum(a.transactions?.h24?.sells)}},pairCreatedAt:a.pool_created_at?Date.parse(a.pool_created_at):0,
-  info:{imageUrl:qxSafeUrl(a.image_url||token.image_url||token.imageUrl)},dexId:a.dex_id||"geckoterminal"};
- return qxLooksLikeFakeNative(pair)?null:pair;
-}
-async function qxFetchGecko(path){const out=await getJSON(QX_GECKO_BASE+path,12000,2);return (out?.data||[]).map(x=>qxGeckoPoolToPair(x,out?.included||[])).filter(Boolean);}
-async function qxFetchDexSearch(q){
- const out=await getJSON(QX_DEX_SEARCH+encodeURIComponent(q),10000,2);return (out?.pairs||[]).filter(p=>p?.chainId==="solana").map(p=>{
-  const mint=String(p?.baseToken?.address||"");if(!qxIsValidSolanaMint(mint)||mint===SOL)return null;
-  const pair={chainId:"solana",pairAddress:String(p?.pairAddress||""),baseToken:{address:mint,name:cleanTokenText(p?.baseToken?.name||"Unknown Token"),symbol:cleanTokenText(p?.baseToken?.symbol||"TOKEN")},quoteToken:p.quoteToken||{},priceUsd:String(p?.priceUsd||0),priceChange:{h24:qxNum(p?.priceChange?.h24)},volume:{h24:qxNum(p?.volume?.h24)},liquidity:{usd:qxNum(p?.liquidity?.usd)},marketCap:qxNum(p?.marketCap),fdv:qxNum(p?.fdv),txns:p?.txns||{h24:{buys:0,sells:0}},pairCreatedAt:qxNum(p?.pairCreatedAt),info:{imageUrl:qxSafeUrl(p?.info?.imageUrl)},dexId:p?.dexId||"dexscreener"};
-  return qxLooksLikeFakeNative(pair)?null:pair;
- }).filter(Boolean);
-}
-async function qxFetchJupiterMeta(){
- if(qxJupiterMeta)return qxJupiterMeta;const map=new Map();
- try{const data=await getJSON(QX_JUP_TOKENS,15000,2);for(const t of Array.isArray(data)?data:[]){const mint=String(t?.address||t?.mint||"");if(!qxIsValidSolanaMint(mint))continue;map.set(mint,{name:cleanTokenText(t?.name||""),symbol:cleanTokenText(t?.symbol||""),imageUrl:qxSafeUrl(t?.logoURI||t?.logo_uri||""),decimals:t?.decimals});}}catch(e){console.warn("QX Jupiter metadata unavailable",e);}
- qxJupiterMeta=map;return map;
-}
-function qxMergeJupiterMeta(list,meta){return (list||[]).map(p=>{const m=meta.get(String(p?.baseToken?.address||""));if(!m)return p;if(!p.baseToken.name||p.baseToken.name==="Unknown Token")p.baseToken.name=m.name||p.baseToken.name;if(!p.baseToken.symbol||p.baseToken.symbol==="TOKEN")p.baseToken.symbol=m.symbol||p.baseToken.symbol;if(!p.info)p.info={};if(!p.info.imageUrl)p.info.imageUrl=m.imageUrl||"";p.tokenDecimals=m.decimals;return p;});}
-async function qxFetchDexTokenMeta(mints){
- const unique=[...new Set((mints||[]).map(String).filter(qxIsValidSolanaMint))];
- const out=new Map();
- for(let i=0;i<unique.length;i+=30){
-  const batch=unique.slice(i,i+30);
-  try{
-   const rows=await getJSON(QX_DEX_TOKENS+batch.join(","),10000,2);
-   for(const pair of Array.isArray(rows)?rows:[]){
-    const mint=String(pair?.baseToken?.address||"");
-    if(!mint||!unique.includes(mint))continue;
-    const old=out.get(mint);
-    if(!old||qxPairScore(pair)>qxPairScore(old))out.set(mint,pair);
-   }
-  }catch(e){console.warn("QX DexScreener token metadata batch failed",i,e);}
- }
- return [...out.values()].map(p=>({
-  chainId:"solana",pairAddress:String(p?.pairAddress||""),
-  baseToken:{address:String(p?.baseToken?.address||""),name:cleanTokenText(p?.baseToken?.name||""),symbol:cleanTokenText(p?.baseToken?.symbol||"")},
-  quoteToken:p?.quoteToken||{},priceUsd:String(p?.priceUsd||0),priceChange:{h24:qxNum(p?.priceChange?.h24)},
-  volume:{h24:qxNum(p?.volume?.h24)},liquidity:{usd:qxNum(p?.liquidity?.usd)},marketCap:qxNum(p?.marketCap),fdv:qxNum(p?.fdv),
-  txns:p?.txns||{h24:{buys:0,sells:0}},pairCreatedAt:qxNum(p?.pairCreatedAt),
-  info:{imageUrl:qxSafeUrl(p?.info?.imageUrl||"")},dexId:p?.dexId||"dexscreener"
- })).filter(q=>qxIsValidSolanaMint(q.baseToken.address)&&!qxLooksLikeFakeNative(q));
-}
-function qxIsDisplayReady(p){
- const mint=String(p?.baseToken?.address||"");
- const name=cleanTokenText(p?.baseToken?.name||"","");
- const symbol=cleanTokenText(p?.baseToken?.symbol||"","");
- const image=qxSafeUrl(p?.info?.imageUrl||"");
- const price=qxNum(p?.priceUsd);
- return p?.chainId==="solana" && qxIsValidSolanaMint(mint) && !qxLooksLikeFakeNative(p) && !!name && !!symbol && symbol!=="TOKEN" && name!=="Unknown Token" && !!image && price>0;
-}
-async function qxResolveMarketMetadata(list){
- let rows=bestPairsByMint(list);
- const jup=await qxFetchJupiterMeta();
- rows=qxMergeJupiterMeta(rows,jup);
- const needs=rows.filter(p=>!qxIsDisplayReady(p)).map(p=>String(p?.baseToken?.address||"")).filter(Boolean);
- if(needs.length){
-  const dex=await qxFetchDexTokenMeta(needs);
-  rows=qxMergeMarketSources(rows,dex);
-  rows=qxMergeJupiterMeta(rows,jup);
- }
- return bestPairsByMint(rows).filter(qxIsDisplayReady);
-}
-function qxPairScore(p){return qxNum(p?.liquidity?.usd)*1000+qxNum(p?.volume?.h24)+qxNum(p?.txns?.h24?.buys)+qxNum(p?.txns?.h24?.sells);}
-function bestPairsByMint(list){const map=new Map();for(const p of list||[]){const mint=String(p?.baseToken?.address||"");if(!qxIsValidSolanaMint(mint)||p?.chainId!=="solana"||qxLooksLikeFakeNative(p))continue;const old=map.get(mint);if(!old||qxPairScore(p)>qxPairScore(old))map.set(mint,p);}return [...map.values()];}
-function qxNormalizePair(p){if(!p)return p;p.baseToken=p.baseToken||{};p.baseToken.name=cleanTokenText(p.baseToken.name,"Unknown Token");p.baseToken.symbol=cleanTokenText(p.baseToken.symbol,"TOKEN");if(!p.info)p.info={};p.info.imageUrl=qxSafeUrl(p.info.imageUrl||"");return p;}
-function qxMergeMarketSources(primary,enrichment){
- const map=new Map();for(const p of primary||[])map.set(String(p.baseToken.address),qxNormalizePair(p));
- for(const e of enrichment||[]){const mint=String(e?.baseToken?.address||"");if(!mint)continue;const p=map.get(mint);if(!p){map.set(mint,qxNormalizePair(e));continue;}
-  if((!p.baseToken.name||p.baseToken.name==="Unknown Token")&&e.baseToken.name)p.baseToken.name=e.baseToken.name;if((!p.baseToken.symbol||p.baseToken.symbol==="TOKEN")&&e.baseToken.symbol)p.baseToken.symbol=e.baseToken.symbol;
-  if(qxNum(e.priceUsd)>0)p.priceUsd=e.priceUsd;if(qxNum(e.priceChange?.h24)&&!qxNum(p.priceChange?.h24))p.priceChange=e.priceChange;if(qxNum(e.volume?.h24)>qxNum(p.volume?.h24))p.volume=e.volume;if(qxNum(e.liquidity?.usd)>qxNum(p.liquidity?.usd))p.liquidity=e.liquidity;if(qxNum(e.marketCap)>qxNum(p.marketCap))p.marketCap=e.marketCap;if(qxNum(e.fdv)>qxNum(p.fdv))p.fdv=e.fdv;if(!p.pairCreatedAt&&e.pairCreatedAt)p.pairCreatedAt=e.pairCreatedAt;if(!p.info?.imageUrl&&e.info?.imageUrl)p.info.imageUrl=e.info.imageUrl;
-  p.tokenDecimals=e.tokenDecimals||p.tokenDecimals;if(!p.cmcPairAddress&&e.cmcPairAddress)p.cmcPairAddress=e.cmcPairAddress;
- }
- return [...map.values()];
-}
-function qxSortDefault(a,b){const v=qxNum(b?.volume?.h24)-qxNum(a?.volume?.h24);if(v)return v;const l=qxNum(b?.liquidity?.usd)-qxNum(a?.liquidity?.usd);if(l)return l;return qxNum(b?.marketCap||b?.fdv)-qxNum(a?.marketCap||a?.fdv);}
-function sortPairs(list){const arr=[...(list||[])],key=String(sortMetric||"default"),dir=sortDirection==="asc"?1:-1;if(key==="default")return arr.sort(qxSortDefault);const value=p=>key==="price"?qxNum(p?.priceUsd):key==="change"?qxNum(p?.priceChange?.h24):key==="volume"?qxNum(p?.volume?.h24):key==="marketcap"?qxNum(p?.marketCap||p?.fdv):key==="liquidity"?qxNum(p?.liquidity?.usd):0;return arr.sort((a,b)=>(value(a)-value(b))*dir);}
-function qxCategoryList(){let list=bestPairsByMint(allPairs).filter(qxIsDisplayReady);if(currentCategory==="new")return bestPairsByMint(newPairs).filter(qxIsDisplayReady).sort((a,b)=>qxNum(b.pairCreatedAt)-qxNum(a.pairCreatedAt));if(currentCategory==="gainers")return list.filter(p=>qxNum(p.priceChange?.h24)>0).sort((a,b)=>qxNum(b.priceChange?.h24)-qxNum(a.priceChange?.h24));if(currentCategory==="losers")return list.filter(p=>qxNum(p.priceChange?.h24)<0).sort((a,b)=>qxNum(a.priceChange?.h24)-qxNum(b.priceChange?.h24));if(currentCategory==="trending")return list.sort((a,b)=>(qxNum(b.volume?.h24)+qxNum(b.txns?.h24?.buys)+qxNum(b.txns?.h24?.sells))-(qxNum(a.volume?.h24)+qxNum(a.txns?.h24?.buys)+qxNum(a.txns?.h24?.sells)));if(currentCategory==="volume")return list.sort((a,b)=>qxNum(b.volume?.h24)-qxNum(a.volume?.h24));return list.sort(qxSortDefault);}
-function qxTokenMeta(p){const tx=qxNum(p?.txns?.h24?.buys)+qxNum(p?.txns?.h24?.sells);return '<span class="token-meta"><span>MC/FDV '+escapeHTML(money(p?.marketCap||p?.fdv||0))+'</span><span>LIQ '+escapeHTML(money(p?.liquidity?.usd||0))+'</span><span>VOL '+escapeHTML(money(p?.volume?.h24||0))+'</span><span>TX '+escapeHTML(tx.toLocaleString())+'</span></span>';}
-function renderMarket(){
- const list=sortPairs(qxCategoryList());const countEl=$("coinCount");if(countEl)countEl.textContent=list.length.toLocaleString()+" tokens";const box=$("tokenResults");if(!box)return;
- if(!list.length){box.innerHTML='<div class="market-empty">No Solana market data in this category yet. The New Coins feed is live and uses recently created Solana pools plus recent indexed DEX pairs. Try again in a few seconds.</div>';return;}
- box.innerHTML=list.slice(0,1000).map(p=>{const name=escapeHTML(p.baseToken.name),symbol=escapeHTML(p.baseToken.symbol),image=qxSafeUrl(p.info?.imageUrl),change=qxNum(p.priceChange?.h24),cls=change>0?"positive":change<0?"negative":"neutral",changeText=(change>0?"+":"")+change.toFixed(2)+"%",img=image?'<img class="coin-logo" src="'+escapeHTML(image)+'" alt="" loading="lazy" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\';">':"",fallback='<span class="coin-fallback" style="display:'+(image?'none':'flex')+'">'+escapeHTML(symbol.replace(/[^A-Za-z0-9]/g,'').slice(0,2)||'?')+'</span>',mint=escapeHTML(p.baseToken.address);return '<div class="market-row market-row-rich"><button class="coin-button" data-mint="'+mint+'">'+img+fallback+'<span class="coin-info"><strong>'+name+'</strong><small>'+symbol+' · '+mint.slice(0,7)+'…'+mint.slice(-5)+'</small>'+qxTokenMeta(p)+'</span></button><span class="market-price">'+usd(p.priceUsd)+'</span><span class="market-change '+cls+'">'+changeText+'</span></div>';}).join("");
- box.querySelectorAll(".coin-button[data-mint]").forEach(button=>button.onclick=()=>{const token=list.find(p=>String(p.baseToken.address)===button.dataset.mint);if(token)openToken(token);});
-}
-$("marketTabs").addEventListener("click",event=>{const button=event.target.closest("[data-category]");if(!button)return;currentCategory=button.dataset.category;console.info("QX market category",currentCategory,{all:allPairs.length,newCoins:newPairs.length});document.querySelectorAll(".market-tab").forEach(t=>t.classList.toggle("active",t===button));renderMarket();});
-async function searchMarket(){const query=$("search").value.trim();if(!query){renderMarket();return;}$("tokenResults").innerHTML='<div class="market-empty">Searching live Solana markets…</div>';try{let results=await qxFetchDexSearch(query);if(!results.length){const data=await getJSON(QX_CMC_BASE+"/v1/dex/search?platform=sol&q="+encodeURIComponent(query)+"&limit=100&sort=volume_24h",12000,2);const raw=Array.isArray(data?.data?.tks)?data.data.tks:[];results=raw.map(t=>({chainId:"solana",pairAddress:String(t?.pu||""),baseToken:{address:String(t?.addr||""),name:cleanTokenText(t?.n||"Unknown Token"),symbol:cleanTokenText(t?.s||"TOKEN")},priceUsd:String(t?.p||0),priceChange:{h24:qxNum(t?.pc24h)},volume:{h24:qxNum(t?.v24h)},liquidity:{usd:qxNum(t?.liq)},marketCap:qxNum(t?.mc),fdv:qxNum(t?.fdv),txns:{h24:{buys:0,sells:0}},info:{imageUrl:qxSafeUrl(t?.lg||"")},dexId:"coinmarketcap"})).filter(p=>qxIsValidSolanaMint(p.baseToken.address)&&!qxLooksLikeFakeNative(p));}const meta=await qxFetchJupiterMeta();window.QXPreviousMarketPairs=allPairs;allPairs=await qxResolveMarketMetadata(qxMergeJupiterMeta(results,meta));currentCategory="all";document.querySelectorAll(".market-tab").forEach(t=>t.classList.toggle("active",t.dataset.category==="all"));renderMarket();}catch(e){console.warn("QX Solana search",e);$("tokenResults").innerHTML='<div class="market-empty">Solana search is temporarily unavailable. Try again shortly.</div>';}}
-$("searchBtn").onclick=searchMarket;$("search").onkeydown=e=>{if(e.key==="Enter")searchMarket();};$("search").oninput=()=>{if(!$("search").value.trim()){if(Array.isArray(window.QXPreviousMarketPairs)){allPairs=window.QXPreviousMarketPairs;delete window.QXPreviousMarketPairs;}renderMarket();}};
-async function qxFetchMarketUniverse(){
- const first=await qxFetchCmcPairs(1);
- const primary=first.pairs;const total=qxNum(first.status?.total_count);
- const starts=[];for(let start=1+QX_CMC_PAGE_SIZE;start<=QX_CMC_PAGE_SIZE*QX_CMC_PAGES;start+=QX_CMC_PAGE_SIZE)starts.push(start);
- const rest=[];for(let i=0;i<starts.length;i+=3){const batch=starts.slice(i,i+3).map(start=>qxFetchCmcPairs(start));const rs=await Promise.allSettled(batch);for(let j=0;j<rs.length;j++){if(rs[j].status==='fulfilled')rest.push(...(rs[j].value?.pairs||[]));else console.warn('QX CMC page failed',starts[i+j],rs[j].reason);}}
- let gecko=[],geckoNew=[];
- try{
-  const jobs=[];
-  for(let page=1;page<=8;page++){
-   jobs.push(qxFetchGecko('/pools?page='+page+'&include=base_token'));
-   jobs.push(qxFetchGecko('/trending_pools?page='+page+'&include=base_token'));
-  }
-  const g=await Promise.allSettled(jobs);
-  for(let i=0;i<g.length;i++){if(g[i].status==='fulfilled')gecko.push(...(g[i].value||[]));}
-  /* New pools are fetched separately and more gently to avoid rate-limit bursts. */
-  for(let page=1;page<=12;page++){
-   try{const fresh=await qxFetchGecko('/new_pools?page='+page+'&include=base_token');geckoNew.push(...fresh||[]);}
-   catch(e){console.warn('QX Gecko new_pools page failed',page,e);if(page>=3)break;}
-  }
- }catch(e){console.warn('QX Gecko enrichment unavailable',e);}
- let meta=new Map();try{meta=await qxFetchJupiterMeta();}catch(e){console.warn('QX Jupiter enrichment unavailable',e);}
- const cmcUniverse=bestPairsByMint(qxMergeMarketSources(primary.concat(rest),gecko));
- const merged=qxMergeJupiterMeta(cmcUniverse,meta);
- const fresh=bestPairsByMint(qxMergeJupiterMeta(geckoNew,meta));
- const recentCmc=merged.filter(p=>{const t=qxNum(p?.pairCreatedAt);return t>0&&t>Date.now()-30*86400000;});
- const newUniverse=bestPairsByMint(fresh.concat(recentCmc));
- return {pairs:merged,gecko:bestPairsByMint(gecko),newPairs:newUniverse,cmcTotal:total};
-}
-function qxUpdateMarketStatus(source,total){qxLastMarketSource=source;const el=$("marketStatus");if(el)el.textContent="Solana-only LIVE market · "+(total||allPairs.length).toLocaleString()+"+ indexed assets · live on-chain DEX data · updated "+new Date().toLocaleTimeString();}
-async function qxLoadFallbackUniverse(){
- const out=[];
- try{for(let page=1;page<=10;page++){const g=await qxFetchGecko('/pools?page='+page+'&include=base_token');out.push(...g);if(g.length<20)break;}}catch(e){console.warn("QX Gecko fallback universe failed",e);}
- const terms=["SOL","USDC","USDT","BONK","JUP","RAY","WIF","PUMP","TRUMP","MELANIA","meme","ai"];
- const rs=await Promise.allSettled(terms.map(q=>qxFetchDexSearch(q)));
- out.push(...rs.filter(x=>x.status==="fulfilled").flatMap(x=>x.value||[]));
- return bestPairsByMint(out);
-}
-async function loadMarket(){
- if(marketBusy)return;marketBusy=true;const generation=++qxMarketGeneration;
- try{
-  if(!allPairs.length){$("tokenResults").innerHTML='<div class="market-empty">Loading live Solana markets…</div>';$("coinCount").textContent="Loading…";}
-  let first;
-  try{first=await qxFetchCmcPairs(1);}catch(e){console.warn("QX CMC primary unavailable",e);first=null;}
-  if(first?.pairs?.length){
-   allPairs=await qxResolveMarketMetadata(first.pairs);
-   try{
-    const fresh=[];
-    for(let page=1;page<=8;page++){
-     try{fresh.push(...await qxFetchGecko('/new_pools?page='+page+'&include=base_token'));}
-     catch(e){console.warn('QX initial new_pools page failed',page,e);if(page>=3)break;}
-    }
-    newPairs=bestPairsByMint(fresh);
-   }catch(e){console.warn('QX initial New Coins feed failed',e);}
-   if(!newPairs.length)newPairs=bestPairsByMint(allPairs.filter(p=>qxNum(p?.pairCreatedAt)>Date.now()-30*86400000));
-   if(!newPairs.length){
-    try{
-     const recentTerms=['pump','wif','bonk','jup','ray','sol','meme','dog','cat','ai','trump','pepe'];
-     const rs=await Promise.allSettled(recentTerms.map(q=>qxFetchDexSearch(q)));
-     newPairs=bestPairsByMint(rs.filter(x=>x.status==='fulfilled').flatMap(x=>x.value||[]).filter(p=>qxNum(p?.pairCreatedAt)>Date.now()-30*86400000));
-    }catch(e){console.warn('QX New Coins DexScreener fallback failed',e);}
-   }
-   window.QXMarketMainReady=true;window.QXMarketLastSuccess=Date.now();qxUpdateMarketStatus("CoinMarketCap + GeckoTerminal",first.status?.total_count||allPairs.length);renderMarket();}
-  else{const fallback=await qxLoadFallbackUniverse();if(fallback.length){allPairs=await qxResolveMarketMetadata(fallback);newPairs=bestPairsByMint(allPairs.filter(p=>qxNum(p?.pairCreatedAt)>Date.now()-30*86400000)).filter(qxIsDisplayReady);window.QXMarketMainReady=true;window.QXMarketLastSuccess=Date.now();qxUpdateMarketStatus("DexScreener fallback",allPairs.length);renderMarket();}else throw new Error("No live Solana market data returned by the public feeds.");}
-  try{
-   const result=await qxFetchMarketUniverse();if(generation!==qxMarketGeneration)return;if(result.pairs&&result.pairs.length){allPairs=await qxResolveMarketMetadata(result.pairs);}else if(!allPairs.length){throw new Error("Market enrichment returned no Solana tokens");}newPairs=bestPairsByMint(result.newPairs||[]).filter(qxIsDisplayReady);if(!newPairs.length)newPairs=bestPairsByMint((result.gecko||[]).filter(p=>qxNum(p?.pairCreatedAt)>0&&p.pairCreatedAt>Date.now()-30*86400000));if(!newPairs.length){try{const terms=['pump','wif','bonk','jup','ray','sol','meme','dog','cat','ai','trump','pepe'];const rs=await Promise.allSettled(terms.map(q=>qxFetchDexSearch(q)));newPairs=bestPairsByMint(rs.filter(x=>x.status==='fulfilled').flatMap(x=>x.value||[]).filter(p=>qxNum(p?.pairCreatedAt)>Date.now()-30*86400000));}catch(e){console.warn('QX final New Coins fallback failed',e);}}trendingPairs=allPairs.slice().sort((a,b)=>(qxNum(b.volume?.h24)+qxNum(b.txns?.h24?.buys)+qxNum(b.txns?.h24?.sells))-(qxNum(a.volume?.h24)+qxNum(a.txns?.h24?.buys)+qxNum(a.txns?.h24?.sells)));window.QXMarketMainReady=true;window.QXMarketLastSuccess=Date.now();qxUpdateMarketStatus("CoinMarketCap + GeckoTerminal + Jupiter",result.cmcTotal||allPairs.length);console.info("QX market loaded",{all:allPairs.length,newCoins:newPairs.length,source:qxLastMarketSource});renderMarket();
-  }catch(enrichError){console.warn("QX background market enrichment failed",enrichError);renderMarket();}
- }catch(e){console.warn("QX Solana market v21",e);window.QXMarketMainReady=false;const st=$("marketStatus"),box=$("tokenResults");if(st)st.textContent="Solana market retrying automatically · "+(e?.message||"temporary error");if(box&&!allPairs.length)box.innerHTML='<div class="market-empty">Live Solana market is temporarily unavailable. Retrying automatically…</div>';}finally{marketBusy=false;}
-}
-setInterval(()=>{if(document.visibilityState!=="hidden")loadMarket();},QX_SOLANA_REFRESH_MS);
-// Start the market only after this module has fully completed its top-level awaits.
-// This prevents Safari from calling module functions while SOL and other constants
-// are still in the temporal dead zone.
-window.QXStartMarket=()=>loadMarket();
-window.QXMarketModuleReady=true;
-window.QXMarketDiagnostics=()=>({all:allPairs.length,newCoins:newPairs.length,cmcPages:QX_CMC_PAGES,source:qxLastMarketSource,lastSuccess:window.QXMarketLastSuccess||0});
-loadMarket();
-</script>
-
-<script>
-/* QX MARKET BOOTSTRAP: wait for the ES module to finish before starting it. */
-(function(){
-  const start=()=>{
-    try{
-      if(typeof window.QXStartMarket==="function")return window.QXStartMarket();
-    }catch(e){console.warn("QX market bootstrap failed",e);}
-    setTimeout(start,250);
-  };
-  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>setTimeout(start,250));
-  else setTimeout(start,250);
-})();
-</script>
-
-<script>
-/* QX MARKET SAFETY NET v1
-   This classic script is deliberately independent of the ES module. If a wallet
-   CDN/module fails, the public Solana market must still render. */
-(function(){
- const box=()=>document.getElementById("tokenResults");
- const status=()=>document.getElementById("marketStatus");
- const count=()=>document.getElementById("coinCount");
- let busy=false, cache=[];
- const validMint=s=>/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(String(s||""));
- const CANONICAL_SOL_MINT="So11111111111111111111111111111111111111112";
- async function json(url){
-  const c=new AbortController(),t=setTimeout(()=>c.abort(),9000);
-  try{const r=await fetch(url,{signal:c.signal});if(!r.ok)throw Error("HTTP "+r.status);return await r.json();}
-  finally{clearTimeout(t);}
- }
- function fmt(v){const n=Number(v);if(!Number.isFinite(n))return "-";if(Math.abs(n)>=1e9)return "$"+(n/1e9).toFixed(2)+"B";if(Math.abs(n)>=1e6)return "$"+(n/1e6).toFixed(2)+"M";if(Math.abs(n)>=1e3)return "$"+(n/1e3).toFixed(2)+"K";return "$"+(n<.01?n.toPrecision(4):n.toFixed(2));}
- function price(v){const n=Number(v);if(!Number.isFinite(n))return "-";return n<.000001?"$"+n.toExponential(3):n<.01?"$"+n.toFixed(6):"$"+n.toFixed(4);}
- function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));}
- function render(){
-  if(window.QXMarketMainReady)return;
-  const el=box();if(!el)return;
-  if(!cache.length){
-   if(!el.querySelector(".market-row") && !el.querySelector(".token-card"))el.innerHTML='<div class="market-empty">Connecting to live Solana market data…</div>';
-   return;
-  }
-  el.innerHTML=cache.slice(0,100).map(p=>{
-   const a=p.baseToken?.address||"",n=esc(p.baseToken?.name||"Token"),s=esc(p.baseToken?.symbol||""),ch=Number(p.priceChange?.h24||0),cl=ch>=0?"positive":"negative";
-   return '<button type="button" class="market-row qx-fallback-row" data-mint="'+esc(a)+'" style="width:100%;text-align:left;background:none;border:0;color:inherit;cursor:pointer;padding:12px 8px;display:grid;grid-template-columns:minmax(0,1fr) 120px 90px;gap:10px;align-items:center"><span><strong>'+n+'</strong><small style="display:block;color:var(--muted)">'+s+' · '+esc(a.slice(0,6)+"…"+a.slice(-4))+'</small></span><span class="right">'+price(p.priceUsd)+'</span><span class="right '+cl+'">'+(ch>=0?"+":"")+ch.toFixed(2)+'%</span></button>';
-  }).join("");
-  count().textContent=cache.length+" tokens";
-  status().textContent="Solana-only market · Live data · Safety feed active · "+new Date().toLocaleTimeString();
-  el.querySelectorAll(".qx-fallback-row[data-mint]").forEach(row=>row.onclick=()=>{
-   const token=cache.find(p=>String(p?.baseToken?.address||"")===row.dataset.mint);
-   if(token&&typeof window.QXOpenToken==="function")window.QXOpenToken(token);
-  });
- }
- async function run(){
-  if(window.QXMarketMainReady)return;
-  if(busy)return;busy=true;
-  try{
-   const qs=["solana","SOL","USDC","BONK","JUP","RAY"];
-   const rs=await Promise.allSettled(qs.map(q=>json("https://api.dexscreener.com/latest/dex/search?q="+encodeURIComponent(q))));
-   const map=new Map();
-   for(const r of rs)if(r.status==="fulfilled")for(const p of (r.value?.pairs||[])){
-    const mint=String(p.baseToken?.address||"");if(p.chainId!=="solana"||!validMint(mint)||mint===CANONICAL_SOL_MINT)continue;
-    const nm=String(p.baseToken?.name||"").trim().toLowerCase(),sm=String(p.baseToken?.symbol||"").trim().toLowerCase();
-    if(sm==="sol"||sm==="wsol"||nm==="solana"||nm==="wrapped solana"||nm==="wrapped sol")continue;
-    const old=map.get(mint);if(!old||Number(p.liquidity?.usd||0)>Number(old.liquidity?.usd||0))map.set(mint,p);
-   }
-   cache=[...map.values()].sort((a,b)=>Number(b.liquidity?.usd||0)-Number(a.liquidity?.usd||0));
-   if(cache.length&&typeof window.QXAdoptMarketFallback==="function")window.QXAdoptMarketFallback(cache);
-   render();
-   try{window.QXMarketSafetyCache=cache;}catch(_){}
-  }catch(e){if(!cache.length){const b=box(),st=status();if(b)b.innerHTML='<div class="market-empty">Market connection failed. Retrying automatically...</div>';if(st)st.textContent="Market retry: "+(e?.message||"network error");console.warn("QX safety market feed failed",e);}}
-  finally{busy=false;}
- }
- window.QXMarketSafetyRun=run;
- if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>setTimeout(run,5000));else setTimeout(run,5000);
- setInterval(()=>{if(!window.QXMarketMainReady)run();},30000);
-})();
-</script>
-
-<script>
-/* QX COMPLETE TERMINAL CONTROLLER */
-(function(){
- const $=id=>document.getElementById(id);
- const state={token:null,watch:JSON.parse(localStorage.getItem('qxWatchlistV1')||'[]'),history:JSON.parse(localStorage.getItem('qxTradeHistoryV1')||'[]')};
- function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
- function num(v){const n=Number(v);return Number.isFinite(n)?n:null}
- function usd(v){const n=num(v);if(n===null)return '—'; if(Math.abs(n)>=1e9)return '$'+(n/1e9).toFixed(2)+'B'; if(Math.abs(n)>=1e6)return '$'+(n/1e6).toFixed(2)+'M'; if(Math.abs(n)>=1e3)return '$'+(n/1e3).toFixed(2)+'K'; return '$'+(n<.01?n.toPrecision(4):n.toFixed(4));}
- function price(v){const n=num(v);if(n===null)return '—';return n<.000001?'$'+n.toExponential(3):n<.01?'$'+n.toFixed(6):'$'+n.toFixed(4)}
- function save(){localStorage.setItem('qxWatchlistV1',JSON.stringify(state.watch.slice(0,50)));localStorage.setItem('qxTradeHistoryV1',JSON.stringify(state.history.slice(0,50)))}
- function current(){return state.token}
- function adopt(t){
-  if(!t)return;
-  const b=t.baseToken||t;
-  state.token={mint:b.address||t.mint||'',name:b.name||t.name||'Token',symbol:b.symbol||t.symbol||'TOKEN',priceUsd:t.priceUsd||t.price||null,change24:t.priceChange?.h24??t.change24??0,volume24:t.volume?.h24??t.volume24??0,liquidity:t.liquidity?.usd??t.liquidity??0,pair:t.pairAddress||t.pair||''};
-  $('qxPairName').textContent=state.token.name+' / '+state.token.symbol;$('qxPairNameSecondary').textContent=state.token.name+' / '+state.token.symbol;$('qxPairMint').textContent=state.token.mint||'Solana token';$('qxPairPrice').textContent=price(state.token.priceUsd);$('qxPairChange').textContent=(Number(state.token.change24)>=0?'+':'')+Number(state.token.change24||0).toFixed(2)+'%';$('qxPairChange').className='qx-change '+(Number(state.token.change24)>=0?'qx-positive':'qx-negative');$('qxTerminalPrice').textContent=price(state.token.priceUsd);$('qxTerminalChange').textContent=(Number(state.token.change24)>=0?'+':'')+Number(state.token.change24||0).toFixed(2)+'%';$('qxStatAsset').textContent=state.token.symbol;$('qxStatVolume').textContent=usd(state.token.volume24);renderBook();renderWatch();
- }
- function renderBook(){
-  const el=$('qxLiquidityBook');if(!el)return;const l=num(state.token?.liquidity)||0,p=num(state.token?.priceUsd); if(!state.token){return} const levels=[.5,.25,.1]; el.innerHTML='<div class="qx-book-row qx-book-head"><span>LEVEL</span><span>LIQUIDITY</span><span>PRICE</span></div>'+levels.map(x=>'<div class="qx-book-row"><span>POOL</span><span>'+usd(l*x)+'</span><span>'+price(p)+'</span></div>').join('')+'<div class="qx-mid-price"><span>MID</span><span>'+price(p)+'</span></div>';
- }
- function renderWatch(){const el=$('qxWatchlist');if(!state.watch.length){el.innerHTML='<div class="qx-empty">No watched markets.</div>';return}el.innerHTML=state.watch.map((x,i)=>'<div class="qx-list-row"><div><strong>'+esc(x.symbol)+' · '+esc(x.name)+'</strong><small>'+price(x.priceUsd)+' · '+(Number(x.change24)>=0?'+':'')+Number(x.change24||0).toFixed(2)+'%</small></div><button data-watch-remove="'+i+'">Remove</button></div>').join('');el.querySelectorAll('[data-watch-remove]').forEach(b=>b.onclick=()=>{state.watch.splice(Number(b.dataset.watchRemove),1);save();renderWatch()})}
- function renderHistory(){const el=$('qxTradeHistory');if(!state.history.length){el.innerHTML='<div class="qx-empty">No QX trades recorded in this browser yet.</div>';return}el.innerHTML=state.history.slice(0,12).map(x=>'<div class="qx-list-row"><div><strong>'+esc(x.side)+' '+esc(x.symbol)+'</strong><small>'+esc(x.amount)+' SOL · '+new Date(x.time).toLocaleString()+'</small></div><button type="button" onclick="window.open(\'https://solscan.io/tx/'+encodeURIComponent(x.signature||'')+'\',\'_blank\')">Explorer</button></div>').join('')}
- function addHistory(side,amount,signature){if(!state.token)return;state.history.unshift({side,symbol:state.token.symbol,amount,signature:signature||'',time:Date.now()});save();renderHistory()}
- function walletStatus(){const a=$('walletAddress')?.textContent?.trim();$('qxStatWallet').textContent=a&&a!=='-'?a.slice(0,4)+'…'+a.slice(-4):'Not connected'}
- function openExchange(){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));$('exchangePage').classList.add('active');document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.page==='exchangePage'));walletStatus()}
- document.querySelectorAll('[data-qx-order-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-qx-order-tab]').forEach(x=>x.classList.remove('active'));b.classList.add('active');$('qxMarketPanel').style.display=b.dataset.qxOrderTab==='market'?'block':'none';$('qxLimitPanel').style.display=b.dataset.qxOrderTab==='limit'?'block':'none';$('qxHistoryPanel').style.display=b.dataset.qxOrderTab==='history'?'block':'none';if(b.dataset.qxOrderTab==='history')renderHistory()});
- $('qxSaveTrigger')?.addEventListener('click',()=>{const p=num($('qxTriggerPrice').value);if(!state.token||p===null||p<=0){$('qxTriggerStatus').textContent='Choose a market and enter a valid trigger price.';return}localStorage.setItem('qxTriggerV1',JSON.stringify({mint:state.token.mint,symbol:state.token.symbol,price:p,action:$('qxTriggerAction').value,time:Date.now()}));$('qxTriggerStatus').textContent='Trigger saved on this browser. It will not sign or submit transactions automatically.'});
- async function execute(side){
-  if(!state.token){$('qxExecutionStatus').textContent='Select a Solana token first.';return}
-  const amount=num($('qxTradeAmount').value);if(amount===null||amount<=0){$('qxExecutionStatus').textContent='Enter a valid SOL amount.';return}
-  if(typeof window.QXOpenToken==='function'){try{window.QXOpenToken({baseToken:{address:state.token.mint,name:state.token.name,symbol:state.token.symbol},priceUsd:state.token.priceUsd,priceChange:{h24:state.token.change24},volume:{h24:state.token.volume24},liquidity:{usd:state.token.liquidity},pairAddress:state.token.pair});$('qxExecutionStatus').textContent='QX trade panel opened with the selected asset. Review the live quote there before signing.';return}catch(e){}}
-  $('qxExecutionStatus').textContent='The selected market is ready, but the existing swap executor could not be opened. No transaction was submitted.';
- }
- $('qxBuyBtn')?.addEventListener('click',()=>execute('BUY'));$('qxSellBtn')?.addEventListener('click',()=>execute('SELL'));
- window.QXOpenExchangeTerminal=adopt;window.QXExchangeTerminalOpen=openExchange;
- document.addEventListener('click',e=>{const b=e.target.closest('[data-page="exchangePage"]');if(b)openExchange()});
- setInterval(walletStatus,1500);
- document.addEventListener('DOMContentLoaded',()=>{walletStatus();renderWatch();renderHistory()});
- window.addEventListener('QXMarketTokenSelected',e=>adopt(e.detail));
- /* Capture token-open calls without replacing the existing function. */
- const oldOpen=window.QXOpenToken; if(typeof oldOpen==='function' && !oldOpen.__qxWrapped){window.QXOpenToken=function(t){adopt(t);return oldOpen.apply(this,arguments)};window.QXOpenToken.__qxWrapped=true}
-})();
-</script>
-</body>
-</html>
