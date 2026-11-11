@@ -29,7 +29,7 @@ body{margin:0;background:radial-gradient(ellipse at 50% -18%,rgba(111,69,217,.18
 body{background-image:radial-gradient(ellipse at 50% -18%,rgba(111,69,217,.28),transparent 48%),radial-gradient(ellipse at 12% 38%,rgba(67,255,173,.07),transparent 34%),radial-gradient(ellipse at 90% 72%,rgba(180,92,255,.10),transparent 35%),linear-gradient(145deg,#080612,#0c0819 52%,#070510)}
 .panel,.hero,.list,.sort-panel,.market-tabs,.ad-card{transform:perspective(1100px) translateZ(0);box-shadow:0 16px 38px rgba(0,0,0,.26),inset 0 1px 0 rgba(255,255,255,.045);transition:transform .22s ease,box-shadow .22s ease}
 .panel:hover,.hero:hover{transform:perspective(1100px) rotateX(.35deg) translateY(-2px);box-shadow:0 22px 48px rgba(0,0,0,.34),0 0 24px rgba(150,90,255,.09),inset 0 1px 0 rgba(255,255,255,.06)}
-.btn,.market-tab,.nav-btn{transition:transform .18s ease,filter .18s ease,box-shadow .18s ease}
+.btn,.market-tab{transition:transform .18s ease,filter .18s ease,box-shadow .18s ease}
 .btn:active,.market-tab:active{transform:translateY(1px) scale(.985)}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
 button,input{font:inherit}
@@ -47,13 +47,6 @@ header{display:flex;align-items:center;justify-content:space-between;padding:12p
 @media(max-width:560px){#createPage .panel>div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}header{align-items:flex-start;gap:10px;flex-wrap:wrap}.qx-global-settings{width:100%;justify-content:flex-start;gap:8px}.qx-global-settings label{display:block;flex:0 0 auto}.qx-global-settings select{flex:1 1 42%;min-width:125px;width:calc(50% - 8px);font-size:13px;padding:11px 8px}.qx-global-settings #connectBtn{flex:1 1 100%}}
 @media(max-width:760px){input,select,textarea,.ad-modal input,.ad-modal select,.ad-modal textarea{font-size:16px!important}.qx-global-settings select{font-size:16px!important}}
 /* Wallet-only controls: language, currency and wallet connection live inside Wallet. */
-.qx-wallet-controls{margin:-4px 0 16px;padding:11px 12px;border:1px solid rgba(86,53,139,.75);border-radius:13px;background:rgba(12,9,24,.48)}
-.qx-wallet-controls .qx-global-settings{justify-content:flex-start;align-items:end}
-.qx-wallet-controls .qx-global-settings label{display:block}
-.qx-wallet-controls .qx-global-settings #connectBtn{margin-left:auto;white-space:nowrap}
-.qx-wallet-controls #connectFeedback{min-height:16px;margin:7px 2px 0;text-align:left}
-html[dir="rtl"] .qx-wallet-controls #connectFeedback{text-align:right}
-@media(max-width:560px){.qx-wallet-controls .qx-global-settings{width:100%;justify-content:flex-start;gap:8px}.qx-wallet-controls .qx-global-settings #connectBtn{flex:1 1 100%;margin-left:0}.qx-wallet-controls .qx-global-settings select{width:calc(50% - 8px);min-width:0}.qx-wallet-controls .qx-global-settings label{font-size:10px}}
 .btn{background:#241936;color:white;border:1px solid var(--line);padding:12px 15px;border-radius:10px}
 .primary{background:var(--green);color:#06150f;border:0;font-weight:bold}
 .panel{background:linear-gradient(160deg,rgba(26,19,42,.98),rgba(15,12,25,.98));border:1px solid var(--line);border-radius:17px;padding:16px;margin-bottom:16px;box-shadow:0 12px 34px rgba(0,0,0,.12)}
@@ -217,8 +210,6 @@ footer{text-align:center;color:var(--muted);padding:25px;font-size:11px}
 .percent-panel.sell .percent-range::-moz-range-thumb{background:var(--red)}
 .percent-foot{display:flex;justify-content:space-between;font-size:10px;color:var(--muted)}
 @media(max-width:380px){
- .nav-btn{font-size:11px}
- .nav-btn .nav-icon{width:21px;height:21px}
  .value{font-size:29px}
  .asset-row{grid-template-columns:minmax(0,1.2fr) minmax(65px,.8fr) minmax(60px,.7fr)}
 }
@@ -385,7 +376,6 @@ body.qx-token-open #getQuoteBtn{display:none!important}
 
 
 @media(max-width:380px){
- .nav-btn{font-size:10px;padding-left:1px;padding-right:1px}
 }
 
 /* QX Purchase-style swap panel */
@@ -1113,7 +1103,6 @@ function qxApplyLanguage(){
  const duration=$("adDuration");if(duration){const labels=ar?["\u0633\u0627\u0639\u0629 \u0648\u0627\u062D\u062F\u0629 \u2014 $49.99","3 \u0633\u0627\u0639\u0627\u062A \u2014 $99.99","9 \u0633\u0627\u0639\u0627\u062A \u2014 $179.99","24 \u0633\u0627\u0639\u0629 \u2014 $299.99","3 \u0623\u064A\u0627\u0645 \u2014 $599.99"]:["1 hour \u2014 $49.99","3 hours \u2014 $99.99","9 hours \u2014 $179.99","24 hours \u2014 $299.99","3 days \u2014 $599.99"];Array.from(duration.options).forEach((o,i)=>o.textContent=labels[i]);}
  const walletStatus=$("walletStatus");if(walletStatus&&!connected)walletStatus.textContent=ar?"\u0627\u0631\u0628\u0637 \u0645\u062D\u0641\u0638\u062A\u0643 \u0644\u0639\u0631\u0636 \u0627\u0644\u0623\u0635\u0648\u0644.":"Connect your wallet to view assets.";
  const adStatus=$("adStatus");if(adStatus&&!adStatus.textContent.trim())adStatus.textContent="";
- document.querySelectorAll(".nav-btn").forEach(b=>{const id=b.dataset.page;const span=b.querySelector("span");if(span)span.textContent=id==="walletPage"?L.wallet:id==="createPage"?L.create:id==="marketsPage"?L.markets:L.ads;b.setAttribute("aria-label",span?.textContent||"");});
 
  const footer=document.querySelector("footer");if(footer)footer.textContent=ar?"QX Exchange | \u0633\u0648\u0644\u0627\u0646\u0627":"QX Exchange | Solana";
  document.querySelector(".ads-shell")?.setAttribute("aria-label",ar?"\u0627\u0644\u0625\u0639\u0644\u0627\u0646\u0627\u062A \u0627\u0644\u0645\u0645\u0648\u0644\u0629":"Sponsored advertisements");
@@ -2124,7 +2113,7 @@ function setTradeDirection(dir){
  tradeDirection=dir==="sell"?"sell":"buy";
  $("buyBtn")?.classList.toggle("active",tradeDirection==="buy");$("sellBtn")?.classList.toggle("active",tradeDirection==="sell");
  $("tradeTitle").textContent=tradeDirection==="buy"?"Buy this token with SOL":"Sell this token for SOL";
- pendingSwapOrder=null;$("confirmSwapBtn").disabled=true;$("confirmSwapBtn").textContent="GET LIVE QUOTE FIRST";$("swapReceive").textContent="Enter amount to estimate";qxSetSwapStatus("Direction changed. Get a fresh live quote before signing.");updateTradePercentUI();refreshTradeBalances();qxSetupChartRanges(token);qxLoadLiveChart(token,"1H");qxLoadCmcTokenDetail(token);
+ pendingSwapOrder=null;$("confirmSwapBtn").disabled=true;$("confirmSwapBtn").textContent="GET LIVE QUOTE FIRST";$("swapReceive").textContent="Enter amount to estimate";qxSetSwapStatus("Direction changed. Get a fresh live quote before signing.");updateTradePercentUI();refreshTradeBalances();if(selectedToken){qxSetupChartRanges(selectedToken);qxLoadLiveChart(selectedToken,"1H");qxLoadCmcTokenDetail(selectedToken);}
 }
 async function qxLoadCmcTokenDetail(token){
  const mint=String(token?.baseToken?.address||"");if(!qxIsValidSolanaMint(mint))return;
@@ -2155,7 +2144,7 @@ async function qxLoadLiveChart(token,range="1H"){
   host.innerHTML="";const chart=LightweightCharts.createChart(host,{layout:{background:{type:"solid",color:"#080711"},textColor:"#b9a9d4"},grid:{vertLines:{color:"#191426"},horzLines:{color:"#191426"}},rightPriceScale:{borderColor:"#30263f"},timeScale:{borderColor:"#30263f",timeVisible:true,secondsVisible:false}});const series=chart.addCandlestickSeries({upColor:"#32d583",downColor:"#ff5b7d",borderUpColor:"#32d583",borderDownColor:"#ff5b7d",wickUpColor:"#32d583",wickDownColor:"#ff5b7d"});series.setData(rows);chart.timeScale().fitContent();host.__qxChart=chart;if(msg)msg.style.display="none";
  }catch(e){console.warn("QX live chart",e);if(msg){msg.style.display="block";msg.textContent="Live chart temporarily unavailable. Market price and trading remain live.";}}
 }
-function qxSetupChartRanges(token){document.querySelectorAll("#chartRanges [data-chart-range]").forEach(b=>b.onclick=()=>{document.querySelectorAll("#chartRanges [data-chart-range]").forEach(x=>x.classList.toggle("active",x===b));qxLoadLiveChart(token,b.dataset.chartRange);});}
+function qxSetupChartRanges(token){if(!token)return;document.querySelectorAll("#chartRanges [data-chart-range]").forEach(b=>b.onclick=()=>{document.querySelectorAll("#chartRanges [data-chart-range]").forEach(x=>x.classList.toggle("active",x===b));qxLoadLiveChart(token,b.dataset.chartRange);});}
 function openToken(token){
  selectedToken=token;selectedTokenDecimals=qxTokenDecimals(token);tradeDirection="buy";document.body.classList.add("qx-token-open");
  const detail=$("detail");if(!detail)return;detail.style.display="block";
