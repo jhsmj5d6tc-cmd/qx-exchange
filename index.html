@@ -2674,7 +2674,17 @@ loadMarket();
   if(!t)return;
   const b=t.baseToken||t;
   state.token={mint:b.address||t.mint||'',name:b.name||t.name||'Token',symbol:b.symbol||t.symbol||'TOKEN',priceUsd:t.priceUsd||t.price||null,change24:t.priceChange?.h24??t.change24??0,volume24:t.volume?.h24??t.volume24??0,liquidity:t.liquidity?.usd??t.liquidity??0,pair:t.pairAddress||t.pair||''};
-  $('qxPairName').textContent=state.token.name+' / '+state.token.symbol;$('qxPairMint').textContent=state.token.mint||'Solana token';$('qxPairPrice').textContent=price(state.token.priceUsd);$('qxPairChange').textContent=(Number(state.token.change24)>=0?'+':'')+Number(state.token.change24||0).toFixed(2)+'%';$('qxPairChange').className='qx-change '+(Number(state.token.change24)>=0?'qx-positive':'qx-negative');$('qxTerminalPrice').textContent=price(state.token.priceUsd);$('qxTerminalChange').textContent=(Number(state.token.change24)>=0?'+':'')+Number(state.token.change24||0).toFixed(2)+'%';$('qxStatAsset').textContent=state.token.symbol;$('qxStatVolume').textContent=usd(state.token.volume24);renderBook();renderWatch();
+  $('qxPairName').textContent=state.token.name+' / '+state.token.symbol;$('qxPairMint').textContent=state.token.mint||'Solana token';$('qxPairPrice').textContent=price(state.token.priceUsd);$('qxPairChange').textContent=(Number(state.token.change24)>=0?'+':'')+Number(state.token.change24||0).toFixed(2)+'%';$('qxPairChange').className='qx-change '+(Number(state.token.change24)>=0?'qx-positive':'qx-negative');$('qxTerminalPrice').textContent=price(state.token.priceUsd);$('qxTerminalChange').textContent=(Number(state.token.change24)>=0?'+':'')+Number(state.token.change24||0).toFixed(2)+'%';$('qxStatAsset').textContent=state.token.symbol;$('qxStatVolume').textContent=usd(state.token.volume24);
+  // V6 market header: keep the four summary cards synchronized with the
+  // exact Solana market selected by the user.
+  const statMarket=$('qxStatMarket'),statMarketSub=$('qxStatMarketSub'),statPrice=$('qxStatPrice'),statChange=$('qxStatChange'),statLiquidity=$('qxStatLiquidity'),statVolume=$('qxStatVolume');
+  if(statMarket)statMarket.textContent=state.token.symbol||state.token.name||'Token';
+  if(statMarketSub)statMarketSub.textContent=state.token.name||'Solana token';
+  if(statPrice)statPrice.textContent=price(state.token.priceUsd);
+  if(statChange){const c=Number(state.token.change24||0);statChange.textContent=(c>=0?'+':'')+c.toFixed(2)+'%';statChange.className='sub '+(c>=0?'qx-positive':'qx-negative');}
+  if(statLiquidity)statLiquidity.textContent=usd(state.token.liquidity);
+  if(statVolume)statVolume.textContent=usd(state.token.volume24);
+  renderBook();renderWatch();
  }
  function renderBook(){
   const el=$('qxLiquidityBook');if(!el)return;const l=num(state.token?.liquidity)||0,p=num(state.token?.priceUsd); if(!state.token){return} const levels=[.5,.25,.1]; el.innerHTML='<div class="qx-book-row qx-book-head"><span>LEVEL</span><span>LIQUIDITY</span><span>PRICE</span></div>'+levels.map(x=>'<div class="qx-book-row"><span>POOL</span><span>'+usd(l*x)+'</span><span>'+price(p)+'</span></div>').join('')+'<div class="qx-mid-price"><span>MID</span><span>'+price(p)+'</span></div>';
