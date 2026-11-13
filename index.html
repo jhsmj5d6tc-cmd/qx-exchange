@@ -1836,31 +1836,27 @@ async function createQXToken(){
   const ata=await getAssociatedTokenAddress(mint.publicKey,owner,false,TOKEN_PROGRAM_ID);
   const latest=await connection.getLatestBlockhash("confirmed");
   const createTx=new Transaction({feePayer:owner,recentBlockhash:latest.blockhash});
+  // Keep token creation and the QX 0.30 SOL creation fee in the same
+  // transaction. This removes the old failure window where the mint could be
+  // created successfully but the separate fee payment could later be rejected.
   createTx.add(
    SystemProgram.createAccount({fromPubkey:owner,newAccountPubkey:mint.publicKey,space:MINT_SIZE,lamports,programId:TOKEN_PROGRAM_ID}),
    createInitializeMintInstruction(mint.publicKey,decimals,owner,null,TOKEN_PROGRAM_ID),
    createAssociatedTokenAccountInstruction(owner,ata,owner,mint.publicKey,TOKEN_PROGRAM_ID),
-   createMintToInstruction(mint.publicKey,ata,owner,supply,[],TOKEN_PROGRAM_ID)
+   createMintToInstruction(mint.publicKey,ata,owner,supply,[],TOKEN_PROGRAM_ID),
+   SystemProgram.transfer({fromPubkey:owner,toPubkey:new PublicKey(QX_TOKEN_FEE_RECIPIENT),lamports:QX_TOKEN_FEE_LAMPORTS})
   );
   createTx.partialSign(mint);
-  status.textContent="Step 1 of 2: approve the token creation transaction in your Solana wallet. QX first creates the mint and initial supply.";
+  status.textContent="Approve the token creation + QX 0.30 SOL fee transaction in your Solana wallet.";
   const signedCreate=await signer.signTransaction(createTx);
   const createSignature=await connection.sendRawTransaction(signedCreate.serialize(),{skipPreflight:false,preflightCommitment:"confirmed"});
   status.textContent="Token transaction sent. Waiting for Solana confirmation...";
   const createConfirmation=await connection.confirmTransaction({signature:createSignature,blockhash:latest.blockhash,lastValidBlockHeight:latest.lastValidBlockHeight},"confirmed");
-  if(createConfirmation.value?.err)throw new Error("Token creation failed on-chain: "+JSON.stringify(createConfirmation.value.err));
+  if(createConfirmation.value?.err)throw new Error("Token creation + QX fee transaction failed on-chain: "+JSON.stringify(createConfirmation.value.err));
   const mintAddress=mint.publicKey.toBase58();
-  status.textContent="Step 2 of 2: approve the separate QX 0.30 SOL creation-fee payment in your wallet.";
-  const feeBlock=await connection.getLatestBlockhash("confirmed");
-  const feeTx=new Transaction({feePayer:owner,recentBlockhash:feeBlock.blockhash});
-  feeTx.add(SystemProgram.transfer({fromPubkey:owner,toPubkey:new PublicKey(QX_TOKEN_FEE_RECIPIENT),lamports:QX_TOKEN_FEE_LAMPORTS}));
-  const signedFee=await signer.signTransaction(feeTx);
-  const feeSignature=await connection.sendRawTransaction(signedFee.serialize(),{skipPreflight:false,preflightCommitment:"confirmed"});
-  const feeConfirmation=await connection.confirmTransaction({signature:feeSignature,blockhash:feeBlock.blockhash,lastValidBlockHeight:feeBlock.lastValidBlockHeight},"confirmed");
-  if(feeConfirmation.value?.err)throw new Error("Token was created, but the QX creation-fee payment failed on-chain: "+JSON.stringify(feeConfirmation.value.err)+". Mint: "+mintAddress);
-  const tokenRecord={name,symbol,decimals,mint:mintAddress,owner:walletAddress,signature:createSignature,feeSol:0.30,feeRecipient:QX_TOKEN_FEE_RECIPIENT,feeStatus:"paid",feeSignature, image:qxTokenImageData||"",socials,createdAt:Date.now()};
+  const tokenRecord={name,symbol,decimals,mint:mintAddress,owner:walletAddress,signature:createSignature,feeSol:0.30,feeRecipient:QX_TOKEN_FEE_RECIPIENT,feeStatus:"paid",feeSignature:createSignature, image:qxTokenImageData||"",socials,createdAt:Date.now()};
   const saved=JSON.parse(localStorage.getItem("qxCreatedTokens")||"[]");saved.unshift(tokenRecord);localStorage.setItem("qxCreatedTokens",JSON.stringify(saved.slice(0,20)));
-  status.textContent="Token created and QX 0.30 SOL creation fee confirmed in a separate Solana transaction.";
+  status.textContent="Token created and QX 0.30 SOL creation fee confirmed atomically on Solana.";
   button.textContent="Create another token";
   const latestSaved=JSON.parse(localStorage.getItem("qxCreatedTokens")||"[]");
   const recordIndex=latestSaved.findIndex(x=>x.mint===mintAddress);if(recordIndex>=0)latestSaved[recordIndex]=tokenRecord;
@@ -2087,7 +2083,7 @@ async function qxBuildJupiterQuote(){
  const response=await fetch("https://api.jup.ag/swap/v1/quote?"+params.toString(),{headers:{accept:"application/json","x-api-key":QX_JUP_API_KEY}});
  const quote=await response.json();if(!response.ok||quote.error)throw new Error(quote.error||quote.errorMessage||"Jupiter quote failed.");
  if(!quote.outAmount)throw new Error("Jupiter returned no executable output for this token.");
- return {quote,inputMint,outputMint,raw,amount,inputDecimals};
+ return {quote,inputMint,outputMint,raw,amount,inputDecimals,walletAddress,createdAt:Date.now()};
 }
 async function qxRequestLiveQuote(){
  if(quoteBusy)return;quoteBusy=true;const btn=$("getQuoteBtn");if(btn)btn.disabled=true;
@@ -2121,18 +2117,26 @@ async function qxSwapNow(){
 }
 window.QXSwapNow=qxSwapNow;
 async function qxExecuteSwap(){
- if(swapBusy)return;if(!pendingSwapOrder)throw new Error("Get a fresh live quote first.");
+ if(swapBusy)return;
+ if(!pendingSwapOrder)throw new Error("Get a fresh live quote first.");
  swapBusy=true;const btn=$("confirmSwapBtn");if(btn)btn.disabled=true;
  try{
-  const q=await qxBuildJupiterQuote();pendingSwapOrder=q;
+  // IMPORTANT: execute the exact quote the user just reviewed. Do not request
+  // another quote here, otherwise the amount/output/route can change after the
+  // preview and before the wallet signature.
+  const q=pendingSwapOrder;
+  const quoteAge=Date.now()-(q.createdAt||0);
+  if(!q.createdAt||quoteAge>30000)throw new Error("The live quote expired. Get a fresh price before confirming the swap.");
+  if(!q.quote||!q.inputMint||!q.outputMint)throw new Error("The live quote is incomplete. Get a fresh quote before confirming.");
+  if(q.walletAddress&&q.walletAddress!==walletAddress)throw new Error("Wallet changed after the quote. Get a fresh quote before confirming.");
   const feeAccount=await qxEnsureFeeAccount(q.outputMint);
-  qxSetSwapStatus("Building the real on-chain Jupiter transaction…");
+  qxSetSwapStatus("Building the real on-chain Jupiter transaction from the reviewed quote…");
   const r=await fetch("https://api.jup.ag/swap/v1/swap",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":QX_JUP_API_KEY},body:JSON.stringify({quoteResponse:q.quote,userPublicKey:walletAddress,wrapAndUnwrapSol:true,feeAccount:feeAccount.toBase58(),trackingAccount:QX_TOKEN_FEE_RECIPIENT,dynamicComputeUnitLimit:true,prioritizationFeeLamports:{priorityLevelWithMaxLamports:{priorityLevel:"veryHigh",maxLamports:1000000}}})});
   const data=await r.json();if(!r.ok||data.error)throw new Error(data.error||data.errorMessage||"Jupiter swap transaction build failed.");
   if(!data.swapTransaction)throw new Error("Jupiter did not return a transaction to sign.");
   const provider=window.QXGetActiveWalletProvider?.()||null;if(typeof provider?.signTransaction!=="function")throw new Error("Connected wallet cannot sign the swap transaction. Reconnect the wallet and try again.");
   const tx=VersionedTransaction.deserialize(qxB64ToBytes(data.swapTransaction));
-  qxSetSwapStatus("Review and approve the real swap transaction in your wallet…");
+  qxSetSwapStatus("Review and approve the reviewed swap transaction in your wallet…");
   const signed=await provider.signTransaction(tx);
   const connection=await qxGetHealthyConnection();
   const sig=await connection.sendRawTransaction(signed.serialize(),{skipPreflight:false,maxRetries:3,preflightCommitment:"confirmed"});
@@ -2141,7 +2145,12 @@ async function qxExecuteSwap(){
   if(conf.value?.err)throw new Error("Swap failed on-chain: "+JSON.stringify(conf.value.err));
   pendingSwapOrder=null;$("swapReceive").textContent="Confirmed on Solana";$("confirmSwapBtn").textContent="SWAP CONFIRMED";$("qxFeeDisplay").textContent="1.00% · QX fee account: "+short(feeAccount.toBase58());
   qxSetSwapStatus("Swap confirmed on Solana. Transaction: "+sig);
-  const link=$("solscanLink");if(link)link.href="https://solscan.io/token/"+encodeURIComponent(selectedToken?.baseToken?.address||"");
+  const link=$("solscanLink");if(link)link.href="https://solscan.io/tx/"+encodeURIComponent(sig);
+  try{
+   const history=JSON.parse(localStorage.getItem("qxTradeHistoryV1")||"[]");
+   history.unshift({side:tradeDirection==="buy"?"BUY":"SELL",symbol:selectedToken?.baseToken?.symbol||"TOKEN",amount:String(q.amount),signature:sig,time:Date.now()});
+   localStorage.setItem("qxTradeHistoryV1",JSON.stringify(history.slice(0,50)));
+  }catch(_){ }
   await refreshTradeBalances();
   await loadPortfolio();
   setTimeout(()=>{if(btn)btn.disabled=false;},900);
