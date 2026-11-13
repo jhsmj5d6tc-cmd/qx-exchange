@@ -2101,30 +2101,34 @@ async function qxRequestLiveQuote(){
   $("qxFeeDisplay").textContent="1.00% · included in executable quote";
   $("swapRoute").textContent=(q.quote.routePlan||[]).map(x=>x?.swapInfo?.label||x?.swapInfo?.ammKey||"Jupiter").filter(Boolean).join(" → ")||"Jupiter best route";
   $("confirmSwapBtn").textContent="CONFIRM SWAP IN WALLET";
+  $("confirmSwapBtn").style.display="block";
+  $("confirmSwapBtn").removeAttribute("aria-hidden");
+  $("confirmSwapBtn").removeAttribute("tabindex");
   $("confirmSwapBtn").disabled=false;
   qxSetSwapStatus("Quote ready. Review the 1% QX fee, route and receive amount, then confirm in your wallet.");
- }catch(e){pendingSwapOrder=null;$("confirmSwapBtn").disabled=true;qxSetSwapStatus(e?.message||"Could not obtain a live quote.");}
+ }catch(e){pendingSwapOrder=null;$("confirmSwapBtn").disabled=true;$("confirmSwapBtn").style.display="none";$("confirmSwapBtn").setAttribute("aria-hidden","true");qxSetSwapStatus(e?.message||"Could not obtain a live quote.");}
  finally{quoteBusy=false;if(btn)btn.disabled=false;}
 }
 async function qxSwapNow(){
- const button=$("swapNowBtn");if(swapBusy||quoteBusy)return;
+ const button=$("swapNowBtn");
+ if(swapBusy||quoteBusy)return;
  if(!connected||!walletAddress){qxSetSwapStatus("Connect your Solana wallet before swapping.");return;}
  if(!selectedToken){qxSetSwapStatus("Select a Solana token from Markets first.");return;}
- if(button){button.disabled=true;button.querySelector("span").textContent="PREPARING SWAP…";}
+ if(button){button.disabled=true;button.querySelector("span").textContent="GETTING LIVE QUOTE…";}
  try{
   await qxRequestLiveQuote();
-  if(!pendingSwapOrder)throw new Error("A live Jupiter quote could not be prepared. Check the amount, balance and token liquidity.");
-  qxSetSwapStatus("Live quote ready. Review the details and approve the swap in your connected wallet.");
-  await qxExecuteSwap();
- }catch(e){qxSetSwapStatus(e?.message||"Swap could not be completed.");}
- finally{if(button){button.disabled=false;button.querySelector("span").textContent="SWAP";}}
+  if(!pendingSwapOrder)throw new Error("A live Jupiter quote could not be prepared. Check the amount, token liquidity and wallet balance.");
+  qxSetSwapStatus("Live quote ready. Review the receive amount and QX fee, then press CONFIRM SWAP IN WALLET.");
+ }catch(e){qxSetSwapStatus(e?.message||"Could not prepare the swap quote.");}
+ finally{if(button){button.disabled=false;button.querySelector("span").textContent="UPDATE QUOTE";}}
 }
 window.QXSwapNow=qxSwapNow;
 async function qxExecuteSwap(){
  if(swapBusy)return;if(!pendingSwapOrder)throw new Error("Get a fresh live quote first.");
  swapBusy=true;const btn=$("confirmSwapBtn");if(btn)btn.disabled=true;
  try{
-  const q=await qxBuildJupiterQuote();pendingSwapOrder=q;
+  const q=pendingSwapOrder;
+  if(!q||!q.quote||!q.outputMint)throw new Error("The live quote expired. Press UPDATE QUOTE and review it again.");
   const feeAccount=await qxEnsureFeeAccount(q.outputMint);
   qxSetSwapStatus("Building the real on-chain Jupiter transaction…");
   const r=await fetch("https://api.jup.ag/swap/v1/swap",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":QX_JUP_API_KEY},body:JSON.stringify({quoteResponse:q.quote,userPublicKey:walletAddress,wrapAndUnwrapSol:true,feeAccount:feeAccount.toBase58(),trackingAccount:QX_TOKEN_FEE_RECIPIENT,dynamicComputeUnitLimit:true,prioritizationFeeLamports:{priorityLevelWithMaxLamports:{priorityLevel:"veryHigh",maxLamports:1000000}}})});
@@ -2226,8 +2230,13 @@ function openToken(token){
  const link=$("solscanLink");if(link)link.href="https://solscan.io/token/"+encodeURIComponent(token.baseToken.address);
  $("swapWallet").textContent=connected?short(walletAddress):"Not connected";
  $("swapDirectionBtn").hidden=false;$("swapDirectionBtn").textContent="⇅";$("swapDirectionBtn").title="Reverse the currency order";
- $("confirmSwapBtn").disabled=true;$("confirmSwapBtn").textContent="GET LIVE QUOTE FIRST";$("qxFeeDisplay").textContent="1.00% · live quote required";$("swapRoute").textContent="QX best available Jupiter route";
+ $("confirmSwapBtn").disabled=true;$("confirmSwapBtn").textContent="GET LIVE QUOTE FIRST";$("confirmSwapBtn").style.display="none";$("confirmSwapBtn").setAttribute("aria-hidden","true");$("confirmSwapBtn").setAttribute("tabindex","-1");$("qxFeeDisplay").textContent="1.00% · live quote required";$("swapRoute").textContent="QX best available Jupiter route";
  updateTradePercentUI();refreshTradeBalances();
+ qxSetupChartRanges(token);
+ qxLoadLiveChart(token,"1H");
+ qxLoadCmcTokenDetail(token);
+ const detailTop=document.getElementById("detail");
+ if(detailTop) setTimeout(()=>detailTop.scrollIntoView({behavior:"smooth",block:"start"}),80);
 }
 window.QXOpenToken=openToken;
 window.QXAdoptMarketFallback=function(pairs){
@@ -2239,7 +2248,7 @@ window.QXAdoptMarketFallback=function(pairs){
  const st=$("marketStatus");if(st)st.textContent="New Solana market · fallback feed · "+allPairs.length.toLocaleString()+" tokens · "+new Date().toLocaleTimeString();
  renderMarket();
 };
-$("tokenBackBtn")?.addEventListener("click",()=>{document.body.classList.remove("qx-token-open");$("detail").style.display="none";selectedToken=null;pendingSwapOrder=null;});
+$("tokenBackBtn")?.addEventListener("click",()=>{document.body.classList.remove("qx-token-open");$("detail").style.display="none";selectedToken=null;pendingSwapOrder=null;const market=document.getElementById("tokenResults");if(market)setTimeout(()=>market.scrollIntoView({behavior:"smooth",block:"start"}),60);});
 $("swapDirectionBtn")?.addEventListener("click",()=>setTradeDirection(tradeDirection==="buy"?"sell":"buy"));
 $("swapNowBtn")?.addEventListener("click",()=>qxSwapNow());
 $("getQuoteBtn")?.addEventListener("click",()=>qxRequestLiveQuote());$("confirmSwapBtn")?.addEventListener("click",()=>qxExecuteSwap().catch(()=>{}));
