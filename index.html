@@ -1518,15 +1518,19 @@ function bytesToBase64(bytes){
  return btoa(out);
 }
 function updateIndicativeEstimate(){
+ /* Never invent a swap output. Only Jupiter's executable order may populate
+    the receive amount in the real trade ticket. */
  const receive=$("swapReceive");
- if(!receive||!selectedToken)return;
+ if(!receive)return;
  const amount=Number($("tradeAmountInput")?.value||0);
- if(!Number.isFinite(amount)||amount<=0||!Number(solPrice)||!Number(selectedToken.priceUsd))return;
- const tokenPrice=Number(selectedToken.priceUsd);
- let out=tradeDirection==="buy"?(amount*solPrice/tokenPrice):(amount*tokenPrice/solPrice);
- if(!Number.isFinite(out)||out<=0)return;
- const symbol=tradeDirection==="buy"?selectedToken.baseToken.symbol:"SOL";
- receive.textContent=out.toLocaleString(undefined,{maximumFractionDigits:9})+" "+symbol+" · indicative only";
+ if(!Number.isFinite(amount)||amount<=0){
+  receive.textContent="Enter amount to estimate";
+  return;
+ }
+ if(pendingSwapOrder&&pendingSwapOrder.tokenMint===String(selectedToken?.baseToken?.address||"")&&pendingSwapOrder.direction===tradeDirection&&Number(pendingSwapOrder.amount)===amount){
+  return;
+ }
+ receive.textContent="Getting live quote…";
 }
 function refreshSelectedTokenDetails(token){
  if(!token||$("detail")?.style.display==="none")return;
@@ -1667,7 +1671,7 @@ window.QXGetWalletState=()=>({connected:!!connected,address:walletAddress||""});
 window.QXRPC=rpc;
 window.QXGetActiveWalletProvider=()=>getActiveWalletProvider();
 window.setConnectedWallet=setConnectedWallet;
-window.QXGetWalletSolBalance=()=>walletSolBalance;window.QXGetSelectedTokenBalance=()=>selectedTokenBalance;window.QXGetSelectedTokenDecimals=()=>selectedTokenDecimals;
+window.QXGetWalletSolBalance=()=>walletSolBalance;window.QXGetSelectedTokenBalance=()=>selectedTokenBalance;
 window.QXSetWalletSolBalance=value=>{const n=Number(value);if(Number.isFinite(n)&&n>=0)walletSolBalance=n;};
 window.QXGetTradeDirection=()=>tradeDirection;
 window.QXUpdateTradePercentUI=()=>updateTradePercentUI();
@@ -2424,7 +2428,15 @@ async function qxBuildJupiterQuote(){
  // Current Jupiter Swap V2 Meta-Aggregator: request an executable order and
  // route QX's 100 bps integrator fee through the already-created referral account.
  const params=new URLSearchParams({inputMint,outputMint,amount:raw,taker:owner,referralAccount:QX_JUP_REFERRAL_ACCOUNT,referralFee:"100"});
- const response=await fetch("https://api.jup.ag/swap/v2/order?"+params.toString(),{headers:{accept:"application/json","x-api-key":QX_JUP_API_KEY}});
+ const controller=new AbortController();
+ const quoteTimer=setTimeout(()=>controller.abort(),12000);
+ let response;
+ try{
+  response=await fetch("https://api.jup.ag/swap/v2/order?"+params.toString(),{headers:{accept:"application/json","x-api-key":QX_JUP_API_KEY},signal:controller.signal,cache:"no-store"});
+ }catch(e){
+  if(e?.name==="AbortError")throw new Error("Jupiter live quote timed out. No swap was prepared. Try again.");
+  throw new Error("Could not reach Jupiter for a live executable quote. No swap was prepared.");
+ }finally{clearTimeout(quoteTimer);}
  const order=await response.json().catch(()=>({}));
  if(!response.ok)throw new Error(order.errorMessage||order.error||("Jupiter order failed (HTTP "+response.status+")."));
  if(!order||typeof order!=="object")throw new Error("Jupiter returned an invalid order response.");
@@ -2456,7 +2468,14 @@ async function qxRequestLiveQuote(){
   $("swapNowBtn").disabled=false;
   $("swapNowBtn").querySelector("span").textContent="CONFIRM SWAP";
   qxSetSwapStatus("Executable order ready. Review the output and QX referral fee, then confirm in your wallet.");
- }catch(e){pendingSwapOrder=null;$("confirmSwapBtn").disabled=true;$("confirmSwapBtn").style.display="none";$("confirmSwapBtn").setAttribute("aria-hidden","true");qxSetSwapStatus(e?.message||"Could not obtain an executable Jupiter order.");}
+ }catch(e){
+  pendingSwapOrder=null;
+  $("confirmSwapBtn").disabled=true;$("confirmSwapBtn").style.display="none";$("confirmSwapBtn").setAttribute("aria-hidden","true");
+  $("swapReceive").textContent="Live quote unavailable";
+  $("qxFeeDisplay").textContent="1.00% · live quote required";
+  $("swapRoute").textContent="QX best available Jupiter route";
+  qxSetSwapStatus(e?.message||"Could not obtain an executable Jupiter order.");
+ }
  finally{quoteBusy=false;if(btn)btn.disabled=false;}
 }
 async function qxSwapNow(){
@@ -2586,7 +2605,7 @@ function setTradeDirection(dir){
  const amountInput=$("tradeAmountInput");if(amountInput)amountInput.value="";
  const range=$("percentRange");if(range)range.value="25";
  pendingSwapOrder=null;$("confirmSwapBtn").disabled=true;$("confirmSwapBtn").textContent="GET LIVE QUOTE FIRST";$("swapReceive").textContent="Enter amount to estimate";
- qxSetSwapStatus(tradeDirection==="buy"?"Enter the SOL amount you want to swap, or choose 25%, 50%, 75% or MAX.":"Enter the "+(selectedToken?.baseToken?.symbol||"TOKEN")+" amount you want to swap, or choose 25%, 50%, 75% or MAX.");updateTradePercentUI();refreshTradeBalances();
+ qxSetSwapStatus("Currency order reversed. Enter the amount you want to swap.");updateTradePercentUI();refreshTradeBalances();
  if(selectedToken){qxSetupChartRanges(selectedToken);qxLoadLiveChart(selectedToken,"1H");}
 }
 let qxTokenDetailRequestId=0;
@@ -3298,7 +3317,7 @@ loadMarket();
     const formatted=window.QXGetWalletSolBalance().toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:9});
     setHeaderBalance('ready',formatted+' SOL');
     const terminal=$('qxTerminalSolBalance');if(terminal)terminal.textContent=formatted+' SOL';
-    const available=$('percentAvailable');if(available&&window.QXGetTradeDirection?.()==='buy'){const tradeable=Math.max(0,window.QXGetWalletSolBalance()-0.0001);available.textContent='Available balance: '+tradeable.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:9})+' SOL';}
+    const available=$('percentAvailable');if(available&&window.QXGetTradeDirection?.()==='buy')available.textContent='Available balance: '+formatted+' SOL';
     window.QXUpdateTradePercentUI?.();
     return true;
    }catch(e){
@@ -3494,7 +3513,7 @@ body.qx-token-open #marketsPage{display:none!important}
     const buy=!$("percentPanel")?.classList.contains("sell");
     const sol= num(window.QXGetWalletSolBalance?.() ?? window.walletSolBalance);
     const tok= num(window.QXGetSelectedTokenBalance?.() ?? window.selectedTokenBalance);
-    const available=buy?Math.max(0,sol-num(window.SOL_RESERVE||0.0001)):tok;
+    const available=buy?Math.max(0,sol-num(window.SOL_RESERVE||0.002)):tok;
     const decimals=buy?9:Math.min(12,Number(window.QXGetSelectedTokenDecimals?.()||9));
     const amount=available*p/100;
     range.value=String(p);range.style.setProperty("--progress",p+"%");
