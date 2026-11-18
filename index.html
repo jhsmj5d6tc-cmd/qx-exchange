@@ -953,7 +953,7 @@ html[dir="rtl"] .ads-shell{width:100%!important;max-width:100%!important}
     <div class="market-row" style="color:var(--muted);font-size:11px"><span>Token</span><span class="right">Price USD</span><span class="right">24h</span></div>
     <div id="tokenResults" class="market-empty">Loading market...</div>
    </div>
-   <p class="market-status" id="marketStatus">Connecting to live market data...</p><p class="small" style="margin-top:-12px">Live Solana discovery · newest pools first · automatic refresh · no estimated holder counts.</p>
+   <p class="market-status" id="marketStatus">Connecting to live market data...</p><p class="small" style="margin-top:-12px">New-coin window: 30 days · maximum 500 active discoveries · holder totals require a dedicated Solana indexing API.</p>
   </div>
 
   <section id="detail" class="panel" style="display:none">
@@ -2765,7 +2765,6 @@ let qxMarketGeneration=0;
 let qxLastMarketSource="";
 
 function qxNum(v){const n=Number(v);return Number.isFinite(n)?n:0;}
-function qxEpochMs(v){const n=qxNum(v);if(!n)return 0;return n<1000000000000?n*1000:n;}
 function qxSafeUrl(v){try{const u=new URL(String(v||""));return /^https?:$/i.test(u.protocol)?u.href:"";}catch(_){return "";}}
 function qxIsValidSolanaMint(mint){return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(String(mint||""));}
 function normalizedTokenLabel(value){return cleanTokenText(value||"").toLowerCase().replace(/\s+/g," ").trim();}
@@ -2916,14 +2915,8 @@ function qxSortDefault(a,b){const v=qxNum(b?.volume?.h24)-qxNum(a?.volume?.h24);
 function sortPairs(list){const arr=[...(list||[])],key=String(sortMetric||"default"),dir=sortDirection==="asc"?1:-1;if(key==="default")return arr.sort(qxSortDefault);const value=p=>key==="price"?qxNum(p?.priceUsd):key==="change"?qxNum(p?.priceChange?.h24):key==="volume"?qxNum(p?.volume?.h24):key==="marketcap"?qxNum(p?.marketCap||p?.fdv):key==="liquidity"?qxNum(p?.liquidity?.usd):0;return arr.sort((a,b)=>(value(a)-value(b))*dir);}
 let qxReleaseWindowHours=1;
 function qxReleaseCutoff(){return Date.now()-Math.max(.5,Number(qxReleaseWindowHours)||1)*3600000;}
-function qxIsNewDisplayReady(p){
- const mint=String(p?.baseToken?.address||"");
- const name=cleanTokenText(p?.baseToken?.name||"","");
- const symbol=cleanTokenText(p?.baseToken?.symbol||"","");
- return p?.chainId==="solana" && qxIsValidSolanaMint(mint) && !qxLooksLikeFakeNative(p) && !!name && !!symbol && symbol!=="TOKEN" && name!=="Unknown Token";
-}
-function qxFreshNewPairs(list){const cutoff=Date.now()-30*86400000;return bestPairsByMint(list||[]).filter(qxIsNewDisplayReady).filter(p=>{const created=qxEpochMs(p?.pairCreatedAt);return created>0&&created>=cutoff;}).sort((a,b)=>qxEpochMs(b?.pairCreatedAt)-qxEpochMs(a?.pairCreatedAt)).slice(0,500);}
-function qxWindowedNewPairs(list){const cutoff=qxReleaseCutoff();return bestPairsByMint(list||[]).filter(qxIsNewDisplayReady).filter(p=>{const created=qxEpochMs(p?.pairCreatedAt);return created>0&&created>=cutoff;}).sort((a,b)=>qxEpochMs(b?.pairCreatedAt)-qxEpochMs(a?.pairCreatedAt)).slice(0,500);}
+function qxFreshNewPairs(list){const cutoff=Date.now()-30*86400000;return bestPairsByMint(list||[]).filter(qxIsDisplayReady).filter(p=>{const created=qxNum(p?.pairCreatedAt);return created>0&&created>=cutoff;}).sort((a,b)=>qxNum(b?.pairCreatedAt)-qxNum(a?.pairCreatedAt)).slice(0,500);}
+function qxWindowedNewPairs(list){const cutoff=qxReleaseCutoff();return bestPairsByMint(list||[]).filter(qxIsDisplayReady).filter(p=>{const created=qxNum(p?.pairCreatedAt);return created>0&&created>=cutoff;}).sort((a,b)=>qxNum(b?.pairCreatedAt)-qxNum(a?.pairCreatedAt)).slice(0,500);}
 function qxCategoryList(){
  const baseAll=bestPairsByMint(allPairs||[]).filter(qxIsDisplayReady);
  const baseNew=qxWindowedNewPairs(newPairs.length?newPairs:baseAll);
@@ -2945,7 +2938,7 @@ function renderMarket(){
  if(!list.length){const hrs=Number(qxReleaseWindowHours)||1;const label=hrs<1?"30 minutes":hrs===1?"1 hour":hrs<24?hrs+" hours":hrs===24?"24 hours":hrs/24+" days";box.innerHTML='<div class="market-empty">No verified Solana launches found in the last '+label+'. Choose a wider release window or wait for the next live discovery.</div>';return;}
  box.innerHTML=list.slice(0,1000).map((p,i)=>{
  const name=escapeHTML(p.baseToken.name),symbol=escapeHTML(p.baseToken.symbol),image=qxSafeUrl(p.info?.imageUrl);
- const change=qxNum(p.priceChange?.h24),cls=change>0?"positive":change<0?"negative":"neutral",changeText=Number.isFinite(Number(p.priceChange?.h24))&&Number(p.priceChange?.h24)!==0?((change>0?"+":"")+change.toFixed(2)+"%"):"—";
+ const change=qxNum(p.priceChange?.h24),cls=change>0?"positive":change<0?"negative":"neutral",changeText=(change>0?"+":"")+change.toFixed(2)+"%";
  const img=image?'<img class="coin-logo" src="'+escapeHTML(image)+'" alt="" loading="lazy" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\';">':"";
  const fallback='<span class="coin-fallback" style="display:'+(image?'none':'flex')+'">'+escapeHTML(symbol.replace(/[^A-Za-z0-9]/g,'').slice(0,2)||'?')+'</span>';
  const mint=escapeHTML(p.baseToken.address);
@@ -3728,7 +3721,7 @@ body{overflow-x:hidden!important}
 .qx-hero-title{font-size:clamp(20px,4vw,32px);font-weight:950;letter-spacing:-.7px;color:#fff;max-width:700px;line-height:1.05}
 .qx-hero-sub{margin-top:8px;color:#aaa4b7;font-size:11px;max-width:650px;line-height:1.55}
 .qx-hero-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}
-.qx-hero-actions{position:relative;z-index:4}.qx-hero-actions button{position:relative;z-index:5;pointer-events:auto;border:1px solid rgba(177,145,255,.3);background:rgba(255,255,255,.045);color:#eee9f8;border-radius:11px;padding:9px 12px;font-size:9px;font-weight:900;cursor:pointer;touch-action:manipulation}
+.qx-hero-actions button{border:1px solid rgba(177,145,255,.3);background:rgba(255,255,255,.045);color:#eee9f8;border-radius:11px;padding:9px 12px;font-size:9px;font-weight:900;cursor:pointer}
 .qx-hero-actions button.primary{background:linear-gradient(135deg,#9a6cff,#5e47c9);border-color:rgba(210,185,255,.45);color:#fff;box-shadow:0 8px 24px rgba(126,82,255,.22)}
 .qx-pulse{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:12px 18px 14px}
 .qx-pulse-item{min-width:0;border:1px solid rgba(255,255,255,.07);background:rgba(12,15,25,.72);border-radius:13px;padding:10px 11px}
@@ -3762,24 +3755,14 @@ body{overflow-x:hidden!important}
   const page=$("marketsPage"); if(!page||$("qxDiscoveryHero"))return;
   const heading=page.querySelector(".market-heading"); if(!heading)return;
   const hero=document.createElement("section");hero.id="qxDiscoveryHero";hero.className="qx-discovery-hero";
-  hero.innerHTML='<div class="qx-hero-kicker">QX SOLANA DISCOVERY</div><div class="qx-hero-title">Discover what is launching before the crowd.</div><div class="qx-hero-sub">Discover new Solana projects, create your own token, launch it, promote it and trade it — all from one QX platform.</div><div class="qx-hero-actions"><button class="primary" data-qx-page="createPage">CREATE COIN ↗</button><button data-qx-page="launchPage">LAUNCH ↗</button><button data-qx-page="marketsPage">EXPLORE NEW ↗</button></div>';
+  hero.innerHTML='<div class="qx-hero-kicker">QX SOLANA DISCOVERY</div><div class="qx-hero-title">Find what is launching before the crowd.</div><div class="qx-hero-sub">Discover new Solana projects, create your own token, launch it, promote it and trade it — all from one QX platform.</div><div class="qx-hero-actions"><button class="primary" data-qx-page="createPage">CREATE COIN ↗</button><button data-qx-page="launchPage">LAUNCH ↗</button><button data-qx-page="marketsPage">EXPLORE NEW ↗</button></div>';
   heading.insertAdjacentElement("afterend",hero);
   const pulse=document.createElement("div");pulse.className="qx-pulse";pulse.id="qxPulse";
   pulse.innerHTML='<div class="qx-pulse-item"><small>NEW POOLS</small><strong id="qxPulseNew">—</strong><span>live discovery</span></div><div class="qx-pulse-item"><small>TRENDING</small><strong id="qxPulseTrend">—</strong><span>active market</span></div><div class="qx-pulse-item"><small>VOLUME</small><strong id="qxPulseVolume">—</strong><span>24h tracked</span></div><div class="qx-pulse-item"><small>QX STATUS</small><strong id="qxPulseStatus">LIVE</strong><span>auto refresh</span></div>';
   hero.insertAdjacentElement("afterend",pulse);
-  const go=(target)=>{
-    if(typeof showPage==="function"){showPage(target);}
-    else{document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active",p.id===target));window.scrollTo({top:0,behavior:"smooth"});}
-    if(target==="marketsPage"){
-      setTimeout(()=>{
-        const tab=document.querySelector('#marketTabs [data-category="new"]');
-        if(tab){tab.click();}
-        const box=document.getElementById("tokenResults");if(box)box.scrollIntoView({behavior:"smooth",block:"start"});
-      },40);
-    }
-  };
-  hero.querySelectorAll("[data-qx-page]").forEach(b=>b.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();go(b.dataset.qxPage);}));
-  document.addEventListener("click",e=>{const b=e.target.closest("[data-qx-page]");if(!b||!hero.contains(b)||b.dataset.qxBound==="1")return;b.dataset.qxBound="1";e.preventDefault();go(b.dataset.qxPage);},{capture:true});
+  hero.querySelectorAll("[data-qx-page]").forEach(b=>b.addEventListener("click",()=>{
+    const target=b.dataset.qxPage;const nav=document.querySelector('[data-page="'+target+'"]');if(nav)nav.click();else if(target==="marketsPage")window.scrollTo({top:0,behavior:"smooth"});
+  }));
  }
  function update(){
   const all=Array.isArray(window.QXMarketPairs)?window.QXMarketPairs:[];
@@ -3796,23 +3779,162 @@ body{overflow-x:hidden!important}
 })();
 </script>
 
-
-<script id="qx-navigation-fix-v16">
-(function(){
-  window.QXNavigate=function(target){
-    if(typeof window.showPage==="function")window.showPage(target);
-    else{document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active",p.id===target));window.scrollTo({top:0,behavior:"smooth"});}
-    if(target==="marketsPage"){setTimeout(function(){const tab=document.querySelector('#marketTabs [data-category="new"]');if(tab)tab.click();const box=document.getElementById("tokenResults");if(box)box.scrollIntoView({behavior:"smooth",block:"start"});},50);}
-  };
-  document.addEventListener("click",function(e){
-    const b=e.target.closest("[data-qx-page]");
-    if(!b)return;
-    if(b.dataset.qxHandled==="1")return;
-    b.dataset.qxHandled="1";
-    e.preventDefault();e.stopImmediatePropagation();
-    window.QXNavigate(b.dataset.qxPage);
-  },true);
-})();
-</script>
 </body>
 </html>
+
+<!-- QX EXECUTIVE PRODUCT SYSTEM v16 -->
+<style id="qx-executive-v16">
+:root{
+ --qx-bg:#05070c;--qx-surface:#0b0f17;--qx-surface2:#0e131d;--qx-border:rgba(255,255,255,.075);
+ --qx-text:#f7f8fb;--qx-muted:#8e96a8;--qx-accent:#a77bff;--qx-mint:#49e6b2;--qx-red:#ff6688;
+}
+html,body{background:var(--qx-bg)!important;color:var(--qx-text)!important}
+body{background-image:radial-gradient(circle at 50% -20%,rgba(126,88,255,.13),transparent 38%),linear-gradient(180deg,#05070c 0%,#070a10 100%)!important}
+.wrap{max-width:1320px!important;padding:0 28px 96px!important}
+header{height:76px;padding:0!important;border-bottom:1px solid var(--qx-border);position:sticky;top:0;z-index:500;background:rgba(5,7,12,.88);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px)}
+.brand-lockup{gap:11px!important;text-decoration:none!important}
+.brand-mark{width:36px!important;height:36px!important}
+.brand-copy .brand-name{font-size:16px!important;letter-spacing:1.3px!important}
+.brand-copy .brand-tagline{font-size:7px!important;letter-spacing:2px!important;color:#737b8d!important}
+.qx-desktop-nav{display:flex;align-items:center;gap:4px;margin-left:30px;margin-right:auto}
+.qx-desktop-nav button{border:0;background:transparent;color:#8991a3;padding:10px 13px;border-radius:9px;font-size:10px;font-weight:900;letter-spacing:.8px;cursor:pointer}
+.qx-desktop-nav button:hover,.qx-desktop-nav button.active{color:#fff;background:rgba(255,255,255,.055)}
+.qx-desktop-nav button.active:after{content:"";display:block;height:2px;background:linear-gradient(90deg,var(--qx-accent),var(--qx-mint));border-radius:2px;margin-top:7px}
+.qx-header-actions{display:flex;align-items:center;gap:8px}
+.qx-header-search{width:190px!important;height:36px!important;padding:0 12px!important;border-radius:9px!important;background:rgba(255,255,255,.035)!important;border:1px solid var(--qx-border)!important;font-size:11px!important}
+.qx-header-wallet{height:36px!important;padding:0 14px!important;border-radius:9px!important;background:#f4f5f7!important;color:#080a0e!important;font-size:9px!important;font-weight:950!important;border:0!important}
+.qx-menu-area{display:none!important}
+.qx-exec-home{padding-top:26px}
+.qx-exec-hero{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(320px,.7fr);gap:28px;align-items:end;padding:48px 0 34px;border-bottom:1px solid var(--qx-border)}
+.qx-exec-kicker{font-size:9px;font-weight:950;letter-spacing:2.4px;color:#9a85c8;margin-bottom:14px}
+.qx-exec-title{font-size:clamp(38px,6vw,76px);line-height:.94;letter-spacing:-4px;font-weight:950;max-width:820px}
+.qx-exec-title span{background:linear-gradient(100deg,#fff 25%,#bfa6ff 65%,#68eac0);-webkit-background-clip:text;background-clip:text;color:transparent}
+.qx-exec-copy{max-width:620px;color:#8e96a8;font-size:13px;line-height:1.7;margin-top:17px}
+.qx-exec-actions{display:flex;gap:9px;margin-top:24px;flex-wrap:wrap}
+.qx-exec-actions button{height:40px;padding:0 16px;border-radius:9px;border:1px solid var(--qx-border);background:#0d121b;color:#eef0f5;font-size:9px;font-weight:950;letter-spacing:.8px}
+.qx-exec-actions .primary{background:#f3f5f8!important;color:#07090d!important;border:0!important;box-shadow:none!important}
+.qx-exec-actions .secondary{background:rgba(167,123,255,.09);border-color:rgba(167,123,255,.25)}
+.qx-exec-signal{border:1px solid var(--qx-border);border-radius:15px;background:linear-gradient(145deg,rgba(14,18,28,.92),rgba(8,11,17,.94));padding:18px;min-height:210px;position:relative;overflow:hidden}
+.qx-exec-signal:before{content:"";position:absolute;width:240px;height:240px;border:1px solid rgba(167,123,255,.12);border-radius:50%;right:-120px;top:-130px}
+.qx-signal-head{display:flex;justify-content:space-between;align-items:center;font-size:8px;font-weight:950;letter-spacing:1.4px;color:#8f97a8}
+.qx-live-dot{width:6px;height:6px;border-radius:50%;background:var(--qx-mint);box-shadow:0 0 14px rgba(73,230,178,.7);display:inline-block;margin-right:5px}
+.qx-signal-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:25px}
+.qx-signal-grid small{display:block;color:#747c8d;font-size:7px;letter-spacing:1px;font-weight:900}
+.qx-signal-grid strong{display:block;font-size:24px;margin-top:5px;font-variant-numeric:tabular-nums}
+.qx-signal-grid span{display:block;font-size:8px;color:#6fd9b3;margin-top:3px}
+.qx-exec-section{padding:28px 0 0}
+.qx-exec-section-head{display:flex;justify-content:space-between;align-items:end;gap:15px;margin-bottom:12px}
+.qx-exec-section-head h2{margin:0!important;font-size:18px!important;letter-spacing:-.4px!important}
+.qx-exec-section-head p{margin:4px 0 0;color:#7e8799;font-size:9px}
+.qx-exec-link{border:0;background:transparent;color:#9e88cb;font-size:8px;font-weight:950;letter-spacing:1px;padding:6px;cursor:pointer}
+.qx-market-window{display:flex;align-items:center;gap:5px;overflow:auto;padding-bottom:9px;scrollbar-width:none}
+.qx-market-window::-webkit-scrollbar{display:none}
+.qx-market-window button{flex:0 0 auto;border:1px solid var(--qx-border);background:#0a0e15;color:#7f8797;border-radius:8px;padding:8px 10px;font-size:8px;font-weight:950}
+.qx-market-window button.active{background:rgba(167,123,255,.13);border-color:rgba(167,123,255,.35);color:#eee}
+.qx-exec-table{border-top:1px solid var(--qx-border)}
+.qx-exec-row{display:grid;grid-template-columns:minmax(230px,2fr) .8fr .8fr .8fr .8fr 72px;gap:12px;align-items:center;min-height:64px;border-bottom:1px solid var(--qx-border);padding:8px 4px}
+.qx-exec-row.head{min-height:34px;color:#606a7b;font-size:7px;letter-spacing:1px;font-weight:950;text-transform:uppercase}
+.qx-exec-row:not(.head):hover{background:rgba(255,255,255,.018)}
+.qx-coin{display:flex;align-items:center;gap:10px;min-width:0}
+.qx-coin img{width:30px;height:30px;border-radius:50%;object-fit:cover;background:#141a25;border:1px solid var(--qx-border)}
+.qx-coin-fallback{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#1a2437,#493078);font-size:8px;font-weight:950;flex:0 0 30px}
+.qx-coin-name{min-width:0}.qx-coin-name strong{display:block;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.qx-coin-name small{display:block;color:#667083;font-size:8px;margin-top:3px}
+.qx-exec-value{font-size:9px;font-variant-numeric:tabular-nums;color:#d9dce3}.qx-exec-value.up{color:#65dcb0}.qx-exec-value.down{color:#ff7c98}.qx-exec-age{color:#7f8797;font-size:8px}
+.qx-trade-btn{border:1px solid rgba(167,123,255,.24);background:rgba(167,123,255,.08);color:#c8b8e8;border-radius:7px;height:29px;font-size:7px;font-weight:950;letter-spacing:.7px}
+.qx-radar-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:14px}
+.qx-radar-item{border:1px solid var(--qx-border);background:#090d14;border-radius:11px;padding:12px;min-width:0}
+.qx-radar-item small{font-size:7px;color:#667083;letter-spacing:1px;font-weight:950}.qx-radar-item strong{display:block;font-size:11px;margin-top:5px}.qx-radar-item span{display:block;font-size:8px;color:#65dcb0;margin-top:3px}
+.qx-spotlight{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.qx-spotlight .ad-card,.qx-spotlight .qx-trending-card{min-height:110px;border-radius:11px!important;border:1px solid var(--qx-border)!important;background:#090d14!important;box-shadow:none!important}
+/* Existing pages become restrained product surfaces rather than stacked cards. */
+.page{max-width:1180px;margin:0 auto}.page .panel,.page .hero,.page .list{border-color:var(--qx-border)!important;background:linear-gradient(145deg,rgba(12,16,24,.97),rgba(7,10,16,.98))!important;box-shadow:0 18px 55px rgba(0,0,0,.18)!important;border-radius:13px!important}
+.page .market-heading{padding:24px 0 13px!important}.page .market-heading h2{font-size:18px!important;color:#f1f3f7!important;background:none!important;-webkit-text-fill-color:initial!important;letter-spacing:-.3px!important}.page .market-heading:after{display:none!important}
+#marketsPage>.market-heading{display:none!important}
+#marketsPage .market-layout{padding-top:10px!important}
+#marketsPage .market-list-column{width:100%!important}
+#marketsPage .market-tabs{background:#090d14!important;border-color:var(--qx-border)!important;box-shadow:none!important}
+#marketsPage .market-tab{font-size:8px!important;padding:8px 11px!important;color:#7f8797!important;background:transparent!important;border:0!important}
+#marketsPage .market-tab.active{color:#fff!important;background:rgba(167,123,255,.12)!important;border:1px solid rgba(167,123,255,.22)!important}
+#marketsPage .toolbar{background:#090d14!important;border:1px solid var(--qx-border)!important;box-shadow:none!important}
+#marketsPage .sort-panel{background:#090d14!important;border-color:var(--qx-border)!important;box-shadow:none!important}
+#marketsPage .list{background:#080c13!important}
+#marketsPage .market-row-rich.qx-market-card{border-radius:0!important;border-left:0!important;border-right:0!important;background:transparent!important;box-shadow:none!important;min-height:64px!important}
+#marketsPage .market-row-rich.qx-market-card:hover{transform:none!important;background:rgba(255,255,255,.018)!important}
+#marketsPage .market-row{font-size:8px!important;color:#5f6879!important;background:transparent!important}
+#marketsPage .market-status{font-size:8px!important;color:#667083!important}
+#detail{margin-top:20px!important}
+#detail .detail-stats{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+#detail .qx-swap-head,#detail .swap-box{border-color:var(--qx-border)!important}
+#exchangePage .market-heading,#walletPage .market-heading,#createPage .market-heading,#launchPage .market-heading,#creatorPage .market-heading,#adsPage .market-heading{border-bottom:1px solid var(--qx-border);margin-bottom:4px}
+#createPage .panel,#launchPage .panel{max-width:980px!important;margin-left:auto!important;margin-right:auto!important}
+#createPage .panel{padding:24px!important}.qx-launch-hero{padding:24px!important}
+#adsPage .ads-shell{border-color:var(--qx-border)!important;background:#090d14!important;box-shadow:none!important}
+.bottom-nav{background:rgba(5,7,12,.96)!important;border-color:var(--qx-border)!important;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+footer{border-top:1px solid var(--qx-border);margin-top:45px;color:#626b7c!important}
+@media(max-width:900px){
+ .wrap{padding:0 18px 92px!important}.qx-desktop-nav{display:none}.qx-menu-area{display:block!important}.qx-exec-hero{grid-template-columns:1fr;padding:34px 0 26px}.qx-exec-signal{min-height:170px}.qx-exec-title{letter-spacing:-2.5px}.qx-exec-row{grid-template-columns:minmax(180px,2fr) .8fr .8fr 72px}.qx-exec-row>*:nth-child(4),.qx-exec-row>*:nth-child(5){display:none}.qx-radar-strip,.qx-spotlight{grid-template-columns:1fr}.qx-header-search{display:none!important}
+}
+@media(max-width:560px){
+ .wrap{padding:0 12px 90px!important}header{height:64px}.brand-mark{width:32px!important;height:32px!important}.brand-copy .brand-name{font-size:14px!important}.brand-copy .brand-tagline{display:none!important}
+ .qx-exec-home{padding-top:12px}.qx-exec-hero{padding:25px 0 22px}.qx-exec-title{font-size:38px;letter-spacing:-2px}.qx-exec-copy{font-size:11px}.qx-exec-actions button{flex:1}.qx-exec-signal{padding:14px}.qx-signal-grid{margin-top:18px;gap:12px}.qx-signal-grid strong{font-size:20px}
+ .qx-exec-row{grid-template-columns:minmax(150px,1.7fr) .8fr .8fr 62px;gap:7px;min-height:58px}.qx-exec-row.head{font-size:6px}.qx-exec-row>*:nth-child(4),.qx-exec-row>*:nth-child(5){display:none}.qx-exec-value{font-size:8px}.qx-trade-btn{height:27px;padding:0 8px}
+ #marketsPage .market-tabs{margin-top:4px!important}.page .market-heading{padding-top:18px!important}.qx-market-meta-v2{gap:7px!important}.qx-release-filter{max-width:100%!important}.qx-release-filter select{max-width:100%!important}
+ #detail .detail-stats{grid-template-columns:1fr 1fr!important}
+ .bottom-nav{grid-template-columns:repeat(4,minmax(0,1fr))!important}.bottom-nav .nav-btn:nth-child(n+5){display:none!important}
+}
+</style>
+<script id="qx-executive-v16">
+(function(){
+ const $=id=>document.getElementById(id);
+ const page=(id)=>{const b=document.querySelector('[data-page="'+id+'"]');if(b)b.click();else{document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));$(id)?.classList.add('active');}};
+ function addDesktopNav(){
+  const header=document.querySelector('header');if(!header||document.querySelector('.qx-desktop-nav'))return;
+  const nav=document.createElement('nav');nav.className='qx-desktop-nav';nav.setAttribute('aria-label','QX primary navigation');
+  [['marketsPage','Discover'],['marketsPage','New'],['marketsPage','Trending'],['createPage','Create'],['launchPage','Launch']].forEach(([id,label],i)=>{const b=document.createElement('button');b.type='button';b.textContent=label;b.dataset.page=id;b.dataset.mode=label.toLowerCase();nav.appendChild(b);});
+  const actions=document.createElement('div');actions.className='qx-header-actions';
+  const s=document.createElement('input');s.className='qx-header-search';s.placeholder='Search Solana assets';s.setAttribute('aria-label','Search Solana assets');s.addEventListener('keydown',e=>{if(e.key==='Enter'){const q=s.value.trim();const main=$('search');if(main){main.value=q;page('marketsPage');$('searchBtn')?.click();}}});
+  const w=document.createElement('button');w.className='qx-header-wallet';w.type='button';w.textContent='CONNECT WALLET';w.addEventListener('click',()=>{$('connectBtn')?.click()});actions.append(s,w);header.append(nav,actions);
+ }
+ function rebuildMobileNav(){
+  const nav=document.querySelector('.bottom-nav');if(!nav)return;
+  const wanted=[['marketsPage','Discover'],['createPage','Create'],['launchPage','Launch'],['walletPage','Wallet']];
+  const buttons=[...nav.querySelectorAll('.nav-btn')];
+  buttons.forEach((b,i)=>{if(i<wanted.length){b.dataset.page=wanted[i][0];const span=b.querySelector('span:last-child');if(span)span.textContent=wanted[i][1];b.style.display='flex';}else b.style.display='none';});
+ }
+ function buildExecutiveHome(){
+  const market=$('marketsPage');if(!market||$('qxExecutiveHome'))return;
+  const home=document.createElement('section');home.id='qxExecutiveHome';home.className='qx-exec-home';
+  home.innerHTML=`<div class="qx-exec-hero">
+   <div><div class="qx-exec-kicker">QX · SOLANA DISCOVERY NETWORK</div><div class="qx-exec-title">The next <span>Solana launches</span> start here.</div><div class="qx-exec-copy">Discover new tokens as they emerge. Create your own asset, launch it on-chain and put it in front of the QX market.</div><div class="qx-exec-actions"><button class="primary" data-qx-go="marketsPage">EXPLORE NEW</button><button class="secondary" data-qx-go="createPage">CREATE COIN</button></div></div>
+   <div class="qx-exec-signal"><div class="qx-signal-head"><span><i class="qx-live-dot"></i>QX LIVE</span><span>AUTO REFRESH</span></div><div class="qx-signal-grid"><div><small>NEW DISCOVERIES</small><strong id="qxExecNew">—</strong><span>recent Solana markets</span></div><div><small>TRENDING</small><strong id="qxExecTrend">—</strong><span>active markets</span></div><div><small>24H VOLUME</small><strong id="qxExecVol">—</strong><span>tracked liquidity</span></div><div><small>NETWORK</small><strong>ONLINE</strong><span>Solana mainnet</span></div></div></div>
+  </div>
+  <section class="qx-exec-section"><div class="qx-exec-section-head"><div><h2>NEW ON SOLANA</h2><p>Fresh markets detected by QX</p></div><button class="qx-exec-link" data-qx-go="marketsPage">VIEW ALL →</button></div><div class="qx-market-window" id="qxExecWindows">${['30m','1h','2h','3h','6h','12h','24h','3d','7d'].map((x,i)=>`<button type="button" data-window="${x}" class="${i===1?'active':''}">${x}</button>`).join('')}</div><div class="qx-exec-table"><div class="qx-exec-row head"><span>MARKET</span><span>AGE</span><span>PRICE</span><span>24H</span><span>VOLUME</span><span></span></div><div id="qxExecRows"><div class="qx-empty">Loading live Solana markets…</div></div></div></section>
+  <section class="qx-exec-section"><div class="qx-exec-section-head"><div><h2>QX RADAR</h2><p>Real market activity gaining momentum</p></div><span class="qx-exec-link">LIVE SIGNAL</span></div><div class="qx-radar-strip" id="qxExecRadar"><div class="qx-radar-item"><small>SCANNING</small><strong>Live market data</strong><span>Waiting for activity</span></div></div></section>
+  <section class="qx-exec-section"><div class="qx-exec-section-head"><div><h2>TRENDING NOW</h2><p>Market data, separate from sponsored placement</p></div><button class="qx-exec-link" data-qx-go="marketsPage">OPEN MARKET →</button></div><div class="qx-spotlight" id="qxExecTrending"><div class="qx-radar-item"><small>TRENDING</small><strong>Loading live markets</strong></div></div></section>
+  <section class="qx-exec-section" style="padding-bottom:20px"><div class="qx-exec-section-head"><div><h2>QX SPOTLIGHT</h2><p>Paid sponsored projects only</p></div><button class="qx-exec-link" data-qx-go="adsPage">ADVERTISE →</button></div><div class="qx-spotlight" id="qxExecAds"><div class="qx-radar-item"><small>SPONSORED</small><strong>No sponsored projects loaded</strong></div></div></section>`;
+  market.insertBefore(home,market.firstChild);
+  home.querySelectorAll('[data-qx-go]').forEach(b=>b.addEventListener('click',()=>page(b.dataset.qxGo)));
+  home.querySelectorAll('[data-window]').forEach(b=>b.addEventListener('click',()=>{home.querySelectorAll('[data-window]').forEach(x=>x.classList.remove('active'));b.classList.add('active');const rel=$('qxReleaseWindow');if(rel){const map={'30m':'0.5','1h':'1','2h':'2','3h':'3','6h':'6','12h':'12','24h':'24','3d':'72','7d':'168'};rel.value=map[b.dataset.window]||'1';rel.dispatchEvent(new Event('change',{bubbles:true}));}}));
+ }
+ function arr(){return Array.isArray(window.QXMarketPairs)?window.QXMarketPairs:[]}
+ function num(v){const n=Number(v);return Number.isFinite(n)?n:0}
+ function fmt(v){const n=num(v);if(n>=1e9)return (n/1e9).toFixed(1)+'B';if(n>=1e6)return (n/1e6).toFixed(1)+'M';if(n>=1e3)return (n/1e3).toFixed(1)+'K';if(n)return n<1? n.toPrecision(3):n.toFixed(2);return '—'}
+ function age(t){const ms=num(t);if(!ms)return '—';const d=Date.now()-ms;const m=Math.max(1,Math.floor(d/60000));if(m<60)return m+'m';if(m<1440)return Math.floor(m/60)+'h';return Math.floor(m/1440)+'d'}
+ function tokenName(t){return t?.baseToken?.name||t?.name||t?.baseToken?.symbol||'Unknown'}
+ function tokenSymbol(t){return t?.baseToken?.symbol||t?.symbol||''}
+ function image(t){return t?.baseToken?.logoURI||t?.logoURI||t?.info?.imageUrl||''}
+ function price(t){return t?.priceUsd||t?.price||t?.priceNative||0}
+ function volume(t){return t?.volume?.h24||t?.volume24h||t?.volume||0}
+ function change(t){return t?.priceChange?.h24||t?.change24h||0}
+ function liquidity(t){return t?.liquidity?.usd||t?.liquidityUsd||0}
+ function created(t){return t?.pairCreatedAt||t?.createdAt||t?.created_at||0}
+ function rows(){const list=arr().filter(t=>t&&t.baseToken&&t.baseToken.address);const seen=new Set();return list.filter(t=>{const m=t.baseToken.address;if(seen.has(m))return false;seen.add(m);return true}).sort((a,b)=>num(created(b))-num(created(a))).slice(0,8)}
+ function renderExec(){const host=$('qxExecRows');if(!host)return;const list=rows();if(!list.length){host.innerHTML='<div class="qx-empty">Live Solana discovery is temporarily unavailable. QX is not displaying sample or fabricated markets.</div>';return;}host.innerHTML=list.map(t=>{const ch=num(change(t));const im=image(t);return `<div class="qx-exec-row"><div class="qx-coin">${im?`<img src="${im}" alt="" loading="lazy" onerror="this.style.display='none'">`:`<span class="qx-coin-fallback">${tokenSymbol(t).slice(0,3)||'QX'}</span>`}<div class="qx-coin-name"><strong>${tokenName(t)}</strong><small>$${tokenSymbol(t)} · Solana</small></div></div><span class="qx-exec-age">${age(created(t))}</span><span class="qx-exec-value">$${fmt(price(t))}</span><span class="qx-exec-value ${ch>=0?'up':'down'}">${ch>=0?'+':''}${ch.toFixed(2)}%</span><span class="qx-exec-value">$${fmt(volume(t))}</span><button class="qx-trade-btn" type="button" data-mint="${t.baseToken.address}">TRADE</button></div>`}).join('');host.querySelectorAll('[data-mint]').forEach(b=>b.addEventListener('click',()=>{const t=arr().find(x=>x?.baseToken?.address===b.dataset.mint);if(t&&(window.QXUnifiedOpenToken||window.QXOpenToken)){(window.QXUnifiedOpenToken||window.QXOpenToken)(t)}}));}
+ function renderRadar(){const host=$('qxExecRadar');if(!host)return;const list=arr().filter(t=>t?.baseToken?.address).sort((a,b)=>(num(volume(b))/Math.max(1,num(liquidity(b))))-(num(volume(a))/Math.max(1,num(liquidity(a))))).slice(0,3);if(!list.length)return;host.innerHTML=list.map(t=>`<div class="qx-radar-item"><small>ACTIVITY SIGNAL</small><strong>${tokenName(t)} · $${tokenSymbol(t)}</strong><span>Volume / liquidity ${((num(volume(t))/Math.max(1,num(liquidity(t)))).toFixed(2))}×</span></div>`).join('')}
+ function renderTrending(){const host=$('qxExecTrending');if(!host)return;const list=arr().filter(t=>t?.baseToken?.address).sort((a,b)=>num(volume(b))-num(volume(a))).slice(0,3);if(!list.length)return;host.innerHTML=list.map(t=>`<div class="qx-radar-item"><small>TRENDING</small><strong>${tokenName(t)} · $${tokenSymbol(t)}</strong><span>24h volume $${fmt(volume(t))}</span></div>`).join('')}
+ function sync(){const list=arr();const fresh=list.filter(t=>Date.now()-num(created(t))<86400000);const trend=list.filter(t=>t?.baseToken?.address).sort((a,b)=>num(volume(b))-num(volume(a)));const vol=trend.reduce((s,t)=>s+num(volume(t)),0);if($('qxExecNew'))$('qxExecNew').textContent=fresh.length||list.length||'—';if($('qxExecTrend'))$('qxExecTrend').textContent=trend.length||'—';if($('qxExecVol'))$('qxExecVol').textContent='$'+fmt(vol);renderExec();renderRadar();renderTrending();}
+ function syncNav(){const active=document.querySelector('.page.active')?.id;document.querySelectorAll('.qx-desktop-nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===active));}
+ function init(){addDesktopNav();rebuildMobileNav();buildExecutiveHome();sync();syncNav();document.addEventListener('click',e=>{const b=e.target.closest('.qx-desktop-nav button');if(b){page(b.dataset.page);setTimeout(syncNav,30)}});document.addEventListener('click',e=>{if(e.target.closest('.qx-menu-link'))setTimeout(syncNav,30)});setInterval(()=>{sync();syncNav()},12000);}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+})();
+</script>
