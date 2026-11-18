@@ -734,6 +734,29 @@ html[dir="rtl"] .ads-shell{width:100%!important;max-width:100%!important}
 .qx-trade-modal-card .swap-box{margin-top:0!important}
 @media(max-width:520px){.qx-trade-modal{padding:8px 7px calc(8px + env(safe-area-inset-bottom))}.qx-trade-modal-card{max-height:94vh;padding:11px;border-radius:13px}}
 </style>
+<style id="qx-real-3d-performance-v1">
+:root{--qx-neon:#a96cff;--qx-cyan:#47e6ff;--qx-gold:#e8c77b}
+body{background-color:#05040b;background-image:radial-gradient(900px 500px at 12% -8%,rgba(150,76,255,.18),transparent 62%),radial-gradient(760px 520px at 92% 18%,rgba(50,220,255,.10),transparent 60%),linear-gradient(180deg,#05040b 0%,#090612 52%,#05040b 100%)}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;background-image:linear-gradient(rgba(190,150,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(190,150,255,.035) 1px,transparent 1px);background-size:46px 46px;mask-image:linear-gradient(to bottom,black,transparent 88%)}
+.panel,.hero,.list,.sort-panel,.market-tabs,.ads-shell{background:linear-gradient(145deg,rgba(24,16,44,.94),rgba(9,8,17,.96));border-color:rgba(150,104,225,.45);box-shadow:0 18px 55px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.055),inset 0 -1px 0 rgba(0,0,0,.42)}
+.market-heading h2{text-shadow:0 0 22px rgba(169,108,255,.34)}
+.market-tabs{padding:5px;gap:5px;overflow:auto;scrollbar-width:none;transform:perspective(900px) rotateX(1deg)}
+.market-tab{border:1px solid transparent;border-radius:10px;transition:transform .16s ease,box-shadow .16s ease,background .16s ease}
+.market-tab:hover{transform:translateY(-2px) translateZ(5px);box-shadow:0 8px 22px rgba(104,50,190,.22)}
+.market-tab.active{box-shadow:0 0 0 1px rgba(185,124,255,.42),0 8px 26px rgba(116,50,215,.20),inset 0 1px rgba(255,255,255,.07)}
+#tokenResults{perspective:900px}
+#tokenResults .coin-button,#tokenResults .market-row,#tokenResults .token-card{transform:translateZ(0);transition:transform .14s ease,box-shadow .14s ease,border-color .14s ease;will-change:transform}
+#tokenResults .coin-button:hover,#tokenResults .market-row:hover,#tokenResults .token-card:hover{transform:translateY(-2px) scale(1.004);box-shadow:0 12px 28px rgba(0,0,0,.34),0 0 0 1px rgba(164,104,255,.18)}
+#exchangePage #detail{border-radius:18px;box-shadow:0 22px 70px rgba(0,0,0,.52),0 0 0 1px rgba(164,104,255,.18),inset 0 1px rgba(255,255,255,.06)}
+#detail .detail-stat{background:linear-gradient(145deg,rgba(30,20,52,.9),rgba(10,9,18,.9));border:1px solid rgba(150,104,225,.25);border-radius:12px;box-shadow:inset 0 1px rgba(255,255,255,.04),0 8px 22px rgba(0,0,0,.2)}
+#detail .detail-price{text-shadow:0 0 24px rgba(71,230,255,.18)}
+#publicAdsList{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;align-items:stretch}
+#publicAdsList .qx-trending-spotlight,#publicAdsList .ad-card{min-width:0;height:100%;border-radius:16px;transform:perspective(900px) rotateX(0deg) translateZ(0);box-shadow:0 16px 38px rgba(0,0,0,.34),inset 0 1px rgba(255,255,255,.055);transition:transform .16s ease,box-shadow .16s ease;border-color:rgba(169,108,255,.35)}
+#publicAdsList .qx-trending-spotlight:hover,#publicAdsList .ad-card:hover{transform:perspective(900px) rotateX(1deg) translateY(-3px) translateZ(4px);box-shadow:0 22px 46px rgba(0,0,0,.44),0 0 24px rgba(169,108,255,.11)}
+#publicAdsList .qx-trending-live{color:#6ff7c1;text-shadow:0 0 10px rgba(111,247,193,.32)}
+@media(max-width:760px){#publicAdsList{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
+</style>
 </head>
 <body>
 <div class="wrap">
@@ -2676,30 +2699,34 @@ async function qxLoadTrades(token){
 
 function qxSetupChartRanges(token){document.querySelectorAll("#chartRanges [data-chart-range]").forEach(b=>b.onclick=()=>{document.querySelectorAll("#chartRanges [data-chart-range]").forEach(x=>x.classList.toggle("active",x===b));qxLoadLiveChart(token,b.dataset.chartRange);});}
 function openToken(token){
- window.QXEnsureTerminalPlacement?.();
- selectedToken=token;selectedTokenDecimals=qxTokenDecimals(token);tradeDirection="buy";document.body.classList.add("qx-token-open");
- const amountInput=$("tradeAmountInput");if(amountInput)amountInput.value="";
- const percentRange=$("percentRange");if(percentRange)percentRange.value="25";
- const detail=$("detail");if(!detail)return;detail.style.display="block";
- pendingSwapOrder=null;$("swapNowBtn").disabled=true;
- if(typeof showPage==="function")showPage("exchangePage");
- $("detailName").textContent=cleanTokenText(token.baseToken?.name,"Unknown Token");$("detailSymbol").textContent=cleanTokenText(token.baseToken?.symbol,"TOKEN");$("detailPrice").textContent=qxFormatTokenPrice(token.priceUsd);
- const ch=qxNum(token.priceChange?.h24);$("detailChange").textContent=ch?(ch>0?"+":"")+ch.toFixed(2)+"%":"—";$("detailChange").className="detail-change "+(ch>0?"up":ch<0?"down":"neutral");
- $("detailAddress").textContent=token.baseToken.address;
- $("detailMarketCap").textContent=money(token.marketCap||token.fdv||0);$("detailLiquidity").textContent=money(token.liquidity?.usd||0);$("detailVolume").textContent=money(token.volume?.h24||0);
- const tx=qxNum(token.txns?.h24?.buys)+qxNum(token.txns?.h24?.sells);$("detailTransactions").textContent=tx?tx.toLocaleString():"—";
- const img=$("detailImage"),url=qxSafeUrl(token.info?.imageUrl||"");if(url){img.src=url;img.style.display="block";}else img.style.display="none";
- const link=$("solscanLink");if(link)link.href="https://solscan.io/token/"+encodeURIComponent(token.baseToken.address);
- $("swapWallet").textContent=connected?short(walletAddress):"Not connected";
- const swapDirectionBtn=$("swapDirectionBtn");if(swapDirectionBtn){swapDirectionBtn.hidden=false;swapDirectionBtn.textContent="⇅";swapDirectionBtn.title="Reverse the currency order";}
- $("confirmSwapBtn").disabled=true;$("confirmSwapBtn").textContent="GET LIVE QUOTE FIRST";$("confirmSwapBtn").style.display="none";$("confirmSwapBtn").setAttribute("aria-hidden","true");$("confirmSwapBtn").setAttribute("tabindex","-1");$("qxFeeDisplay").textContent="1.00% · live quote required";$("swapRoute").textContent="QX best available Jupiter route";
- updateTradePercentUI();refreshTradeBalances();
- qxSetupChartRanges(token);
- qxLoadLiveChart(token,"1H");
- qxLoadCmcTokenDetail(token);
- qxLoadTrades(token);
- const detailTop=document.getElementById("detail");
- if(detailTop) setTimeout(()=>detailTop.scrollIntoView({behavior:"smooth",block:"start"}),80);
+ if(!token||!token.baseToken||!token.baseToken.address)return;
+ const page=document.getElementById("exchangePage"),detail=document.getElementById("detail");
+ if(!page||!detail){console.error("QX terminal mount missing");return;}
+ try{
+  if(typeof showPage==="function")showPage("exchangePage");
+  window.QXEnsureTerminalPlacement?.();
+  selectedToken=token;window.__QXSelectedToken=token;selectedTokenDecimals=qxTokenDecimals(token);tradeDirection="buy";
+  document.body.classList.add("qx-token-open");detail.hidden=false;detail.style.display="block";detail.style.visibility="visible";detail.style.opacity="1";page.classList.add("active");page.style.display="block";
+  page.querySelectorAll(":scope > *").forEach(n=>{if(n!==detail)n.style.display="none";});
+  const amountInput=$("tradeAmountInput");if(amountInput)amountInput.value="";const percentRange=$("percentRange");if(percentRange)percentRange.value="25";
+  pendingSwapOrder=null;const nowBtn=$("swapNowBtn");if(nowBtn)nowBtn.disabled=true;
+  const setText=(id,v)=>{const el=$(id);if(el)el.textContent=v};
+  setText("detailName",cleanTokenText(token.baseToken?.name,"Unknown Token"));setText("detailSymbol",cleanTokenText(token.baseToken?.symbol,"TOKEN"));setText("detailPrice",qxFormatTokenPrice(token.priceUsd));
+  const ch=qxNum(token.priceChange?.h24);setText("detailChange",ch?(ch>0?"+":"")+ch.toFixed(2)+"%":"—");const ce=$("detailChange");if(ce)ce.className="detail-change "+(ch>0?"up":ch<0?"down":"neutral");
+  setText("detailAddress",token.baseToken.address);setText("detailMarketCap",money(token.marketCap||token.fdv||0));setText("detailLiquidity",money(token.liquidity?.usd||0));setText("detailVolume",money(token.volume?.h24||0));
+  const tx=qxNum(token.txns?.h24?.buys)+qxNum(token.txns?.h24?.sells);setText("detailTransactions",tx?tx.toLocaleString():"—");
+  const img=$("detailImage"),url=qxSafeUrl(token.info?.imageUrl||"");if(img){if(url){img.src=url;img.style.display="block";}else{img.removeAttribute("src");img.style.display="none";}}
+  const link=$("solscanLink");if(link)link.href="https://solscan.io/token/"+encodeURIComponent(token.baseToken.address);setText("swapWallet",connected?short(walletAddress):"Not connected");
+  const direction=$("swapDirectionBtn");if(direction){direction.hidden=false;direction.textContent="⇅";direction.title="Reverse the currency order";}
+  const confirm=$("confirmSwapBtn");if(confirm){confirm.disabled=true;confirm.textContent="GET LIVE QUOTE FIRST";confirm.style.display="none";confirm.setAttribute("aria-hidden","true");confirm.setAttribute("tabindex","-1");}
+  setText("qxFeeDisplay","1.00% · live quote required");setText("swapRoute","QX best available Jupiter route");updateTradePercentUI();refreshTradeBalances();
+  qxSetupChartRanges(token);qxLoadLiveChart(token,"1H");qxLoadCmcTokenDetail(token);qxLoadTrades(token);
+  requestAnimationFrame(()=>{detail.style.display="block";detail.style.visibility="visible";detail.style.opacity="1";detail.scrollIntoView({behavior:"smooth",block:"start"});});
+ }catch(err){
+  console.error("QX terminal open failed",err);document.body.classList.add("qx-token-open");detail.hidden=false;detail.style.display="block";detail.style.visibility="visible";detail.style.opacity="1";
+  const name=$("detailName");if(name)name.textContent=cleanTokenText(token.baseToken?.name,"Token");const address=$("detailAddress");if(address)address.textContent=String(token.baseToken.address||"");
+  const status=$("qxTerminalStatus");if(status)status.textContent="Terminal ready. Live market details are loading.";requestAnimationFrame(()=>detail.scrollIntoView({behavior:"smooth",block:"start"}));
+ }
 }
 window.QXOpenToken=openToken;
 window.QXAdoptMarketFallback=function(pairs){
@@ -3234,29 +3261,8 @@ loadMarket();
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ensureTerminalPlacement,{once:true});
   else ensureTerminalPlacement();
 
-  window.QXUnifiedOpenToken=function(token){
-    if(!token||!token.baseToken||!token.baseToken.address)return;
-    window.__QXSelectedToken=token;
-    if(!ensureTerminalPlacement())return;
-    const detail=$('detail'),page=$('exchangePage');
-    page.querySelectorAll(':scope > *').forEach(n=>{if(n!==detail)n.style.display='none'});
-    detail.style.display='block';
-    document.body.classList.add('qx-token-open');
-    setWatchButton(token);
-    setupOnchain(token);
-    detail.scrollIntoView({behavior:'smooth',block:'start'});
-  };
-  // One authoritative entry point: preserve the existing live data loader, then enforce one visible terminal.
-  const original=window.QXOpenToken;
-  if(typeof original==='function'&&!original.__qxUnifiedEntry){
-    const unified=function(token){
-      const r=original.apply(this,arguments);
-      window.QXUnifiedOpenToken(token);
-      return r;
-    };
-    unified.__qxUnifiedEntry=true;
-    window.QXOpenToken=unified;
-  }
+  // Single terminal opener. Avoid double page switching and duplicate loaders.
+  window.QXUnifiedOpenToken=window.QXOpenToken;
   $('qxTerminalBack')?.addEventListener('click',()=>{document.body.classList.remove('qx-token-open');const d=$('detail');if(d)d.style.display='none';if(typeof showPage==='function')showPage('marketsPage')});
   $('tokenBackBtn')?.addEventListener('click',()=>{
     document.body.classList.remove('qx-token-open');
@@ -3387,279 +3393,4 @@ loadMarket();
   const menu=$('qxMenuCaption');if(menu)menu.textContent='导航';
   const pref=$('qxPreferencesCaption');if(pref)pref.textContent='偏好设置';
  }
- document.addEventListener('DOMContentLoaded',()=>{
-  const lang=$('qxLanguage');
-  if(lang){lang.addEventListener('change',()=>setTimeout(applyZh,0));setTimeout(applyZh,30);}
- });
-
- // The detail terminal is the single trading surface. The core openToken() function owns its data loading.
- // Keep the live trade feed compact and touch-scrollable.
- const tradeList=$('qxTradesList');if(tradeList){tradeList.style.maxHeight='238px';tradeList.style.overflowY='auto';tradeList.style.webkitOverflowScrolling='touch';}
-})();
-</script>
-
-
-<script id="qx-market-click-final">
-(function(){
-  /* Event delegation: one listener replaces the old document-wide MutationObserver.
-     This is materially lighter on mobile and keeps dynamically-rendered market rows clickable. */
-  function handleTokenClick(ev){
-    const btn=ev.target.closest?.('#tokenResults .coin-button[data-mint]');
-    if(!btn)return;
-    ev.preventDefault();ev.stopPropagation();
-    const mint=String(btn.dataset.mint||'');
-    const token=(window.QXMarketPairs||window.allPairs||[]).find(p=>String(p?.baseToken?.address||'')===mint);
-    try{
-      if(token&&typeof window.QXUnifiedOpenToken==='function'){window.QXUnifiedOpenToken(token);return;}
-      if(token&&typeof window.QXOpenToken==='function'){window.QXOpenToken(token);return;}
-    }catch(e){console.error('QX token open failed',e);}
-  }
-  document.addEventListener('click',handleTokenClick,true);
-})();
-</script>
-
-
-<script id="qx-market-layout-order-v3">
-document.addEventListener('DOMContentLoaded',function(){
-  const col=document.querySelector('#marketsPage .market-list-column');
-  if(!col)return;
-  const sort=col.querySelector('.sort-panel');
-  const tabs=col.querySelector('#marketTabs');
-  if(sort&&tabs)col.insertBefore(sort,tabs);
-});
-</script>
-
-
-<style id="qx-terminal-black-screen-fix-v4">
-body.qx-token-open #exchangePage{display:block!important;min-height:0!important}
-body.qx-token-open #exchangePage > #detail{display:block!important;visibility:visible!important;opacity:1!important}
-body.qx-token-open #marketsPage{display:none!important}
-</style>
-<style id="qx-trending-spotlight-v3">
-.ads-shell{padding:17px!important;margin:10px 0 14px!important;border-radius:15px!important}
-.ads-shell .ads-head{margin-bottom:12px}
-.ads-shell .ads-title{font-size:15px!important;letter-spacing:.55px}
-.ads-shell .ads-sub{font-size:11px!important}
-#publicAdsList:has(.qx-trending-spotlight){display:block!important}
-.qx-trending-spotlight{position:relative;overflow:hidden;min-height:112px;padding:13px 14px;border:1px solid rgba(126,91,184,.48);border-radius:13px;background:linear-gradient(112deg,rgba(42,27,67,.98),rgba(12,17,31,.98) 72%,rgba(12,32,39,.96));cursor:pointer;transition:opacity .22s ease,transform .22s ease}
-.qx-trending-spotlight:active{transform:scale(.99)}
-.qx-trending-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
-.qx-trending-label{font-size:9px;font-weight:900;letter-spacing:1.2px;color:#d9c8ff}
-.qx-trending-live{font-size:8px;font-weight:800;letter-spacing:.8px;color:#7dffc0}
-.qx-trending-live:before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:#4df0a2;margin-right:5px;box-shadow:0 0 9px #4df0a2}
-.qx-trending-token{display:flex;align-items:center;gap:12px;min-width:0}
-.qx-trending-logo{width:43px;height:43px;flex:0 0 43px;border-radius:50%;object-fit:cover;background:#28203b;border:1px solid #604b80}
-.qx-trending-fallback{display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#eee2ff}
-.qx-trending-info{min-width:0;flex:1}
-.qx-trending-name{display:block;font-size:14px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff}
-.qx-trending-symbol{display:block;margin-top:3px;font-size:9px;color:#bdb2d0}
-.qx-trending-right{text-align:right;flex:0 0 auto}
-.qx-trending-price{font-size:15px;font-weight:900;color:#fff;font-variant-numeric:tabular-nums}
-.qx-trending-change{margin-top:4px;font-size:10px;font-weight:800}
-.qx-trending-change.up{color:#50e6a1}.qx-trending-change.down{color:#ff7188}.qx-trending-change.neutral{color:#bdb2d0}
-.qx-trending-foot{display:flex;justify-content:space-between;gap:8px;margin-top:12px;padding-top:9px;border-top:1px solid rgba(255,255,255,.09);font-size:9px;color:#a99dbb}
-.qx-trending-dots{display:flex;gap:4px;align-items:center}
-.qx-trending-dots i{width:5px;height:5px;border-radius:50%;background:#625477}
-.qx-trending-dots i.active{width:14px;border-radius:5px;background:#c8a8ff}
-.qx-trending-enter{font-size:9px;font-weight:800;color:#d7c2ff}
-.qx-trending-spotlight.is-changing{opacity:.45;transform:translateY(3px)}
-@media(max-width:520px){.ads-shell{padding:14px!important}.qx-trending-spotlight{min-height:105px;padding:11px}.qx-trending-logo{width:38px;height:38px;flex-basis:38px}.qx-trending-name{font-size:12px}.qx-trending-price{font-size:13px}}
-/* Compact, horizontally scrollable sort and category controls. */
-.sort-panel{padding:7px 8px!important;margin:8px 0!important}
-.sort-title{font-size:8px!important;margin-bottom:5px!important}
-.sort-options{display:flex!important;flex-wrap:nowrap!important;overflow-x:auto!important;gap:7px!important;scrollbar-width:none!important;-webkit-overflow-scrolling:touch}
-.sort-options::-webkit-scrollbar,.market-tabs::-webkit-scrollbar{display:none}
-.sort-option{flex:0 0 auto!important;gap:3px!important;font-size:9px!important}
-.sort-option button{width:20px!important;height:2<script id="qx-qx-fixes-v5">
-(function(){
-  "use strict";
-  const $=id=>document.getElementById(id);
-  const num=v=>{const n=Number(v);return Number.isFinite(n)?n:0;};
-  const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
-
-  /* 1) PERCENT BUTTONS — always use the latest wallet balance. */
-  async function applyTradePercent(pct){
-    const range=$("percentRange"),input=$("tradeAmountInput"),value=$("percentValue");
-    if(!range||!input)return;
-    const p=Math.max(0,Math.min(100,Number(pct)||0));
-    try{
-      if(typeof window.refreshTradeBalances==="function")await window.refreshTradeBalances();
-      else if(typeof window.QXRefreshTerminalBalances==="function"&&window.QXSelectedToken){
-        await window.QXRefreshTerminalBalances(window.QXSelectedToken.baseToken?.address,window.QXSelectedToken.baseToken?.symbol);
-      }
-    }catch(e){console.warn("QX percentage balance refresh:",e);}
-    const buy=!$("percentPanel")?.classList.contains("sell");
-    const sol= num(window.QXGetWalletSolBalance?.() ?? window.walletSolBalance);
-    const tok= num(window.QXGetSelectedTokenBalance?.() ?? window.selectedTokenBalance);
-    const available=buy?Math.max(0,sol-num(window.SOL_RESERVE||0.0001)):tok;
-    const decimals=buy?9:Math.min(12,Number(window.QXGetSelectedTokenDecimals?.()||9));
-    const amount=available*p/100;
-    range.value=String(p);range.style.setProperty("--progress",p+"%");
-    if(value)value.textContent=p+"%";
-    input.value=amount>0?amount.toFixed(decimals).replace(/0+$/,'').replace(/\.$/,''):"";
-    input.dispatchEvent(new Event("input",{bubbles:true}));
-  }
-  document.addEventListener("click",function(e){
-    const b=e.target?.closest?.(".percent-btn[data-percent]");
-    if(!b)return;
-    e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
-    applyTradePercent(b.dataset.percent);
-  },true);
-  document.addEventListener("input",function(e){
-    if(e.target?.id!=="percentRange")return;
-    e.stopPropagation();e.stopImmediatePropagation();
-    applyTradePercent(e.target.value);
-  },true);
-
-  /* 2) EVERY MARKET CARD gets one reliable terminal-open path. */
-  function findToken(mint){
-    const lists=[window.QXMarketPairs,window.allPairs,window.QXPreviousMarketPairs];
-    for(const list of lists){
-      if(!Array.isArray(list))continue;
-      const hit=list.find(p=>String(p?.baseToken?.address||"")===mint);
-      if(hit)return hit;
-    }
-    return null;
-  }
-  document.addEventListener("click",function(e){
-    const card=e.target?.closest?.("#tokenResults .coin-button[data-mint]");
-    if(!card)return;
-    const mint=String(card.dataset.mint||"");
-    const token=findToken(mint);
-    if(!token)return;
-    e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
-    try{
-      if(typeof window.QXUnifiedOpenToken==="function")window.QXUnifiedOpenToken(token);
-      else if(typeof window.QXOpenToken==="function")window.QXOpenToken(token);
-      else console.warn("QX terminal opener is not ready",mint);
-    }catch(err){console.error("QX token terminal open failed",err);}
-  },true);
-
-  /* 3) Put category + sort controls INSIDE the coin-list surface. */
-  function placeMarketControls(){
-    const list=document.querySelector("#marketsPage .market-list-column .list");
-    if(!list)return;
-    const tabs=$("marketTabs"),sort=document.querySelector("#marketsPage .sort-panel"),
-          header=list.querySelector(".market-row"),results=$("tokenResults");
-    if(tabs&&tabs.parentElement!==list)list.insertBefore(tabs,header||results||null);
-    if(sort&&sort.parentElement!==list)list.insertBefore(sort,header||results||null);
-    if(tabs&&sort){
-      if(tabs.nextElementSibling!==sort)list.insertBefore(sort,tabs.nextSibling);
-    }
-    const style=document.getElementById("qx-market-controls-v5");
-    if(!style){
-      const st=document.createElement("style");st.id="qx-market-controls-v5";st.textContent=`
-        #marketsPage .market-list-column .list{display:block!important}
-        #marketsPage .market-list-column .list>#marketTabs,#marketsPage .market-list-column .list>.sort-panel{width:100%!important;box-sizing:border-box!important}
-        #marketsPage .market-list-column .list>#marketTabs{margin:0 0 7px!important}
-        #marketsPage .market-list-column .list>.sort-panel{margin:0 0 8px!important}
-        #marketsPage .market-list-column .list>.market-row{margin-top:2px!important}
-        #marketsPage #tokenResults{width:100%!important}
-      `;document.head.appendChild(st);
-    }
-  }
-  if(document.readyState!=="loading")placeMarketControls();
-  document.addEventListener("DOMContentLoaded",placeMarketControls);
-  new MutationObserver(placeMarketControls).observe(document.body,{childList:true,subtree:true});
-
-  /* 4) Ads + 3 real trending Solana tokens: continuous rotation, 24/7. */
-  let trendItems=[],rotationIndex=0,rotationTimer=null,adsPollTimer=null,lastAdSignature="";
-  const money=v=>{const n=num(v);if(!n)return "—";if(n>=1e9)return "$"+(n/1e9).toFixed(2)+"B";if(n>=1e6)return "$"+(n/1e6).toFixed(2)+"M";if(n>=1e3)return "$"+(n/1e3).toFixed(1)+"K";return "$"+n.toFixed(2);};
-  const price=v=>{const n=num(v);if(!n)return "—";if(n>=1)return "$"+n.toLocaleString("en-US",{maximumFractionDigits:4});if(n>=.01)return "$"+n.toFixed(4);if(n>=.0001)return "$"+n.toFixed(6);return "$"+n.toExponential(2);};
-  function trendCandidates(){
-    const src=Array.isArray(window.QXMarketPairs)?window.QXMarketPairs:[];
-    const seen=new Set();
-    return src.filter(p=>{
-      const mint=String(p?.baseToken?.address||""),sym=String(p?.baseToken?.symbol||"").toUpperCase();
-      if(!mint||seen.has(mint)||!p?.baseToken?.name||num(p?.priceUsd)<=0||num(p?.liquidity?.usd)<2500)return false;
-      if(["USDC","USDT","USDH","UXD","USDS","WSOL"].includes(sym))return false;
-      seen.add(mint);return true;
-    }).sort((a,b)=>{
-      const score=p=>Math.log10(1+num(p?.volume?.h24))*4+Math.log10(1+num(p?.liquidity?.usd))*2+Math.log10(1+num(p?.txns?.h24?.buys)+num(p?.txns?.h24?.sells))*3+Math.min(Math.abs(num(p?.priceChange?.h24)),100)*.025;
-      return score(b)-score(a);
-    }).slice(0,3);
-  }
-  function adSignature(ads){return ads.map(a=>String(a.id||a.signature||a.tx_signature||a.title||"")).join("|");}
-  async function fetchVerifiedAds(){
-    try{
-      if(typeof QX_ADS_SUPABASE_URL!=="string"||typeof QX_ADS_SUPABASE_ANON_KEY!=="string"||!QX_ADS_SUPABASE_ANON_KEY.startsWith("eyJ"))return [];
-      const r=await fetch(QX_ADS_SUPABASE_URL+"/functions/v1/"+QX_AD_FUNCTION,{headers:{apikey:QX_ADS_SUPABASE_ANON_KEY,Authorization:"Bearer "+QX_ADS_SUPABASE_ANON_KEY},cache:"no-store"});
-      if(!r.ok)return [];
-      const d=await r.json();return Array.isArray(d.ads)?d.ads:[];
-    }catch(e){console.warn("QX ad rotation poll:",e);return [];}
-  }
-  function renderRotationItem(item){
-    /* Legacy rotation is intentionally disabled in favour of the live 3-card trending renderer. */
-    if(typeof window.QXRefresh3DTrending==='function')window.QXRefresh3DTrending();
-  }
-  function rebuildRotation(ads){
-    if(typeof window.QXRefresh3DTrending==='function')window.QXRefresh3DTrending();
-  }
-  async function refreshRotation(){rebuildRotation(await fetchVerifiedAds());}
-  window.QXRenderTrendingSpotlight=refreshRotation;
-  window.QXRefreshTrendingSpotlight=refreshRotation;
-  function startRotation(){refreshRotation();if(!adsPollTimer)adsPollTimer=setInterval(refreshRotation,30000);}
-  document.addEventListener("DOMContentLoaded",()=>{startRotation();setInterval(()=>{if(document.visibilityState!=="hidden")refreshRotation();},60000);});
-  if(document.readyState!=="loading")startRotation();
-
-  /* Expose safe balance values for the percentage controller. */
-  window.QXGetWalletSolBalance=window.QXGetWalletSolBalance||(()=>0);
-  window.QXGetSelectedTokenBalance=window.QXGetSelectedTokenBalance||(()=>0);window.QXGetSelectedTokenDecimals=window.QXGetSelectedTokenDecimals||(()=>9);
-})();
-</script>
-
-<style id="qx-3d-fusion-v11">
-/* QX 3D FUSION — premium visual layer, deliberately CSS-only for speed */
-:root{--qx-neon:#b45cff;--qx-cyan:#55d8ff;--qx-depth:rgba(255,255,255,.065)}
-body{background-color:#06040d;background-image:radial-gradient(900px 420px at 50% -10%,rgba(180,92,255,.22),transparent 65%),radial-gradient(620px 360px at 5% 45%,rgba(85,216,255,.07),transparent 65%),radial-gradient(620px 420px at 100% 70%,rgba(180,92,255,.09),transparent 65%),linear-gradient(135deg,#06040d 0%,#0c0718 48%,#05040b 100%);}
-body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;background:linear-gradient(115deg,transparent 0%,rgba(255,255,255,.018) 45%,transparent 60%);}
-.panel,.hero,.list,.sort-panel,.market-tabs,.ads-shell,.ad-card,.qx-trending-spotlight,.detail-stat,.swap-box,.percent-panel,.qx-trades-panel{border-color:rgba(180,92,255,.30)!important;box-shadow:0 22px 70px rgba(0,0,0,.30),0 1px 0 rgba(255,255,255,.055) inset,0 0 36px rgba(125,55,220,.055);}
-.panel,.hero,.ads-shell,.qx-trending-spotlight{position:relative;overflow:hidden;}
-.panel:after,.hero:after,.ads-shell:after,.qx-trending-spotlight:after{content:"";position:absolute;inset:-40% -10%;background:linear-gradient(115deg,transparent 38%,rgba(255,255,255,.035) 47%,transparent 56%);transform:translateX(-45%);animation:qxSheen 8s ease-in-out infinite;pointer-events:none;}
-@keyframes qxSheen{0%,55%{transform:translateX(-45%)}75%,100%{transform:translateX(45%)}}
-.logo{text-shadow:0 0 22px rgba(180,92,255,.35);}
-.market-row-rich.qx-market-card,.asset-row,.ad-card{transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;}
-.market-row-rich.qx-market-card:hover,.ad-card:hover{transform:translateY(-2px) perspective(900px) rotateX(.6deg);box-shadow:0 16px 35px rgba(0,0,0,.35),0 0 24px rgba(180,92,255,.10);}
-.coin-logo,.coin-fallback,.asset-logo,.asset-fallback,.qx-trending-logo,.qx-rotation-logo{box-shadow:0 7px 18px rgba(0,0,0,.34),0 0 18px rgba(180,92,255,.12);}
-.qx-trending-spotlight{background:radial-gradient(circle at 15% 10%,rgba(180,92,255,.20),transparent 42%),linear-gradient(145deg,rgba(28,17,48,.98),rgba(8,7,16,.98));}
-.qx-trending-spotlight{cursor:pointer;transform:perspective(1100px) rotateX(0deg) translateZ(0);transition:transform .22s ease,box-shadow .22s ease;}
-.qx-trending-spotlight:hover{transform:perspective(1100px) rotateX(1deg) rotateY(-.6deg) translateY(-3px);box-shadow:0 25px 70px rgba(0,0,0,.45),0 0 32px rgba(180,92,255,.14);}
-.qx-trending-spotlight:active{transform:scale(.99);}
-.qx-rotation-logo{width:62px!important;height:62px!important;border-radius:18px!important;border:1px solid rgba(255,255,255,.13);background:linear-gradient(145deg,#342052,#120d1e);object-fit:cover;transform:perspective(500px) rotateY(-8deg);}
-.qx-rotation-card{min-height:116px;}
-.qx-trending-top{display:flex;justify-content:space-between;align-items:center;gap:8px;}
-.qx-trending-label{font-weight:900;letter-spacing:1.2px;color:#fff;font-size:10px;text-shadow:0 0 14px rgba(180,92,255,.5);}
-.qx-trending-live{font-size:9px;color:var(--green);letter-spacing:.8px;font-weight:900;}
-.qx-trending-live:before{content:"";display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green);margin-right:5px;animation:qxPulse 1.6s infinite;}
-@keyframes qxPulse{50%{opacity:.35;transform:scale(.7)}}
-.qx-trending-token{display:flex;align-items:center;gap:12px;margin-top:12px;}
-.qx-trending-info{min-width:0;flex:1}.qx-trending-name{display:block;font-size:14px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.qx-trending-symbol{display:block;margin-top:4px;color:var(--muted);font-size:10px}.qx-trending-right{text-align:right}.qx-trending-price{font-size:16px;font-weight:900}.qx-trending-change{font-size:11px;font-weight:900;margin-top:4px}.qx-trending-foot{display:flex;justify-content:space-between;gap:8px;margin-top:12px;padding-top:9px;border-top:1px solid rgba(180,92,255,.14);font-size:9px;color:var(--muted);}
-@media(min-width:700px){#publicAdsList{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:12px}.qx-rotation-card{min-height:150px!important}.qx-rotation-logo{width:68px!important;height:68px!important}}
-@media(max-width:699px){#publicAdsList{grid-template-columns:1fr!important}.qx-rotation-card{min-height:118px!important}}
-/* Keep 3D effects cheap on phones. */
-@media(max-width:699px){.panel:after,.hero:after,.ads-shell:after,.qx-trending-spotlight:after{animation:none}.panel,.hero,.list,.sort-panel,.market-tabs,.ads-shell,.ad-card{box-shadow:0 14px 35px rgba(0,0,0,.28),0 1px 0 rgba(255,255,255,.045) inset;}}
-</style>
-
-<script id="qx-trending-3d-live-v11">
-(function(){
-  const $=id=>document.getElementById(id);
-  const num=v=>{const n=Number(v);return Number.isFinite(n)?n:0};
-  const money=v=>{const n=num(v);if(n>=1e9)return "$"+(n/1e9).toFixed(1)+"B";if(n>=1e6)return "$"+(n/1e6).toFixed(1)+"M";if(n>=1e3)return "$"+(n/1e3).toFixed(1)+"K";return "$"+n.toFixed(0)};
-  function candidates(){
-    const src=Array.isArray(window.QXMarketPairs)?window.QXMarketPairs:[];const seen=new Set();
-    return src.filter(p=>{const mint=String(p?.baseToken?.address||''),sym=String(p?.baseToken?.symbol||'').toUpperCase();if(!mint||seen.has(mint)||!p?.baseToken?.name||num(p?.priceUsd)<=0||num(p?.liquidity?.usd)<2500)return false;if(['USDC','USDT','USDH','UXD','USDS','WSOL'].includes(sym))return false;seen.add(mint);return true;})
-    .sort((a,b)=>{const score=p=>Math.log10(1+num(p?.volume?.h24))*4+Math.log10(1+num(p?.liquidity?.usd))*2+Math.log10(1+num(p?.txns?.h24?.buys)+num(p?.txns?.h24?.sells))*3+Math.min(Math.abs(num(p?.priceChange?.h24)),100)*.025;return score(b)-score(a);}).slice(0,3);
-  }
-  function esc(v){return String(v??'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));}
-  function render(){
-    const host=$('publicAdsList');if(!host)return;const arr=candidates();
-    if(!arr.length){host.innerHTML='<div class="ad-empty">Waiting for live Solana trending data…</div>';return;}
-    host.innerHTML=arr.map((p,i)=>{const sym=esc(p?.baseToken?.symbol||'TOKEN'),name=esc(p?.baseToken?.name||'Solana token'),ch=num(p?.priceChange?.h24),cls=ch>0?'up':ch<0?'down':'neutral',img=String(p?.info?.imageUrl||'');let safe='';try{const u=new URL(img);if(u.protocol==='https:')safe=u.href}catch(_){}const logo=safe?'<img class="qx-rotation-logo" src="'+esc(safe)+'" alt="" loading="lazy" onerror="this.style.display='none';">':'<div class="qx-rotation-logo qx-rotation-fallback">'+esc(sym.slice(0,2))+'</div>';return '<article class="qx-trending-spotlight qx-rotation-card" data-mint="'+esc(p?.baseToken?.address||'')+'"><div class="qx-trending-top"><span class="qx-trending-label">#'+(i+1)+' QX TRENDING</span><span class="qx-trending-live">LIVE</span></div><div class="qx-trending-token">'+logo+'<div class="qx-trending-info"><span class="qx-trending-name">'+name+'</span><span class="qx-trending-symbol">'+sym+' · Solana</span></div><div class="qx-trending-right"><div class="qx-trending-price">'+(num(p?.priceUsd)?'$'+num(p.priceUsd).toLocaleString('en-US',{maximumFractionDigits:8}):'—')+'</div><div class="qx-trending-change '+cls+'">'+(ch>0?'+':'')+ch.toFixed(2)+'%</div></div></div><div class="qx-trending-foot"><span>24h volume '+money(p?.volume?.h24)+'</span><span>Trade ↗</span></div></article>';}).join('');
-    host.querySelectorAll('[data-mint]').forEach(el=>el.addEventListener('click',()=>{const mint=el.dataset.mint;const t=(window.QXMarketPairs||[]).find(p=>String(p?.baseToken?.address||'')===mint);if(t&&typeof window.QXUnifiedOpenToken==='function')window.QXUnifiedOpenToken(t);else if(t&&typeof window.QXOpenToken==='function')window.QXOpenToken(t);}));
-  }
-  let timer=0;function start(){render();clearInterval(timer);timer=setInterval(()=>{if(document.visibilityState==='visible')render()},15000);}
-  window.QXRefresh3DTrending=render;document.addEventListener('DOMContentLoaded',start,{once:true});if(document.readyState!=='loading')start();
-})();
-</script>
-</body>
-</html>
+ document.addEventListener('DOMCo
