@@ -734,6 +734,51 @@ html[dir="rtl"] .ads-shell{width:100%!important;max-width:100%!important}
 .qx-trade-modal-card .swap-box{margin-top:0!important}
 @media(max-width:520px){.qx-trade-modal{padding:8px 7px calc(8px + env(safe-area-inset-bottom))}.qx-trade-modal-card{max-height:94vh;padding:11px;border-radius:13px}}
 </style>
+
+<style id="qx-ultimate-rtl-performance-v14">
+/* FINAL: Arabic-safe full viewport + premium depth without heavy 3D engines */
+html,body{width:100%;max-width:100%;overflow-x:hidden!important}
+body{overscroll-behavior-x:none}
+.wrap{width:100%;max-width:1180px;margin-inline:auto;min-width:0}
+header,.brand-lockup,.qx-menu-area{min-width:0}
+
+/* Hamburger: fixed to viewport so RTL can never push half the menu/page off-screen. */
+.qx-menu-area{position:relative;z-index:12010}
+.qx-main-menu{position:fixed!important;top:max(62px,calc(env(safe-area-inset-top) + 56px))!important;right:12px!important;left:auto!important;width:min(360px,calc(100vw - 24px))!important;max-width:calc(100vw - 24px)!important;max-height:calc(100dvh - 86px)!important;overflow:auto!important;overscroll-behavior:contain!important;box-sizing:border-box!important}
+html[dir="rtl"] .qx-main-menu{right:12px!important;left:auto!important}
+.qx-main-menu,.qx-main-menu *{box-sizing:border-box}
+.qx-menu-links{grid-template-columns:1fr 1fr;min-width:0}
+.qx-menu-link{min-width:0;overflow:hidden}
+.qx-menu-link span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(max-width:600px){.qx-main-menu{top:max(57px,calc(env(safe-area-inset-top) + 51px))!important;width:calc(100vw - 20px)!important;max-width:calc(100vw - 20px)!important;right:10px!important;max-height:calc(100dvh - 75px)!important;padding:10px!important}.qx-menu-links{grid-template-columns:1fr!important}.qx-menu-link{min-height:46px}}
+
+/* Arabic market: never allow a grid child to create a wider page. */
+html[dir="rtl"] #marketsPage,html[dir="rtl"] #marketsPage .market-layout,html[dir="rtl"] #marketsPage .market-list-column,html[dir="rtl"] #marketsPage #detail,html[dir="rtl"] #marketsPage .list{width:100%!important;max-width:100%!important;min-width:0!important}
+html[dir="rtl"] #marketsPage .market-layout{grid-template-columns:minmax(0,1fr)!important;grid-template-areas:"list" "detail"!important}
+html[dir="rtl"] #marketsPage #detail{position:relative!important;top:auto!important;max-height:none!important;overflow:visible!important}
+html[dir="rtl"] #tokenResults{display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;overflow:hidden!important}
+html[dir="rtl"] .market-row-rich{width:100%!important;max-width:100%!important;min-width:0!important;grid-template-columns:minmax(0,1fr) minmax(70px,.7fr)!important}
+html[dir="rtl"] .market-card-right{min-width:0!important}
+html[dir="rtl"] .coin-info,html[dir="rtl"] .coin-info strong,html[dir="rtl"] .coin-info small{min-width:0!important;max-width:100%!important}
+html[dir="rtl"] .market-price,html[dir="rtl"] .market-change{min-width:0!important}
+@media(max-width:640px){html[dir="rtl"] .market-row-rich{grid-template-columns:minmax(0,1fr) minmax(62px,.62fr)!important;padding:9px 7px!important}html[dir="rtl"] .market-row-rich .coin-logo,html[dir="rtl"] .market-row-rich .coin-fallback{width:32px!important;height:32px!important}html[dir="rtl"] .market-row-rich .coin-info strong{font-size:11px!important}}
+
+/* Premium depth: CSS-only, GPU-cheap, no WebGL/canvas dependency. */
+body{background-image:radial-gradient(900px 420px at 50% -10%,rgba(175,105,255,.22),transparent 65%),radial-gradient(700px 360px at 5% 35%,rgba(67,255,173,.08),transparent 65%),radial-gradient(700px 420px at 95% 75%,rgba(117,63,255,.10),transparent 65%),linear-gradient(145deg,#06040d 0%,#0b0715 48%,#06040d 100%)}
+.panel,.hero,.list,.sort-panel,.market-tabs,.ads-shell,.qx-trending-card,.qx-paid-ad-card{box-shadow:0 18px 46px rgba(0,0,0,.28),inset 0 1px rgba(255,255,255,.045),0 0 0 1px rgba(160,105,255,.025);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.market-row-rich{transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease}
+.market-row-rich:has(.coin-button:active){transform:scale(.995)}
+@media(prefers-reduced-motion:reduce){.panel,.hero,.list,.sort-panel,.market-tabs,.ads-shell,.qx-trending-card,.qx-paid-ad-card,.market-row-rich{transition:none!important}}
+
+/* New Coins is the primary QX discovery surface. */
+#marketsPage .market-heading h2{letter-spacing:-.35px}
+#marketsPage .market-heading:after{content:"LIVE NEW-COIN DISCOVERY";font-size:8px;font-weight:900;letter-spacing:1.2px;color:#72f7bc;padding:5px 7px;border:1px solid rgba(67,255,173,.2);border-radius:999px;background:rgba(67,255,173,.05)}
+@media(max-width:520px){#marketsPage .market-heading{align-items:center}#marketsPage .market-heading:after{font-size:7px;padding:4px 6px}}
+</style>
+
+<style id="qx-perf-guard-v14">
+@media(max-width:760px){.panel,.hero,.list,.sort-panel,.market-tabs,.ads-shell,.qx-trending-card,.qx-paid-ad-card{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;box-shadow:0 10px 26px rgba(0,0,0,.22),inset 0 1px rgba(255,255,255,.035)}}
+</style>
 </head>
 <body>
 <div class="wrap">
@@ -908,9 +953,9 @@ html[dir="rtl"] .ads-shell{width:100%!important;max-width:100%!important}
  <div class="market-layout">
   <div class="market-list-column">
    <div class="market-tabs" id="marketTabs">
-    <button class="market-tab active" data-category="spot">Spot Market</button>
+    <button class="market-tab" data-category="spot">Spot Market</button>
     <button class="market-tab" data-category="all">All Coins</button>
-    <button class="market-tab" data-category="new">New Coins</button>
+    <button class="market-tab active" data-category="new">New Coins</button>
     <button class="market-tab" data-category="gainers">Top Gainers</button>
     <button class="market-tab" data-category="losers">Top Losers</button>
     <button class="market-tab" data-category="trending">Trending</button>
@@ -1313,7 +1358,7 @@ const SOL_RESERVE=0.0001;
 
 let appKit,activeWalletProvider=null,walletAddress="",connected=false,solPrice=0,qxWalletInitError=null;
 let walletSolBalance=0,selectedTokenBalance=0,selectedTokenDecimals=0;
-let allPairs=[],newPairs=[],trendingPairs=[],currentCategory="spot";
+let allPairs=[],newPairs=[],trendingPairs=[],currentCategory="new";
 let marketBusy=false,canonicalSolPair=null,selectedToken=null;
 let tradeDirection="buy",balancesHidden=false,lastAssetRows=[];
 let sortMetric="",sortDirection="desc",tradePercent=0;
@@ -2741,7 +2786,7 @@ const QX_GECKO_BASE="https://api.geckoterminal.com/api/v2/networks/solana";
 const QX_JUP_TOKENS="https://tokens.jup.ag/tokens?tags=verified";
 const QX_DEX_SEARCH="https://api.dexscreener.com/latest/dex/search?q=";
 const QX_DEX_TOKENS="https://api.dexscreener.com/tokens/v1/solana/";
-const QX_SOLANA_REFRESH_MS=60000;
+const QX_SOLANA_REFRESH_MS=90000;
 const QX_CMC_PAGE_SIZE=250;
 const QX_CMC_PAGES=20;
 const QX_CMC_DEX_SLUGS=["raydium","orca","meteora","pump-swap","lifinity","phoenix","jupiter","openbook"];
@@ -2902,7 +2947,7 @@ function qxFreshNewPairs(list){const cutoff=Date.now()-30*86400000;return bestPa
 function qxCategoryList(){
  const baseAll=bestPairsByMint(allPairs||[]).filter(qxIsDisplayReady);
  const baseNew=qxFreshNewPairs(newPairs.length?newPairs:baseAll);
- if(currentCategory==="spot")return baseAll.filter(p=>qxNum(p.liquidity?.usd)>0).sort((a,b)=>qxNum(b.liquidity?.usd)-qxNum(a.liquidity?.usd));
+ if(currentCategory==="spot")return baseNew.length?baseNew:baseAll.filter(p=>qxNum(p.liquidity?.usd)>0).sort((a,b)=>qxNum(b.liquidity?.usd)-qxNum(a.liquidity?.usd));
  if(currentCategory==="all")return baseAll;
  if(currentCategory==="new")return baseNew;
  if(currentCategory==="gainers")return baseAll.filter(p=>qxNum(p.priceChange?.h24)>0).sort((a,b)=>qxNum(b.priceChange?.h24)-qxNum(a.priceChange?.h24));
@@ -2983,63 +3028,48 @@ async function qxLoadFallbackUniverse(){
  return bestPairsByMint(out);
 }
 async function loadMarket(){
- if(marketBusy)return;marketBusy=true;const generation=++qxMarketGeneration;
+ if(marketBusy)return;
+ marketBusy=true;
+ const generation=++qxMarketGeneration;
  try{
-  if(!newPairs.length){$("tokenResults").innerHTML='<div class="market-empty">Loading new Solana coins…</div>';$("coinCount").textContent="Loading…";}
-  let first;
-  try{first=await qxFetchCmcPairs(1);}catch(e){console.warn("QX CMC primary unavailable",e);first=null;}
-  if(first?.pairs?.length){
-   allPairs=await qxResolveMarketMetadata(first.pairs);
-   try{
-    const fresh=[];
-    for(let page=1;page<=40;page+=4){
-     const jobs=[];for(let k=0;k<4&&page+k<=40;k++)jobs.push(qxFetchGecko('/new_pools?page='+(page+k)+'&include=base_token'));
-     const rs=await Promise.allSettled(jobs);let emptyBatch=0;
-     for(const r of rs){if(r.status==='fulfilled'&&Array.isArray(r.value)){fresh.push(...r.value);if(!r.value.length)emptyBatch++;}else if(r.status==='rejected')console.warn('QX initial new_pools batch failed',page,r.reason);}
-     if(emptyBatch>=3)break;
-    }
-    newPairs=qxFreshNewPairs(fresh);
-   }catch(e){console.warn('QX initial New Coins feed failed',e);}
-   if(!newPairs.length)newPairs=qxFreshNewPairs(allPairs);
-   if(!newPairs.length){
-    try{
-     const recentTerms=['pump','meme','ai','dog','cat','wif','bonk','jup','ray','sol','trump','pepe','frog','inu','moon','swap','coin','token','launch','fun','baby','doge','snek','orca','pengu','popcat','goat','grass','ponke','wen'];
-     const rs=await Promise.allSettled(recentTerms.map(q=>qxFetchDexSearch(q)));
-     newPairs=qxFreshNewPairs(rs.filter(x=>x.status==='fulfilled').flatMap(x=>x.value||[]));
-    }catch(e){console.warn('QX New Coins fallback failed',e);}
-   }
-   allPairs=newPairs.slice();
-   window.QXMarketMainReady=true;window.QXMarketLastSuccess=Date.now();qxUpdateMarketStatus("New Solana pools + indexed DEX data",newPairs.length);renderMarket();
-  }else{
-   const fallback=await qxLoadFallbackUniverse();
-   if(fallback.length){
-    const enriched=await qxResolveMarketMetadata(fallback);
-    newPairs=qxFreshNewPairs(enriched);allPairs=newPairs.slice();
-    window.QXMarketMainReady=true;window.QXMarketLastSuccess=Date.now();qxUpdateMarketStatus("New Solana pools + DEX fallback",newPairs.length);renderMarket();
-   }else throw new Error("No new Solana market data returned by the public feeds.");
+  if(!newPairs.length){
+   const box=$("tokenResults");if(box)box.innerHTML='<div class="market-empty">Loading the newest Solana coins…</div>';
+   const count=$("coinCount");if(count)count.textContent="Loading…";
   }
-  try{
-   const result=await qxFetchMarketUniverse();
-   if(generation!==qxMarketGeneration)return;
-   const candidate=qxFreshNewPairs(result.newPairs||[]);
-   if(candidate.length)newPairs=candidate;
-   else if(result.gecko?.length)newPairs=qxFreshNewPairs(result.gecko);
-   if(!newPairs.length)newPairs=qxFreshNewPairs(allPairs);
-   // Keep the broad indexed Solana universe for All Coins / gainers / losers / volume.
-   // The New Coins tab remains separately capped to recent pools only.
-   allPairs=bestPairsByMint(result.pairs?.length?result.pairs:newPairs).filter(qxIsDisplayReady);
-   trendingPairs=allPairs.slice().sort((a,b)=>(qxNum(b.volume?.h24)+qxNum(b.txns?.h24?.buys)+qxNum(b.txns?.h24?.sells))-(qxNum(a.volume?.h24)+qxNum(a.txns?.h24?.buys)+qxNum(a.txns?.h24?.sells)));
-   window.QXMarketMainReady=true;window.QXMarketLastSuccess=Date.now();qxUpdateMarketStatus("New Solana pools + CoinMarketCap + GeckoTerminal + Jupiter",newPairs.length);
-   console.info("QX new-only market loaded",{all:newPairs.length,newCoins:newPairs.length,source:qxLastMarketSource});
-   renderMarket();
-  }catch(enrichError){console.warn("QX background new-coin enrichment failed",enrichError);allPairs=newPairs.slice();renderMarket();}
+  // Fast primary feed: newest Solana pools only. Four pages are enough for a
+  // rolling discovery surface and avoid the old 100+ request refresh storm.
+  const jobs=[];
+  for(let page=1;page<=4;page++)jobs.push(qxFetchGecko('/new_pools?page='+page+'&include=base_token'));
+  jobs.push(qxFetchGecko('/trending_pools?page=1&include=base_token'));
+  const rs=await Promise.allSettled(jobs);
+  if(generation!==qxMarketGeneration)return;
+  let fresh=[],trends=[];
+  for(let i=0;i<rs.length;i++){
+   if(rs[i].status!=="fulfilled"||!Array.isArray(rs[i].value))continue;
+   if(i<4)fresh.push(...rs[i].value);else trends.push(...rs[i].value);
+  }
+  let jup;try{jup=await qxFetchJupiterMeta();}catch(_){jup=new Map();}
+  const resolved=bestPairsByMint(qxMergeJupiterMeta(fresh,jup)).filter(qxIsDisplayReady);
+  if(!resolved.length){
+   // Small fallback: one CMC page, not the old 20-page sweep.
+   try{const cmc=await qxFetchCmcPairs(1);fresh=cmc.pairs||[];}catch(_){}
+  }
+  newPairs=qxFreshNewPairs(resolved.length?resolved:fresh);
+  allPairs=newPairs.slice();
+  trendingPairs=bestPairsByMint(qxMergeJupiterMeta(trends,jup)).filter(qxIsDisplayReady);window.QXTrendingPairs=trendingPairs.slice();
+  if(!trendingPairs.length)trendingPairs=allPairs.slice().sort((a,b)=>(qxNum(b.volume?.h24)+qxNum(b.txns?.h24?.buys)+qxNum(b.txns?.h24?.sells))-(qxNum(a.volume?.h24)+qxNum(a.txns?.h24?.buys)+qxNum(a.txns?.h24?.sells)));window.QXTrendingPairs=trendingPairs.slice();
+  window.QXMarketMainReady=true;window.QXMarketLastSuccess=Date.now();
+  qxUpdateMarketStatus("Live Solana new pools + GeckoTerminal + Jupiter",newPairs.length);
+  renderMarket();
  }catch(e){
-  console.warn("QX New Solana market",e);window.QXMarketMainReady=false;
+  console.warn("QX fast New Solana market refresh",e);
+  window.QXMarketMainReady=false;
   const st=$("marketStatus"),box=$("tokenResults");
   if(st)st.textContent="New Solana market retrying automatically · "+(e?.message||"temporary error");
   if(box&&!newPairs.length)box.innerHTML='<div class="market-empty">New Solana market is temporarily unavailable. Retrying automatically…</div>';
  }finally{marketBusy=false;}
 }
+
 setInterval(()=>{if(document.visibilityState!=="hidden")loadMarket();},QX_SOLANA_REFRESH_MS);
 // Start the market only after this module has fully completed its top-level awaits.
 // This prevents Safari from calling module functions while SOL and other constants
@@ -3585,7 +3615,7 @@ html[dir="rtl"] .qx-terminal-grid,html[dir="rtl"] .qx-stats,html[dir="rtl"] .qx-
   function money(v){const n=num(v);if(!n)return "—";if(n>=1e9)return "$"+(n/1e9).toFixed(2)+"B";if(n>=1e6)return "$"+(n/1e6).toFixed(2)+"M";if(n>=1e3)return "$"+(n/1e3).toFixed(1)+"K";return "$"+n.toFixed(2);}
   function price(v){const n=num(v);if(!n)return "—";if(n>=1)return "$"+n.toLocaleString("en-US",{maximumFractionDigits:4});if(n>=.01)return "$"+n.toFixed(4);if(n>=.0001)return "$"+n.toFixed(6);return "$"+n.toExponential(2);}
   function trendCandidates(){
-    const src=Array.isArray(window.QXMarketPairs)?window.QXMarketPairs:[];const seen=new Set();
+    const src=Array.isArray(window.QXTrendingPairs)&&window.QXTrendingPairs.length?window.QXTrendingPairs:(Array.isArray(window.QXMarketPairs)?window.QXMarketPairs:[]);const seen=new Set();
     return src.filter(p=>{
       const mint=String(p?.baseToken?.address||""),sym=String(p?.baseToken?.symbol||"").toUpperCase();
       if(!mint||seen.has(mint)||!p?.baseToken?.name||num(p?.priceUsd)<=0||num(p?.liquidity?.usd)<2500)return false;
@@ -3634,9 +3664,4 @@ html[dir="rtl"] .qx-terminal-grid,html[dir="rtl"] .qx-stats,html[dir="rtl"] .qx-
   /* Never expose fake zero balances to the percentage controls. */
   window.QXGetWalletSolBalance=window.QXGetWalletSolBalance||(()=>num(window.walletSolBalance));
   window.QXGetSelectedTokenBalance=window.QXGetSelectedTokenBalance||(()=>num(window.selectedTokenBalance));
-  window.QXGetSelectedTokenDecimals=window.QXGetSelectedTokenDecimals||(()=>9);
-})();
-</script>
-
-</body>
-</html>
+  window.QXGetSelectedTokenDecimals=window.QXGetSelectedTokenDe
