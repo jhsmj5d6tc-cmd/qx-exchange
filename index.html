@@ -953,7 +953,7 @@ html[dir="rtl"] .ads-shell{width:100%!important;max-width:100%!important}
     <div class="market-row" style="color:var(--muted);font-size:11px"><span>Token</span><span class="right">Price USD</span><span class="right">24h</span></div>
     <div id="tokenResults" class="market-empty">Loading market...</div>
    </div>
-   <p class="market-status" id="marketStatus">Connecting to live market data...</p><p class="small" style="margin-top:-12px">New-coin window: 30 days · maximum 500 active discoveries · holder totals require a dedicated Solana indexing API.</p>
+   <p class="market-status" id="marketStatus">Connecting to live market data...</p><p class="small" style="margin-top:-12px">Live Solana discovery · newest pools first · automatic refresh · no estimated holder counts.</p>
   </div>
 
   <section id="detail" class="panel" style="display:none">
@@ -2765,6 +2765,7 @@ let qxMarketGeneration=0;
 let qxLastMarketSource="";
 
 function qxNum(v){const n=Number(v);return Number.isFinite(n)?n:0;}
+function qxEpochMs(v){const n=qxNum(v);if(!n)return 0;return n<1000000000000?n*1000:n;}
 function qxSafeUrl(v){try{const u=new URL(String(v||""));return /^https?:$/i.test(u.protocol)?u.href:"";}catch(_){return "";}}
 function qxIsValidSolanaMint(mint){return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(String(mint||""));}
 function normalizedTokenLabel(value){return cleanTokenText(value||"").toLowerCase().replace(/\s+/g," ").trim();}
@@ -2915,8 +2916,14 @@ function qxSortDefault(a,b){const v=qxNum(b?.volume?.h24)-qxNum(a?.volume?.h24);
 function sortPairs(list){const arr=[...(list||[])],key=String(sortMetric||"default"),dir=sortDirection==="asc"?1:-1;if(key==="default")return arr.sort(qxSortDefault);const value=p=>key==="price"?qxNum(p?.priceUsd):key==="change"?qxNum(p?.priceChange?.h24):key==="volume"?qxNum(p?.volume?.h24):key==="marketcap"?qxNum(p?.marketCap||p?.fdv):key==="liquidity"?qxNum(p?.liquidity?.usd):0;return arr.sort((a,b)=>(value(a)-value(b))*dir);}
 let qxReleaseWindowHours=1;
 function qxReleaseCutoff(){return Date.now()-Math.max(.5,Number(qxReleaseWindowHours)||1)*3600000;}
-function qxFreshNewPairs(list){const cutoff=Date.now()-30*86400000;return bestPairsByMint(list||[]).filter(qxIsDisplayReady).filter(p=>{const created=qxNum(p?.pairCreatedAt);return created>0&&created>=cutoff;}).sort((a,b)=>qxNum(b?.pairCreatedAt)-qxNum(a?.pairCreatedAt)).slice(0,500);}
-function qxWindowedNewPairs(list){const cutoff=qxReleaseCutoff();return bestPairsByMint(list||[]).filter(qxIsDisplayReady).filter(p=>{const created=qxNum(p?.pairCreatedAt);return created>0&&created>=cutoff;}).sort((a,b)=>qxNum(b?.pairCreatedAt)-qxNum(a?.pairCreatedAt)).slice(0,500);}
+function qxIsNewDisplayReady(p){
+ const mint=String(p?.baseToken?.address||"");
+ const name=cleanTokenText(p?.baseToken?.name||"","");
+ const symbol=cleanTokenText(p?.baseToken?.symbol||"","");
+ return p?.chainId==="solana" && qxIsValidSolanaMint(mint) && !qxLooksLikeFakeNative(p) && !!name && !!symbol && symbol!=="TOKEN" && name!=="Unknown Token";
+}
+function qxFreshNewPairs(list){const cutoff=Date.now()-30*86400000;return bestPairsByMint(list||[]).filter(qxIsNewDisplayReady).filter(p=>{const created=qxEpochMs(p?.pairCreatedAt);return created>0&&created>=cutoff;}).sort((a,b)=>qxEpochMs(b?.pairCreatedAt)-qxEpochMs(a?.pairCreatedAt)).slice(0,500);}
+function qxWindowedNewPairs(list){const cutoff=qxReleaseCutoff();return bestPairsByMint(list||[]).filter(qxIsNewDisplayReady).filter(p=>{const created=qxEpochMs(p?.pairCreatedAt);return created>0&&created>=cutoff;}).sort((a,b)=>qxEpochMs(b?.pairCreatedAt)-qxEpochMs(a?.pairCreatedAt)).slice(0,500);}
 function qxCategoryList(){
  const baseAll=bestPairsByMint(allPairs||[]).filter(qxIsDisplayReady);
  const baseNew=qxWindowedNewPairs(newPairs.length?newPairs:baseAll);
@@ -2938,7 +2945,7 @@ function renderMarket(){
  if(!list.length){const hrs=Number(qxReleaseWindowHours)||1;const label=hrs<1?"30 minutes":hrs===1?"1 hour":hrs<24?hrs+" hours":hrs===24?"24 hours":hrs/24+" days";box.innerHTML='<div class="market-empty">No verified Solana launches found in the last '+label+'. Choose a wider release window or wait for the next live discovery.</div>';return;}
  box.innerHTML=list.slice(0,1000).map((p,i)=>{
  const name=escapeHTML(p.baseToken.name),symbol=escapeHTML(p.baseToken.symbol),image=qxSafeUrl(p.info?.imageUrl);
- const change=qxNum(p.priceChange?.h24),cls=change>0?"positive":change<0?"negative":"neutral",changeText=(change>0?"+":"")+change.toFixed(2)+"%";
+ const change=qxNum(p.priceChange?.h24),cls=change>0?"positive":change<0?"negative":"neutral",changeText=Number.isFinite(Number(p.priceChange?.h24))&&Number(p.priceChange?.h24)!==0?((change>0?"+":"")+change.toFixed(2)+"%"):"—";
  const img=image?'<img class="coin-logo" src="'+escapeHTML(image)+'" alt="" loading="lazy" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\';">':"";
  const fallback='<span class="coin-fallback" style="display:'+(image?'none':'flex')+'">'+escapeHTML(symbol.replace(/[^A-Za-z0-9]/g,'').slice(0,2)||'?')+'</span>';
  const mint=escapeHTML(p.baseToken.address);
@@ -3721,7 +3728,7 @@ body{overflow-x:hidden!important}
 .qx-hero-title{font-size:clamp(20px,4vw,32px);font-weight:950;letter-spacing:-.7px;color:#fff;max-width:700px;line-height:1.05}
 .qx-hero-sub{margin-top:8px;color:#aaa4b7;font-size:11px;max-width:650px;line-height:1.55}
 .qx-hero-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}
-.qx-hero-actions button{border:1px solid rgba(177,145,255,.3);background:rgba(255,255,255,.045);color:#eee9f8;border-radius:11px;padding:9px 12px;font-size:9px;font-weight:900;cursor:pointer}
+.qx-hero-actions{position:relative;z-index:4}.qx-hero-actions button{position:relative;z-index:5;pointer-events:auto;border:1px solid rgba(177,145,255,.3);background:rgba(255,255,255,.045);color:#eee9f8;border-radius:11px;padding:9px 12px;font-size:9px;font-weight:900;cursor:pointer;touch-action:manipulation}
 .qx-hero-actions button.primary{background:linear-gradient(135deg,#9a6cff,#5e47c9);border-color:rgba(210,185,255,.45);color:#fff;box-shadow:0 8px 24px rgba(126,82,255,.22)}
 .qx-pulse{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:12px 18px 14px}
 .qx-pulse-item{min-width:0;border:1px solid rgba(255,255,255,.07);background:rgba(12,15,25,.72);border-radius:13px;padding:10px 11px}
@@ -3755,14 +3762,24 @@ body{overflow-x:hidden!important}
   const page=$("marketsPage"); if(!page||$("qxDiscoveryHero"))return;
   const heading=page.querySelector(".market-heading"); if(!heading)return;
   const hero=document.createElement("section");hero.id="qxDiscoveryHero";hero.className="qx-discovery-hero";
-  hero.innerHTML='<div class="qx-hero-kicker">QX SOLANA DISCOVERY</div><div class="qx-hero-title">Find what is launching before the crowd.</div><div class="qx-hero-sub">Discover new Solana projects, create your own token, launch it, promote it and trade it — all from one QX platform.</div><div class="qx-hero-actions"><button class="primary" data-qx-page="createPage">CREATE COIN ↗</button><button data-qx-page="launchPage">LAUNCH ↗</button><button data-qx-page="marketsPage">EXPLORE NEW ↗</button></div>';
+  hero.innerHTML='<div class="qx-hero-kicker">QX SOLANA DISCOVERY</div><div class="qx-hero-title">Discover what is launching before the crowd.</div><div class="qx-hero-sub">Discover new Solana projects, create your own token, launch it, promote it and trade it — all from one QX platform.</div><div class="qx-hero-actions"><button class="primary" data-qx-page="createPage">CREATE COIN ↗</button><button data-qx-page="launchPage">LAUNCH ↗</button><button data-qx-page="marketsPage">EXPLORE NEW ↗</button></div>';
   heading.insertAdjacentElement("afterend",hero);
   const pulse=document.createElement("div");pulse.className="qx-pulse";pulse.id="qxPulse";
   pulse.innerHTML='<div class="qx-pulse-item"><small>NEW POOLS</small><strong id="qxPulseNew">—</strong><span>live discovery</span></div><div class="qx-pulse-item"><small>TRENDING</small><strong id="qxPulseTrend">—</strong><span>active market</span></div><div class="qx-pulse-item"><small>VOLUME</small><strong id="qxPulseVolume">—</strong><span>24h tracked</span></div><div class="qx-pulse-item"><small>QX STATUS</small><strong id="qxPulseStatus">LIVE</strong><span>auto refresh</span></div>';
   hero.insertAdjacentElement("afterend",pulse);
-  hero.querySelectorAll("[data-qx-page]").forEach(b=>b.addEventListener("click",()=>{
-    const target=b.dataset.qxPage;const nav=document.querySelector('[data-page="'+target+'"]');if(nav)nav.click();else if(target==="marketsPage")window.scrollTo({top:0,behavior:"smooth"});
-  }));
+  const go=(target)=>{
+    if(typeof showPage==="function"){showPage(target);}
+    else{document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active",p.id===target));window.scrollTo({top:0,behavior:"smooth"});}
+    if(target==="marketsPage"){
+      setTimeout(()=>{
+        const tab=document.querySelector('#marketTabs [data-category="new"]');
+        if(tab){tab.click();}
+        const box=document.getElementById("tokenResults");if(box)box.scrollIntoView({behavior:"smooth",block:"start"});
+      },40);
+    }
+  };
+  hero.querySelectorAll("[data-qx-page]").forEach(b=>b.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();go(b.dataset.qxPage);}));
+  document.addEventListener("click",e=>{const b=e.target.closest("[data-qx-page]");if(!b||!hero.contains(b)||b.dataset.qxBound==="1")return;b.dataset.qxBound="1";e.preventDefault();go(b.dataset.qxPage);},{capture:true});
  }
  function update(){
   const all=Array.isArray(window.QXMarketPairs)?window.QXMarketPairs:[];
@@ -3779,5 +3796,23 @@ body{overflow-x:hidden!important}
 })();
 </script>
 
+
+<script id="qx-navigation-fix-v16">
+(function(){
+  window.QXNavigate=function(target){
+    if(typeof window.showPage==="function")window.showPage(target);
+    else{document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active",p.id===target));window.scrollTo({top:0,behavior:"smooth"});}
+    if(target==="marketsPage"){setTimeout(function(){const tab=document.querySelector('#marketTabs [data-category="new"]');if(tab)tab.click();const box=document.getElementById("tokenResults");if(box)box.scrollIntoView({behavior:"smooth",block:"start"});},50);}
+  };
+  document.addEventListener("click",function(e){
+    const b=e.target.closest("[data-qx-page]");
+    if(!b)return;
+    if(b.dataset.qxHandled==="1")return;
+    b.dataset.qxHandled="1";
+    e.preventDefault();e.stopImmediatePropagation();
+    window.QXNavigate(b.dataset.qxPage);
+  },true);
+})();
+</script>
 </body>
 </html>
