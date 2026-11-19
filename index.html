@@ -2080,20 +2080,41 @@ function cleanTokenText(value,fallback="Unknown Token"){
  if(!text||text.includes("\u00C3\u00AF\u00C2\u00BF\u00C2\u00BD")||/(?:\u00C3\u0083\u00C2\u0083.|\u00C3\u0083\u00C2\u0082.|\u00C3\u0083\u00C2\u00A2\u00C3\u00A2\u00C2\u0082\u00C2\u00AC|\u00C3\u0083\u00C2\u00B0\u00C3\u0085\u00C2\u00B8)/.test(text))return fallback;
  return text.slice(0,72);
 }
-async function getJSON(url,externalSignal=null){
- const controller=new AbortController();
- if(externalSignal){if(externalSignal.aborted){controller.abort();}else externalSignal.addEventListener("abort",()=>controller.abort(),{once:true});}
- const timeout=setTimeout(()=>controller.abort(),12000);
- try{
-  const r=await fetch(url,{signal:controller.signal,headers:{accept:"application/json"}});
-  if(!r.ok)throw new Error("Market data request failed ("+r.status+")");
-  return await r.json();
- }catch(error){
-  if(error?.name==="AbortError")throw new Error("Market data request timed out. Retrying automatically.");
-  throw error;
- }finally{
-  clearTimeout(timeout);
+async function getJSON(url,externalSignal=null,timeoutMs=12000,retries=1){
+ // QX market callers historically use getJSON(url, timeoutMs, retries).
+ // Accept that form as well as getJSON(url, AbortSignal, timeoutMs, retries).
+ if(typeof externalSignal==="number"){
+  retries=Math.max(0,Number(timeoutMs)||1);
+  timeoutMs=Math.max(1000,Number(externalSignal)||12000);
+  externalSignal=null;
+ }else{
+  timeoutMs=Math.max(1000,Number(timeoutMs)||12000);
+  retries=Math.max(0,Number(retries)||0);
  }
+ let lastError=null;
+ for(let attempt=0;attempt<=retries;attempt++){
+  const controller=new AbortController();
+  let relay=null,timeout=null;
+  try{
+   if(externalSignal){
+    if(externalSignal.aborted)controller.abort();
+    else{relay=()=>controller.abort();externalSignal.addEventListener("abort",relay,{once:true});}
+   }
+   timeout=setTimeout(()=>controller.abort(),timeoutMs);
+   const r=await fetch(url,{signal:controller.signal,headers:{accept:"application/json"},cache:"no-store"});
+   if(!r.ok)throw new Error("Market data request failed ("+r.status+")");
+   return await r.json();
+  }catch(error){
+   lastError=error;
+   if(error?.name==="AbortError" && externalSignal?.aborted)throw error;
+   if(attempt<retries)await new Promise(resolve=>setTimeout(resolve,350*(attempt+1)));
+  }finally{
+   if(timeout)clearTimeout(timeout);
+   if(externalSignal&&relay)externalSignal.removeEventListener("abort",relay);
+  }
+ }
+ if(lastError?.name==="AbortError")throw new Error("Market data request timed out. Retrying automatically.");
+ throw lastError||new Error("Market data request failed");
 }
 let qxRpcCursor=0;
 async function rpc(method,params){
@@ -3987,11 +4008,29 @@ async function qxFetchMarketUniverse(){
 function qxUpdateMarketStatus(source,total){qxLastMarketSource=source;const el=$("marketStatus");if(!el)return;const count=(total||allPairs.length).toLocaleString();if(typeof qxMarketStreamLive!=="undefined"&&qxMarketStreamLive)el.textContent="Live Solana stream connected · "+count+" indexed assets";else if(typeof qxMarketStreamKeyReady!=="undefined"&&qxMarketStreamKeyReady===false)el.textContent="Market data loaded · live stream requires Birdeye API key";else el.textContent="Solana market data loaded · live stream connecting";}
 async function qxLoadFallbackUniverse(){
  const out=[];
- try{for(let page=1;page<=10;page++){const g=await qxFetchGecko('/pools?page='+page+'&include=base_token');out.push(...g);if(g.length<20)break;}}catch(e){console.warn("QX Gecko fallback universe failed",e);}
+ // Run independent public Solana feeds in parallel so one unavailable
+ // provider cannot block the market terminal. Keep the request budget bounded.
+ const geckoPages=Array.from({length:5},(_,i)=>i+1);
+ const gecko=await Promise.allSettled(geckoPages.map(page=>qxFetchGecko('/pools?page='+page+'&include=base_token')));
+ for(const r of gecko)if(r.status==='fulfilled')out.push(...(r.value||[]));
  const terms=["SOL","USDC","USDT","BONK","JUP","RAY","WIF","PUMP","TRUMP","MELANIA","meme","ai"];
  const rs=await Promise.allSettled(terms.map(q=>qxFetchDexSearch(q)));
- out.push(...rs.filter(x=>x.status==="fulfilled").flatMap(x=>x.value||[]));
+ out.push(...rs.filter(x=>x.status==='fulfilled').flatMap(x=>x.value||[]));
  return bestPairsByMint(out);
+}
+async function qxFetchBootstrapUniverse(){
+ // CMC is useful when available, but Gecko/Dex are independent public
+ // fallbacks. Collect them concurrently for a resilient first market paint.
+ const [cmc,gecko,trend]=await Promise.allSettled([
+  qxFetchCmcPairs(1),
+  qxFetchGecko('/new_pools?page=1&include=base_token'),
+  qxFetchGecko('/trending_pools?page=1&include=base_token')
+ ]);
+ const rows=[];
+ if(cmc.status==='fulfilled')rows.push(...(cmc.value?.pairs||[]));
+ if(gecko.status==='fulfilled')rows.push(...(gecko.value||[]));
+ if(trend.status==='fulfilled')rows.push(...(trend.value||[]));
+ return bestPairsByMint(rows);
 }
 let qxDeepDiscoveryBusy=false;
 let qxDeepDiscoveryLastRun=0;
@@ -4058,15 +4097,10 @@ async function loadMarket(){
    const box=$('tokenResults');if(box)box.innerHTML='<div class="market-empty">Loading new Solana coins…</div>';
    const count=$('coinCount');if(count)count.textContent='Loading…';
   }
-  // Fast first paint: only one CMC page + one Gecko new-pools page.
-  const [cmcResult,geckoResult]=await Promise.allSettled([
-   qxFetchCmcPairs(1),
-   qxFetchGecko('/new_pools?page=1&include=base_token')
-  ]);
+  // Resilient first paint: collect CMC, Gecko new pools and Gecko trending
+  // concurrently. Do not require CMC to succeed before public Solana feeds render.
+  const seed=await qxFetchBootstrapUniverse();
   if(generation!==qxMarketGeneration)return;
-  const cmc=cmcResult.status==='fulfilled'?(cmcResult.value?.pairs||[]):[];
-  const gecko=geckoResult.status==='fulfilled'?(geckoResult.value||[]):[];
-  const seed=bestPairsByMint(qxMergeMarketSources(cmc,gecko));
 
   if(seed.length){
    allPairs=bestPairsByMint(seed).filter(qxIsDisplayReady);
@@ -4078,8 +4112,27 @@ async function loadMarket(){
    qxUpdateMarketStatus('Fast Solana discovery · enriching in background',newPairs.length||allPairs.length);
    renderMarket();
   }else if(!allPairs.length&&!newPairs.length){
-   const box=$('tokenResults');
-   if(box)box.innerHTML='<div class="market-empty">No Solana market data returned yet. Retrying automatically…</div>';
+   // If the first public feeds returned nothing, expand the bounded fallback
+   // universe before showing a hard empty state.
+   try{
+    const fallback=await qxLoadFallbackUniverse();
+    if(generation!==qxMarketGeneration)return;
+    if(fallback.length){
+     allPairs=bestPairsByMint(fallback).filter(qxIsDisplayReady);
+     newPairs=qxFreshNewPairs(fallback);
+     window.QXNewPairs=newPairs;
+     window.QXMarketMainReady=true;window.QXMarketLastSuccess=Date.now();
+     qxUpdateMarketStatus('Solana fallback discovery loaded',newPairs.length||allPairs.length);
+     renderMarket();
+    }else{
+     const box=$('tokenResults');
+     if(box)box.innerHTML='<div class="market-empty">No Solana market data returned yet. Retrying automatically…</div>';
+    }
+   }catch(fallbackError){
+    console.warn('QX fallback market bootstrap failed',fallbackError);
+    const box=$('tokenResults');
+    if(box)box.innerHTML='<div class="market-empty">Solana market data is temporarily unavailable. Retrying automatically…</div>';
+   }
   }
 
   marketBusy=false;
