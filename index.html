@@ -485,383 +485,58 @@ body.qx-token-open #getQuoteBtn{display:none!important}
 @media(max-width:700px){#exchangePage{padding-left:10px;padding-right:10px}#exchangePage #detail{padding:12px}}
 </style>
 
-<style id="qx-live-final-overrides">
-/* QX LIVE TERMINAL: one page, one DOM, no duplicate terminal screen */
-body.qx-token-open{overflow:hidden!important}
-body.qx-token-open #exchangePage{display:block!important;min-height:100dvh!important;padding:0!important;margin:0!important}
-body.qx-token-open #exchangePage > *:not(#detail){display:none!important}
-body.qx-token-open #detail{display:block!important;position:relative!important;inset:auto!important;width:100%!important;max-width:1180px!important;height:auto!important;max-height:none!important;overflow:visible!important;margin:0 auto!important;padding:10px 12px 26px!important;border:0!important;border-radius:0!important;box-shadow:none!important;background:transparent!important}
-body.qx-token-open .wrap>header,body.qx-token-open .qx-social,body.qx-token-open footer{display:none!important}
-body.qx-token-open #detailChart{height:280px!important;min-height:220px!important}
-body.qx-token-open .detail-stats{gap:6px!important}
-body.qx-token-open .detail-stat{padding:8px!important}
-body.qx-token-open .qx-trades-panel{max-height:300px!important}
-body.qx-token-open .qx-trades-table{max-height:238px!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch!important}
-body.qx-token-open .qx-trade-row{padding:6px 8px!important;font-size:9px!important}
-body.qx-token-open .qx-swap-head p{display:none!important}
-body.qx-token-open .swap-box{padding:10px!important}
-body.qx-token-open .percent-buttons{gap:5px!important}
-body.qx-token-open .percent-btn{padding:7px 8px!important;font-size:9px!important}
-body.qx-token-open .qx-swap-output{font-size:21px!important}
-body.qx-token-open .qx-swap-value input{font-size:21px!important}
-@media(max-width:600px){body.qx-token-open #detail{padding-left:10px!important;padding-right:10px!important}
-body.qx-token-open #detailChart{height:240px!important;min-height:210px!important}
+
+<style id="qx-unified-design-system">
+:root{
+ --qx-bg:#07090d;--qx-panel:#0b0f16;--qx-panel2:#0e141d;--qx-line:rgba(148,166,190,.16);
+ --qx-text:#f5f7fb;--qx-muted:#7e8b9d;--qx-purple:#a66cff;--qx-green:#3ce7ae;--qx-red:#ff657d;
+ --qx-radius:16px;--qx-shadow:0 24px 80px rgba(0,0,0,.34)
 }
-/* Persistent real wallet balance */
-.qx-user-trade-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06)}
-.qx-user-trade-row:last-child{border-bottom:0}.qx-user-trade-row strong{display:block;font-size:9px}.qx-user-trade-row small{display:block;color:var(--muted);font-size:8px;margin-top:3px}.qx-user-trade-row button{border:1px solid var(--line);background:#171127;color:#fff;border-radius:8px;padding:6px 9px;font-size:8px}
-#qxWatchBtn{margin-inline-start:auto;display:block}@media(max-width:560px){#qxWatchBtn{margin-inline-start:0}}
-#qxHeaderBalance{display:none;align-items:center;gap:7px;padding:8px 10px;border:1px solid rgba(67,255,173,.28);border-radius:10px;background:rgba(12,25,20,.55);font-size:10px;white-space:nowrap}
-#qxHeaderBalance .label{color:#9b8dac;font-size:8px;letter-spacing:.5px}
-#qxHeaderBalance .value{color:#43ffad;font-weight:900;font-variant-numeric:tabular-nums}
-#qxHeaderBalance[data-state="loading"] .value{color:#bca9db}
-#qxHeaderBalance[data-state="error"] .value{color:#ffb4c5}
-@media(max-width:560px){#qxHeaderBalance{order:3;width:100%;justify-content:center}.qx-global-settings{align-items:stretch}}
-/* Smaller market cards */
-.market-row-rich{min-height:62px!important;padding:8px 9px!important}
-.market-row-rich .coin-logo,.market-row-rich .coin-fallback{width:34px!important;height:34px!important}
-.market-row-rich .coin-info strong{font-size:12px!important}
-.market-row-rich .token-meta{font-size:8px!important;gap:5px!important}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{background:
+ radial-gradient(900px 520px at 50% -160px,rgba(120,66,220,.16),transparent 65%),
+ radial-gradient(700px 500px at 100% 35%,rgba(33,209,154,.045),transparent 65%),var(--qx-bg)!important;color:var(--qx-text)!important}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;background:linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.014) 1px,transparent 1px);background-size:44px 44px;mask-image:linear-gradient(to bottom,rgba(0,0,0,.45),transparent 75%);z-index:-1}
+.wrap{width:min(1480px,100%);margin:auto;padding:0 22px 64px}
+header{height:76px;display:flex;align-items:center;justify-content:space-between;gap:18px;position:sticky;top:0;z-index:50;background:rgba(7,9,13,.82)!important;border-bottom:1px solid rgba(148,166,190,.12)!important;backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px)}
+.brand-lockup{display:flex;align-items:center;gap:12px;text-decoration:none!important}.brand-mark{width:42px;height:42px;display:grid;place-items:center;border-radius:12px;background:linear-gradient(145deg,rgba(166,108,255,.18),rgba(60,231,174,.08));border:1px solid rgba(166,108,255,.28);box-shadow:0 0 28px rgba(166,108,255,.12)}.brand-mark svg{width:31px;height:31px}.brand-name{font-size:17px;letter-spacing:.8px;color:#fff}.brand-name b{color:#aeb7c7;font-weight:600}.brand-tagline{display:block;color:#687589;font-size:7px;letter-spacing:2.1px;margin-top:3px}
+.qx-menu-toggle{width:42px!important;height:42px!important;border:1px solid rgba(148,166,190,.17)!important;border-radius:12px!important;background:#0d121a!important;box-shadow:none!important}.qx-main-menu{top:62px!important;right:0!important;width:min(330px,calc(100vw - 24px))!important;border:1px solid rgba(148,166,190,.18)!important;background:rgba(10,14,21,.96)!important;border-radius:18px!important;box-shadow:0 30px 90px rgba(0,0,0,.55)!important;backdrop-filter:blur(24px)}
+.qx-menu-link{min-height:45px!important;border-radius:11px!important;color:#9ba7b9!important}.qx-menu-link:hover,.qx-menu-link.active{background:linear-gradient(90deg,rgba(166,108,255,.14),rgba(60,231,174,.04))!important;color:#fff!important}.qx-menu-caption{font-size:8px!important;letter-spacing:1.8px!important;color:#596679!important}.qx-menu-setting select{background:#0d131c!important;border:1px solid rgba(148,166,190,.14)!important;color:#e9edf5!important;border-radius:9px!important}
+.page{max-width:1400px;margin:0 auto;padding-top:22px}.page.active{animation:qxPageIn .24s ease both}@keyframes qxPageIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.market-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 14px}.market-heading h2{font-size:19px!important;letter-spacing:-.3px}.tag{border:1px solid rgba(166,108,255,.25)!important;background:rgba(166,108,255,.08)!important;color:#c7aaff!important;border-radius:999px!important;padding:5px 8px!important;font-size:8px!important;letter-spacing:1px!important}
+.panel,.hero,.list{border:1px solid var(--qx-line)!important;background:linear-gradient(145deg,rgba(14,19,28,.94),rgba(8,11,16,.94))!important;border-radius:var(--qx-radius)!important;box-shadow:var(--qx-shadow)!important}
+.hero{padding:24px!important}.panel{padding:18px!important}.list{overflow:hidden}.row.head{background:#0d131c!important;color:#69778b!important;border-bottom:1px solid var(--qx-line)!important}
+.btn{border:1px solid rgba(148,166,190,.18)!important;background:#101720!important;color:#e8edf4!important;border-radius:10px!important;min-height:40px!important}.btn:hover{border-color:rgba(166,108,255,.45)!important;transform:translateY(-1px)}.btn.primary{background:linear-gradient(135deg,#9d63ff,#6f43d8)!important;border-color:transparent!important;color:#fff!important;box-shadow:0 8px 28px rgba(125,72,220,.25)!important}
+/* Exchange */
+#exchangePage{display:none}#exchangePage .panel{margin-top:12px!important}.qx-exchange-page{max-width:1400px!important}.qx-exchange-hero{border-radius:18px!important;border:1px solid rgba(166,108,255,.18)!important;background:radial-gradient(500px 180px at 10% 0,rgba(166,108,255,.16),transparent 70%),linear-gradient(145deg,#10151f,#090d14)!important;padding:22px!important}.qx-terminal-grid{gap:12px!important}.qx-terminal-card,.qx-portfolio-grid>*,.qx-feature{border:1px solid var(--qx-line)!important;background:rgba(13,18,26,.88)!important;border-radius:14px!important}.qx-price{font-size:28px!important}.qx-stats{gap:8px!important}.qx-stat{background:#0c121a!important;border:1px solid var(--qx-line)!important;border-radius:12px!important;padding:12px!important}
+/* Markets */
+#marketsPage{padding-top:18px}.qx-market-hero{position:relative;overflow:hidden;border:1px solid rgba(166,108,255,.19)!important;border-radius:20px!important;padding:26px!important;background:radial-gradient(550px 220px at 5% 0,rgba(166,108,255,.16),transparent 70%),radial-gradient(500px 220px at 100% 100%,rgba(60,231,174,.06),transparent 70%),linear-gradient(145deg,#10151f,#090d14)!important;box-shadow:0 28px 100px rgba(0,0,0,.28)!important}.qx-market-hero h2{font-size:32px!important;letter-spacing:-1px}.qx-market-hero p{max-width:650px!important;color:#8491a4!important}.market-layout{display:grid!important;grid-template-columns:minmax(0,1.55fr) minmax(360px,.75fr)!important;gap:14px!important;align-items:start!important}.market-list-column{min-width:0}.market-list-column,.market-detail-column{min-width:0}.market-tabs{border:1px solid var(--qx-line)!important;background:#0b1017!important;border-radius:14px!important;padding:6px!important}.market-tabs button{border:0!important;border-radius:9px!important;background:transparent!important;color:#718095!important;padding:9px 12px!important}.market-tabs button.active{background:rgba(166,108,255,.14)!important;color:#fff!important}.toolbar{background:#0b1017!important;border:1px solid var(--qx-line)!important;border-radius:12px!important;padding:8px!important}.toolbar input,.toolbar select{background:#0d131b!important;border:1px solid rgba(148,166,190,.13)!important;color:#eef2f7!important;border-radius:9px!important}
+#tokenResults{background:#0b1017!important;border:1px solid var(--qx-line)!important;border-radius:15px!important;overflow:hidden}.qx-market-terminal-head{display:grid!important;grid-template-columns:minmax(180px,1.7fr) 95px 100px 75px 105px 105px!important;gap:8px!important;padding:9px 14px!important;background:#0d131c!important;border-bottom:1px solid var(--qx-line)!important;color:#566478!important;font-size:7px!important;letter-spacing:1.3px!important}.market-row-rich.qx-market-card{margin:0!important;border:0!important;border-bottom:1px solid rgba(148,166,190,.09)!important;border-radius:0!important;background:transparent!important;min-height:66px!important;transition:background .16s ease,transform .16s ease!important}.market-row-rich.qx-market-card:hover{background:rgba(166,108,255,.055)!important}.market-row-rich.qx-market-card:last-child{border-bottom:0!important}.market-row-rich .coin-logo,.market-row-rich .coin-fallback{border-radius:50%!important;box-shadow:0 0 0 1px rgba(255,255,255,.08)!important}.market-row-rich .coin-info strong{font-size:11px!important}.market-row-rich .coin-info small{color:#657387!important}.market-row-rich .market-price{font-size:11px!important;color:#f4f7fb!important}.market-row-rich .market-change{font-size:9px!important;font-weight:800!important}.market-row-rich .qx-mini-chart{opacity:.9!important}.market-row-rich .market-card-right{min-width:0!important}
+/* Sponsored */
+.ads-shell{border:1px solid rgba(166,108,255,.2)!important;background:linear-gradient(145deg,rgba(22,16,34,.94),rgba(9,13,19,.96))!important;border-radius:15px!important;padding:14px!important}.ads-head{border:0!important}.ads-title{color:#fff!important}.ads-sub{color:#6f7d90!important}#publicAdsList{gap:9px!important}.qx-trending-card,.qx-paid-ad-card{border:1px solid rgba(148,166,190,.14)!important;background:#0c121a!important;border-radius:13px!important}.qx-trending-card:hover{border-color:rgba(166,108,255,.45)!important}
+/* Token detail */
+body.qx-token-open #marketsPage{display:none!important}body.qx-token-open #exchangePage{display:block!important;background:transparent!important}.qx-token-open #exchangePage>.token-back-btn{display:none!important}body.qx-token-open #detail{display:block!important;position:static!important;max-width:1200px!important;margin:20px auto!important;padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important}.detail-top{display:flex;align-items:center;gap:14px;padding:20px;border:1px solid var(--qx-line);border-radius:18px;background:linear-gradient(145deg,#111722,#0a0e15)!important}.detail-top img{width:54px!important;height:54px!important;border-radius:50%!important}.detail-top h2{font-size:24px!important}.detail-price{font-size:36px!important;font-weight:850!important;margin:14px 0 4px!important}.detail-stats{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:8px!important;margin:14px 0!important}.detail-stat{background:#0c121a!important;border:1px solid var(--qx-line)!important;border-radius:13px!important;padding:12px!important;min-width:0!important}.detail-stat small{color:#647287!important;font-size:8px!important}.detail-stat strong{display:block;margin-top:6px!important;font-size:11px!important;overflow-wrap:anywhere}.chart-section{border:1px solid var(--qx-line)!important;border-radius:16px!important;background:#090e15!important;overflow:hidden!important;margin-top:14px!important}.chart-toolbar{background:#0c121a!important}.chart-ranges{display:flex;gap:4px!important}.chart-range{border:0!important;background:#101720!important;color:#667489!important;border-radius:8px!important;padding:7px 9px!important}.chart-range.active{background:rgba(166,108,255,.17)!important;color:#fff!important}.qx-trades-panel{border:1px solid var(--qx-line)!important;border-radius:15px!important;background:#0b1017!important}.qx-trade-row{border-color:rgba(148,166,190,.08)!important}.qx-trade-launch{display:flex!important;gap:8px!important;margin:12px 0!important}.qx-trade-launch button{flex:1!important;min-height:44px!important;border-radius:11px!important;border:1px solid rgba(148,166,190,.14)!important}.qx-trade-launch .buy{background:rgba(60,231,174,.11)!important;color:#55efbb!important;border-color:rgba(60,231,174,.28)!important}.qx-trade-launch .sell{background:rgba(255,101,125,.1)!important;color:#ff7b90!important;border-color:rgba(255,101,125,.25)!important}.swap-box{border:1px solid var(--qx-line)!important;border-radius:15px!important;background:#0b1017!important}.qx-pay-card,.qx-receive-card{background:#0e151e!important;border:1px solid var(--qx-line)!important;border-radius:12px!important}.swap-action{border-radius:10px!important}
+/* Wallet / Create / Creator */
+#walletPage .hero{background:radial-gradient(500px 180px at 0 0,rgba(166,108,255,.13),transparent 70%),linear-gradient(145deg,#10151f,#090d14)!important}.wallet-value-line .value{font-size:34px!important}.wallet-badges{margin-top:10px}.qx-pnl-card{background:#0c121a!important;border:1px solid var(--qx-line)!important;border-radius:12px!important}.qx-pnl-note{color:#6f7d90!important}.qx-referral-panel{background:#0c121a!important;border:1px solid var(--qx-line)!important;border-radius:14px!important;padding:14px!important}
+#createPage .panel{max-width:900px!important}.qx-create-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.qx-form-section{border:1px solid var(--qx-line);background:#0c121a;border-radius:14px;padding:14px}.qx-form-section h3{font-size:12px;margin:0 0 10px}.qx-form-section input,.qx-form-section select,.qx-form-section textarea{width:100%;background:#080d14!important;border:1px solid rgba(148,166,190,.14)!important;color:#f1f4f8!important;border-radius:9px!important;padding:11px!important}.creator-card{border:1px solid var(--qx-line)!important;background:#0c121a!important;border-radius:14px!important}
+/* Footer */
+footer{margin-top:26px!important;border-top:1px solid var(--qx-line)!important;padding:18px 4px!important;color:#5d6a7c!important;text-align:center!important;font-size:9px!important;letter-spacing:.7px}
+/* Mobile */
+@media(max-width:1050px){.market-layout{grid-template-columns:1fr!important}.detail-stats{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+@media(max-width:760px){.wrap{padding:0 10px 60px}.page{padding-top:14px}.brand-tagline{display:none}.qx-market-hero{padding:18px!important}.qx-market-hero h2{font-size:25px!important}.market-layout{gap:10px!important}.qx-market-terminal-head{grid-template-columns:minmax(150px,1fr) 76px 78px 58px!important}.qx-market-terminal-head span:nth-child(5),.qx-market-terminal-head span:nth-child(6){display:none}.market-row-rich.qx-market-card{grid-template-columns:minmax(150px,1fr) 190px!important;min-height:62px!important}.market-row-rich .market-card-right{grid-template-columns:72px 78px 58px!important}.market-row-rich .market-card-right>*:nth-child(4),.market-row-rich .market-card-right>*:nth-child(5){display:none}.detail-stats{grid-template-columns:repeat(2,minmax(0,1fr))!important}.detail-price{font-size:29px!important}.detail-top{padding:15px}.qx-trade-launch{position:sticky;bottom:12px;z-index:20;padding:7px;background:rgba(7,9,13,.88);backdrop-filter:blur(14px);border:1px solid var(--qx-line);border-radius:14px}.qx-create-grid{grid-template-columns:1fr}}
+@media(max-width:520px){.wrap{padding-left:8px;padding-right:8px}.market-row-rich.qx-market-card{grid-template-columns:minmax(125px,1fr) 160px!important}.market-row-rich .market-card-right{grid-template-columns:58px 66px 46px!important;gap:4px!important}.market-row-rich .qx-mini-chart{width:66px!important}.market-row-rich .coin-info strong{font-size:10px!important}.market-row-rich .market-price{font-size:9px!important}.detail-stats{grid-template-columns:1fr 1fr!important}.detail-stat{padding:10px!important}.detail-top img{width:44px!important;height:44px!important}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
 </style>
 
 
-<style id="qx-premium-compact-ui">
-/* QX premium compact system — authoritative final visual layer */
-:root{--qx-gap:10px;--qx-radius:11px}
-html,body{width:100%;max-width:100%;overflow-x:hidden}
-body{font-size:13px;line-height:1.35}
-.wrap{max-width:1180px;width:100%;margin:0 auto;padding:10px 12px 78px}
-header{min-height:58px;padding:4px 0 9px;gap:10px;align-items:center}
-.brand-lockup{gap:8px}
-.brand-mark{width:42px;height:42px;flex:0 0 42px;border-radius:12px;box-shadow:0 4px 18px rgba(130,75,245,.18);animation:qxLogoFloat 3.2s ease-in-out infinite}
-.brand-mark svg{width:34px;height:34px;animation:qxLogoSpin 16s linear infinite}
-.brand-copy{gap:3px}.brand-name{font-size:17px;letter-spacing:-.5px}.brand-tagline{font-size:6.5px;letter-spacing:1.25px}
-.qx-menu-toggle{width:38px;height:38px;border-radius:10px}
-.qx-global-settings{gap:6px}
-.qx-global-settings select{min-width:105px;width:auto;padding:7px 8px;font-size:11px;border-radius:8px}
-.qx-global-settings label{font-size:8px}
-#connectBtn{min-height:34px!important;padding:7px 11px!important;font-size:10px!important;border-radius:9px!important}
-.panel{border-radius:12px!important;padding:12px!important}
-h1{font-size:20px!important}h2{font-size:16px!important}h3{font-size:13px!important}
-.value{font-size:26px;margin:7px 0}.small{font-size:10px}
-.market-layout{grid-template-columns:minmax(0,1fr) minmax(285px,340px);gap:10px}
-.market-list-column{min-width:0;width:100%}
-.market-heading{margin-bottom:9px!important}
-.market-tabs{gap:6px!important}.market-tab{padding:7px 10px;font-size:10px;border-radius:8px}
-.sort-title{font-size:8px;margin-bottom:6px}.sort-option{padding:6px 8px!important}.sort-option span{font-size:8px}
-.coin-row{padding:8px 8px!important;min-height:49px!important;gap:7px!important;border-radius:9px}
-.coin-logo,.coin-fallback{width:28px;height:28px}
-.coin-info strong{font-size:11px;max-width:125px}.coin-info small{font-size:9px;margin-top:2px}
-.market-price,.market-change{font-size:10px}
-.market-status{font-size:9px;margin:6px 1px 10px}
-#detail{width:100%;min-width:0}
-body.qx-token-open #detail{max-width:1180px!important;padding:14px 18px 28px!important}
-body.qx-token-open .detail-top img{width:38px;height:38px}
-body.qx-token-open .detail-top{gap:9px;margin-bottom:6px}
-body.qx-token-open .detail-price{font-size:23px;margin:6px 0 2px}
-body.qx-token-open .detail-stats{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:9px 0}
-body.qx-token-open .detail-stat{padding:7px;border-radius:8px}
-body.qx-token-open .detail-stat small{font-size:8px;margin-bottom:3px}
-body.qx-token-open .detail-stat strong{font-size:10px}
-body.qx-token-open .chart-section{margin:9px 0;padding:7px;border-radius:10px}
-body.qx-token-open #detailChart{height:245px!important;min-height:200px!important;border-radius:7px}
-.chart-toolbar{gap:6px!important;padding-bottom:6px!important}.chart-toolbar>strong{font-size:9px}.chart-range{padding:5px 7px;font-size:8px}
-body.qx-token-open .trade-buttons.qx-terminal-trade-buttons{gap:6px;margin-bottom:9px}
-body.qx-token-open .trade-btn{min-height:37px;font-size:11px;border-radius:8px}
-body.qx-token-open .swap-box{padding:9px!important;margin-top:7px!important;border-radius:10px}
-.amount-entry input{font-size:17px!important}.amount-entry .amount-symbol{padding:6px 8px;font-size:9px}
-body.qx-token-open .percent-btn{padding:5px 7px!important;font-size:8px}
-body.qx-token-open .qx-swap-output{font-size:18px!important}.swap-action{min-height:37px;padding:9px;font-size:10px;border-radius:8px}
-body.qx-token-open .qx-trades-panel{margin-top:9px!important;max-height:230px!important}
-body.qx-token-open .qx-trades-table{max-height:175px!important}
-body.qx-token-open .qx-trade-row{padding:5px 7px!important;font-size:8px!important}
-.token-back-btn{padding:7px 10px;font-size:9px;margin-bottom:9px;border-radius:8px}.token-back-btn span{font-size:16px}
-/* Arabic: keep the complete layout visible and let every column shrink naturally. */
-html[dir="rtl"] .wrap,html[dir="rtl"] .page,html[dir="rtl"] .market-layout,html[dir="rtl"] .market-list-column,html[dir="rtl"] #detail{width:100%;max-width:100%;min-width:0}
-html[dir="rtl"] .market-layout{grid-template-columns:minmax(0,1fr) minmax(285px,340px)}
-html[dir="rtl"] .coin-row,html[dir="rtl"] .row{min-width:0}
-html[dir="rtl"] .coin-info,html[dir="rtl"] .asset-name{min-width:0}
-html[dir="rtl"] .coin-info strong,html[dir="rtl"] .asset-name strong{max-width:100%}
-html[dir="rtl"] .market-price,html[dir="rtl"] .market-change,html[dir="rtl"] .asset-number{text-align:left}
-html[dir="rtl"] .qx-global-settings{direction:rtl}
-html[dir="rtl"] .qx-global-settings select{direction:ltr;text-align:left}
-html[dir="rtl"] .qx-menu-link{text-align:right}
-@media(max-width:760px){
- .wrap{padding:8px 9px 70px}
- header{min-height:50px;padding-bottom:7px}
- .brand-mark{width:38px;height:38px;flex-basis:38px;border-radius:11px}.brand-mark svg{width:31px;height:31px}
- .brand-name{font-size:15px}.brand-tagline{font-size:5.5px;letter-spacing:1px}
- .qx-global-settings{width:100%;gap:5px}.qx-global-settings select{min-width:0;flex:1;padding:7px 6px;font-size:11px}.qx-global-settings label{display:none}
- #connectBtn{flex:0 0 auto!important;width:auto!important}
- .market-layout{display:flex;flex-direction:column;gap:9px}
- #detail{order:-1}
- body.qx-token-open #detail{padding:9px 10px 22px!important}
- body.qx-token-open #detailChart{height:205px!important;min-height:175px!important}
- body.qx-token-open .detail-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
- body.qx-token-open .detail-stat{padding:6px}
- body.qx-token-open .detail-stat strong{font-size:9px}
- .coin-row{grid-template-columns:minmax(0,1fr) auto auto!important}
- .coin-info strong{max-width:105px}
-}
-@media(max-width:430px){
- .wrap{padding-left:7px;padding-right:7px}
- .brand-name{font-size:14px}.brand-tagline{display:none}
- .market-tab{padding:6px 8px;font-size:9px}
- body.qx-token-open #detailChart{height:185px!important}
- body.qx-token-open .detail-price{font-size:20px}
-}
-@keyframes qxLogoFloat{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-2px) rotate(1deg)}}
-@keyframes qxLogoSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
-@media(prefers-reduced-motion:reduce){.brand-mark,.brand-mark svg{animation:none!important}}
-</style>
-<style id="qx-market-premium-v2">
-/* QX compact market v2 — one authoritative visual layer */
-.market-tabs{padding-bottom:8px!important}
-.market-tab{font-size:9px!important;padding:6px 9px!important}
-#tokenResults{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:7px;background:transparent}
-#tokenResults .market-empty{grid-column:1/-1}
-.market-row-rich.qx-market-card{
-  min-height:76px!important;height:76px!important;
-  display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;
-  gap:6px!important;padding:8px!important;margin:0!important;
-  border:1px solid rgba(86,53,139,.7)!important;border-radius:10px!important;
-  background:linear-gradient(145deg,rgba(24,16,40,.96),rgba(11,9,20,.96))!important;
-  overflow:hidden!important;box-shadow:0 8px 20px rgba(0,0,0,.18)!important;
-}
-.market-row-rich.qx-market-card .coin-button{min-width:0!important;gap:7px!important;width:100%!important}
-.market-row-rich.qx-market-card .coin-logo,
-.market-row-rich.qx-market-card .coin-fallback{width:29px!important;height:29px!important;flex:0 0 29px!important}
-.market-row-rich.qx-market-card .coin-info{min-width:0!important;gap:1px!important}
-.market-row-rich.qx-market-card .coin-info strong{font-size:10px!important;max-width:100%!important}
-.market-row-rich.qx-market-card .coin-info small{font-size:7.5px!important;max-width:100%!important}
-.market-row-rich.qx-market-card .token-meta{
-  display:flex!important;gap:4px!important;flex-wrap:nowrap!important;
-  overflow:hidden!important;margin-top:1px!important;font-size:6.5px!important
-}
-.market-row-rich.qx-market-card .token-meta span:nth-child(n+3){display:none!important}
-.market-card-right{min-width:62px;text-align:right;display:flex;flex-direction:column;align-items:flex-end;justify-content:space-between;height:100%}
-.market-card-right .market-price{font-size:9px!important;font-weight:900;white-space:nowrap}
-.market-card-right .market-change{font-size:8px!important;font-weight:900;white-space:nowrap}
-.qx-mini-chart{width:60px;height:18px;overflow:hidden;opacity:.9}
-.qx-mini-chart svg{width:100%;height:100%;display:block}
-.qx-mini-chart .qx-spark{stroke-dasharray:3 2;animation:qxSparkMove 2.2s linear infinite}
-.qx-mini-chart .qx-dot{animation:qxSparkPulse 1.6s ease-in-out infinite}
-@keyframes qxSparkMove{to{stroke-dashoffset:-24}}
-@keyframes qxSparkPulse{0%,100%{opacity:.45;transform:scale(.9)}50%{opacity:1;transform:scale(1.05)}}
-.ads-shell{padding:16px!important;margin:10px 0 12px!important;border-radius:14px!important}
-.ads-shell .ad-card{min-height:96px!important}
-@media(max-width:520px){
-  #tokenResults{gap:6px;padding:6px}
-  .market-row-rich.qx-market-card{height:72px!important;min-height:72px!important;padding:7px!important}
-  .market-row-rich.qx-market-card .coin-logo,
-  .market-row-rich.qx-market-card .coin-fallback{width:27px!important;height:27px!important;flex-basis:27px!important}
-  .market-card-right{min-width:56px}
-  .qx-mini-chart{width:54px;height:16px}
-  .market-row-rich.qx-market-card .coin-info strong{font-size:9px!important}
-  .market-row-rich.qx-market-card .coin-info small{font-size:7px!important}
-  .market-row-rich.qx-market-card .token-meta{font-size:6px!important}
-}
-@media(max-width:360px){
-  #tokenResults{grid-template-columns:1fr}
-  .market-row-rich.qx-market-card{height:70px!important;min-height:70px!important}
-}
-/* Never hide the entire app header on token open; keep QX/back navigation visible. */
-body.qx-token-open .wrap>header{display:flex!important}
-body.qx-token-open .qx-social,body.qx-token-open footer{display:none!important}
-body.qx-token-open #exchangePage{display:block!important;min-height:0!important;padding:0!important;margin:0!important}
-body.qx-token-open #exchangePage > *:not(#detail){display:none!important}
-body.qx-token-open #detail{
-  display:block!important;position:relative!important;inset:auto!important;
-  width:100%!important;max-width:1180px!important;height:auto!important;max-height:none!important;
-  overflow:visible!important;margin:0 auto!important;padding:10px 12px 26px!important;
-  border:0!important;border-radius:0!important;box-shadow:none!important;
-  background:transparent!important
-}
-body.qx-token-open #detailChart{height:205px!important;min-height:175px!important}
-body.qx-token-open .detail-stats{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:5px!important}
-body.qx-token-open .detail-stat{padding:6px!important}
-body.qx-token-open .detail-stat strong{font-size:9px!important}
-body.qx-token-open .detail-price{font-size:20px!important}
-body.qx-token-open .qx-trades-panel{max-height:220px!important}
-body.qx-token-open .qx-trades-table{max-height:165px!important}
-@media(max-width:760px){
-  body.qx-token-open #detail{padding:8px 8px 24px!important}
-  body.qx-token-open .detail-stats{grid-template-columns:repeat(2,minmax(0,1fr))!important}
-  body.qx-token-open #detailChart{height:185px!important;min-height:155px!important}
-  body.qx-token-open .trade-buttons.qx-terminal-trade-buttons{gap:5px!important}
-}
-@media(max-width:430px){
-  body.qx-token-open .detail-price{font-size:18px!important}
-  body.qx-token-open #detailChart{height:170px!important;min-height:145px!important}
-}
+<style id="qx-market-utility">
+.qx-market-utility{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px 14px;margin:10px 0;border:1px solid rgba(148,166,190,.13);border-radius:13px;background:linear-gradient(90deg,rgba(166,108,255,.06),rgba(60,231,174,.025),rgba(0,0,0,0))}.qx-utility-kicker{display:block;font-size:7px;letter-spacing:1.5px;color:#9d72e9;margin-bottom:3px}.qx-market-utility strong{display:block;font-size:11px}.qx-market-utility small{display:block;color:#657387;font-size:8px;margin-top:3px}.qx-utility-pills{display:flex;gap:4px}.qx-utility-pills button{border:1px solid rgba(148,166,190,.12);background:#0c121a;color:#69778b;border-radius:8px;padding:7px 9px;font-size:8px}.qx-utility-pills button.active{background:rgba(166,108,255,.14);color:#fff;border-color:rgba(166,108,255,.28)}@media(max-width:520px){.qx-market-utility{align-items:flex-start;flex-direction:column}.qx-utility-pills{width:100%}.qx-utility-pills button{flex:1}}
 </style>
 
-
-<style id="qx-rtl-final-fix">
-html[dir="rtl"] body{overflow-x:hidden!important}
-html[dir="rtl"] .wrap{padding-left:8px!important;padding-right:8px!important}
-html[dir="rtl"] .qx-global-settings{width:100%!important;min-width:0!important}
-html[dir="rtl"] .qx-global-settings select{min-width:0!important;width:100%!important;max-width:100%!important}
-html[dir="rtl"] .market-layout{display:block!important}
-html[dir="rtl"] .market-list-column{width:100%!important;max-width:100%!important}
-html[dir="rtl"] #tokenResults{width:100%!important;max-width:100%!important}
-html[dir="rtl"] #tokenResults .market-row-rich{min-width:0!important}
-html[dir="rtl"] .coin-button{min-width:0!important}
-html[dir="rtl"] .coin-info{min-width:0!important}
-html[dir="rtl"] .coin-info strong,html[dir="rtl"] .coin-info small{max-width:100%!important}
-html[dir="rtl"] .market-card-right{direction:ltr}
-html[dir="rtl"] .ads-shell{width:100%!important;max-width:100%!important}
-@media(max-width:520px){
- html[dir="rtl"] .qx-global-settings select{font-size:13px!important;padding:7px 6px!important}
- html[dir="rtl"] .market-tabs{max-width:100%;overflow-x:auto}
- html[dir="rtl"] .toolbar{min-width:0}
-}
-</style>
-
-<style id="qx-v5-trade-modal-css">
-/* QX V5 compact trade modal: BUY/SELL launch buttons sit immediately below the chart; the order ticket opens in a compact modal. */
-.qx-trade-launch{display:flex;gap:9px;margin:12px 0 14px}
-.qx-trade-launch button{flex:1;min-height:42px;border:1px solid var(--line);border-radius:10px;font-weight:800;letter-spacing:.04em;background:#171126;color:#fff}
-.qx-trade-launch .buy{background:#123b2d;border-color:#236b50;color:#7df0b4}
-.qx-trade-launch .sell{background:#421d2b;border-color:#78374d;color:#ff9bad}
-.qx-trade-modal{display:none;position:fixed;inset:0;z-index:10080;background:rgba(4,3,10,.78);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:14px;padding-bottom:calc(14px + env(safe-area-inset-bottom))}
-.qx-trade-modal.open{display:flex}
-.qx-trade-modal-card{width:min(100%,480px);max-height:92vh;overflow:auto;background:#100c1b;border:1px solid #49345f;border-radius:16px;padding:14px;box-shadow:0 22px 70px #000b}
-.qx-trade-modal-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}
-.qx-trade-modal-head strong{font-size:14px;letter-spacing:.06em}
-.qx-trade-modal-close{width:34px;height:34px;border-radius:9px;border:1px solid var(--line);background:#21182f;color:#fff;font-size:22px}
-.qx-trade-modal-card .qx-swap-head{margin:0 0 8px!important;padding:0!important}
-.qx-trade-modal-card .swap-box{margin-top:0!important}
-@media(max-width:520px){.qx-trade-modal{padding:8px 7px calc(8px + env(safe-area-inset-bottom))}.qx-trade-modal-card{max-height:94vh;padding:11px;border-radius:13px}}
-</style>
-<style id="qx-live-terminal-v3">
-:root{--qx-velvet:#07060b;--qx-panel:#0d0b12;--qx-panel2:#12101a;--qx-line:rgba(181,140,255,.22);--qx-purple:#b78cff;--qx-purple2:#8b5cf6;--qx-green:#57e6a5;--qx-red:#ff6d91;--qx-text:#f7f2ff;--qx-muted:#9f94ad}
-html,body{background:#07060b!important;color:var(--qx-text)!important}
-body{background-image:radial-gradient(circle at 50% -10%,rgba(139,92,246,.13),transparent 34%),radial-gradient(circle at 0% 60%,rgba(183,140,255,.055),transparent 30%)!important}
-#marketsPage{max-width:1500px;margin:auto}
-#marketsPage .market-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
-#marketsPage .market-heading h2{font-size:clamp(22px,4vw,34px)!important;letter-spacing:-.7px!important}
-#marketsPage .market-heading .tag{border:1px solid rgba(183,140,255,.28)!important;background:rgba(183,140,255,.07)!important;color:#cbb3ff!important}
-#marketTabs{display:flex!important;gap:7px!important;overflow:auto!important;scrollbar-width:none!important;padding:5px 2px 9px!important}
-#marketTabs::-webkit-scrollbar{display:none}
-#marketTabs .market-tab{background:rgba(255,255,255,.025)!important;border:1px solid rgba(255,255,255,.07)!important;color:#aaa0b7!important;border-radius:999px!important;padding:9px 14px!important;font-size:10px!important;font-weight:850!important;white-space:nowrap!important;transition:.2s ease!important}
-#marketTabs .market-tab.active{background:linear-gradient(180deg,rgba(183,140,255,.18),rgba(139,92,246,.07))!important;border-color:rgba(183,140,255,.48)!important;color:#fff!important;box-shadow:0 0 22px rgba(139,92,246,.10)!important}
-#tokenResults{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:9px!important;padding:4px 0 14px!important}
-#tokenResults .qx-market-card{position:relative!important;min-height:98px!important;height:auto!important;padding:11px!important;border:1px solid rgba(183,140,255,.16)!important;border-radius:15px!important;background:linear-gradient(145deg,rgba(20,17,27,.98),rgba(8,7,11,.98))!important;box-shadow:inset 0 1px rgba(255,255,255,.035),0 12px 35px rgba(0,0,0,.25)!important;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease!important}
-#tokenResults .qx-market-card:hover{transform:translateY(-2px)!important;border-color:rgba(183,140,255,.42)!important;box-shadow:inset 0 1px rgba(255,255,255,.05),0 18px 44px rgba(70,30,130,.16)!important}
-#tokenResults .coin-button{align-items:flex-start!important;padding:0!important}
-#tokenResults .coin-logo,#tokenResults .coin-fallback{width:38px!important;height:38px!important;flex-basis:38px!important;border-radius:50%!important;border:1px solid rgba(183,140,255,.2)!important}
-#tokenResults .coin-info strong{font-size:12px!important;color:#fff!important}
-#tokenResults .coin-info small{font-size:8px!important;color:#8f8699!important}
-#tokenResults .token-meta{font-size:7px!important;color:#8e8597!important;margin-top:5px!important;gap:6px!important}
-#tokenResults .market-card-right{min-width:92px!important;justify-content:flex-start!important;gap:7px!important}
-#tokenResults .market-card-right .market-price{font-size:12px!important;color:#fff!important}
-#tokenResults .market-card-right .market-change{font-size:10px!important}
-.qx-mini-chart{width:92px!important;height:27px!important;margin-top:auto!important;opacity:1!important}
-.qx-mini-chart svg{overflow:visible!important}
-.qx-mini-chart .qx-spark{stroke-dasharray:none!important;animation:qxSparkReveal 2.8s ease-in-out infinite!important;filter:drop-shadow(0 0 4px rgba(183,140,255,.35))}
-.qx-mini-chart .qx-dot{animation:qxSparkPulse 1.7s ease-in-out infinite!important}
-@keyframes qxSparkReveal{0%,100%{opacity:.72;stroke-width:1.5}50%{opacity:1;stroke-width:2}}
-@keyframes qxSparkPulse{0%,100%{opacity:.45;transform:scale(.9)}50%{opacity:1;transform:scale(1.12)}}
-#tokenResults .market-change.positive{color:var(--qx-green)!important}.market-change.negative{color:var(--qx-red)!important}
-#publicAdsList{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:9px!important}
-#publicAdsList .qx-trending-card,#publicAdsList .qx-paid-ad-card{min-height:112px!important;border:1px solid rgba(183,140,255,.14)!important;border-radius:14px!important;background:linear-gradient(145deg,rgba(19,16,25,.95),rgba(8,7,11,.98))!important;box-shadow:0 12px 34px rgba(0,0,0,.22)!important}
-.qx-trending-card .qx-trending-label{color:#cbb5f5!important;font-size:8px!important;letter-spacing:1.2px!important}
-.qx-trending-card .qx-trending-price{font-size:13px!important}
-.qx-trending-card .qx-trending-change{font-size:10px!important}
-.qx-trending-card .qx-trending-foot{border-top-color:rgba(183,140,255,.12)!important}
-@media(max-width:980px){#tokenResults{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
-@media(max-width:620px){#tokenResults{grid-template-columns:1fr!important;gap:7px!important}#tokenResults .qx-market-card{min-height:88px!important}.qx-mini-chart{width:86px!important}#publicAdsList{grid-template-columns:1fr!important}.market-card-right{min-width:86px!important}}
-</style>
-
-<style id="qx-global-discovery-redesign">
-:root{--bg:#07060b;--panel:#100d16;--line:rgba(174,133,230,.18);--text:#f8f5fc;--muted:#a9a0b5;--purple:#a879ef;--purple2:#6e42a8}
-body{background:radial-gradient(ellipse at 50% -15%,rgba(132,83,190,.20),transparent 44%),radial-gradient(ellipse at 95% 35%,rgba(92,54,137,.10),transparent 36%),#07060b!important}
-.panel,.hero,.list,.sort-panel,.market-tabs,.ad-card,.ads-shell{border-color:rgba(177,139,225,.16)!important;box-shadow:0 18px 55px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,255,255,.035)!important}
-.qx-market-hero{align-items:center;margin:4px 0 18px;padding:18px 20px;border:1px solid rgba(180,139,231,.19);border-radius:18px;background:linear-gradient(112deg,rgba(35,23,49,.92),rgba(12,10,16,.96) 64%,rgba(46,26,65,.72));box-shadow:0 22px 60px #0008,inset 0 1px #ffffff0b}
-.qx-market-hero h2{font-size:clamp(23px,4vw,34px);letter-spacing:-1.1px;margin:4px 0;color:#fff}
-.qx-market-hero p{font-size:12px;color:#b9aec8;margin:0}
-.qx-kicker{font-size:9px;font-weight:900;letter-spacing:2px;color:#bd9ae9}
-.market-tabs{gap:6px;padding:8px 0 12px;scroll-snap-type:x proximity}
-.market-tab{padding:9px 13px;border-radius:999px;background:#100d16;border:1px solid rgba(175,135,224,.17);color:#c4bacf;font-size:10px;letter-spacing:.35px;scroll-snap-align:start}
-.market-tab.active{background:linear-gradient(135deg,#7446a6,#4a2c6c);border-color:#b68de5;color:#fff;box-shadow:0 5px 20px rgba(112,68,160,.24)}
-.qx-sponsored-inline{margin:3px 0 13px;padding:11px 13px;background:linear-gradient(115deg,rgba(28,21,37,.96),rgba(12,10,16,.98));border-radius:14px}
-.qx-sponsored-inline .ads-head{margin-bottom:8px}.qx-sponsored-inline .ads-title{font-size:10px;letter-spacing:1.25px;color:#d9c3f5}.qx-sponsored-inline .ads-sub{font-size:9px}.qx-sponsored-inline .ads-list{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.qx-sponsored-inline .ad-empty{font-size:10px;color:#988da5;padding:8px 0}
-.toolbar{gap:8px}.toolbar input{background:#0e0b13;border:1px solid rgba(174,133,230,.2);border-radius:10px}
-.sort-panel{padding:8px 10px;background:#0d0b11}.sort-title{font-size:9px;margin-bottom:6px}.sort-option{background:#14101b;border-color:#2b2038}.sort-option span{font-size:9px}.sort-option button{width:25px;height:25px}
-.market-row-rich{background:linear-gradient(100deg,rgba(20,16,26,.98),rgba(12,10,15,.98));border-color:rgba(177,139,225,.11);border-radius:12px;margin:6px 0;padding:10px 12px;transition:border-color .2s,transform .2s,background .2s}
-.market-row-rich:active{transform:scale(.992)}.coin-logo,.coin-fallback{border-radius:50%;box-shadow:0 0 0 1px rgba(191,155,238,.2),0 4px 15px #0008}
-.market-price{font-variant-numeric:tabular-nums}.market-change{font-variant-numeric:tabular-nums;font-weight:800}
-@media(max-width:650px){.qx-market-hero{padding:14px;border-radius:14px}.qx-market-hero .btn{font-size:10px;padding:9px}.qx-sponsored-inline .ads-list{grid-template-columns:1fr}.market-tabs{margin-right:-3px}.market-tab{padding:8px 11px;font-size:9px}.sort-options{gap:5px}.sort-option{padding:3px 5px}.market-row-rich{padding:9px 8px}}
-@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
-</style>
-
-
-<style id="qx-market-integrated-controls-v19">
-/* One unified market surface: category filters, sort controls and coin cards. */
-#marketsPage .market-list-column>.list{
-  display:flex!important;flex-direction:column!important;gap:0!important;
-  padding:9px!important;border:1px solid rgba(177,139,225,.17)!important;
-  border-radius:17px!important;background:linear-gradient(145deg,rgba(17,14,23,.97),rgba(8,7,11,.99))!important;
-  box-shadow:0 18px 48px rgba(0,0,0,.30),inset 0 1px rgba(255,255,255,.035)!important;
-  overflow:hidden!important
-}
-#marketsPage .market-list-column>.list>#marketTabs{
-  order:1!important;margin:0 0 7px!important;padding:1px 1px 8px!important;
-  border-bottom:1px solid rgba(177,139,225,.12)!important
-}
-#marketsPage .market-list-column>.list>.sort-panel{
-  order:2!important;display:flex!important;align-items:center!important;justify-content:flex-end!important;
-  margin:0 0 7px!important;padding:0 0 7px!important;border:0!important;border-bottom:1px solid rgba(177,139,225,.12)!important;
-  border-radius:0!important;background:transparent!important;box-shadow:none!important
-}
-#marketsPage .sort-title{display:none!important}
-#marketsPage #sortOptions{display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:5px!important;width:100%!important}
-#marketsPage #sortOptions .sort-option{
-  display:flex!important;align-items:center!important;justify-content:center!important;
-  min-width:0!important;padding:0!important;border:0!important;background:transparent!important;
-  box-shadow:none!important;border-radius:7px!important
-}
-#marketsPage #sortOptions .sort-option span{
-  position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;
-  overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important
-}
-#marketsPage #sortOptions .sort-option button{
-  display:grid!important;place-items:center!important;width:25px!important;height:25px!important;
-  padding:5px!important;border:1px solid rgba(177,139,225,.16)!important;border-radius:7px!important;
-  color:#bba0df!important;background:rgba(255,255,255,.025)!important
-}
-#marketsPage #sortOptions .sort-option button svg{width:13px!important;height:13px!important}
-#marketsPage #sortOptions .sort-option button.active,
-#marketsPage #sortOptions .sort-option button[aria-pressed="true"]{
-  color:#fff!important;border-color:rgba(183,140,255,.55)!important;background:rgba(139,92,246,.16)!important
-}
-#marketsPage .market-list-column>.list>#tokenResults{order:3!important;width:100%!important;margin:0!important}
-#marketsPage .market-list-column>.list #tokenResults .qx-market-card{
-  border-color:rgba(177,139,225,.13)!important;
-  min-width:0!important;
-}
-#marketsPage .market-status{margin:8px 4px 0!important;font-size:10px!important;color:#82798c!important}
-@media(max-width:620px){
- #marketsPage .market-list-column>.list{padding:7px!important;border-radius:14px!important}
- #marketsPage #sortOptions .sort-option button{width:23px!important;height:23px!important}
-}
-</style>
-
-<style id="qx-live-motion-v25">
-.market-row-rich{position:relative;overflow:hidden}
-.market-row-rich::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(110deg,transparent 0%,rgba(255,255,255,.035) 48%,transparent 58%);transform:translateX(-120%);animation:qxRowSweep 3.8s linear infinite}
-@keyframes qxRowSweep{to{transform:translateX(120%)}}
-.token-live-state{display:inline-flex;align-items:center;gap:4px;margin-top:4px;font-size:8px;font-weight:900;letter-spacing:.6px;color:#43ffad;opacity:.85}
-.token-live-state::before{content:"";width:5px;height:5px;border-radius:50%;background:currentColor;box-shadow:0 0 8px currentColor;animation:qxPulse 1.2s ease-in-out infinite}
-.token-live-state.waiting{color:#b9a9d4}
-.token-live-state.waiting::before{box-shadow:none}
-@keyframes qxPulse{50%{opacity:.35;transform:scale(.72)}}
-#detailChartWrap{position:relative}
-#detailChartWrap::after{content:"";position:absolute;left:0;right:0;top:0;height:1px;background:linear-gradient(90deg,transparent,#43ffad,transparent);opacity:.5;pointer-events:none;animation:qxChartSweep 2.6s ease-in-out infinite}
-@keyframes qxChartSweep{0%{transform:translateX(-35%);opacity:0}25%{opacity:.5}75%{opacity:.5}100%{transform:translateX(35%);opacity:0}}
-@media(prefers-reduced-motion:reduce){.market-row-rich::after,#detailChartWrap::after,.token-live-state::before{animation:none!important}}
+<style id="qx-unified-home-redesign">
+.qx-home-page{max-width:1240px;margin:0 auto;padding:24px 18px 110px!important}.qx-home-hero{position:relative;min-height:390px;display:grid;grid-template-columns:minmax(0,1.35fr) minmax(300px,.65fr);align-items:center;overflow:hidden;border:1px solid rgba(164,112,255,.25);border-radius:26px;padding:42px;background:radial-gradient(circle at 78% 45%,rgba(122,63,255,.18),transparent 34%),linear-gradient(135deg,#0b1018,#130d20 58%,#09171a);box-shadow:0 24px 70px rgba(0,0,0,.35)}.qx-home-hero:after{content:"";position:absolute;inset:0;background:linear-gradient(120deg,transparent 0 52%,rgba(67,255,173,.035) 70%,transparent);pointer-events:none}.qx-home-copy{position:relative;z-index:2;max-width:700px}.qx-home-copy h1{font-size:clamp(36px,6vw,70px);line-height:.95;margin:12px 0 18px;letter-spacing:-2.8px}.qx-home-copy p{max-width:610px;color:#93a0b2;font-size:14px;line-height:1.75}.qx-home-actions{display:flex;gap:9px;margin-top:24px;flex-wrap:wrap}.qx-home-orbit{position:relative;width:270px;height:270px;justify-self:center;display:grid;place-items:center}.qx-orbit-ring{position:absolute;border:1px solid rgba(180,120,255,.35);border-radius:50%;transform:rotateX(65deg) rotateZ(18deg);box-shadow:0 0 40px rgba(160,90,255,.08)}.qx-orbit-ring.r1{width:250px;height:105px}.qx-orbit-ring.r2{width:185px;height:78px;transform:rotateX(65deg) rotateZ(-28deg);border-color:rgba(67,255,173,.28)}.qx-orbit-core{width:104px;height:104px;border-radius:32px;display:grid;place-items:center;font-weight:950;font-size:29px;letter-spacing:2px;background:linear-gradient(145deg,#1c1430,#0d171b);border:1px solid rgba(196,139,255,.6);box-shadow:0 0 55px rgba(156,87,255,.25),inset 0 0 30px rgba(255,255,255,.025)}.qx-home-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin:12px 0}.qx-home-stats>div{min-width:0;padding:15px 16px;border:1px solid rgba(148,166,190,.13);border-radius:14px;background:#0c121a}.qx-home-stats small{display:block;color:#657387;font-size:8px;font-weight:900;letter-spacing:1px}.qx-home-stats strong{display:block;margin-top:7px;font-size:17px}.qx-home-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}.qx-home-panel{padding:15px!important;min-height:290px}.qx-section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}.qx-section-head h2{margin:4px 0 0;font-size:16px}.qx-kicker{font-size:8px;font-weight:950;letter-spacing:1.6px;color:#b98cff}.qx-text-btn{border:0;background:none;color:#9b83c7;font-size:10px;font-weight:900;cursor:pointer}.qx-home-list{display:grid;gap:5px}.qx-home-row{display:grid;grid-template-columns:32px minmax(0,1fr) auto auto;gap:9px;align-items:center;padding:9px 8px;border:1px solid rgba(148,166,190,.08);border-radius:10px;background:rgba(255,255,255,.012);cursor:pointer}.qx-home-row:hover{border-color:rgba(166,108,255,.3);background:rgba(166,108,255,.035)}.qx-home-row img,.qx-home-avatar{width:28px;height:28px;border-radius:50%;object-fit:cover}.qx-home-avatar{display:grid;place-items:center;background:#171126;color:#b88cff;font-size:9px;font-weight:900}.qx-home-row strong{display:block;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.qx-home-row small{display:block;color:#68768a;font-size:8px;margin-top:2px}.qx-home-price{font-size:10px;font-weight:850;text-align:right}.qx-home-change{font-size:9px;font-weight:900;min-width:50px;text-align:right}.qx-home-change.up{color:var(--green)}.qx-home-change.down{color:var(--red)}.qx-home-star{width:28px;border:0;background:none;color:#657387;font-size:15px;cursor:pointer}.qx-home-star.active{color:#d9b8ff}.qx-home-tools{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin:12px 0}.qx-home-tools button{text-align:left;padding:16px;border:1px solid rgba(148,166,190,.13);border-radius:14px;background:linear-gradient(145deg,#0d141d,#0c1017);color:#fff;cursor:pointer}.qx-home-tools button:hover{transform:translateY(-2px);border-color:rgba(166,108,255,.4)}.qx-home-tools span{display:block;font-size:19px;color:#b98cff}.qx-home-tools strong{display:block;margin-top:8px;font-size:11px}.qx-home-tools small{display:block;color:#657387;margin-top:4px;font-size:8px}.qx-home-security{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:19px!important}.qx-home-security h2{font-size:16px;margin:6px 0}.qx-home-security p{color:#78869a;font-size:10px;line-height:1.6;max-width:650px}.qx-home-badges{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}.qx-home-badges span{padding:7px 9px;border:1px solid rgba(67,255,173,.2);border-radius:999px;color:#72d7b0;font-size:7px;font-weight:950;letter-spacing:.7px;background:rgba(67,255,173,.035)}.qx-empty{padding:24px;text-align:center;color:#657387;font-size:9px}
+.qx-market-card .qx-fav-btn{border:0;background:transparent;color:#5f6d80;font-size:15px;padding:5px;cursor:pointer;align-self:center}.qx-market-card .qx-fav-btn.active{color:#d9b8ff}.qx-market-card .market-card-right{display:grid!important;grid-template-columns:minmax(72px,auto) minmax(58px,90px) 55px auto!important;align-items:center;gap:7px}.qx-market-card .market-change{text-align:right}.qx-market-card .qx-mini-chart{min-width:58px}.qx-market-card .coin-button{min-width:0}
+@media(max-width:850px){.qx-home-hero{grid-template-columns:1fr;min-height:0;padding:28px}.qx-home-orbit{display:none}.qx-home-stats{grid-template-columns:repeat(2,1fr)}.qx-home-grid{grid-template-columns:1fr}.qx-home-tools{grid-template-columns:repeat(2,1fr)}.qx-home-security{align-items:flex-start;flex-direction:column}.qx-home-badges{justify-content:flex-start}}@media(max-width:520px){.qx-home-page{padding:14px 10px 100px!important}.qx-home-hero{padding:23px 18px;border-radius:19px}.qx-home-copy h1{font-size:39px;letter-spacing:-1.8px}.qx-home-copy p{font-size:11px}.qx-home-stats{gap:6px}.qx-home-stats>div{padding:12px}.qx-home-stats strong{font-size:14px}.qx-home-tools{gap:6px}.qx-home-tools button{padding:12px}.qx-home-row{grid-template-columns:28px minmax(0,1fr) auto}.qx-home-row .qx-home-price{display:none}.qx-home-row .qx-home-change{min-width:46px}.qx-market-card .market-card-right{grid-template-columns:minmax(58px,auto) 50px 44px auto!important;gap:4px}.qx-market-card .qx-fav-btn{font-size:14px}}
+html[dir="rtl"] .qx-home-copy{text-align:right}.qx-home-tools button{text-align:inherit}
 </style>
 </head>
 <body>
@@ -883,10 +558,11 @@ body{background:radial-gradient(ellipse at 50% -15%,rgba(132,83,190,.20),transpa
   <div class="qx-main-menu" id="qxMainMenu" aria-hidden="true">
    <div class="qx-menu-caption" id="qxMenuCaption">NAVIGATION</div>
    <div class="qx-menu-links">
-    <button class="qx-menu-link" type="button" data-page="exchangePage"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10l-3-3m3 3-3 3M17 17H7l3 3m-3-3 3-3"/></svg><span>Exchange</span></button>
+    <button class="qx-menu-link active" type="button" data-page="homePage"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span>Home</span></button>     <button class="qx-menu-link" type="button" data-page="exchangePage"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10l-3-3m3 3-3 3M17 17H7l3 3m-3-3 3-3"/></svg><span>Exchange</span></button>
     <button class="qx-menu-link" type="button" data-page="walletPage"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="15" rx="3"/><path d="M3 9h18M16 14h2"/></svg><span>Wallet</span></button>
     <button class="qx-menu-link" type="button" data-page="createPage"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v16M4 12h16"/><circle cx="12" cy="12" r="9"/></svg><span>Create Token</span></button>
-    <button class="qx-menu-link active" type="button" data-page="marketsPage"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5M4 19h17M7 15l4-4 3 2 6-7"/></svg><span>Markets</span></button>
+    <button class="qx-menu-link" type="button" data-page="marketsPage"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5M4 19h17M7 15l4-4 3 2 6-7"/></svg><span>Markets</span></button>
+    <button class="qx-menu-link" type="button" data-page="launchPage"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 17 17 4l3 3L7 20l-3 0zM12 8l4 4M8 4h4M4 12v4"/></svg><span>Launchpad</span></button>
     <button class="qx-menu-link" type="button" data-page="creatorPage"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>Creator</span></button>
    </div>
    <div class="qx-menu-divider"></div>
@@ -898,6 +574,27 @@ body{background:radial-gradient(ellipse at 50% -15%,rgba(132,83,190,.20),transpa
   </div>
  </div>
 </header>
+
+<main id="homePage" class="page active qx-home-page">
+ <section class="qx-home-hero">
+  <div class="qx-home-copy"><span class="qx-kicker">QX GLOBAL SOLANA EXCHANGE</span><h1>Trade. Discover. Launch.</h1><p>One fast interface for discovering Solana markets, trading live assets, launching tokens and managing your wallet.</p><div class="qx-home-actions"><button class="btn primary" type="button" onclick="showPage('marketsPage')">EXPLORE MARKETS</button><button class="btn" type="button" onclick="showPage('exchangePage')">OPEN EXCHANGE</button></div></div>
+  <div class="qx-home-orbit" aria-hidden="true"><div class="qx-orbit-ring r1"></div><div class="qx-orbit-ring r2"></div><div class="qx-orbit-core">QX</div></div>
+ </section>
+ <section class="qx-home-stats" id="qxHomeStats">
+  <div><small>MARKETS</small><strong id="qxHomeMarkets">—</strong></div><div><small>NEW DISCOVERIES</small><strong id="qxHomeNew">—</strong></div><div><small>24H VOLUME</small><strong id="qxHomeVolume">—</strong></div><div><small>TOP MOVE</small><strong id="qxHomeMove">—</strong></div>
+ </section>
+ <section class="qx-home-grid">
+  <div class="panel qx-home-panel"><div class="qx-section-head"><div><span class="qx-kicker">DISCOVERY</span><h2>What is moving</h2></div><button class="qx-text-btn" type="button" onclick="showPage('marketsPage')">View all →</button></div><div id="qxHomeMovers" class="qx-home-list"><div class="qx-empty">Loading live markets…</div></div></div>
+  <div class="panel qx-home-panel"><div class="qx-section-head"><div><span class="qx-kicker">WATCHLIST</span><h2>Your favorites</h2></div><button class="qx-text-btn" type="button" onclick="showPage('marketsPage')">Discover →</button></div><div id="qxHomeFavorites" class="qx-home-list"><div class="qx-empty">Star a token in Markets to keep it here.</div></div></div>
+ </section>
+ <section class="qx-home-tools">
+  <button type="button" onclick="showPage('marketsPage')"><span>◈</span><strong>Discover</strong><small>New Solana markets</small></button>
+  <button type="button" onclick="showPage('exchangePage')"><span>⇄</span><strong>Trade</strong><small>Live executable routes</small></button>
+  <button type="button" onclick="showPage('createPage')"><span>＋</span><strong>Create</strong><small>Launch your token</small></button>
+  <button type="button" onclick="showPage('launchPage')"><span>↗</span><strong>Launchpad</strong><small>Launch a real market</small></button>
+ </section>
+ <section class="panel qx-home-security"><div><span class="qx-kicker">SOLANA FIRST</span><h2>Built around on-chain data</h2><p>QX surfaces live market information, wallet balances and on-chain token signals instead of treating the interface as a static catalog.</p></div><div class="qx-home-badges"><span>LIVE DATA</span><span>WALLET READY</span><span>ON-CHAIN</span><span>MULTI-WALLET</span></div></section>
+</main>
 
 <main id="exchangePage" class="page">
  <button class="token-back-btn" id="qxTerminalBack" type="button" style="margin-bottom:12px">← BACK TO MARKETS</button>
@@ -1031,7 +728,7 @@ body{background:radial-gradient(ellipse at 50% -15%,rgba(132,83,190,.20),transpa
  </section>
 </main>
 
-<main id="marketsPage" class="page active">
+<main id="marketsPage" class="page">
  <div class="market-heading qx-market-hero"><div><span class="qx-kicker">QX DISCOVERY ENGINE</span><h2>Discover Solana</h2><p>Launch tokens. Discover what moves next.</p></div><button class="btn primary" type="button" onclick="showPage('createPage')">＋ Create Token</button></div>
  <div class="market-layout">
   <div class="market-list-column">
@@ -1071,7 +768,8 @@ body{background:radial-gradient(ellipse at 50% -15%,rgba(132,83,190,.20),transpa
      <div class="sort-option"><span>Liquidity</span><button data-sort="liquidity" aria-label="Sort liquidity"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10l-3-3m3 3-3 3M17 17H7l3 3m-3-3 3-3"/></svg></button></div>
     </div>
    </div>
-   <div class="list">
+   <div class="qx-market-utility"><div><span class="qx-utility-kicker">DISCOVERY</span><strong>Find the next Solana market</strong><small id="qxDiscoveryStatus">Live network data · verified by mint address</small></div><div class="qx-utility-pills"><button type="button" data-qx-time="5m">5M</button><button type="button" data-qx-time="1h">1H</button><button type="button" data-qx-time="6h">6H</button><button type="button" data-qx-time="24h" class="active">24H</button></div></div>
+ <div class="list">
     <div id="tokenResults" class="market-empty">Loading market...</div>
    </div>
    <p class="market-status" id="marketStatus">Connecting to Solana market feeds...</p>
@@ -2835,7 +2533,7 @@ window.QXAdoptMarketFallback=function(pairs){
  const st=$("marketStatus");if(st)st.textContent="New Solana market · fallback feed · "+allPairs.length.toLocaleString()+" tokens · "+new Date().toLocaleTimeString();
  renderMarket();
 };
-$("tokenBackBtn")?.addEventListener("click",()=>{document.body.classList.remove("qx-token-open");$("detail").style.display="none";selectedToken=null;window.__QXSelectedToken=null;pendingSwapOrder=null;window.QXClearTerminalToken?.();if(typeof showPage==="function")showPage("marketsPage");const market=document.getElementById("tokenResults");if(market)setTimeout(()=>market.scrollIntoView({behavior:"smooth",block:"start"}),60);});
+$("tokenBackBtn")?.addEventListener("click",()=>{document.body.classList.remove("qx-token-open");$("detail").style.display="none";selectedToken=null;window.__QXSelectedToken=null;pendingSwapOrder=null;window.QXClearTerminalToken?.();if(typeof showPage==="function")showPage("homePage");const market=document.getElementById("tokenResults");if(market)setTimeout(()=>market.scrollIntoView({behavior:"smooth",block:"start"}),60);});
 $("tradeBuyBtn")?.addEventListener("click",()=>setTradeDirection("buy"));
 $("tradeSellBtn")?.addEventListener("click",()=>setTradeDirection("sell"));
 $("swapNowBtn")?.addEventListener("click",()=>qxSwapNow());
@@ -3068,6 +2766,22 @@ function qxRealSparkline(p){
  return '<div class="qx-mini-chart" aria-hidden="true" title="Observed QX price samples"><svg viewBox="0 0 60 20" preserveAspectRatio="none"><polyline class="qx-spark" points="'+pts+'" fill="none" stroke="'+stroke+'" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></polyline><circle class="qx-dot" cx="60" cy="'+cy.toFixed(2)+'" r="1.5" fill="'+stroke+'"></circle></svg></div>';
 }
 
+const QX_FAV_KEY="qxFavorites";
+function qxFavorites(){try{const a=JSON.parse(localStorage.getItem(QX_FAV_KEY)||"[]");return Array.isArray(a)?a:[];}catch(e){return []}}
+function qxIsFavorite(mint){return qxFavorites().includes(String(mint||""));}
+function qxToggleFavorite(mint){mint=String(mint||"");if(!mint)return;let a=qxFavorites();if(a.includes(mint))a=a.filter(x=>x!==mint);else a.unshift(mint);a=a.slice(0,80);try{localStorage.setItem(QX_FAV_KEY,JSON.stringify(a));}catch(e){};renderMarket();qxRenderHome();}
+function qxFormatCompact(v){v=Number(v||0);if(!v)return "—";if(v>=1e9)return "$"+(v/1e9).toFixed(2)+"B";if(v>=1e6)return "$"+(v/1e6).toFixed(2)+"M";if(v>=1e3)return "$"+(v/1e3).toFixed(1)+"K";return "$"+v.toFixed(v<1?2:0);}
+function qxRenderHome(){
+ const list=Array.isArray(window.QXMarketPairs)?window.QXMarketPairs.slice():[];const byMint=new Map(list.map(p=>[String(p.baseToken?.address||""),p]));
+ const vol=list.reduce((n,p)=>n+qxNum(p.volume?.h24),0),newCount=list.filter(p=>qxNum(p.pairCreatedAt)>Date.now()-24*3600000).length;
+ const movers=list.filter(p=>qxNum(p.priceUsd)>0).slice().sort((a,b)=>qxNum(b.priceChange?.h24)-qxNum(a.priceChange?.h24)).slice(0,5);
+ const strongest=movers[0];
+ const set=(id,v)=>{const e=$(id);if(e)e.textContent=v};set("qxHomeMarkets",list.length?list.length.toLocaleString():"—");set("qxHomeNew",newCount?newCount.toLocaleString():"—");set("qxHomeVolume",vol?qxFormatCompact(vol):"—");set("qxHomeMove",strongest?((qxNum(strongest.priceChange?.h24)>0?"+":"")+qxNum(strongest.priceChange?.h24).toFixed(2)+"% "+cleanTokenText(strongest.baseToken?.symbol,"TOKEN")):"—");
+ const renderRows=(items,empty)=>items.length?items.map(p=>{const mint=String(p.baseToken?.address||"");const img=qxSafeUrl(p.info?.imageUrl||"");const ch=qxNum(p.priceChange?.h24);const cls=ch>0?"up":ch<0?"down":"";return '<div class="qx-home-row" data-home-mint="'+escapeHTML(mint)+'"><span>'+(img?'<img src="'+escapeHTML(img)+'" alt="" loading="lazy">':'<span class="qx-home-avatar">'+escapeHTML(String(p.baseToken?.symbol||"?").slice(0,2))+'</span>')+'</span><span><strong>'+escapeHTML(cleanTokenText(p.baseToken?.name,"Unknown Token"))+'</strong><small>'+escapeHTML(cleanTokenText(p.baseToken?.symbol,"TOKEN"))+'</small></span><span class="qx-home-price">'+(qxNum(p.priceUsd)>0?qxFormatTokenPrice(p.priceUsd):"—")+'</span><span class="qx-home-change '+cls+'">'+(ch?(ch>0?"+":"")+ch.toFixed(2)+"%":"—")+'</span></div>';}).join(""): '<div class="qx-empty">'+empty+'</div>';
+ const moversEl=$("qxHomeMovers");if(moversEl)moversEl.innerHTML=renderRows(movers,"Live Solana markets will appear here when the feed returns.");
+ const favs=qxFavorites().map(m=>byMint.get(m)).filter(Boolean).slice(0,5);const favEl=$("qxHomeFavorites");if(favEl)favEl.innerHTML=renderRows(favs,"Star a token in Markets to keep it here.");
+ document.querySelectorAll("[data-home-mint]").forEach(el=>el.onclick=()=>{const p=byMint.get(el.dataset.homeMint);if(p)openToken(p)});
+}
 function renderMarket(){
  window.QXMarketPairs=Array.isArray(allPairs)?allPairs.slice():[];
  window.allPairs=window.QXMarketPairs;
@@ -3084,9 +2798,11 @@ function renderMarket(){
  const mint=escapeHTML(p.baseToken.address);
  const spark=qxRealSparkline(p);
  const marketState=hasPrice?'<span class="token-live-state">MARKET READY</span>':'<span class="token-live-state waiting">AWAITING MARKET</span>';
- return '<div class="market-row market-row-rich qx-market-card"><button class="coin-button" data-mint="'+mint+'">'+img+fallback+'<span class="coin-info"><strong>'+name+'</strong><small>'+symbol+' · '+mint.slice(0,6)+'…'+mint.slice(-4)+'</small>'+qxTokenMeta(p)+marketState+'</span></button><div class="market-card-right"><div class="market-price">'+(hasPrice?qxFormatTokenPrice(p.priceUsd):"—")+'</div>'+spark+'<div class="market-change '+cls+'">'+changeText+'</div></div></div>';
+ return '<div class="market-row market-row-rich qx-market-card"><button class="coin-button" data-mint="'+mint+'">'+img+fallback+'<span class="coin-info"><strong>'+name+'</strong><small>'+symbol+' · '+mint.slice(0,6)+'…'+mint.slice(-4)+'</small>'+qxTokenMeta(p)+marketState+'</span></button><div class="market-card-right"><div class="market-price">'+(hasPrice?qxFormatTokenPrice(p.priceUsd):"—")+'</div>'+spark+'<div class="market-change '+cls+'">'+changeText+'</div><button type="button" class="qx-fav-btn" data-fav-mint="'+mint+'" aria-label="Favorite">'+(qxIsFavorite(p.baseToken.address)?'★':'☆')+'</button></div></div>';
 }).join("");
  box.querySelectorAll(".coin-button[data-mint]").forEach(button=>button.onclick=()=>{const token=list.find(p=>String(p.baseToken.address)===button.dataset.mint);if(token){openToken(token);}});
+ box.querySelectorAll("[data-fav-mint]").forEach(button=>button.onclick=(event)=>{event.stopPropagation();qxToggleFavorite(button.dataset.favMint);});
+ qxRenderHome();
 }
 $("marketTabs").addEventListener("click",event=>{const button=event.target.closest("[data-category]");if(!button)return;currentCategory=button.dataset.category;console.info("QX market category",currentCategory,{all:allPairs.length,newCoins:newPairs.length});document.querySelectorAll(".market-tab").forEach(t=>t.classList.toggle("active",t===button));renderMarket();});
 async function searchMarket(){const query=$("search").value.trim();if(!query){renderMarket();return;}$("tokenResults").innerHTML='<div class="market-empty">Searching new Solana coins…</div>';try{let results=await qxFetchDexSearch(query);if(!results.length){const data=await getJSON(QX_CMC_BASE+"/v1/dex/search?platform=sol&q="+encodeURIComponent(query)+"&limit=100&sort=volume_24h",12000,2);const raw=Array.isArray(data?.data?.tks)?data.data.tks:[];results=raw.map(t=>({chainId:"solana",pairAddress:String(t?.pu||""),baseToken:{address:String(t?.addr||""),name:cleanTokenText(t?.n||"Unknown Token"),symbol:cleanTokenText(t?.s||"TOKEN")},priceUsd:String(t?.p||0),priceChange:{h24:qxNum(t?.pc24h)},volume:{h24:qxNum(t?.v24h)},liquidity:{usd:qxNum(t?.liq)},marketCap:qxNum(t?.mc),fdv:qxNum(t?.fdv),txns:{h24:{buys:0,sells:0}},info:{imageUrl:qxSafeUrl(t?.lg||"")},dexId:"coinmarketcap"})).filter(p=>qxIsValidSolanaMint(p.baseToken.address)&&!qxLooksLikeFakeNative(p));}const meta=await qxFetchJupiterMeta();const searched=qxFreshNewPairs(await qxResolveMarketMetadata(qxMergeJupiterMeta(results,meta)));window.QXPreviousMarketPairs=allPairs;allPairs=searched;newPairs=searched;currentCategory="all";document.querySelectorAll(".market-tab").forEach(t=>t.classList.toggle("active",t.dataset.category==="all"));renderMarket();qxUpdateLiveSubscriptions();}catch(e){console.warn("QX new-coin search",e);$("tokenResults").innerHTML='<div class="market-empty">New-coin search is temporarily unavailable. Try again shortly.</div>';}}
@@ -3613,7 +3329,7 @@ loadMarket();
     document.body.classList.remove('qx-token-open');
     const detail=$('detail');if(detail)detail.style.display='none';
     window.__QXSelectedToken=null;window.QXTerminalTokenMint='';
-    if(typeof showPage==='function')showPage('marketsPage');
+    if(typeof showPage==='function')showPage('homePage');
   });
   window.addEventListener('DOMContentLoaded',()=>{renderWatch();renderHistory();renderPortfolioPnl();$('qxPnlRefreshBtn')?.addEventListener('click',renderPortfolioPnl)});
   renderWatch();renderHistory();renderPortfolioPnl();
@@ -3750,129 +3466,6 @@ loadMarket();
 </script>
 
 
-<script id="qx-market-click-final">
-/* QX market clicks are handled by the single delegated controller below.
-   No MutationObserver is used here; dynamically rendered cards still work. */
-</script>
-
-
-<script id="qx-market-layout-order-v4">
-/* Market controls are placed inside the coin-list surface by qx-market-click-final. */
-</script>
-
-
-<style id="qx-terminal-black-screen-fix-v4">
-body.qx-token-open #exchangePage{display:block!important;min-height:0!important}
-body.qx-token-open #exchangePage > #detail{display:block!important;visibility:visible!important;opacity:1!important}
-body.qx-token-open #marketsPage{display:none!important}
-</style>
-<style id="qx-trending-spotlight-v3">
-.ads-shell{padding:17px!important;margin:10px 0 14px!important;border-radius:15px!important}
-.ads-shell .ads-head{margin-bottom:12px}
-.ads-shell .ads-title{font-size:15px!important;letter-spacing:.55px}
-.ads-shell .ads-sub{font-size:11px!important}
-#publicAdsList:has(.qx-trending-spotlight){display:block!important}
-.qx-trending-spotlight{position:relative;overflow:hidden;min-height:112px;padding:13px 14px;border:1px solid rgba(126,91,184,.48);border-radius:13px;background:linear-gradient(112deg,rgba(42,27,67,.98),rgba(12,17,31,.98) 72%,rgba(12,32,39,.96));cursor:pointer;transition:opacity .22s ease,transform .22s ease}
-.qx-trending-spotlight:active{transform:scale(.99)}
-.qx-trending-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
-.qx-trending-label{font-size:9px;font-weight:900;letter-spacing:1.2px;color:#d9c8ff}
-.qx-trending-live{font-size:8px;font-weight:800;letter-spacing:.8px;color:#7dffc0}
-.qx-trending-live:before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:#4df0a2;margin-right:5px;box-shadow:0 0 9px #4df0a2}
-.qx-trending-token{display:flex;align-items:center;gap:12px;min-width:0}
-.qx-trending-logo{width:43px;height:43px;flex:0 0 43px;border-radius:50%;object-fit:cover;background:#28203b;border:1px solid #604b80}
-.qx-trending-fallback{display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#eee2ff}
-.qx-trending-info{min-width:0;flex:1}
-.qx-trending-name{display:block;font-size:14px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff}
-.qx-trending-symbol{display:block;margin-top:3px;font-size:9px;color:#bdb2d0}
-.qx-trending-right{text-align:right;flex:0 0 auto}
-.qx-trending-price{font-size:15px;font-weight:900;color:#fff;font-variant-numeric:tabular-nums}
-.qx-trending-change{margin-top:4px;font-size:10px;font-weight:800}
-.qx-trending-change.up{color:#50e6a1}.qx-trending-change.down{color:#ff7188}.qx-trending-change.neutral{color:#bdb2d0}
-.qx-trending-foot{display:flex;justify-content:space-between;gap:8px;margin-top:12px;padding-top:9px;border-top:1px solid rgba(255,255,255,.09);font-size:9px;color:#a99dbb}
-.qx-trending-dots{display:flex;gap:4px;align-items:center}
-.qx-trending-dots i{width:5px;height:5px;border-radius:50%;background:#625477}
-.qx-trending-dots i.active{width:14px;border-radius:5px;background:#c8a8ff}
-.qx-trending-enter{font-size:9px;font-weight:800;color:#d7c2ff}
-.qx-trending-spotlight.is-changing{opacity:.45;transform:translateY(3px)}
-@media(max-width:520px){.ads-shell{padding:14px!important}.qx-trending-spotlight{min-height:105px;padding:11px}.qx-trending-logo{width:38px;height:38px;flex-basis:38px}.qx-trending-name{font-size:12px}.qx-trending-price{font-size:13px}}
-/* Compact, horizontally scrollable sort and category controls. */
-.sort-panel{padding:7px 8px!important;margin:8px 0!important}
-.sort-title{font-size:8px!important;margin-bottom:5px!important}
-.sort-options{display:flex!important;flex-wrap:nowrap!important;overflow-x:auto!important;gap:7px!important;scrollbar-width:none!important;-webkit-overflow-scrolling:touch}
-.sort-options::-webkit-scrollbar,.market-tabs::-webkit-scrollbar{display:none}
-.sort-option{flex:0 0 auto!important;gap:3px!important;font-size:9px!important}
-.sort-option button{width:20px!important;height:20px!important}
-</style>
-<style id="qx-final-performance-rtl-ads">
-/* FINAL QX FIXES — one market surface, no stacked layers */
-html[dir="rtl"],html[dir="rtl"] body{width:100%;max-width:100%;overflow-x:hidden}
-html[dir="rtl"] .wrap,html[dir="rtl"] .page,html[dir="rtl"] main,html[dir="rtl"] section,html[dir="rtl"] .panel,html[dir="rtl"] .market-layout,html[dir="rtl"] .market-list-column,html[dir="rtl"] #detail{box-sizing:border-box;max-width:100%;min-width:0}
-html[dir="rtl"] .wrap{width:100%;margin:0 auto;padding-left:10px!important;padding-right:10px!important}
-html[dir="rtl"] .market-layout{display:block!important;width:100%!important}
-html[dir="rtl"] .market-list-column{width:100%!important}
-html[dir="rtl"] #marketsPage .list{width:100%!important;max-width:100%!important;overflow:hidden}
-html[dir="rtl"] #tokenResults{width:100%!important;max-width:100%!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;min-width:0!important}
-html[dir="rtl"] #tokenResults .market-row-rich{min-width:0!important;width:100%!important}
-html[dir="rtl"] .market-row-rich.qx-market-card{grid-template-columns:minmax(0,1fr) auto!important}
-html[dir="rtl"] .coin-button,.coin-info{min-width:0!important}
-html[dir="rtl"] .coin-info strong,html[dir="rtl"] .coin-info small{max-width:100%!important;min-width:0!important}
-html[dir="rtl"] .market-card-right{min-width:0!important;max-width:42%;direction:ltr}
-html[dir="rtl"] .market-tabs,.sort-options{max-width:100%;min-width:0;overflow-x:auto}
-html[dir="rtl"] .toolbar{display:flex;min-width:0;width:100%}
-html[dir="rtl"] .toolbar>*{min-width:0}
-html[dir="rtl"] .ads-shell{width:100%!important;max-width:100%!important;box-sizing:border-box!important;overflow:hidden}
-html[dir="rtl"] .ads-list{width:100%!important;min-width:0!important}
-html[dir="rtl"] .qx-trending-grid{direction:rtl}
-html[dir="rtl"] .qx-trending-card{min-width:0}
-html[dir="rtl"] .qx-trending-card .qx-trending-right{direction:ltr}
-html[dir="rtl"] .qx-trending-card .qx-trending-foot{direction:rtl}
-html[dir="rtl"] .qx-swap-value,html[dir="rtl"] .amount-entry{direction:ltr}
-html[dir="rtl"] .qx-swap-output{direction:ltr;text-align:right}
-html[dir="rtl"] #detail{width:100%!important}
-html[dir="rtl"] body.qx-token-open #detail{width:100%!important;max-width:100%!important;margin:0!important;padding-left:10px!important;padding-right:10px!important}
-html[dir="rtl"] .detail-stats{min-width:0}
-html[dir="rtl"] .detail-stat{min-width:0;overflow:hidden}
-html[dir="rtl"] .detail-stat strong{overflow-wrap:anywhere;word-break:break-word}
-html[dir="rtl"] .qx-terminal-grid,html[dir="rtl"] .qx-stats,html[dir="rtl"] .qx-pnl-grid,html[dir="rtl"] .qx-feature-strip{min-width:0}
-@media(max-width:520px){
- html[dir="rtl"] #tokenResults{grid-template-columns:1fr!important}
- html[dir="rtl"] .qx-global-settings{width:100%!important;min-width:0!important}
- html[dir="rtl"] .qx-global-settings select{width:100%!important;min-width:0!important}
- html[dir="rtl"] .detail-stats{grid-template-columns:repeat(2,minmax(0,1fr))!important}
-}
-
-/* Three real trending slots live inside the existing Sponsored area. */
-.ads-shell{width:100%;box-sizing:border-box}
-#publicAdsList{width:100%;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;align-items:stretch}
-.qx-trending-grid{display:contents}
-.qx-trending-card,.qx-paid-ad-card{min-width:0;overflow:hidden;border:1px solid rgba(151,103,215,.42);border-radius:14px;background:linear-gradient(145deg,rgba(29,19,48,.98),rgba(10,12,22,.98));box-shadow:0 10px 28px rgba(0,0,0,.22);cursor:pointer}
-.qx-trending-card{padding:12px;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
-.qx-trending-card:hover{transform:translateY(-2px) perspective(900px) rotateX(.4deg);border-color:rgba(180,92,255,.72);box-shadow:0 16px 36px rgba(0,0,0,.3),0 0 24px rgba(180,92,255,.08)}
-.qx-trending-card:active{transform:scale(.985)}
-.qx-trending-card .qx-trending-top{display:flex;justify-content:space-between;gap:7px;align-items:center;margin-bottom:10px}
-.qx-trending-card .qx-trending-label{font-size:8px;font-weight:900;letter-spacing:1px;color:#d9c8ff}
-.qx-trending-card .qx-trending-live{font-size:7px;font-weight:900;letter-spacing:.7px;color:#70f3b3;white-space:nowrap}
-.qx-trending-card .qx-trending-live::before{content:"";display:inline-block;width:5px;height:5px;border-radius:50%;background:#4df0a2;box-shadow:0 0 8px #4df0a2;margin-inline-end:4px}
-.qx-trending-card .qx-trending-token{display:flex;align-items:center;gap:9px;min-width:0}
-.qx-trending-card .qx-trending-logo{width:38px;height:38px;flex:0 0 38px;border-radius:50%;object-fit:cover;background:#28203b;border:1px solid #604b80}
-.qx-trending-card .qx-trending-fallback{display:grid;place-items:center;font-size:11px;font-weight:900;color:#eee2ff}
-.qx-trending-card .qx-trending-info{min-width:0;flex:1}
-.qx-trending-card .qx-trending-name{display:block;font-size:12px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff}
-.qx-trending-card .qx-trending-symbol{display:block;margin-top:3px;font-size:8px;color:#bdb2d0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.qx-trending-card .qx-trending-right{flex:0 0 auto;text-align:right;min-width:70px}
-.qx-trending-card .qx-trending-price{font-size:12px;font-weight:900;color:#fff;white-space:nowrap}
-.qx-trending-card .qx-trending-change{margin-top:4px;font-size:9px;font-weight:900;white-space:nowrap}
-.qx-trending-card .qx-trending-change.up{color:#50e6a1}.qx-trending-card .qx-trending-change.down{color:#ff7188}.qx-trending-card .qx-trending-change.neutral{color:#bdb2d0}
-.qx-trending-card .qx-trending-foot{display:flex;justify-content:space-between;gap:6px;margin-top:10px;padding-top:8px;border-top:1px solid rgba(255,255,255,.08);font-size:7px;color:#a99dbb}
-.qx-paid-ad-card{padding:12px;cursor:default}
-.qx-paid-ad-card .qx-paid-badge{font-size:7px;font-weight:900;letter-spacing:.9px;color:#ffd98c;margin-bottom:7px}
-.qx-paid-ad-card strong{display:block;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.qx-paid-ad-card p{font-size:8px;line-height:1.4;color:#bdb2d0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;margin:6px 0}
-.qx-paid-ad-card a{font-size:8px;color:#d8c5ff;text-decoration:none}
-.qx-trending-card.qx-slot-change,.qx-paid-ad-card.qx-slot-change{opacity:.55;transform:translateY(2px)}
-@media(max-width:760px){#publicAdsList{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.qx-trending-card,.qx-paid-ad-card{padding:9px}.qx-trending-card .qx-trending-logo{width:30px;height:30px;flex-basis:30px}.qx-trending-card .qx-trending-right{min-width:55px}.qx-trending-card .qx-trending-price{font-size:10px}.qx-trending-card .qx-trending-name{font-size:10px}.qx-trending-card .qx-trending-symbol{font-size:7px}.qx-trending-card .qx-trending-foot{font-size:6px}}
-@media(max-width:430px){#publicAdsList{grid-template-columns:1fr}.qx-trending-card,.qx-paid-ad-card{min-height:94px}}
-</style>
 <script id="qx-qx-fixes-v6">
 (function(){
   "use strict";
@@ -3984,24 +3577,6 @@ html[dir="rtl"] .qx-terminal-grid,html[dir="rtl"] .qx-stats,html[dir="rtl"] .qx-
 </script>
 
 
-<style id="qx-global-redesign-v21">
-:root{--qx-bg:#07080d;--qx-panel:#10121b;--qx-panel2:#151827;--qx-line:rgba(190,170,255,.13);--qx-purple:#9b78ff;--qx-cyan:#5ee7e0;--qx-text:#f5f3fb;--qx-muted:#9393a8;--qx-radius:20px}
-html{background:var(--qx-bg);scroll-behavior:smooth}body{background:radial-gradient(ellipse at 12% -12%,rgba(112,72,210,.17),transparent 38%),radial-gradient(ellipse at 92% 5%,rgba(36,120,150,.09),transparent 32%),var(--qx-bg)!important;color:var(--qx-text)!important;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif!important;letter-spacing:.005em}
-body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;background-image:linear-gradient(rgba(255,255,255,.012) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.012) 1px,transparent 1px);background-size:44px 44px;mask-image:linear-gradient(to bottom,black,transparent 75%)}
-button,select,input,textarea{font:inherit}button,.qx-menu-link,.market-tab,.sort-option{transition:transform .18s ease,border-color .18s ease,background .18s ease,box-shadow .18s ease}button:active,.qx-menu-link:active{transform:scale(.985)}
-.qx-menu,.qx-sidebar,.qx-global-settings,.market-list-column,.list,.detail-card,.swap-box,.wallet-card,.create-card,.ads-shell,.ad-card,.chart-wrap,.qx-trade-modal-card{background:linear-gradient(155deg,rgba(24,25,39,.96),rgba(12,14,23,.97))!important;border:1px solid var(--qx-line)!important;border-radius:var(--qx-radius)!important;box-shadow:0 18px 55px rgba(0,0,0,.22),inset 0 1px rgba(255,255,255,.035)!important;backdrop-filter:blur(16px)}
-.qx-menu-link{border:1px solid transparent!important;border-radius:13px!important}.qx-menu-link.active,.qx-menu-link[aria-current="page"]{background:linear-gradient(100deg,rgba(155,120,255,.2),rgba(94,231,224,.055))!important;border-color:rgba(155,120,255,.32)!important}
-.page,.page.active{max-width:1500px;margin-inline:auto}.market-heading h1,.market-heading h2,.hero h1,.hero h2{letter-spacing:-.035em!important;font-weight:850!important}.market-heading{margin-bottom:18px!important}
-#marketsPage .market-list-column{padding:clamp(12px,2vw,22px)!important;overflow:hidden}.market-list-column .list{padding:0!important;border:0!important;box-shadow:none!important;background:transparent!important}.market-tab{border-radius:12px!important;border:1px solid rgba(255,255,255,.075)!important;background:rgba(255,255,255,.025)!important}.market-tab.active{background:linear-gradient(135deg,rgba(155,120,255,.25),rgba(94,231,224,.08))!important;border-color:rgba(155,120,255,.5)!important;box-shadow:0 7px 25px rgba(115,80,210,.13)!important}
-#tokenResults{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px!important}#tokenResults .token-card,#tokenResults .coin-card,#tokenResults [class*="token-row"]{min-width:0;border:1px solid rgba(255,255,255,.075)!important;border-radius:16px!important;background:linear-gradient(145deg,rgba(28,30,46,.88),rgba(15,17,27,.94))!important;box-shadow:inset 0 1px rgba(255,255,255,.035)!important;transition:transform .18s ease,border-color .18s ease,background .18s ease!important}#tokenResults .token-card:hover,#tokenResults .coin-card:hover,#tokenResults [class*="token-row"]:hover{transform:translateY(-2px);border-color:rgba(155,120,255,.38)!important;background:linear-gradient(145deg,rgba(38,34,59,.95),rgba(16,19,31,.98))!important}
-#search,.qx-global-settings select,.qx-global-settings input{background:#0d1019!important;border:1px solid var(--qx-line)!important;border-radius:12px!important;color:var(--qx-text)!important}button.primary,.buy,.sell,.qx-trade-launch button{border-radius:13px!important;font-weight:850!important;letter-spacing:.02em}.buy,button.primary{box-shadow:0 8px 24px rgba(126,87,230,.18)!important}
-input,select,textarea{max-width:100%}img{object-fit:contain}#detailChartWrap{border-radius:18px!important;overflow:hidden}.qx-trade-modal-card{max-width:470px!important}.qx-trade-modal-head{border-bottom:1px solid var(--qx-line)!important}
-footer{color:var(--qx-muted)!important;border-top:1px solid var(--qx-line)!important}
-html[dir="rtl"] body{text-align:initial}html[dir="rtl"] .qx-menu-link,html[dir="rtl"] .market-tab{text-align:right}html[dir="rtl"] input,html[dir="rtl"] textarea{direction:rtl;text-align:right}html[dir="rtl"] .token-address,html[dir="rtl"] .mint-address,html[dir="rtl"] .numeric,html[dir="rtl"] .price,html[dir="rtl"] .amount{direction:ltr;unicode-bidi:plaintext;text-align:left}
-html[lang="zh-CN"] body{font-family:Inter,"PingFang SC","Microsoft YaHei",system-ui,sans-serif!important;letter-spacing:0}html[lang="zh-CN"] .qx-menu-link,html[lang="zh-CN"] button{letter-spacing:0}
-@media(max-width:700px){#tokenResults{grid-template-columns:1fr!important;gap:8px!important}#marketsPage .market-list-column{padding:11px!important;border-radius:16px!important}.market-heading{gap:8px!important}.qx-global-settings{padding:10px!important}.page{padding-inline:10px!important}.qx-trade-modal-card{width:calc(100vw - 24px)!important}}
-@media(min-width:1100px){#tokenResults{grid-template-columns:repeat(2,minmax(0,1fr))}}
-</style>
 <script id="qx-complete-i18n-v21">
 (()=>{
  const langSelect=document.getElementById('qxLanguage');if(!langSelect)return;
@@ -4034,59 +3609,6 @@ html[lang="zh-CN"] body{font-family:Inter,"PingFang SC","Microsoft YaHei",system
 </script>
 
 
-<style id="qx-world-class-terminal-v23">
-:root{
- --qx-bg:#05070b;--qx-panel:#090c12;--qx-panel2:#0d1119;--qx-line:#1b2431;--qx-line2:#253142;
- --qx-text:#f3f6fb;--qx-muted:#7f8b9c;--qx-green:#20d99a;--qx-red:#ff5576;--qx-blue:#4ea3ff;--qx-accent:#7c5cff;
-}
-html,body{background:#05070b!important;color:var(--qx-text)!important}
-body{font-family:Inter,-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif!important}
-.wrap{max-width:1540px!important;margin:0 auto!important;padding:0 18px 80px!important}
-header{height:70px!important;max-width:1540px!important;margin:0 auto 10px!important;padding:0 4px!important;border-bottom:1px solid #141c27!important;background:rgba(5,7,11,.94)!important;box-shadow:none!important;backdrop-filter:blur(18px)!important;position:sticky!important;top:0!important;z-index:50!important}
-.brand-lockup{gap:10px!important}.brand-mark{width:34px!important;height:34px!important}.brand-name{font-size:14px!important;letter-spacing:1.2px!important}.brand-tagline{font-size:7px!important;color:#667286!important;letter-spacing:2px!important}
-.qx-main-menu{background:#080b11!important;border:1px solid #202b39!important;box-shadow:0 25px 80px #000c!important;border-radius:14px!important}
-.qx-menu-link{color:#aab4c3!important}.qx-menu-link:hover,.qx-menu-link.active{background:#111923!important;color:#fff!important}
-#marketsPage{max-width:1500px!important;margin:0 auto!important}
-.qx-market-hero{margin:18px 0 12px!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;display:flex!important;align-items:flex-end!important;justify-content:space-between!important;gap:20px!important}
-.qx-market-hero h2{font-size:34px!important;font-weight:800!important;letter-spacing:-1.5px!important;margin:5px 0!important;color:#fff!important}
-.qx-market-hero p{font-size:12px!important;color:#778397!important}
-.qx-kicker{font-size:8px!important;letter-spacing:2.4px!important;color:#71809a!important}
-.qx-market-hero .btn.primary{background:#f1f4f8!important;color:#06080c!important;border:0!important;border-radius:8px!important;font-weight:850!important;padding:10px 15px!important;box-shadow:none!important}
-.market-layout{display:grid!important;grid-template-columns:minmax(0,1fr) 400px!important;gap:14px!important;align-items:start!important}
-.market-list-column{min-width:0!important}
-.market-list-column>.list{border:1px solid #1a2431!important;border-radius:10px!important;background:#070a0f!important;box-shadow:0 25px 80px rgba(0,0,0,.25)!important;padding:0!important;overflow:hidden!important}
-.market-tabs{background:#090d13!important;border-bottom:1px solid #17202b!important;padding:0 12px!important;gap:0!important;display:flex!important;overflow:auto!important}
-.market-tab{border:0!important;border-radius:0!important;background:transparent!important;color:#7e8a9b!important;padding:14px 15px!important;font-size:9px!important;font-weight:800!important;letter-spacing:.7px!important;position:relative!important}
-.market-tab.active{background:transparent!important;color:#fff!important;box-shadow:none!important}
-.market-tab.active:after{content:"";position:absolute;left:12px;right:12px;bottom:0;height:2px;background:#fff;border-radius:2px}
-.qx-sponsored-inline{margin:10px 10px 0!important;border:1px solid #18222e!important;border-radius:9px!important;background:#0a0e14!important;padding:10px 12px!important}
-.qx-sponsored-inline .ads-title{color:#b7c0ce!important;font-size:8px!important;letter-spacing:1.5px!important}.qx-sponsored-inline .ads-sub{color:#637083!important}
-.toolbar{margin:10px!important;display:flex!important}.toolbar input{height:36px!important;background:#0b0f15!important;border:1px solid #1b2633!important;border-radius:7px!important;color:#fff!important;padding:0 12px!important}.toolbar .btn{height:36px!important;border-radius:7px!important;background:#111823!important;border:1px solid #202c3b!important;color:#d9e0e9!important}
-.market-meta{margin:8px 12px!important;display:flex!important;justify-content:space-between!important;color:#677487!important}
-.sort-panel{margin:0 10px!important;padding:8px 2px!important;border:0!important;border-top:1px solid #141d28!important;border-bottom:1px solid #141d28!important;background:transparent!important;box-shadow:none!important}
-#marketsPage #sortOptions{justify-content:flex-start!important}.sort-option button{border:1px solid #202b38!important;background:#0b0f15!important;color:#7f8da0!important;border-radius:6px!important}
-#tokenResults{display:block!important;padding:0!important;background:#070a0f!important}
-#tokenResults:before{content:"";display:grid;grid-template-columns:minmax(250px,2.3fr) 120px 130px 100px 110px 90px;gap:12px;align-items:center;height:36px;padding:0 14px;background:#080c12;border-bottom:1px solid #141d28;color:#566476;font-size:8px;font-weight:800;letter-spacing:1px;box-sizing:border-box;content:"ASSET\\A PRICE\\A CHART\\A 24H\\A VOLUME\\A LIQUIDITY";white-space:pre-wrap;}
-.market-row-rich.qx-market-card{display:grid!important;grid-template-columns:minmax(250px,2.3fr) minmax(270px,1fr)!important;align-items:center!important;min-height:62px!important;height:62px!important;margin:0!important;padding:0 14px!important;border:0!important;border-bottom:1px solid #121b26!important;border-radius:0!important;background:#070a0f!important;box-shadow:none!important;transition:background .12s ease!important}
-.market-row-rich.qx-market-card:hover{background:#0c1119!important;transform:none!important;border-color:#172332!important}
-.market-row-rich .coin-button{display:flex!important;align-items:center!important;min-width:0!important;gap:10px!important;background:transparent!important}
-.market-row-rich .coin-logo,.market-row-rich .coin-fallback{width:34px!important;height:34px!important;flex:0 0 34px!important;border:1px solid #253140!important;box-shadow:none!important}
-.market-row-rich .coin-info{min-width:0!important;display:block!important}.market-row-rich .coin-info strong{font-size:11px!important;color:#edf2f8!important;font-weight:800!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;display:block!important}.market-row-rich .coin-info small{font-size:8px!important;color:#647287!important;display:block!important;margin-top:3px!important}
-.market-row-rich .token-meta{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:10px!important;margin:0 0 0 auto!important;width:100%!important;max-width:480px!important;align-items:center!important}
-.market-row-rich .token-meta span{font-size:8px!important;color:#697689!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}.market-row-rich .token-meta span:before{color:#3e4a5b!important}
-.market-row-rich .market-card-right{min-width:0!important;display:grid!important;grid-template-columns:95px 110px 65px!important;align-items:center!important;gap:12px!important;height:auto!important;text-align:right!important}
-.market-row-rich .market-price{font-size:11px!important;color:#f3f6fb!important;font-weight:800!important}.market-row-rich .qx-mini-chart{width:110px!important;height:28px!important}.market-row-rich .qx-mini-chart svg{width:100%!important;height:100%!important}.market-row-rich .market-change{font-size:10px!important;font-weight:850!important}.market-row-rich .market-change.positive{color:var(--qx-green)!important}.market-row-rich .market-change.negative{color:var(--qx-red)!important}.market-row-rich .market-change.neutral{color:#718094!important}
-.qx-market-terminal-head{display:none}
-#detail{background:#070a0f!important;border:1px solid #1a2431!important;border-radius:10px!important;box-shadow:0 25px 80px #0007!important;padding:16px!important;position:sticky!important;top:82px!important}
-#detail .detail-price{font-size:30px!important;font-weight:850!important}.chart-section{background:#080c12!important;border:1px solid #17212e!important;border-radius:8px!important;overflow:hidden!important}.chart-toolbar{padding:9px 11px!important;border-bottom:1px solid #17212e!important}.chart-toolbar strong{font-size:9px!important;letter-spacing:1.3px!important;color:#8d9aae!important}.chart-range{background:#0d131b!important;border:0!important;color:#657286!important}.chart-range.active{background:#182432!important;color:#fff!important}
-.qx-trades-panel,.qx-user-history{background:#080c12!important;border:1px solid #17212e!important;border-radius:8px!important}.qx-trade-row{border-color:#17212e!important;color:#8996a8!important}.qx-trade-head{color:#566476!important}
-.qx-swap-head{border-top:1px solid #17212e!important;padding-top:15px!important}.swap-box{background:#080c12!important;border:1px solid #17212e!important;border-radius:9px!important}.qx-trade-tab{background:#0c121a!important;color:#738096!important;border-color:#202b38!important}.qx-trade-tab.active{background:#182331!important;color:#fff!important;border-color:#344253!important}.qx-pay-card,.qx-receive-card{background:#0b1017!important;border:1px solid #1b2634!important}.swap-action{border-radius:7px!important;background:#eef2f6!important;color:#07090d!important}.swap-action:disabled{opacity:.35!important}
-@media(max-width:1050px){.market-layout{grid-template-columns:1fr!important}#detail{position:static!important}.market-row-rich.qx-market-card{grid-template-columns:minmax(220px,1.7fr) minmax(250px,1fr)!important}}
-@media(max-width:760px){.wrap{padding:0 8px 60px!important}.qx-market-hero h2{font-size:27px!important}.qx-market-hero{align-items:flex-start!important}.qx-market-hero .btn{display:none!important}.market-row-rich.qx-market-card{grid-template-columns:minmax(150px,1fr) 190px!important;height:60px!important;min-height:60px!important;padding:0 9px!important}.market-row-rich .token-meta{display:none!important}.market-row-rich .market-card-right{grid-template-columns:72px 78px 58px!important;gap:7px!important}.market-row-rich .qx-mini-chart{width:78px!important}.market-row-rich .coin-logo,.market-row-rich .coin-fallback{width:30px!important;height:30px!important;flex-basis:30px!important}.market-row-rich .coin-info strong{font-size:10px!important}.market-row-rich .coin-info small{font-size:7px!important}#tokenResults:before{grid-template-columns:1fr 190px!important;content:"ASSET\\A PRICE        CHART        24H"!important;height:32px!important;padding:0 9px!important;font-size:7px!important}}
-@media(max-width:520px){.market-row-rich.qx-market-card{grid-template-columns:minmax(130px,1fr) 165px!important}.market-row-rich .market-card-right{grid-template-columns:60px 68px 48px!important;gap:4px!important}.market-row-rich .qx-mini-chart{width:68px!important}.market-row-rich .market-price{font-size:9px!important}.market-row-rich .market-change{font-size:8px!important}.market-row-rich .coin-info strong{max-width:120px!important}}
-</style>
-
-
 <script id="qx-world-class-terminal-v23-js">
 (function(){
  function initQXTerminal(){
@@ -4100,6 +3622,20 @@ header{height:70px!important;max-width:1540px!important;margin:0 auto 10px!impor
   const search=document.getElementById('search'); if(search) search.setAttribute('aria-label','Search markets');
  }
  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',initQXTerminal,{once:true}); else initQXTerminal();
+})();
+</script>
+
+
+<script id="qx-clean-design-interactions">
+(()=>{
+ document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-qx-time]'); if(!b)return;
+  document.querySelectorAll('[data-qx-time]').forEach(x=>x.classList.toggle('active',x===b));
+  const label=document.getElementById('qxDiscoveryStatus'); if(label)label.textContent='Discovery window · '+b.textContent+' · live Solana data';
+  window.QXDiscoveryWindow=b.dataset.qxTime;
+  if(typeof window.QXRefreshMarket==='function')window.QXRefreshMarket();
+  else if(typeof window.renderMarket==='function')window.renderMarket();
+ });
 })();
 </script>
 
