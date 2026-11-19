@@ -3905,7 +3905,7 @@ function qxFreshNewPairs(list){
 }
 function qxCategoryList(){
  const baseAll=bestPairsByMint(allPairs||[]).filter(qxIsDisplayReady);
- const baseNew=qxFreshNewPairs(newPairs.length?newPairs:allPairs);
+ const baseNew=bestPairsByMint(newPairs.length?newPairs:qxFreshNewPairs(allPairs)).filter(qxIsDisplayReady);
  if(currentCategory==="spot")return baseAll.filter(p=>qxNum(p.liquidity?.usd)>0).sort((a,b)=>qxNum(b.liquidity?.usd)-qxNum(a.liquidity?.usd));
  if(currentCategory==="all")return baseAll;
  if(currentCategory==="new")return baseNew;
@@ -4060,6 +4060,7 @@ async function loadMarket(){
    window.QXNewPairs=newPairs;window.QXTrendingPairs=trendingPairs;
    qxUpdateMarketStatus(seed.source+' discovery loaded · '+allPairs.length.toLocaleString()+' markets',newPairs.length||allPairs.length);
    renderMarket();
+   qxRefreshNewStrip();
    qxUpdateLiveSubscriptions();
   }else if(box){
    box.innerHTML='<div class="market-empty">No Solana market data returned yet. Retrying automatically…</div>';
