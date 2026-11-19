@@ -1252,14 +1252,14 @@ body.qx-token-open #marketsPage .qx-discovery-hero,body.qx-token-open #marketsPa
  <div class="qx-menu-area">
   <button class="qx-menu-toggle" id="qxMenuToggle" type="button" aria-label="Open main menu" aria-expanded="false" aria-controls="qxMainMenu"><span></span><span></span><span></span></button>
   <div class="qx-main-menu" id="qxMainMenu" aria-hidden="true">
-   <div class="qx-menu-caption" id="qxMenuCaption">NAVIGATION</div>
+   <div class="qx-menu-caption" id="qxMenuCaption">EXPLORE & TOOLS</div>
    <div class="qx-menu-links">
-    <button class="qx-menu-link active" type="button" data-page="marketsPage"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5M4 19h17M7 15l4-4 3 2 6-7"/></svg><span>Discover</span></button>
-    <button class="qx-menu-link" type="button" data-page="launchPage"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19c4-1 5-4 6-8 1-4 4-6 8-6 0 4-2 7-6 8-4 1-7 2-8 6Z"/><path d="M8 16 5 19m8-8 4 4"/></svg><span>Launch</span></button>
-    <button class="qx-menu-link" type="button" data-page="createPage"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v16M4 12h16"/><circle cx="12" cy="12" r="9"/></svg><span>Create Token</span></button>
-    <button class="qx-menu-link" type="button" data-page="exchangePage"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10l-3-3m3 3-3 3M17 17H7l3 3m-3-3 3-3"/></svg><span>Trade</span></button>
-    <button class="qx-menu-link" type="button" data-page="walletPage"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="15" rx="3"/><path d="M3 9h18M16 14h2"/></svg><span>Wallet</span></button>
-    <button class="qx-menu-link" type="button" data-page="creatorPage"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>Creator</span></button>
+    <button class="qx-menu-link" type="button" data-category-link="new" data-page="marketsPage"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5M4 19h17M7 15l4-4 3 2 6-7"/></svg><span>New Tokens</span></button>
+    <button class="qx-menu-link" type="button" data-category-link="trending" data-page="marketsPage"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 17 5-5 4 3 7-8"/><path d="M15 7h5v5"/></svg><span>Trending</span></button>
+    <button class="qx-menu-link" type="button" data-category-link="gainers" data-page="marketsPage"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 17 17 5m0 0h-7m7 0v7"/></svg><span>Top Gainers</span></button>
+    <button class="qx-menu-link" type="button" data-category-link="volume" data-page="marketsPage"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 18V9m7 9V5m7 13v-7"/></svg><span>Top Volume</span></button>
+    <button class="qx-menu-link" type="button" data-page="creatorPage"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>Creator Studio</span></button>
+    <button class="qx-menu-link" type="button" data-page="launchPage"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19c4-1 5-4 6-8 1-4 4-6 8-6 0 4-2 7-6 8-4 1-7 2-8 6Z"/><path d="M8 16 5 19m8-8 4 4"/></svg><span>Launch Market</span></button>
    </div>
    <div class="qx-menu-divider"></div>
    <div class="qx-menu-caption" id="qxPreferencesCaption">PREFERENCES</div>
@@ -1736,7 +1736,16 @@ window.addEventListener("resize",qxSyncMainMenuAccessibility,{passive:true});
 qxSyncMainMenuAccessibility();
 if(qxMenuToggle&&qxMainMenu){
  qxMenuToggle.addEventListener("click",()=>{const open=!qxMainMenu.classList.contains("open");qxMainMenu.classList.toggle("open",open);qxMenuToggle.setAttribute("aria-expanded",String(open));qxMenuToggle.setAttribute("aria-label",open?(qxLanguage==="ar"?"إغلاق القائمة":"Close menu"):(qxLanguage==="ar"?"فتح القائمة الرئيسية":"Open main menu"));qxMainMenu.setAttribute("aria-hidden",String(!open));});
- qxMainMenu.querySelectorAll(".qx-menu-link").forEach(b=>b.addEventListener("click",()=>showPage(b.dataset.page)));
+ qxMainMenu.querySelectorAll(".qx-menu-link").forEach(b=>b.addEventListener("click",()=>{
+  const page=b.dataset.page;
+  if(b.dataset.categoryLink && page==="marketsPage"){
+   currentCategory=b.dataset.categoryLink;
+   document.querySelectorAll(".market-tab").forEach(t=>t.classList.toggle("active",t.dataset.category===currentCategory));
+   showPage(page);
+   renderMarket();
+  }else showPage(page);
+  qxCloseMainMenu();
+}));
  document.addEventListener("click",e=>{if(!e.target.closest(".qx-menu-area"))qxCloseMainMenu();});
  document.addEventListener("keydown",e=>{if(e.key==="Escape")qxCloseMainMenu();});
 }
@@ -2081,12 +2090,13 @@ function cleanTokenText(value,fallback="Unknown Token"){
  return text.slice(0,72);
 }
 async function getJSON(url,externalSignal=null,timeoutMs=12000,retries=1){
- // QX market callers historically use getJSON(url, timeoutMs, retries).
- // Accept that form as well as getJSON(url, AbortSignal, timeoutMs, retries).
+ // Accept both signatures: getJSON(url, timeoutMs, retries) and
+ // getJSON(url, AbortSignal, timeoutMs, retries). Numeric arguments must
+ // never be interpreted as an AbortSignal.
  if(typeof externalSignal==="number"){
-  retries=Math.max(0,Number(timeoutMs)||1);
-  timeoutMs=Math.max(1000,Number(externalSignal)||12000);
-  externalSignal=null;
+  const legacyTimeout=Math.max(1000,Number(externalSignal)||12000);
+  const legacyRetries=Math.max(0,Number(timeoutMs)||0);
+  timeoutMs=legacyTimeout; retries=legacyRetries; externalSignal=null;
  }else{
   timeoutMs=Math.max(1000,Number(timeoutMs)||12000);
   retries=Math.max(0,Number(retries)||0);
@@ -3976,10 +3986,23 @@ async function searchMarket(){
   if(requestId!==qxMarketSearchRequestId)return;
   // Search is a market-wide lookup, not the 30-day New filter. Keep older
   // Solana markets in ALL while deriving NEW separately from their timestamps.
-  const searched=bestPairsByMint(await qxResolveMarketMetadata(qxMergeJupiterMeta(results,meta)));
+  let searched=bestPairsByMint(await qxResolveMarketMetadata(qxMergeJupiterMeta(results,meta)));
   if(requestId!==qxMarketSearchRequestId)return;
-  // Preserve the original market universe across repeated searches.
+  // Search must never blank the terminal because one provider returned an
+  // incomplete response. Keep a non-empty successful search result only.
+  if(!searched.length){
+   const fallback=bestPairsByMint([...(allPairs||[]),...(newPairs||[])].filter(p=>{
+    const hay=[p?.baseToken?.name,p?.baseToken?.symbol,p?.baseToken?.address].map(v=>String(v||'').toLowerCase()).join(' ');
+    return hay.includes(query.toLowerCase());
+   }));
+   if(fallback.length)searched=fallback;
+  }
+  if(requestId!==qxMarketSearchRequestId)return;
   if(!Array.isArray(window.QXPreviousMarketPairs))window.QXPreviousMarketPairs=allPairs.slice();
+  if(!searched.length){
+   $("tokenResults").innerHTML='<div class="market-empty">No matching Solana market found. Try the token name, symbol, or full contract address.</div>';
+   return;
+  }
   allPairs=searched;
   newPairs=qxFreshNewPairs(searched);
   currentCategory="all";
