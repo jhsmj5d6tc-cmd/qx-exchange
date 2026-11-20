@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#080711">
 <meta name="google-site-verification" content="A5ntuJ6pvvK-Uo8HHA96o5bUPFGOg_70p-Nh_rsZ8NM">
 <title>QX Exchange — Solana Discovery</title>
-<meta name="qx-build" content="QX-APP-REBUILD-V109-DBC-RPC-INDEXED-REQUEST-FIX">
+<meta name="qx-build" content="QX-APP-REBUILD-V111-CHART-UNIVERSAL-ROUTE-SOL-PRICE-FIX">
 
 <style id="qx-core-theme">:root{--bg:#070812;--panel:#0d1120;--panel2:#11172a;--line:#232b43;--line2:#303a58;--text:#f6f8ff;--muted:#8994b2;--green:#35e89a;--red:#ff5d72;--purple:#8b5cf6;--purple2:#5b4bdb;--gold:#d9b45c;--radius:16px;--shadow:0 18px 55px rgba(0,0,0,.28);--max:1440px}
 *{box-sizing:border-box;}
@@ -1425,6 +1425,13 @@ body.qx-token-open #detail .qx-trade-launch{margin:14px 0 18px!important;}
 /* The token terminal return control is a fixed arrow only; accessible label remains for screen readers. */
 body.qx-token-open #detail #tokenBackBtn{position:fixed!important;top:max(10px,env(safe-area-inset-top))!important;inset-inline-start:12px!important;z-index:100000!important;display:flex!important;align-items:center!important;justify-content:center!important;width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important;padding:0!important;margin:0!important;gap:0!important;border:1px solid rgba(90,226,174,.42)!important;border-radius:50%!important;background:linear-gradient(145deg,rgba(20,55,49,.98),rgba(10,34,31,.98))!important;color:#b9ffe2!important;font-size:0!important;line-height:1!important;box-shadow:0 8px 24px #0007!important;backdrop-filter:blur(14px)!important;cursor:pointer!important;}
 body.qx-token-open #detail #tokenBackBtn span{display:block!important;font-size:27px!important;font-weight:900!important;line-height:1!important;color:#b9ffe2!important;text-shadow:0 0 10px rgba(90,255,190,.35)!important;}
+
+/* QX full interactive DexScreener chart: no QX title, range strip, or attribution. */
+.qx-full-dex-chart{margin:14px 0!important;padding:0!important;border:0!important;border-radius:12px!important;overflow:hidden!important;background:#080b12!important;box-shadow:none!important}
+.qx-full-dex-chart #detailChart{height:590px!important;min-height:500px!important;width:100%!important;padding:0!important;margin:0!important;border:0!important;border-radius:12px!important;overflow:hidden!important;background:#080b12!important}
+.qx-full-dex-chart #detailChart iframe{display:block!important;width:100%!important;height:590px!important;min-height:500px!important;border:0!important;border-radius:12px!important}
+.qx-full-dex-chart #chartMessage{padding:24px 10px;color:#9ba8ba;text-align:center;font-size:12px}
+@media(max-width:760px){.qx-full-dex-chart{margin:10px -2px!important;border-radius:9px!important}.qx-full-dex-chart #detailChart,.qx-full-dex-chart #detailChart iframe{height:570px!important;min-height:480px!important;border-radius:9px!important}}
 </style>
 </head>
 <body>
@@ -1701,11 +1708,10 @@ body.qx-token-open #detail #tokenBackBtn span{display:block!important;font-size:
     <div class="detail-stat"><small>24h Transactions</small><strong id="detailTransactions">-</strong></div>
     <div class="detail-stat"><small>Holders</small><strong id="detailHolders" title="A token-holder indexer/API is required for a reliable total">Indexer required</strong></div>
    </div>
-   <div class="chart-section" id="detailChartWrap" style="display:none">
-    <div class="chart-toolbar"><strong>QX LIVE CHART</strong><div class="chart-ranges" id="chartRanges"><button type="button" class="chart-range active" data-chart-range="now">NOW</button><button type="button" class="chart-range" data-chart-range="15s">15S</button><button type="button" class="chart-range" data-chart-range="30s">30S</button><button type="button" class="chart-range" data-chart-range="1m">1M</button><button type="button" class="chart-range" data-chart-range="5m">5M</button><button type="button" class="chart-range" data-chart-range="15m">15M</button><button type="button" class="chart-range" data-chart-range="30m">30M</button><button type="button" class="chart-range" data-chart-range="1H">1H</button><button type="button" class="chart-range" data-chart-range="4H">4H</button><button type="button" class="chart-range" data-chart-range="1D">1D</button></div></div>
-    <div id="detailChart" role="img" aria-label="QX native Solana candlestick chart"></div>
-    <div id="chartMessage" class="chart-message" style="display:none"></div>
-    <div class="chart-credit">Chart rendered inside QX | Solana market data</div>
+   <div class="chart-section qx-full-dex-chart" id="detailChartWrap" style="display:none">
+    <div id="detailChart" aria-label="Interactive Solana market chart">
+     <div id="chartMessage" class="chart-message" style="display:none"></div>
+    </div>
    </div>
    <div class="qx-trades-panel" id="qxTradesPanel">
     <div class="qx-trades-head"><strong>TRADES</strong><span id="qxTradesStatus" role="status" aria-live="polite" aria-atomic="true">Loading market trades…</span></div>
@@ -2575,26 +2581,35 @@ for(const {provider,name} of getInjectedWallets()){
 
 async function loadSolPrice(){
  let nextPrice=0;
+ // Prefer the most liquid DexScreener SOL pair. SOL can appear on either side
+ // of a pair, so do not assume it is always the base token.
  try{
-  const data=await getJSON("https://api.dexscreener.com/latest/dex/tokens/"+SOL);
-  const best=(data.pairs||[])
-   .filter(p=>p.chainId==="solana"&&p.baseToken?.address===SOL)
-   .sort((a,b)=>Number(b.liquidity?.usd||0)-Number(a.liquidity?.usd||0))[0];
-  if(best){canonicalSolPair=best;nextPrice=Number(best.priceUsd||0);}
+  const data=await getJSON("https://api.dexscreener.com/latest/dex/tokens/"+SOL,null,10000,1);
+  const candidates=(data.pairs||[]).filter(p=>p.chainId==="solana"&&Number(p.liquidity?.usd||0)>0).map(p=>{
+   const base=String(p.baseToken?.address||""),quote=String(p.quoteToken?.address||"");
+   if(base===SOL)return {pair:p,price:Number(p.priceUsd||0)};
+   if(quote===SOL){const native=Number(p.priceNative||0),baseUsd=Number(p.priceUsd||0);return {pair:p,price:native>0?baseUsd/native:0};}
+   return null;
+  }).filter(x=>x&&Number.isFinite(x.price)&&x.price>0).sort((a,b)=>Number(b.pair.liquidity?.usd||0)-Number(a.pair.liquidity?.usd||0));
+  if(candidates.length){canonicalSolPair=candidates[0].pair;nextPrice=candidates[0].price;}
  }catch(e){console.warn("DexScreener SOL price:",e);}
+ // Independent public fallbacks; a failure at one provider must not block the others.
  if(!(nextPrice>0)){
-  try{
-   const fallback=await getJSON("https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd");
-   nextPrice=Number(fallback?.solana?.usd||0);
-  }catch(e){console.warn("CoinGecko SOL price fallback:",e);}
+  try{const fallback=await getJSON("https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd",null,8000,0);nextPrice=Number(fallback?.solana?.usd||0);}catch(e){console.warn("CoinGecko SOL price fallback:",e);}
+ }
+ if(!(nextPrice>0)){
+  try{const fallback=await getJSON("https://api.binance.com/api/v3/ticker/price?symbol=SOLUSDT",null,8000,0);nextPrice=Number(fallback?.price||0);}catch(e){console.warn("Binance SOL price fallback:",e);}
  }
  if(Number.isFinite(nextPrice)&&nextPrice>0){
   solPrice=nextPrice;updateIndicativeEstimate();
+  const usd=$("qxSolUsd"),live=$("qxLivePrice");if(usd)usd.textContent="SOL/USD: "+qxFormatTokenPrice(nextPrice);if(live)live.textContent="Live SOL price: "+qxFormatTokenPrice(nextPrice);
   if(connected)await loadPortfolio();
   if(allPairs.length)renderMarket();
- }else console.warn("SOL USD price is temporarily unavailable; wallet balances are retained and not treated as zero.");
+ }else{
+  const usd=$("qxSolUsd"),live=$("qxLivePrice");if(usd)usd.textContent="SOL/USD: unavailable";if(live)live.textContent="Live SOL price temporarily unavailable";
+  console.warn("SOL USD price is temporarily unavailable; wallet balances are retained and not treated as zero.");
+ }
 }
-
 async function loadPortfolio(){
  if(!connected||!walletAddress)return;
  $("assetsList").textContent="Loading assets...";
@@ -3686,7 +3701,12 @@ async function qxBuildDirectDbcQuote(){
  // Do not require DBC getPoolByBaseMint to keep returning an active curve after migration.
  if(knownSuccessor||String(token?.qxLiveVenue||"").toLowerCase().includes("damm"))return await qxBuildDammV2Quote(token,direction,amountText);
  const client=new dbc.DynamicBondingCurveClient(connection,"confirmed"),poolState=await client.state.getPoolByBaseMint(new PublicKey(mint));
- if(!poolState?.publicKey)throw new Error("No live Meteora DBC pool was found for this token.");
+ // A token may have graduated to DAMM v2 without a readable active DBC curve.
+ // Check the actual DAMM v2 SOL pool before declaring the direct Meteora route unavailable.
+ if(!poolState?.publicKey){
+  try{return await qxBuildDammV2Quote(token,direction,amountText);}
+  catch(dammError){throw new Error("No executable Meteora SOL pool was found. DAMM v2 check: "+(dammError?.message||String(dammError))+". DBC check: no live DBC pool.");}
+ }
  if(Number(poolState.poolState?.isMigrated||0)===1) return await qxBuildDammV2Quote(token,direction,amountText);
  const poolAddress=poolState.publicKey.toBase58(),config=await client.state.getPoolConfig(poolState.poolState.config);
  const decimals=await qxEnsureTokenDecimals(token),inputDecimals=direction==="buy"?9:decimals,raw=qxToRawAmount(amountText,inputDecimals);
@@ -4036,52 +4056,34 @@ async function qxLoadLiveChart(token,range="1H"){
  try{qxChartAbortController?.abort();}catch(_){}
  const chartController=new AbortController();qxChartAbortController=chartController;
  const requestId=++qxChartRequestId,requestedMint=String(token?.baseToken?.address||"");
- const wrap=$("detailChartWrap"),host=$("detailChart"),msg=$("chartMessage");
+ const wrap=$("detailChartWrap"),host=$("detailChart");
  if(!wrap||!host)return;
- wrap.style.display="block";host.innerHTML="";
- if(msg){msg.style.display="block";msg.textContent="Loading Solana market chart…";}
- const intervals={"now":{cmc:"1min",gt:"minute","aggregate":1},"15s":{cmc:"1min",gt:"minute","aggregate":1},"30s":{cmc:"1min",gt:"minute","aggregate":1},"1m":{cmc:"1min",gt:"minute","aggregate":1},"5m":{cmc:"1min",gt:"minute","aggregate":5},"15m":{cmc:"1min",gt:"minute","aggregate":15},"30m":{cmc:"1min",gt:"minute","aggregate":30},"1H":{cmc:"5min",gt:"hour","aggregate":1},"4H":{cmc:"15min",gt:"hour","aggregate":4},"1D":{cmc:"1h",gt:"day","aggregate":1}};
- const cfg=intervals[range]||intervals["1H"];
- const chartJSON=async url=>{const r=await fetch(url,{signal:chartController.signal,headers:{accept:"application/json"}});if(!r.ok)throw new Error("Chart data request failed ("+r.status+")");return r.json();};
- let pool=String(token?.cmcPairAddress||token?.pairAddress||token?.poolAddress||"");
- if(!pool){
-  const mint=String(token?.baseToken?.address||"");
-  const found=(allPairs||[]).find(p=>String(p?.baseToken?.address||"")===mint);
-  pool=String(found?.cmcPairAddress||found?.pairAddress||found?.poolAddress||"");
+ wrap.style.display="block";
+ host.innerHTML='<div class="chart-message">Loading live market chart…</div>';
+ let pair=String(token?.cmcPairAddress||token?.pairAddress||token?.poolAddress||"");
+ if(!pair){
+  const found=(allPairs||[]).find(p=>String(p?.baseToken?.address||"")===requestedMint||String(p?.quoteToken?.address||"")===requestedMint);
+  pair=String(found?.pairAddress||found?.cmcPairAddress||found?.poolAddress||"");
  }
- try{
-  let rows=[];
-  if(pool){
-   try{
-    const data=await chartJSON(QX_CMC_BASE+"/v1/k-line/candles?platform=solana&address="+encodeURIComponent(pool)+"&interval="+encodeURIComponent(cfg.cmc));
-    rows=(Array.isArray(data?.data)?data.data:[]).map(c=>({time:Math.floor(Number(c?.[5]||0)/1000),open:Number(c?.[0]||0),high:Number(c?.[1]||0),low:Number(c?.[2]||0),close:Number(c?.[3]||0),volume:Number(c?.[4]||0)})).filter(c=>c.time&&c.close>0);
-   }catch(_){}
-  }
-  if(!rows.length && pool){
-   // Public GeckoTerminal fallback. Never request a synthetic/empty pool.
-   const gt=await chartJSON("https://api.geckoterminal.com/api/v2/networks/solana/pools/"+encodeURIComponent(pool)+"/ohlcv/"+cfg.gt+"?aggregate="+cfg.aggregate+"&limit=200");
-   const raw=gt?.data?.attributes?.ohlcv_list||[];
-   rows=raw.map(c=>({time:Number(c?.[0]||0),open:Number(c?.[1]||0),high:Number(c?.[2]||0),low:Number(c?.[3]||0),close:Number(c?.[4]||0),volume:Number(c?.[5]||0)})).filter(c=>c.time&&c.close>0);
-  }
-  if(requestId!==qxChartRequestId||String(selectedToken?.baseToken?.address||"")!==requestedMint)return;
-  if(!rows.length)throw new Error("No real candle data is available for this market.");
-  if(typeof LightweightCharts==="undefined")throw new Error("Chart library is unavailable.");
-  host.innerHTML="";
-  const chart=LightweightCharts.createChart(host,{layout:{background:{type:"solid",color:"#080711"},textColor:"#b9a9d4"},grid:{vertLines:{color:"#191426"},horzLines:{color:"#191426"}},rightPriceScale:{borderColor:"#30263f"},timeScale:{borderColor:"#30263f",timeVisible:true,secondsVisible:false}});
-  const series=chart.addCandlestickSeries({upColor:"#32d583",downColor:"#ff5b7d",borderUpColor:"#32d583",borderDownColor:"#ff5b7d",wickUpColor:"#32d583",wickDownColor:"#ff5b7d"});
-  series.setData(rows.sort((a,b)=>a.time-b.time));chart.timeScale().fitContent();host.__qxChart=chart;host.__qxSeries=series;host.__qxLastCandle=rows.length?rows[rows.length-1]:null;host.__qxLiveCandle=null;host.dataset.mint=requestedMint;
-  if(msg)msg.style.display="none";
- }catch(e){
-  if(e?.name==="AbortError"||requestId!==qxChartRequestId)return;
-  console.warn("QX live chart unavailable",e);
-  const pair=String(token?.pairAddress||token?.poolAddress||token?.cmcPairAddress||"");
-  if(pair && /^[-_a-zA-Z0-9]{20,80}$/.test(pair)){
-   host.innerHTML='<iframe title="Live Solana market chart" src="https://dexscreener.com/solana/'+encodeURIComponent(pair)+'?embed=1&theme=dark&trades=0&info=0" style="display:block;width:100%;height:100%;min-height:250px;border:0;border-radius:10px" loading="lazy" referrerpolicy="no-referrer"></iframe>';
-   host.dataset.mint=requestedMint;
-   if(msg){msg.style.display="block";msg.textContent="Live chart provided by DexScreener · candle API fallback";}
-  }else if(msg){msg.style.display="block";msg.textContent="No verified liquidity pool is available for a live chart yet.";}
- }finally{if(qxChartAbortController===chartController)qxChartAbortController=null;}
-}
+ if(!pair&&qxIsValidSolanaMint(requestedMint)){
+  try{
+   const r=await fetch("https://api.dexscreener.com/token-pairs/v1/solana/"+encodeURIComponent(requestedMint),{signal:chartController.signal,headers:{accept:"application/json"}});
+   if(r.ok){const pairs=await r.json();const best=(Array.isArray(pairs)?pairs:[]).filter(x=>x?.chainId==="solana"&&x?.pairAddress).sort((a,b)=>Number(b?.liquidity?.usd||0)-Number(a?.liquidity?.usd||0))[0];pair=String(best?.pairAddress||"");}
+  }catch(e){if(e?.name==="AbortError")return;}
+ }
+ if(requestId!==qxChartRequestId||String(selectedToken?.baseToken?.address||"")!==requestedMint)return;
+ if(!pair||!/^[-_a-zA-Z0-9]{20,90}$/.test(pair)){
+  host.innerHTML='<div class="chart-message">Live chart is not available until a verified liquidity pool is indexed.</div>';
+  return;
+ }
+ const params=new URLSearchParams({embed:"1",theme:"dark",chartTheme:"dark",loadChartSettings:"0",chartLeftToolbar:"1",trades:"1",info:"1",chartDefaultOnMobile:"1",chartType:"usd",interval:"60"});
+ const frame=document.createElement("iframe");
+ frame.title="Interactive market chart";
+ frame.src="https://dexscreener.com/solana/"+encodeURIComponent(pair)+"?"+params.toString();
+ frame.loading="eager";frame.referrerPolicy="no-referrer";frame.allow="clipboard-read; clipboard-write";frame.allowFullscreen=true;
+ frame.style.cssText="display:block;width:100%;height:590px;min-height:500px;border:0;background:#080b12";
+ host.innerHTML="";host.appendChild(frame);host.dataset.mint=requestedMint;host.dataset.pair=pair;
+} 
 let qxTradesRequestId=0, qxTradesAbortController=null;
 async function qxLoadTrades(token){
  try{qxTradesAbortController?.abort();}catch(_){}
