@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#080711">
 <meta name="google-site-verification" content="A5ntuJ6pvvK-Uo8HHA96o5bUPFGOg_70p-Nh_rsZ8NM">
 <title>QX Exchange — Solana Discovery</title>
-<meta name="qx-build" content="QX-APP-REBUILD-V94-CLEAN-MARKET-PAGING-AND-JSON-METADATA">
+<meta name="qx-build" content="QX-APP-REBUILD-V95-CLEAN-MARKET-PAGING-AND-JSON-METADATA">
 
 <style id="qx-core-theme">:root{--bg:#070812;--panel:#0d1120;--panel2:#11172a;--line:#232b43;--line2:#303a58;--text:#f6f8ff;--muted:#8994b2;--green:#35e89a;--red:#ff5d72;--purple:#8b5cf6;--purple2:#5b4bdb;--gold:#d9b45c;--radius:16px;--shadow:0 18px 55px rgba(0,0,0,.28);--max:1440px}
 *{box-sizing:border-box;}
@@ -3986,6 +3986,8 @@ const QX_CMC_BASE="https://pro-api.coinmarketcap.com/public-api";
 const QX_GECKO_BASE="https://api.geckoterminal.com/api/v2/networks/solana";
 const QX_JUP_TOKENS="https://tokens.jup.ag/tokens?tags=verified";
 const QX_DEX_SEARCH="https://api.dexscreener.com/latest/dex/search?q=";
+// DexScreener token endpoint: up to 30 comma-separated token addresses per request.
+const QX_DEX_TOKENS="https://api.dexscreener.com/tokens/v1/solana/";
 const QX_DEX_PROFILES="https://api.dexscreener.com/token-profiles/latest/v1";
 const QX_SOLANA_REFRESH_MS=60000; // consolidated discovery refresh; prices/trades are streamed when available
 const QX_MARKET_CACHE_KEY="qxMarketUniverseV2";
@@ -4095,8 +4097,14 @@ async function qxFetchDexLatestSolana(){
   const profiles=await getJSON(QX_DEX_PROFILES,10000,1);
   const mints=[...new Set((Array.isArray(profiles)?profiles:[]).filter(x=>x?.chainId==="solana").map(x=>String(x?.tokenAddress||"")).filter(qxIsValidSolanaMint))].slice(0,80);
   if(!mints.length)return [];
-  const rows=await getJSON(QX_DEX_TOKENS+mints.join(","),12000,2);
-  return (Array.isArray(rows)?rows:[]).map(p=>{
+  // DexScreener accepts at most 30 mints per token endpoint request.
+  // Chunking avoids a single oversized URL silently disabling this fallback.
+  const rows=[];
+  for(let i=0;i<mints.length;i+=30){
+   try{const batch=await getJSON(QX_DEX_TOKENS+mints.slice(i,i+30).join(","),12000,1);if(Array.isArray(batch))rows.push(...batch);}
+   catch(e){console.warn("QX DexScreener token batch unavailable",i,e);}
+  }
+  return rows.map(p=>{
    const mint=String(p?.baseToken?.address||"");
    if(!qxIsValidSolanaMint(mint)||mint===SOL)return null;
    const pair={chainId:"solana",pairAddress:String(p?.pairAddress||""),baseToken:{address:mint,name:cleanTokenText(p?.baseToken?.name||"NEW TOKEN"),symbol:cleanTokenText(p?.baseToken?.symbol||"TOKEN")},quoteToken:p?.quoteToken||{},priceUsd:String(p?.priceUsd||0),priceChange:{h24:qxNum(p?.priceChange?.h24)},volume:{h24:qxNum(p?.volume?.h24)},liquidity:{usd:qxNum(p?.liquidity?.usd)},marketCap:qxNum(p?.marketCap),fdv:qxNum(p?.fdv),txns:p?.txns||{h24:{buys:0,sells:0}},pairCreatedAt:qxNum(p?.pairCreatedAt),info:{imageUrl:qxSafeUrl(p?.info?.imageUrl)},dexId:p?.dexId||"dexscreener"};
@@ -4669,7 +4677,7 @@ async function qxStartLiveMarketStream(){
   const status=await health.json().catch(()=>({}));
   qxMarketStreamKeyReady=Boolean(status.providerKeyConfigured);
   if(!health.ok||!status.providerKeyConfigured){
-   qxMarketStreamLive=false;qxSetStreamStatus('Live feed setup required · add Birdeye API key in Supabase');
+   qxMarketStreamLive=false;qxSetStreamStatus('Live price stream unavailable · market discovery continues using public Solana data sources');
    qxMarketStreamCheckTimer=setTimeout(qxStartLiveMarketStream,60000);return;
   }
  }catch(e){qxSetStreamStatus('Live feed connection unavailable · retrying');qxMarketStreamCheckTimer=setTimeout(qxStartLiveMarketStream,15000);return;}
