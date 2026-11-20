@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#080711">
 <meta name="google-site-verification" content="A5ntuJ6pvvK-Uo8HHA96o5bUPFGOg_70p-Nh_rsZ8NM">
 <title>QX Exchange — Solana Discovery</title>
-<meta name="qx-build" content="QX-APP-REBUILD-V107-DISCOVERY-CLEAN-MARKET-TERMINAL">
+<meta name="qx-build" content="QX-APP-REBUILD-V108-UNIVERSAL-SWAP-QUOTE-SIGNAL-FIX">
 
 <style id="qx-core-theme">:root{--bg:#070812;--panel:#0d1120;--panel2:#11172a;--line:#232b43;--line2:#303a58;--text:#f6f8ff;--muted:#8994b2;--green:#35e89a;--red:#ff5d72;--purple:#8b5cf6;--purple2:#5b4bdb;--gold:#d9b45c;--radius:16px;--shadow:0 18px 55px rgba(0,0,0,.28);--max:1440px}
 *{box-sizing:border-box;}
@@ -3754,7 +3754,7 @@ async function qxBuildJupiterQuote(){
  // Current Jupiter Swap V2 Meta-Aggregator: request an executable order and
  // route QX's 100 bps integrator fee through the already-created referral account.
  const params=new URLSearchParams({inputMint,outputMint,amount:raw,taker:owner,referralAccount:QX_JUP_REFERRAL_ACCOUNT,referralFee:"100"});
- const response=await fetch("https://api.jup.ag/swap/v2/order?"+params.toString(),{signal:quoteController.signal,headers:{accept:"application/json","x-api-key":QX_JUP_API_KEY}});
+ const response=await fetch("https://api.jup.ag/swap/v2/order?"+params.toString(),{signal:qxQuoteAbortController?.signal,headers:{accept:"application/json","x-api-key":QX_JUP_API_KEY}});
  const order=await response.json().catch(()=>({}));
  if(!response.ok)throw new Error(order.errorMessage||order.error||("Jupiter order failed (HTTP "+response.status+")."));
  if(!order||typeof order!=="object")throw new Error("Jupiter returned an invalid order response.");
