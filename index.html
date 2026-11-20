@@ -4114,7 +4114,7 @@ async function qxLoadTrades(token){
 let qxChartLiveTimer=null;
 function qxSetupChartRanges(token){document.querySelectorAll("#chartRanges [data-chart-range]").forEach(b=>b.onclick=()=>{document.querySelectorAll("#chartRanges [data-chart-range]").forEach(x=>x.classList.toggle("active",x===b));clearInterval(qxChartLiveTimer);qxChartLiveTimer=null;qxLoadLiveChart(token,b.dataset.chartRange);const r=b.dataset.chartRange;if(r==="now"||r==="15s"||r==="30s")qxChartLiveTimer=setInterval(()=>{if(document.body.classList.contains("qx-token-open")&&selectedToken===token)qxLoadLiveChart(token,r);},r==="now"?5000:Number(r.replace("s",""))*1000);});}
 function openToken(token){
- try{const mint=String(token?.baseToken?.address||token?.address||"");if(mint&&history.pushState&&location.pathname!==location.pathname.replace(/\/$/,"")+"/token/"+encodeURIComponent(mint)){history.pushState({qxTokenMint:mint},"",location.pathname.replace(/\/$/,"")+"/token/"+encodeURIComponent(mint)+location.search+location.hash);}}catch(_){}
+ try{const mint=String(token?.baseToken?.address||token?.address||"");if(mint&&history.pushState){history.pushState({qxTokenMint:mint},"",location.pathname+location.search+"#token="+encodeURIComponent(mint));}}catch(_){}
  /* Keep the existing detail terminal as a single DOM node. It is already placed by QXEnsureTerminalPlacement; do not move it again or switch pages before populating it. */
  window.QXEnsureTerminalPlacement?.();
  selectedToken=token;selectedTokenDecimals=qxTokenDecimals(token);tradeDirection="buy";document.body.classList.add("qx-token-open");
@@ -4156,7 +4156,7 @@ $("tokenBackBtn")?.addEventListener("click",function(e){
  const markets=document.getElementById("marketsPage");if(markets){markets.classList.add("active");markets.setAttribute("aria-hidden","false");markets.style.display="block";if("inert" in markets)markets.inert=false;}
  document.querySelectorAll(".page").forEach(p=>{if(p!==markets){p.classList.remove("active");p.setAttribute("aria-hidden","true");if("inert" in p)p.inert=true;}});
  document.querySelectorAll(".qx-menu-link,.qx-app-nav [data-page]").forEach(b=>b.classList.toggle("active",b.dataset.page==="marketsPage"));
- try{history.replaceState({},"",location.pathname.replace(/\/token\/[^/]+$/,"")+location.search+location.hash);}catch(_){ }
+ try{history.replaceState({},"",location.pathname+location.search);}catch(_){ }
  window.scrollTo(0,0);
  const market=document.getElementById("tokenResults");if(market)setTimeout(()=>market.scrollIntoView({behavior:"smooth",block:"start"}),60);
  return false;
@@ -5094,9 +5094,9 @@ window.QXNewPairs=newPairs;window.QXTrendingPairs=trendingPairs;
 loadSolPrice();
 setInterval(()=>{if(document.visibilityState!=="hidden"&&!qxMarketStreamLive)loadSolPrice();},300000);
 loadMarket();
-/* QX DEEP LINK ROUTER — canonical /token/<mint> routes reuse the existing market/detail engine. */
+/* QX DEEP LINK ROUTER — hash routes keep GitHub Pages on its real /qx-exchange/ file path. */
 (function(){
- const mint=String(location.pathname.match(/\/token\/([1-9A-HJ-NP-Za-km-z]{32,44})$/i)?.[1]||"");
+ const mint=String(location.hash.match(/^#token=([1-9A-HJ-NP-Za-km-z]{32,44})$/i)?.[1]||"");
  if(!mint)return;
  let tries=0;
  const open=()=>{
@@ -5250,12 +5250,19 @@ loadMarket();
     const detail=$("detail");if(detail){detail.style.display="none";detail.hidden=false;detail.removeAttribute("hidden");}
     selectedToken=null;window.__QXSelectedToken=null;window.QXTerminalTokenMint="";pendingSwapOrder=null;
     if(typeof window.QXClearTerminalToken==="function")window.QXClearTerminalToken();
-    try{history.replaceState({} ,"",location.pathname.replace(/\/token\/[^/]+$/ ,"/")+location.search+location.hash);}catch(_){}
+    try{history.replaceState({},"",location.pathname+location.search);}catch(_){}
     if(typeof showPage==="function")showPage("marketsPage");
   }
   window.QXCloseTokenTerminal=qxCloseTokenTerminal;
   window.addEventListener('popstate',()=>{
-    if(document.body.classList.contains('qx-token-open'))qxCloseTokenTerminal();
+    if(document.body.classList.contains('qx-token-open') && !/^#token=[1-9A-HJ-NP-Za-km-z]{32,44}$/i.test(location.hash))qxCloseTokenTerminal();
+  });
+  window.addEventListener('hashchange',()=>{
+    if(document.body.classList.contains('qx-token-open') && !/^#token=[1-9A-HJ-NP-Za-km-z]{32,44}$/i.test(location.hash))qxCloseTokenTerminal();
+    else if(!document.body.classList.contains('qx-token-open')){
+      const match=location.hash.match(/^#token=([1-9A-HJ-NP-Za-km-z]{32,44})$/i);
+      if(match)window.QXOpenTokenByMint?.(match[1]);
+    }
   });
   // Rebind the visible in-terminal control defensively after legacy handlers are installed.
   const qxReturnButton=$('tokenBackBtn');
@@ -5639,7 +5646,7 @@ loadMarket();
       return '<article class="qx-new-card" data-mint="'+esc(mint)+'"><div class="qx-new-card-top"><img src="'+img+'" alt="" onerror="this.style.visibility=\'hidden\'"><span class="qx-new-age">'+ageText+'</span></div><div class="qx-new-name">'+name+'</div><div class="qx-new-symbol">'+symbol+'</div><div class="qx-new-price">'+price+'</div><div class="qx-new-change '+cls+'">'+changeText+'</div></article>';
     }).join('');
   };
-  window.QXShareToken=async(mint)=>{const url=location.origin+"/token/"+encodeURIComponent(String(mint||""));try{if(navigator.share){await navigator.share({title:"QX Exchange",text:"View this Solana token on QX Exchange",url});return true;}await navigator.clipboard.writeText(url);return true;}catch(_){return false;}};
+  window.QXShareToken=async(mint)=>{const url=location.origin+location.pathname+location.search+"#token="+encodeURIComponent(String(mint||""));try{if(navigator.share){await navigator.share({title:"QX Exchange",text:"View this Solana token on QX Exchange",url});return true;}await navigator.clipboard.writeText(url);return true;}catch(_){return false;}};
   window.QXOpenTokenByMint=(mint)=>{
  const target=String(mint||"").trim();
  if(!/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(target))return false;
