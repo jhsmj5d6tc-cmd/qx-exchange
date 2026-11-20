@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#080711">
 <meta name="google-site-verification" content="A5ntuJ6pvvK-Uo8HHA96o5bUPFGOg_70p-Nh_rsZ8NM">
 <title>QX Exchange — Solana Discovery</title>
-<meta name="qx-build" content="QX-APP-REBUILD-V108-UNIVERSAL-SWAP-QUOTE-SIGNAL-FIX">
+<meta name="qx-build" content="QX-APP-REBUILD-V109-DBC-RPC-INDEXED-REQUEST-FIX">
 
 <style id="qx-core-theme">:root{--bg:#070812;--panel:#0d1120;--panel2:#11172a;--line:#232b43;--line2:#303a58;--text:#f6f8ff;--muted:#8994b2;--green:#35e89a;--red:#ff5d72;--purple:#8b5cf6;--purple2:#5b4bdb;--gold:#d9b45c;--radius:16px;--shadow:0 18px 55px rgba(0,0,0,.28);--max:1440px}
 *{box-sizing:border-box;}
@@ -2109,7 +2109,9 @@ const QX_JUP_API_KEY="jup_pub_646a02a3199987e777a62f4df5efaa06aeb0cbb5edc35244c9
 // QX Jupiter referral account used by the current executable Swap API V2 order flow.
 const QX_JUP_REFERRAL_ACCOUNT="UMRAMLr2CqNNSUhVJvdB2bbEGHPwL5n6LpFzTxycmBW";
 const USDC="EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
-const RPCS=["https://api.mainnet-beta.solana.com","https://api.mainnet.solana.com","https://solana-rpc.publicnode.com"];
+// Avoid PublicNode here: its public tier can reject indexed account lookups used by Meteora DBC with HTTP 403.
+// Prefer Solana mainnet RPCs, then a community fallback that supports broader account queries.
+const RPCS=["https://api.mainnet.solana.com","https://api.mainnet-beta.solana.com","https://public.rpc.solanavibestation.com"];
 const SOL_RESERVE=0.0001;
 
 let appKit,activeWalletProvider=null,walletAddress="",connected=false,solPrice=0,qxWalletInitError=null;
