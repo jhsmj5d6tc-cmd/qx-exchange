@@ -1423,8 +1423,8 @@ body.qx-token-open #detail .qx-trade-launch{margin:14px 0 18px!important;}
  #marketsPage #tokenResults .qx-market-card{padding:10px!important;}
 }
 /* The token terminal return control is a fixed arrow only; accessible label remains for screen readers. */
-body.qx-token-open #detail #tokenBackBtn{position:fixed!important;top:max(10px,env(safe-area-inset-top))!important;inset-inline-start:12px!important;z-index:100000!important;display:flex!important;align-items:center!important;justify-content:center!important;width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important;padding:0!important;margin:0!important;gap:0!important;border:1px solid rgba(90,226,174,.42)!important;border-radius:50%!important;background:rgba(12,25,29,.97)!important;color:#8ff3c8!important;font-size:0!important;line-height:1!important;box-shadow:0 8px 24px #0007!important;backdrop-filter:blur(14px)!important;cursor:pointer!important;}
-body.qx-token-open #detail #tokenBackBtn span{display:block!important;font-size:25px!important;line-height:1!important;color:#8ff3c8!important;}
+body.qx-token-open #detail #tokenBackBtn{position:fixed!important;top:max(10px,env(safe-area-inset-top))!important;inset-inline-start:12px!important;z-index:100000!important;display:flex!important;align-items:center!important;justify-content:center!important;width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important;padding:0!important;margin:0!important;gap:0!important;border:1px solid rgba(90,226,174,.42)!important;border-radius:50%!important;background:linear-gradient(145deg,rgba(20,55,49,.98),rgba(10,34,31,.98))!important;color:#b9ffe2!important;font-size:0!important;line-height:1!important;box-shadow:0 8px 24px #0007!important;backdrop-filter:blur(14px)!important;cursor:pointer!important;}
+body.qx-token-open #detail #tokenBackBtn span{display:block!important;font-size:27px!important;font-weight:900!important;line-height:1!important;color:#b9ffe2!important;text-shadow:0 0 10px rgba(90,255,190,.35)!important;}
 </style>
 </head>
 <body>
@@ -2188,7 +2188,7 @@ function qxApplyLanguage(){
  const marketStatus=$("marketStatus");if(marketStatus&&/Connecting to live market/.test(marketStatus.textContent))marketStatus.textContent=L.marketConnecting;
  const holdersNote=document.querySelector("#marketsPage .market-list-column > p.small");if(holdersNote)holdersNote.textContent=L.holdersNote;
  t("#adsPageTitle","Advertisements",L.ads);t(".ads-title","Sponsored",L.sponsored);t(".ads-sub","Featured projects",L.featured);t("#addAdMenuBtn","+ Add advertisement",L.addAd);t("#publicAdsList .ad-empty","No sponsored advertisements yet.",L.noAds);t("#adsPageHelp","Promote your project to the QX community.",L.adsHelp);
- t("#tokenBackBtn","BACK TO MARKETS",L.backMarkets);t(".detail-stat:nth-child(1) small","Market Cap / FDV",L.marketCapFdv);t(".detail-stat:nth-child(2) small","Liquidity",L.liquidity);t(".detail-stat:nth-child(3) small","24h Volume", "\u062D\u062C\u0645 \u0627\u0644\u062A\u062F\u0627\u0648\u0644 \u062E\u0644\u0627\u0644 24 \u0633\u0627\u0639\u0629");t(".detail-stat:nth-child(4) small","24h Transactions",L.transactions);t(".detail-stat:nth-child(5) small","Holders",L.holders);
+ const tokenBackControl=$("#tokenBackBtn");if(tokenBackControl){tokenBackControl.setAttribute("aria-label",L.backMarkets);tokenBackControl.title=L.backMarkets;}t(".detail-stat:nth-child(1) small","Market Cap / FDV",L.marketCapFdv);t(".detail-stat:nth-child(2) small","Liquidity",L.liquidity);t(".detail-stat:nth-child(3) small","24h Volume", "\u062D\u062C\u0645 \u0627\u0644\u062A\u062F\u0627\u0648\u0644 \u062E\u0644\u0627\u0644 24 \u0633\u0627\u0639\u0629");t(".detail-stat:nth-child(4) small","24h Transactions",L.transactions);t(".detail-stat:nth-child(5) small","Holders",L.holders);
  const chartTitle=document.querySelector(".chart-toolbar > strong");if(chartTitle)chartTitle.textContent=L.chart;t("#solscanLink","View contract on Solscan ->",L.solscan);
  const swapKicker=document.querySelector(".qx-swap-kicker");if(swapKicker)swapKicker.textContent=ar?"QX EXCHANGE / \u062A\u062F\u0627\u0648\u0644 \u0641\u0648\u0631\u064A":"QX EXCHANGE / INSTANT TRADE";
  const swapTitle=$("tradeTitle");if(swapTitle&&!selectedToken)swapTitle.textContent=ar?"\u0627\u0634\u062A\u0631\u0650 \u0647\u0630\u0647 \u0627\u0644\u0639\u0645\u0644\u0629 \u0628\u0627\u0633\u062A\u062E\u062F\u0627\u0645 SOL":"Buy this token with SOL";
@@ -5481,7 +5481,7 @@ loadMarket();
     const card=e.target?.closest?.("#tokenResults .coin-button[data-mint], .qx-trending-card[data-mint], .qx-new-card[data-mint]");if(!card)return;
     const token=findToken(String(card.dataset.mint||""));if(!token)return;
     e.preventDefault();e.stopPropagation();
-    try{if(typeof window.QXUnifiedOpenToken==="function")window.QXUnifiedOpenToken(token);else if(typeof window.QXOpenToken==="function")window.QXOpenToken(token);}catch(err){console.error("QX token terminal open failed",err);}
+    try{if(typeof window.QXOpenToken==="function")window.QXOpenToken(token);else if(typeof window.QXUnifiedOpenToken==="function")window.QXUnifiedOpenToken(token);}catch(err){console.error("QX token terminal open failed",err);}
   },true);
 
   /* The Sponsored block stays in Markets. Three live trending slots are always visible;
