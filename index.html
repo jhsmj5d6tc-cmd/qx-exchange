@@ -1179,8 +1179,8 @@ html[dir="rtl"] .market-price,html[dir="rtl"] .market-change,html[dir="rtl"] .as
 /* QX TERMINAL UX REFINEMENT v99 */
 body.qx-token-open #detail{width:100%!important;max-width:1080px!important;margin:12px auto 100px!important;padding:clamp(14px,2.4vw,26px)!important;border:1px solid rgba(105,126,164,.24)!important;border-radius:22px!important;background:radial-gradient(ellipse at 90% 0%,rgba(72,108,174,.13),transparent 42%),linear-gradient(160deg,#101725,#0a101a 70%)!important;box-shadow:0 24px 70px rgba(0,0,0,.32)!important}
 body.qx-token-open #tokenBackBtn,body.qx-token-open #qxTerminalBack{position:sticky!important;top:8px!important;z-index:2205!important;display:inline-flex!important;align-items:center!important;gap:9px!important;min-height:42px!important;padding:0 15px!important;margin:0 0 16px!important;border:1px solid rgba(90,226,174,.35)!important;border-radius:12px!important;background:rgba(12,25,29,.96)!important;color:#8ff3c8!important;font-size:11px!important;font-weight:900!important;box-shadow:0 8px 24px #0007!important;backdrop-filter:blur(14px)!important}
-body.qx-token-open #detail #tokenBackBtn{display:inline-flex!important;position:sticky!important;top:8px!important;inset-inline-start:auto!important;z-index:2205!important;min-height:46px!important;padding:0 16px!important;margin:0 0 16px!important;background:linear-gradient(135deg,#103329,#0b211f)!important;border:1px solid rgba(53,232,154,.55)!important;border-radius:12px!important;color:#67f0b6!important;box-shadow:0 8px 24px rgba(0,0,0,.42)!important;visibility:visible!important;opacity:1!important;}
-body.qx-token-open #detail{padding-top:14px!important;}
+body.qx-token-open #detail #tokenBackBtn{display:inline-flex!important;position:fixed!important;top:max(10px,env(safe-area-inset-top))!important;inset-inline-start:12px!important;z-index:100000!important;min-height:46px!important;padding:0 16px!important;margin:0!important;background:linear-gradient(135deg,#103329,#0b211f)!important;border:1px solid rgba(53,232,154,.55)!important;border-radius:12px!important;color:#67f0b6!important;box-shadow:0 8px 24px rgba(0,0,0,.42)!important;visibility:visible!important;opacity:1!important;}
+body.qx-token-open #detail{padding-top:78px!important;}
 body.qx-token-open #detail .detail-top{display:flex!important;align-items:center!important;gap:13px!important;padding:14px 0 8px!important}
 body.qx-token-open #detailName{font-size:clamp(22px,4vw,32px)!important;letter-spacing:-.7px!important}
 body.qx-token-open #detailPrice{font-size:clamp(27px,5vw,40px)!important;font-weight:850!important;letter-spacing:-1px!important;margin-top:12px!important}
@@ -1632,11 +1632,7 @@ body.qx-token-open #detail .qx-trade-launch{margin:14px 0 18px!important;}
       <div class="qx-search-wrap"><span>⌕</span><input id="search" type="search" aria-label="Search Solana tokens by name, symbol, or contract address" placeholder="Search token, symbol or contract" autocomplete="off" enterkeyhint="search"><button id="searchBtn" type="button">SEARCH</button></div>
       <div class="qx-quick-links"><button type="button" onclick="showPage('walletPage')">PORTFOLIO</button><button type="button" onclick="showPage('launchPage')">LAUNCH</button></div>
     </div>
-    <section class="ads-shell qx-sponsored-inline" aria-label="Featured projects">
-      <div class="ads-head"><div><div class="ads-title">✦ FEATURED PROJECTS</div><div class="ads-sub">Sponsored launches and community discoveries</div></div><div class="ads-menu-wrap"><button type="button" class="ads-menu-btn" id="adsMenuBtn" aria-label="Project promotion options" aria-expanded="false">⋯</button><div class="ads-menu" id="adsMenu"><button type="button" id="addAdMenuBtn">+ Promote project</button></div></div></div>
-      <div class="ads-list" id="publicAdsList"><div class="ad-empty">Featured projects will appear here.</div></div>
-    </section>
-    <div class="qx-filter-row" id="qxCoinFilters">
+    <div class="qx-filter-row">
       <div class="market-tabs" id="marketTabs">
         <button type="button" class="market-tab active" data-category="all">ALL</button>
         <button type="button" class="market-tab" data-category="newest">✦ NEWEST</button>
@@ -1644,13 +1640,17 @@ body.qx-token-open #detail .qx-trade-launch{margin:14px 0 18px!important;}
         <button type="button" class="market-tab" data-category="hour">UNDER 1H</button>
         <button type="button" class="market-tab" data-category="day">UNDER 24H</button>
         <button type="button" class="market-tab" data-category="trending">TRENDING</button>
-        <button type="button" class="market-tab" data-category="gainers">↗ UP</button>
-        <button type="button" class="market-tab" data-category="losers">↘ DOWN</button>
+        <button type="button" class="market-tab" data-category="gainers">↗ GAINERS</button>
+        <button type="button" class="market-tab" data-category="losers">↘ LOSERS</button>
         <button type="button" class="market-tab" data-category="volume">VOLUME</button>
         <button type="button" class="market-tab" data-category="spot">LIQUIDITY</button>
       </div>
       <div class="qx-sort-compact"><span id="categoryTitle">New Solana markets</span><span id="coinCount" role="status" aria-live="polite" aria-atomic="true">Loading…</span></div>
     </div>
+    <section class="ads-shell qx-sponsored-inline" aria-label="Featured projects">
+      <div class="ads-head"><div><div class="ads-title">✦ FEATURED PROJECTS</div><div class="ads-sub">Sponsored launches and community discoveries</div></div><div class="ads-menu-wrap"><button type="button" class="ads-menu-btn" id="adsMenuBtn" aria-label="Project promotion options" aria-expanded="false">⋯</button><div class="ads-menu" id="adsMenu"><button type="button" id="addAdMenuBtn">+ Promote project</button></div></div></div>
+      <div class="ads-list" id="publicAdsList"><div class="ad-empty">Featured projects will appear here.</div></div>
+    </section>
     <div class="list"><div id="tokenResults" class="market-empty">Loading Solana markets…</div></div>
     <p class="market-status" id="marketStatus">Connecting to Solana market feeds…</p>
   </section>
@@ -1671,13 +1671,13 @@ body.qx-token-open #detail .qx-trade-launch{margin:14px 0 18px!important;}
     <div class="detail-stat"><small>Holders</small><strong id="detailHolders" title="A token-holder indexer/API is required for a reliable total">Indexer required</strong></div>
    </div>
    <div class="chart-section" id="detailChartWrap" style="display:none">
-    <div class="chart-toolbar"><strong>QX LIVE CHART</strong><div class="chart-ranges" id="chartRanges"><button type="button" class="chart-range active" data-chart-range="NOW">NOW</button><button type="button" class="chart-range" data-chart-range="15s">15S</button><button type="button" class="chart-range" data-chart-range="30s">30S</button><button type="button" class="chart-range" data-chart-range="1m">1M</button><button type="button" class="chart-range" data-chart-range="5m">5M</button><button type="button" class="chart-range" data-chart-range="15m">15M</button><button type="button" class="chart-range" data-chart-range="1H">1H</button><button type="button" class="chart-range" data-chart-range="4H">4H</button><button type="button" class="chart-range" data-chart-range="1D">1D</button></div></div>
+    <div class="chart-toolbar"><strong>QX LIVE CHART</strong><div class="chart-ranges" id="chartRanges"><button type="button" class="chart-range active" data-chart-range="5m">5M</button><button type="button" class="chart-range" data-chart-range="15m">15M</button><button type="button" class="chart-range" data-chart-range="1H">1H</button><button type="button" class="chart-range" data-chart-range="4H">4H</button><button type="button" class="chart-range" data-chart-range="1D">1D</button></div></div>
     <div id="detailChart" role="img" aria-label="QX native Solana candlestick chart"></div>
     <div id="chartMessage" class="chart-message" style="display:none"></div>
     <div class="chart-credit">Chart rendered inside QX | Solana market data</div>
    </div>
    <div class="qx-trades-panel" id="qxTradesPanel">
-    <div class="qx-trades-head"><strong>GLOBAL TRADES</strong><span id="qxTradesStatus" role="status" aria-live="polite" aria-atomic="true">Loading market trades…</span></div>
+    <div class="qx-trades-head"><strong>TRADES</strong><span id="qxTradesStatus" role="status" aria-live="polite" aria-atomic="true">Loading market trades…</span></div>
     <div class="qx-trades-table">
      <div class="qx-trade-row qx-trade-head"><span>Time</span><span>Side</span><span>Price</span><span>Amount</span></div>
      <div id="qxTradesList"><div class="qx-trades-empty">Waiting for real market trade data…</div></div>
@@ -1857,7 +1857,7 @@ function showPage(id){
   if(active)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current");
  });
  qxCloseMainMenu();
- window.scrollTo({top:0,behavior:"auto"});
+ window.scrollTo({top:0,behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"});
  return true;
 }
 
@@ -4007,7 +4007,7 @@ async function qxLoadLiveChart(token,range="1H"){
  if(!wrap||!host)return;
  wrap.style.display="block";host.innerHTML="";
  if(msg){msg.style.display="block";msg.textContent="Loading Solana market chart…";}
- const intervals={"NOW":{cmc:"1min",gt:"minute","aggregate":1},"15s":{cmc:"1min",gt:"minute","aggregate":1},"30s":{cmc:"1min",gt:"minute","aggregate":1},"1m":{cmc:"1min",gt:"minute","aggregate":1},"5m":{cmc:"1min",gt:"minute","aggregate":5},"15m":{cmc:"1min",gt:"minute","aggregate":15},"1H":{cmc:"5min",gt:"hour","aggregate":1},"4H":{cmc:"15min",gt:"hour","aggregate":4},"1D":{cmc:"1h",gt:"day","aggregate":1}};
+ const intervals={"5m":{cmc:"1min",gt:"minute","aggregate":5},"15m":{cmc:"1min",gt:"minute","aggregate":15},"1H":{cmc:"5min",gt:"hour","aggregate":1},"4H":{cmc:"15min",gt:"hour","aggregate":4},"1D":{cmc:"1h",gt:"day","aggregate":1}};
  const cfg=intervals[range]||intervals["1H"];
  const chartJSON=async url=>{const r=await fetch(url,{signal:chartController.signal,headers:{accept:"application/json"}});if(!r.ok)throw new Error("Chart data request failed ("+r.status+")");return r.json();};
  let pool=String(token?.cmcPairAddress||token?.pairAddress||token?.poolAddress||"");
@@ -4082,14 +4082,19 @@ async function qxLoadTrades(token){
 
 function qxSetupChartRanges(token){document.querySelectorAll("#chartRanges [data-chart-range]").forEach(b=>b.onclick=()=>{document.querySelectorAll("#chartRanges [data-chart-range]").forEach(x=>x.classList.toggle("active",x===b));qxLoadLiveChart(token,b.dataset.chartRange);});}
 function openToken(token){
+ try{const mint=String(token?.baseToken?.address||token?.address||"");if(mint&&history.pushState&&location.pathname!==location.pathname.replace(/\/$/,"")+"/token/"+encodeURIComponent(mint)){history.pushState({qxTokenMint:mint},"",location.pathname.replace(/\/$/,"")+"/token/"+encodeURIComponent(mint)+location.search+location.hash);}}catch(_){}
+ /* Keep the existing detail terminal as a single DOM node. It is already placed by QXEnsureTerminalPlacement; do not move it again or switch pages before populating it. */
  window.QXEnsureTerminalPlacement?.();
  selectedToken=token;selectedTokenDecimals=qxTokenDecimals(token);tradeDirection="buy";document.body.classList.add("qx-token-open");
  const amountInput=$("tradeAmountInput");if(amountInput)amountInput.value="";
  const percentRange=$("percentRange");if(percentRange)percentRange.value="25";
  const detail=$("detail");if(!detail)return;detail.style.display="block";
  pendingSwapOrder=null;$("swapNowBtn").disabled=true;
- const marketsPage=$("marketsPage");if(marketsPage)marketsPage.classList.add("active");
- const exchangePage=$("exchangePage");if(exchangePage)exchangePage.classList.remove("active");
+ /* Do NOT call showPage("exchangePage") here. The token detail terminal is the same terminal opened from Markets. Switching pages hides markets and leaves the detail node orphaned/blank. */
+ const marketsPage=$("marketsPage"),exchangePage=$("exchangePage");
+ if(marketsPage){marketsPage.classList.add("active");marketsPage.setAttribute("aria-hidden","false");marketsPage.style.display="block";if("inert" in marketsPage)marketsPage.inert=false;}
+ if(exchangePage){exchangePage.classList.remove("active");exchangePage.setAttribute("aria-hidden","true");exchangePage.style.display="none";if("inert" in exchangePage)exchangePage.inert=true;}
+
  $("detailName").textContent=cleanTokenText(token.baseToken?.name,"Unknown Token");$("detailSymbol").textContent=cleanTokenText(token.baseToken?.symbol,"TOKEN");$("detailPrice").textContent=qxNum(token.priceUsd)>0?qxFormatTokenPrice(token.priceUsd):"Awaiting live price";
  const ch=qxNum(token.priceChange?.h24);$("detailChange").textContent=ch?(ch>0?"+":"")+ch.toFixed(2)+"%":"—";$("detailChange").className="detail-change "+(ch>0?"up":ch<0?"down":"neutral");
  $("detailAddress").textContent=token.baseToken.address;
@@ -4102,7 +4107,7 @@ function openToken(token){
  $("confirmSwapBtn").disabled=true;$("confirmSwapBtn").textContent="GET LIVE QUOTE FIRST";$("confirmSwapBtn").style.display="none";$("confirmSwapBtn").setAttribute("aria-hidden","true");$("confirmSwapBtn").setAttribute("tabindex","-1");$("qxFeeDisplay").textContent="1.00% · live quote required";$("swapRoute").textContent="QX best available Jupiter route";
  updateTradePercentUI();refreshTradeBalances();
  qxSetupChartRanges(token);
- qxLoadLiveChart(token,"NOW");
+ qxLoadLiveChart(token,"1H");
  qxLoadCmcTokenDetail(token);
  qxLoadTrades(token);
  const detailTop=document.getElementById("detail");
@@ -4110,6 +4115,20 @@ function openToken(token){
 }
 window.QXOpenToken=openToken;
 
+$("tokenBackBtn")?.addEventListener("click",function(e){
+ e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
+ try{window.QXCloseTokenTerminal?.();}catch(_){ }
+ document.body.classList.remove("qx-token-open","qx-trade-modal-open");
+ const detail=document.getElementById("detail");if(detail){detail.style.display="none";detail.hidden=true;}
+ const exchange=document.getElementById("exchangePage");if(exchange){exchange.classList.remove("active");exchange.setAttribute("aria-hidden","true");exchange.style.display="none";if("inert" in exchange)exchange.inert=true;}
+ const markets=document.getElementById("marketsPage");if(markets){markets.classList.add("active");markets.setAttribute("aria-hidden","false");markets.style.display="block";if("inert" in markets)markets.inert=false;}
+ document.querySelectorAll(".page").forEach(p=>{if(p!==markets){p.classList.remove("active");p.setAttribute("aria-hidden","true");if("inert" in p)p.inert=true;}});
+ document.querySelectorAll(".qx-menu-link,.qx-app-nav [data-page]").forEach(b=>b.classList.toggle("active",b.dataset.page==="marketsPage"));
+ try{history.replaceState({},"",location.pathname.replace(/\/token\/[^/]+$/,"")+location.search+location.hash);}catch(_){ }
+ window.scrollTo(0,0);
+ const market=document.getElementById("tokenResults");if(market)setTimeout(()=>market.scrollIntoView({behavior:"smooth",block:"start"}),60);
+ return false;
+});
 $("tradeBuyBtn")?.addEventListener("click",()=>setTradeDirection("buy"));
 $("tradeSellBtn")?.addEventListener("click",()=>setTradeDirection("sell"));
 $("swapDirectionBtn")?.addEventListener("click",()=>setTradeDirection(tradeDirection==="buy"?"sell":"buy"));
@@ -4487,7 +4506,7 @@ function renderMarket(){
   const message=query?'No Solana markets matched “'+escapeHTML(query)+'”. Check the token name, symbol or mint address.':currentCategory==="new"?'No recently created Solana markets were found in the rolling 30-day discovery window. QX is continuing to refresh new-pool feeds.':'No Solana market data is available in this category right now. QX will retry the market feeds automatically.';
   box.innerHTML=sortHead+'<div class="market-empty">'+message+'</div>';return;
  }
- box.innerHTML=sortHead+list.slice(0,60).map((p,i)=>{
+ box.innerHTML=sortHead+list.slice(0,80).map((p,i)=>{
   const name=escapeHTML(qxTokenDisplayName(p)),symbol=escapeHTML(qxIsPlaceholderTokenLabel(p.baseToken.symbol,"symbol")?String(p.baseToken.address||"").slice(0,6).toUpperCase():p.baseToken.symbol),image=qxSafeUrl(p.info?.imageUrl);
   const hasPrice=qxNum(p.priceUsd)>0,change=qxNum(p.priceChange?.h24),cls=change>0?"positive":change<0?"negative":"neutral";
   const changeText=hasPrice?((change>0?"+":"")+change.toFixed(2)+"% "):"—";
@@ -4857,7 +4876,7 @@ function qxUpdateLiveCard(mint,p){
 function qxUpdateLiveChart(mint,price,unixTime,candleData){
  const host=$("detailChart");if(!host||host.dataset.mint!==mint||!host.__qxSeries||!(price>0))return;
  const range=document.querySelector('#chartRanges [data-chart-range].active')?.dataset.chartRange||'1H';
- const step=range==='NOW'?15:range==='15s'?15:range==='30s'?30:range==='1m'?60:range==='5m'?300:range==='15m'?900:range==='4H'?14400:range==='1D'?3600:300;
+ const step=range==='5m'?300:range==='15m'?900:range==='4H'?14400:range==='1D'?3600:300;
  const rawTime=Number(unixTime)||Math.floor(Date.now()/1000),time=Math.floor(rawTime/step)*step;
  let current=host.__qxLiveCandle;
  if(!current){
@@ -5163,14 +5182,14 @@ loadMarket();
     const tx=$('qxTxBtn');if(tx)tx.onclick=()=>loadTransactions(String(window.QXTerminalTokenMint||mint));
   }
   function ensureTerminalPlacement(){
-    const detail=$('detail'),marketsPage=$('marketsPage');
-    if(!detail||!marketsPage)return false;
-    // The detail terminal stays in its original Markets page. Moving it into
-    // another .page was the source of the black screen and broken back button.
-    if(detail.parentElement!==marketsPage){
-      const marketShell=marketsPage.querySelector('.qx-market-shell');
-      if(marketShell)marketShell.insertAdjacentElement('afterend',detail);
-      else marketsPage.appendChild(detail);
+    const detail=$("detail"),markets=$("marketsPage");
+    if(!detail||!markets)return false;
+    // Keep the detail terminal in Markets. Moving it into exchangePage breaks the
+    // market/detail lifecycle and can leave an empty terminal after navigation.
+    if(detail.parentElement!==markets){
+      const anchor=markets.querySelector(".qx-market-shell");
+      if(anchor&&anchor.parentElement===markets)anchor.insertAdjacentElement("afterend",detail);
+      else markets.appendChild(detail);
     }
     return true;
   }
@@ -5205,7 +5224,17 @@ loadMarket();
   });
   // Rebind the visible in-terminal control defensively after legacy handlers are installed.
   const qxReturnButton=$('tokenBackBtn');
-  if(qxReturnButton)qxReturnButton.onclick=()=>qxCloseTokenTerminal();
+  if(qxReturnButton)qxReturnButton.onclick=function(e){
+    e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
+    try{qxCloseTokenTerminal();}catch(_){ }
+    document.body.classList.remove('qx-token-open','qx-trade-modal-open');
+    const detail=$('detail');if(detail){detail.style.display='none';detail.hidden=true;}
+    const exchange=$('exchangePage');if(exchange){exchange.classList.remove('active');exchange.setAttribute('aria-hidden','true');exchange.style.display='none';if('inert' in exchange)exchange.inert=true;}
+    const markets=$('marketsPage');if(markets){markets.classList.add('active');markets.setAttribute('aria-hidden','false');markets.style.display='block';if('inert' in markets)markets.inert=false;}
+    document.querySelectorAll('.page').forEach(p=>{if(p!==markets){p.classList.remove('active');p.setAttribute('aria-hidden','true');if('inert' in p)p.inert=true;}});
+    window.scrollTo(0,0);
+    return false;
+  };
   window.QXUnifiedOpenToken=function(token){
     if(!token||!token.baseToken||!token.baseToken.address)return;
     const incomingMint=String(token.baseToken.address);
@@ -5214,11 +5243,8 @@ loadMarket();
     window.__QXSelectedToken=token;
     window.QXTerminalTokenMint=String(token.baseToken.address);
     if(!ensureTerminalPlacement())return;
-    const detail=$('detail');
-    const marketsPage=$('marketsPage');
-    if(marketsPage)marketsPage.classList.add('active');
-    const exchangePage=$('exchangePage');
-    if(exchangePage)exchangePage.classList.remove('active');
+    const detail=$('detail'),page=$('exchangePage');
+    page.querySelectorAll(':scope > *').forEach(n=>{if(n!==detail)n.style.display='none'});
     detail.style.display='block';
     document.body.classList.add('qx-token-open');
     setWatchButton(token);
@@ -5332,7 +5358,7 @@ loadMarket();
    window.QXCloseTradeModal=close;
   }
   // Keep the token page focused: verified trade tape and personal history remain hidden here.
-  if(ownHistory)ownHistory.style.display='none';if(marketTrades)marketTrades.style.display='block';
+  if(ownHistory)ownHistory.style.display='none';if(marketTrades)marketTrades.style.display='none';
   refreshRealWalletBalance();
   setInterval(()=>{if(document.visibilityState!=="hidden"&&window.QXGetWalletState?.().connected)refreshRealWalletBalance();},30000);
  });
