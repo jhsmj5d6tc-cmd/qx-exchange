@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5592,6 +5591,7 @@ loadMarket();
       const ch=hasChange?Number(rawChange):null;
       const cls=ch===null?'':ch>0?'up':ch<0?'down':'';
       const changeText=ch===null?'—':(ch>0?'+':'')+ch.toFixed(2)+'%';
+      const hasTokenCreated=Number(p?.tokenCreatedAt)>0;
       const createdRaw=Number(p?.tokenCreatedAt||p?.pairCreatedAt||0);
       const created=createdRaw>0?(createdRaw<1e12?createdRaw*1000:createdRaw):0;
       const age=created?Math.max(0,Math.floor((Date.now()-created)/60000)):null;
