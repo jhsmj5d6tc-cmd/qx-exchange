@@ -1433,6 +1433,12 @@ body.qx-token-open #detail #tokenBackBtn span{display:block!important;font-size:
 .qx-full-dex-chart #chartMessage{padding:24px 10px;color:#9ba8ba;text-align:center;font-size:12px}
 @media(max-width:760px){.qx-full-dex-chart{margin:10px -2px!important;border-radius:9px!important}.qx-full-dex-chart #detailChart,.qx-full-dex-chart #detailChart iframe{height:570px!important;min-height:480px!important;border-radius:9px!important}}
 </style>
+<style id="qx-home-default-visibility-fix">
+/* QX: detail terminal is hidden by default; only .qx-token-open may reveal it. */
+body:not(.qx-token-open) #marketsPage #detail{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;}
+body:not(.qx-token-open) #marketsPage .market-list-column{display:block!important;visibility:visible!important;opacity:1!important;}
+body:not(.qx-token-open) #marketsPage>.market-heading{display:flex!important;visibility:visible!important;opacity:1!important;}
+</style>
 </head>
 <body>
 <div class="wrap">
@@ -4208,6 +4214,7 @@ async function qxLoadTrades(token){
 let qxChartLiveTimer=null;
 function qxSetupChartRanges(token){document.querySelectorAll("#chartRanges [data-chart-range]").forEach(b=>b.onclick=()=>{document.querySelectorAll("#chartRanges [data-chart-range]").forEach(x=>x.classList.toggle("active",x===b));clearInterval(qxChartLiveTimer);qxChartLiveTimer=null;qxLoadLiveChart(token,b.dataset.chartRange);const r=b.dataset.chartRange;if(r==="now"||r==="15s"||r==="30s")qxChartLiveTimer=setInterval(()=>{if(document.body.classList.contains("qx-token-open")&&selectedToken===token)qxLoadLiveChart(token,r);},r==="now"?5000:Number(r.replace("s",""))*1000);});}
 function openToken(token){
+ window.__QXTokenUserOpen=true;
  try{const mint=String(token?.baseToken?.address||token?.address||"");if(mint&&history.pushState){history.pushState({qxTokenMint:mint},"",location.pathname+location.search+"#token="+encodeURIComponent(mint));}}catch(_){}
  /* Keep the existing detail terminal as a single DOM node. It is already placed by QXEnsureTerminalPlacement; do not move it again or switch pages before populating it. */
  window.QXEnsureTerminalPlacement?.();
@@ -5188,21 +5195,13 @@ window.QXNewPairs=newPairs;window.QXTrendingPairs=trendingPairs;
 loadSolPrice();
 setInterval(()=>{if(document.visibilityState!=="hidden"&&!qxMarketStreamLive)loadSolPrice();},300000);
 loadMarket();
-/* QX DEEP LINK ROUTER — hash routes keep GitHub Pages on its real /qx-exchange/ file path. */
+/* QX HOME START — do not auto-open a token terminal on page load.
+   Token details are opened only by an explicit user click on a market token. */
 (function(){
- const mint=String(location.hash.match(/^#token=([1-9A-HJ-NP-Za-km-z]{32,44})$/i)?.[1]||"");
- if(!mint)return;
- let tries=0;
- const open=()=>{
-  tries++;
-  try{window.QXOpenTokenByMint?.(mint);if(document.body.classList.contains("qx-token-open"))return;}catch(_){}
-  if(tries<20){setTimeout(open,500);return;}
-  const search=document.getElementById("search"),btn=document.getElementById("searchBtn");
-  if(search&&btn){search.value=mint;btn.click();setTimeout(()=>{try{window.QXOpenTokenByMint?.(mint);}catch(_){ }},1200);}
- };
- setTimeout(open,350);
-})();
-</script>
+  try{
+    if(location.hash) history.replaceState({},"",location.pathname+location.search);
+  }catch(_){}
+})();</script>
 
 
 
@@ -5355,7 +5354,7 @@ loadMarket();
     if(document.body.classList.contains('qx-token-open') && !/^#token=[1-9A-HJ-NP-Za-km-z]{32,44}$/i.test(location.hash))qxCloseTokenTerminal();
     else if(!document.body.classList.contains('qx-token-open')){
       const match=location.hash.match(/^#token=([1-9A-HJ-NP-Za-km-z]{32,44})$/i);
-      if(match)window.QXOpenTokenByMint?.(match[1]);
+      if(match && window.__QXTokenUserOpen===true)window.QXOpenTokenByMint?.(match[1]);
     }
   });
   // Rebind the visible in-terminal control defensively after legacy handlers are installed.
@@ -6020,29 +6019,64 @@ loadMarket();
 })();
 </script>
 
+<!-- QX_BUILD_MARKER: V85-HOME-BOOT-LOCK -->
+<script id="qx-v85-home-boot-lock">
+(function(){
+  "use strict";
+  /* V85: the token terminal is NOT allowed to be visible during initial page boot.
+     A token can only become visible after openToken()/QXOpenToken is called by a
+     real user interaction. This runs before the later controllers are initialized. */
+  window.__QXTokenUserOpen=false;
+  try{
+    if(location.hash && /^#token=[1-9A-HJ-NP-Za-km-z]{32,44}$/i.test(location.hash)){
+      history.replaceState({},"",location.pathname+location.search);
+    }
+  }catch(_){ }
+  function lockHome(){
+    try{
+      document.body.classList.remove("qx-token-open","qx-trade-modal-open","qx-token-focus");
+      const d=document.getElementById("detail");
+      if(d){d.style.setProperty("display","none","important");d.hidden=true;d.setAttribute("aria-hidden","true");}
+      const m=document.getElementById("marketsPage");
+      if(m){m.classList.add("active");m.setAttribute("aria-hidden","false");m.style.setProperty("display","block","important");if("inert" in m)m.inert=false;}
+    }catch(_){ }
+  }
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",lockHome,{once:true});
+  else lockHome();
+  window.addEventListener("pageshow",lockHome);
+})();
+</script>
 <!-- QX_BUILD_MARKER: V84-MIGRATED-DAMM-ROUTING-STRICT-VERIFIED -->
 
 <script id="qx-final-home-route-guard">
 (function(){
   "use strict";
-  function qxForceHomeWhenNoTokenRoute(){
-    // The token terminal is a detail view, never the default landing page.
-    // Only an explicit #token=<mint> route is allowed to open it.
-    const hash=String(location.hash||"");
-    const hasTokenRoute=/^#token=[1-9A-HJ-NP-Za-km-z]{32,44}$/i.test(hash);
-    if(hasTokenRoute)return;
+  function qxForceRealHome(){
     try{
-      document.body.classList.remove("qx-token-open","qx-trade-modal-open");
+      // IMPORTANT: a token terminal is never the default landing view.
+      // Clear any stale token route/state left by a previous visit.
+      try{history.replaceState({},"",location.pathname+location.search);}catch(_){}
+      document.body.classList.remove("qx-token-open","qx-trade-modal-open","qx-token-focus");
       const detail=document.getElementById("detail");
-      if(detail){detail.style.display="none";detail.hidden=false;}
-      const exchange=document.getElementById("exchangePage");
-      if(exchange){exchange.classList.remove("active");exchange.setAttribute("aria-hidden","true");exchange.style.display="none";}
+      if(detail){
+        detail.style.setProperty("display","none","important");
+        detail.hidden=true;
+        detail.removeAttribute("aria-hidden");
+      }
       const markets=document.getElementById("marketsPage");
       if(markets){
         markets.classList.add("active");
         markets.setAttribute("aria-hidden","false");
-        markets.style.display="block";
+        markets.style.setProperty("display","block","important");
+        markets.style.setProperty("visibility","visible","important");
         if("inert" in markets)markets.inert=false;
+      }
+      const exchange=document.getElementById("exchangePage");
+      if(exchange){
+        exchange.classList.remove("active");
+        exchange.setAttribute("aria-hidden","true");
+        exchange.style.setProperty("display","none","important");
+        if("inert" in exchange)exchange.inert=true;
       }
       document.querySelectorAll(".page").forEach(function(page){
         if(page!==markets){
@@ -6051,15 +6085,13 @@ loadMarket();
           if("inert" in page)page.inert=true;
         }
       });
-      if(!window.QXTerminalTokenMint)window.__QXSelectedToken=null;
-      if(typeof window.qxV44ResetHome==="function")window.qxV44ResetHome();
-    }catch(e){console.warn("QX final home route guard:",e);}
+      window.__QXSelectedToken=null;
+      window.QXTerminalTokenMint="";
+    }catch(e){console.warn("QX startup home reset:",e);}
   }
-  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",qxForceHomeWhenNoTokenRoute,{once:true});
-  else qxForceHomeWhenNoTokenRoute();
-  window.addEventListener("pageshow",function(){
-    if(!/^#token=[1-9A-HJ-NP-Za-km-z]{32,44}$/i.test(String(location.hash||"")))qxForceHomeWhenNoTokenRoute();
-  });
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",qxForceRealHome,{once:true});
+  else qxForceRealHome();
+  window.addEventListener("pageshow",qxForceRealHome);
 })();
 </script>
 
