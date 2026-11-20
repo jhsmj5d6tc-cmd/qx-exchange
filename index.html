@@ -2126,10 +2126,9 @@ const USDC="EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
 // one as the only source for wallet balances or Meteora account reads.
 const RPCS=[
  "https://api.mainnet.solana.com",
- "https://solana-rpc.publicnode.com",
- "https://solana.drpc.org",
+ "https://api.mainnet-beta.solana.com",
  "https://free.rpcpool.com",
- "https://api.mainnet-beta.solana.com"
+ "https://solana.drpc.org"
 ];
 const SOL_RESERVE=0.0001;
 
@@ -3806,7 +3805,32 @@ async function qxBuildDirectDbcQuote(){
  // A verified migrated QX launch must go straight to its exact DAMM v2 successor.
  // Do not require DBC getPoolByBaseMint to keep returning an active curve after migration.
  if(knownSuccessor||String(token?.qxLiveVenue||"").toLowerCase().includes("damm"))return await qxBuildDammV2Quote(token,direction,amountText);
- const client=new dbc.DynamicBondingCurveClient(connection,"confirmed"),poolState=await client.state.getPoolByBaseMint(new PublicKey(mint));
+ // Meteora DBC getPoolByBaseMint uses an indexed RPC request (getProgramAccounts).
+ // Do NOT bind this lookup to whichever RPC qxGetHealthyConnection happened to choose.
+ // Some public RPCs allow normal reads but reject indexed requests with HTTP 403.
+ // Try each configured RPC independently and keep the exact connection that succeeded.
+ let client=null,poolState=null,dbcConnection=null,lastIndexedError=null;
+ const indexedEndpoints=RPCS.filter(endpoint=>!qxRpcIsCooling(endpoint));
+ for(const endpoint of (indexedEndpoints.length?indexedEndpoints:RPCS)){
+  try{
+   const candidate=new Connection(endpoint,"confirmed");
+   await candidate.getLatestBlockhash("confirmed");
+   const candidateClient=new dbc.DynamicBondingCurveClient(candidate,"confirmed");
+   const candidatePool=await candidateClient.state.getPoolByBaseMint(new PublicKey(mint));
+   qxRpcMarkSuccess(endpoint);
+   client=candidateClient;poolState=candidatePool;dbcConnection=candidate;
+   break;
+  }catch(indexedError){
+   lastIndexedError=indexedError;
+   qxRpcMarkFailure(endpoint,indexedError);
+   console.warn("QX Meteora indexed RPC failed:",endpoint,indexedError?.message||indexedError);
+  }
+ }
+ if(!client||!dbcConnection){
+  const msg=String(lastIndexedError?.message||lastIndexedError||"No indexed RPC available");
+  throw new Error("QX could not read the Meteora DBC pool from any configured Solana RPC. Last RPC error: "+msg);
+ }
+ const connection=dbcConnection;
  // A token may have graduated to DAMM v2 without a readable active DBC curve.
  // Check the actual DAMM v2 SOL pool before declaring the direct Meteora route unavailable.
  if(!poolState?.publicKey){
