@@ -2121,9 +2121,16 @@ const QX_JUP_API_KEY="jup_pub_646a02a3199987e777a62f4df5efaa06aeb0cbb5edc35244c9
 // QX Jupiter referral account used by the current executable Swap API V2 order flow.
 const QX_JUP_REFERRAL_ACCOUNT="UMRAMLr2CqNNSUhVJvdB2bbEGHPwL5n6LpFzTxycmBW";
 const USDC="EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
-// Avoid PublicNode here: its public tier can reject indexed account lookups used by Meteora DBC with HTTP 403.
-// Prefer Solana mainnet RPCs, then a community fallback that supports broader account queries.
-const RPCS=["https://api.mainnet.solana.com","https://api.mainnet-beta.solana.com"];
+// Use several independent public Solana RPCs. The two official endpoints can
+// return HTTP 403/429 from some browser networks, so QX must not treat either
+// one as the only source for wallet balances or Meteora account reads.
+const RPCS=[
+ "https://api.mainnet.solana.com",
+ "https://solana-rpc.publicnode.com",
+ "https://solana.drpc.org",
+ "https://free.rpcpool.com",
+ "https://api.mainnet-beta.solana.com"
+];
 const SOL_RESERVE=0.0001;
 
 let appKit,activeWalletProvider=null,walletAddress="",connected=false,solPrice=0,qxWalletInitError=null;
@@ -3066,8 +3073,32 @@ function parseTokenUnits(value,decimals){
  return raw;
 }
 async function qxGetHealthyConnection(){
- for(const endpoint of RPCS){try{const c=new Connection(endpoint,"confirmed");await c.getLatestBlockhash("confirmed");return c;}catch(_){}}
- throw new Error("No Solana RPC endpoint is reachable from this browser.");
+ const ordered=RPCS.slice();
+ for(const endpoint of ordered){
+  if(qxRpcIsCooling(endpoint))continue;
+  try{
+   const c=new Connection(endpoint,"confirmed");
+   await c.getLatestBlockhash("confirmed");
+   qxRpcMarkSuccess(endpoint);
+   return c;
+  }catch(error){
+   qxRpcMarkFailure(endpoint,error);
+  }
+ }
+ // If every endpoint is temporarily cooling down, give each one one final
+ // probe. This prevents a previous transient 403/429 from locking trading
+ // out for the whole cooldown window.
+ for(const endpoint of ordered){
+  try{
+   const c=new Connection(endpoint,"confirmed");
+   await c.getLatestBlockhash("confirmed");
+   qxRpcMarkSuccess(endpoint);
+   return c;
+  }catch(error){
+   qxRpcMarkFailure(endpoint,error);
+  }
+ }
+ throw new Error("No Solana RPC endpoint is reachable from this browser. QX tried multiple independent mainnet RPC endpoints.");
 }
 async function createQXToken(){
  const button=$("createTokenBtn"),status=$("createTokenStatus"),resultBox=$("createdTokenResult");
@@ -5903,219 +5934,4 @@ loadMarket();
  const tr=(v)=>words[window.qxLanguage||document.getElementById('qxLanguage')?.value||'en']?.[v]||v;
  const staticWords={
   en:{kicker:'QX CENTRAL LIMIT ORDER BOOK',title:'Spot Trading',tag:'LIMIT ORDERS',intro:'QX internal spot order book. Wallet message-signature authentication is required before balances or orders can be accessed. No deposit addresses are assigned yet. Withdrawals are disabled until secure custody and an audited Solana signing/broadcast service are configured.',market:'Market pair',refresh:'Refresh market',account:'QX account',sol:'Available SOL',usdc:'Available USDC',auth:'Authenticate QX account',balances:'Refresh balances',bids:'Order book · Bids',asks:'Order book · Asks',trades:'Recent QX trades',place:'Place a spot limit order',price:'Limit price',quantity:'Quantity',total:'Estimated total / proceeds (1% fee)',history:'My orders & executions',historyNote:'Private to the connected wallet. Open limit orders can be cancelled before they are filled.',buy:'BUY',sell:'SELL',placeButton:'AUTHENTICATE AND PLACE LIMIT ORDER',availability:'Spot limit orders: enabled · Market orders: disabled · Margin: disabled · Deposits: not configured · Withdrawals: disabled'},
-  ar:{kicker:'دفتر أوامر QX المركزي',title:'التداول الفوري',tag:'أوامر محددة السعر',intro:'دفتر أوامر تداول فوري داخلي لدى QX. يلزم التحقق من المحفظة بتوقيع رسالة قبل عرض الأرصدة أو الأوامر. لا توجد عناوين إيداع مخصصة حالياً، والسحب معطّل حتى إعداد حفظ آمن للأصول وخدمة معتمدة لتوقيع وبث تحويلات سولانا.',market:'زوج التداول',refresh:'تحديث السوق',account:'حساب QX',sol:'رصيد SOL المتاح',usdc:'رصيد USDC المتاح',auth:'التحقق من حساب QX',balances:'تحديث الأرصدة',bids:'دفتر الأوامر · طلبات الشراء',asks:'دفتر الأوامر · طلبات البيع',trades:'أحدث تداولات QX',place:'إنشاء أمر تداول فوري محدد السعر',price:'السعر المحدد',quantity:'الكمية',total:'الإجمالي / صافي العائد التقديري (رسوم 1%)',history:'أوامري والتنفيذات',historyNote:'السجل خاص بالمحفظة المتصلة. يمكنك إلغاء أوامر الحد المفتوحة قبل تنفيذها.',buy:'شراء',sell:'بيع',placeButton:'تحقق من المحفظة وأرسل أمر الحد',availability:'أوامر الحد الفورية: مفعّلة · أوامر السوق: معطّلة · الهامش: غير متاح · الإيداع: غير مجهّز · السحب: معطّل'},
-  zh:{kicker:'QX 中央限价订单簿',title:'现货交易',tag:'限价订单',intro:'QX 内部现货订单簿。查看余额或订单前，必须通过钱包签名消息完成身份验证。目前尚未分配充值地址；在配置安全托管及经过审计的 Solana 签名和广播服务前，提现功能保持关闭。',market:'交易对',refresh:'刷新市场',account:'QX 账户',sol:'可用 SOL',usdc:'可用 USDC',auth:'验证 QX 账户',balances:'刷新余额',bids:'订单簿 · 买单',asks:'订单簿 · 卖单',trades:'QX 最新成交',place:'创建现货限价单',price:'限价',quantity:'数量',total:'预计总额 / 净收入（1% 手续费）',history:'我的订单与成交',historyNote:'仅连接的钱包可见。限价单完全成交前可以取消。',buy:'买入',sell:'卖出',placeButton:'验证钱包并提交限价单',availability:'现货限价单：已启用 · 市价单：已禁用 · 杠杆：未启用 · 充值：未配置 · 提现：已禁用'}
- };
- function applyCexLanguage(){
-  const language=window.qxLanguage||$('qxLanguage')?.value||'en';const d=staticWords[language]||staticWords.en;
-  const set=(id,key)=>{const el=$(id);if(el)el.textContent=d[key]||staticWords.en[key]||key;};
-  Object.entries({qxCexKicker:'kicker',qxCexTitle:'title',qxCexOrderTag:'tag',qxCexIntro:'intro',qxCexAvailability:'availability',qxCexMarketLabel:'market',qxCexRefresh:'refresh',qxCexAccountLabel:'account',qxCexSolLabel:'sol',qxCexUsdcLabel:'usdc',qxCexAuth:'auth',qxCexBalances:'balances',qxCexBidsTitle:'bids',qxCexAsksTitle:'asks',qxCexTradesTitle:'trades',qxCexPlaceTitle:'place',qxCexPriceLabel:'price',qxCexQuantityLabel:'quantity',qxCexTotalLabel:'total',qxCexHistoryTitle:'history',qxCexHistoryNote:'historyNote',qxCexBuy:'buy',qxCexSell:'sell',qxCexPlace:'placeButton'}).forEach(([id,key])=>set(id,key));
-  const price=$('qxCexPrice'),quantity=$('qxCexQuantity');if(price)price.placeholder=language==='ar'?'USDC لكل SOL':language==='zh'?'每 SOL 的 USDC 价格':'USDC per SOL';if(quantity)quantity.placeholder=language==='ar'?'كمية SOL':language==='zh'?'SOL 数量':'SOL amount';
- }
- function status(message){const el=$('qxCexStatus');if(el)el.textContent=tr(message);}
- function market(){return String($('qxCexMarket')?.value||'SOL/USDC').trim().toUpperCase();}
- async function request(method='GET',payload=null,query='',signal=null){
-  const options={method,cache:'no-store',headers:{apikey:ANON},signal:signal||undefined};
-  if(payload){options.headers['Content-Type']='application/json';options.body=JSON.stringify(payload);}
-  const response=await fetch(API+(method==='GET'?'?'+query:''),options);
-  const data=await response.json().catch(()=>({}));
-  if(!response.ok||data.error||data.ok===false)throw new Error(data.error||('QX trading request failed ('+response.status+').'));
-  return data;
- }
- function cexAbortPending(){
-  if(cexRequestController){try{cexRequestController.abort();}catch(_){}cexRequestController=null;}
-  cexRequestSeq++;
- }
- function cexSignal(){
-  cexAbortPending();
-  cexRequestController=new AbortController();
-  return {signal:cexRequestController.signal,seq:cexRequestSeq};
- }
- function cexIsCurrent(seq){return seq===cexRequestSeq&&!cexHidden&&!document.hidden;}
- window.addEventListener('visibilitychange',()=>{
-  cexHidden=document.visibilityState==='hidden';
-  if(cexHidden)cexAbortPending();
- });
- function provider(){try{return window.QXGetActiveWalletProvider?.()||null;}catch(_){return null;}}
- function wallet(){try{return window.QXGetWalletState?.()||{connected:false,address:''};}catch(_){return {connected:false,address:''};}}
- function signatureBase64(signed){const bytes=signed?.signature||signed;if(!(bytes instanceof Uint8Array)&&!ArrayBuffer.isView(bytes))throw new Error('Wallet did not return a valid signature.');const v=new Uint8Array(bytes.buffer,bytes.byteOffset,bytes.byteLength);let b='';for(let i=0;i<v.length;i++)b+=String.fromCharCode(v[i]);return btoa(b);}
- async function authenticate(force=false){
-  const w=wallet();if(!w.connected||!w.address)throw new Error('Connect your Solana wallet first.');
-  // qx-trading consumes every challenge after one successful request; sign a fresh challenge for each protected call.
-  session=null;
-  const signer=provider();if(!signer||typeof signer.signMessage!=='function')throw new Error('This connected wallet does not support message signing. Use a compatible Solana wallet.');
-  status('Requesting a one-time QX authentication challenge…');
-  const challenge=await request('POST',{action:'challenge',wallet:w.address});
-  status('Approve the free authentication message in your wallet. This is not a transaction.');
-  const signed=await signer.signMessage(new TextEncoder().encode(challenge.message));
-  session={wallet:w.address,signature:signatureBase64(signed)};
-  $('qxCexAccount').textContent=w.address.slice(0,5)+'…'+w.address.slice(-5);
-  status('QX account authenticated.');
-  return session;
- }
- async function signedPayload(action,extra={}){const s=await authenticate();return {action,wallet:s.wallet,signature:s.signature,...extra};}
- async function loadBook(){
-  const m=market();if(!/^[A-Z0-9._-]{2,20}\/[A-Z0-9._-]{2,20}$/.test(m))throw new Error('Enter a valid market pair such as SOL/USDC.');
-  const {signal,seq}=cexSignal();
-  const d=await request('GET',null,'action=book&market='+encodeURIComponent(m),signal);
-  if(!cexIsCurrent(seq))return;
-  const render=(rows)=>rows?.length?rows.slice(0,15).map(x=>'<div class="swap-quote"><span>'+fmt(x.price)+'</span><strong>'+fmt(Math.max(0,Number(x.quantity)-Number(x.filled_quantity)))+'</strong></div>').join(''):'<div class="empty">'+tr('No open orders yet.')+'</div>';
-  $('qxCexBids').innerHTML=render(d.bids);$('qxCexAsks').innerHTML=render(d.asks);
- }
- async function loadTrades(){
-  const m=market(),{signal,seq}=cexSignal();
-  const d=await request('GET',null,'action=trades&market='+encodeURIComponent(m),signal);
-  if(!cexIsCurrent(seq))return;
-  $('qxCexTrades').innerHTML=d.trades?.length?d.trades.slice(0,15).map(x=>'<div class="swap-quote"><span>'+esc(dateFmt(x.executed_at))+'</span><strong>'+fmt(x.price)+' · '+fmt(x.quantity)+'</strong></div>').join(''):'<div class="empty">'+tr('No QX trades recorded for this market.')+'</div>';
- }
- async function loadBalances(){
-  const p=await signedPayload('balances');const d=await request('POST',p);
-  const rows=d.balances||[];const sol=rows.find(x=>x.qx_assets?.symbol==='SOL'),usdc=rows.find(x=>x.qx_assets?.symbol==='USDC');
-  $('qxCexSolBalance').textContent=fmt(sol?.available||0);$('qxCexUsdcBalance').textContent=fmt(usdc?.available||0);
-  $('qxCexAccount').textContent=(d.account?.wallet||'').slice(0,5)+'…'+(d.account?.wallet||'').slice(-5);
- }
- function renderHistory(d){
-  const host=$('qxCexOrders'),tradesHost=$('qxCexMyTrades');
-  const orders=Array.isArray(d?.orders)?d.orders:[],trades=Array.isArray(d?.trades)?d.trades:[];
-  if(host)host.innerHTML=orders.length?orders.map(o=>{
-   const open=['open','partially_filled'].includes(String(o.status||''));
-   return '<div class="swap-quote" style="gap:8px;align-items:center"><span><b>'+esc(tr(String(o.side||'').toLowerCase()))+'</b> · '+esc(o.market)+'<br><small>'+esc(tr(o.status))+' · '+esc(dateFmt(o.created_at))+'</small></span><span style="text-align:right">'+fmt(o.price)+'<br><small>'+fmt(o.filled_quantity)+' / '+fmt(o.quantity)+'</small></span>'+(open?'<button class="btn" type="button" data-qx-cancel="'+esc(o.id)+'" style="padding:6px 9px">'+tr('Cancel')+'</button>':'')+'</div>';
-  }).join(''):'<div class="empty">'+tr('No orders recorded for this wallet yet.')+'</div>';
-  if(tradesHost)tradesHost.innerHTML='<h4 style="margin:10px 0">'+tr('My executions')+'</h4>'+(trades.length?trades.map(t=>'<div class="swap-quote"><span>'+esc(t.market)+' · '+esc(tr(t.role))+'<br><small>'+esc(dateFmt(t.executed_at))+'</small></span><strong>'+fmt(t.price)+' × '+fmt(t.quantity)+'<br><small>'+tr('Fee:')+' '+fmt(t.fee)+'</small></strong></div>').join(''):'<div class="empty">'+tr('No executions for this wallet yet.')+'</div>');
-  host?.querySelectorAll('[data-qx-cancel]').forEach(btn=>btn.addEventListener('click',()=>cancelOrder(btn.dataset.qxCancel,btn)));
- }
- async function loadHistory(){
-  const host=$('qxCexOrders');if(host)host.textContent=tr('Authenticating wallet and loading private history…');
-  const payload=await signedPayload('history');const d=await request('POST',payload);lastHistory=d;renderHistory(d);
- }
- async function cancelOrder(orderId,button){
-  if(!orderId||busy)return;
-  if(!window.confirm(tr('Cancel this open QX limit order?')))return;
-  busy=true;if(button)button.disabled=true;
-  try{const payload=await signedPayload('cancel-order',{order_id:orderId});await request('POST',payload);status('Cancellation request processed. Refreshing your order history…');await loadHistory();await loadBook();await loadBalances();}
-  catch(e){status(e.message||'Could not cancel this order.');if(button)button.disabled=false;}
-  finally{busy=false;}
- }
- function updateTotal(){const p=Number($('qxCexPrice')?.value),q=Number($('qxCexQuantity')?.value),el=$('qxCexTotal');if(!el)return;if(!(p>0&&q>0&&Number.isFinite(p)&&Number.isFinite(q))){el.textContent='—';return;}const gross=p*q,fee=gross*0.01,net=side==='buy'?gross+fee:gross-fee;el.textContent=tr('Gross')+': '+fmt(gross)+' USDC · '+tr('Fee 1%')+': '+fmt(fee)+' USDC · '+tr(side==='buy'?'Total':'Receive')+': '+fmt(net)+' USDC';}
- function setSide(v){side=v;$('qxCexBuy').classList.toggle('active',v==='buy');$('qxCexSell').classList.toggle('active',v==='sell');$('qxCexBuy').classList.toggle('buy',true);$('qxCexSell').classList.toggle('sell',true);updateTotal();}
- async function place(){
-  if(busy)return;busy=true;$('qxCexPlace').disabled=true;
-  try{
-   const p=Number($('qxCexPrice').value),q=Number($('qxCexQuantity').value),m=market();
-   if(!(p>0&&q>0&&Number.isFinite(p)&&Number.isFinite(q)))throw new Error('Enter a positive limit price and quantity.');
-   const signed=await signedPayload('place-order',{market:m,side,order_type:'limit',price:p,quantity:q});
-   status('Submitting the signed limit order to QX matching…');
-   const result=await request('POST',signed);
-   status('QX accepted the order request. Result: '+JSON.stringify(result.result??result));
-   await loadBook();await loadBalances();await loadHistory();
-  }catch(e){status(e.message||'Could not place order.');}
-  finally{busy=false;$('qxCexPlace').disabled=false;}
- }
- async function refresh(){
-  if(cexHidden||document.hidden)return;
-  // Both readers share one abort controller. Run sequentially so the second
-  // request cannot abort the first; isolate failures so a trades-feed error
-  // never overwrites a successfully loaded order book.
-  try{await loadBook();}
-  catch(e){if(e?.name==='AbortError'||cexHidden||document.hidden)return;$('qxCexBids').textContent=e.message;$('qxCexAsks').textContent=e.message;}
-  try{await loadTrades();}
-  catch(e){if(e?.name==='AbortError'||cexHidden||document.hidden)return;$('qxCexTrades').textContent=e.message;}
- }
- $('qxCexBuy')?.addEventListener('click',()=>setSide('buy'));$('qxCexSell')?.addEventListener('click',()=>setSide('sell'));
- $('qxCexPrice')?.addEventListener('input',updateTotal);$('qxCexQuantity')?.addEventListener('input',updateTotal);
- $('qxCexRefresh')?.addEventListener('click',refresh);$('qxCexMarket')?.addEventListener('change',refresh);
- $('qxCexAuth')?.addEventListener('click',async()=>{try{await loadBalances();await loadHistory();status('QX account authenticated; balances and private history refreshed.');}catch(e){status(e.message);}});
- $('qxCexBalances')?.addEventListener('click',async()=>{try{await loadBalances();await loadHistory();status('Balances and private history refreshed.');}catch(e){status(e.message);}});
- $('qxCexHistoryRefresh')?.addEventListener('click',async()=>{try{await loadHistory();status('Private order history refreshed.');}catch(e){status(e.message);}});
- document.getElementById('qxLanguage')?.addEventListener('change',()=>{applyCexLanguage();if(lastHistory)renderHistory(lastHistory);updateTotal();});
- applyCexLanguage();
- cexHidden=document.visibilityState==='hidden';
- $('qxCexPlace')?.addEventListener('click',place);
- document.querySelectorAll('.qx-menu-link[data-page="exchangePage"]').forEach(b=>b.addEventListener('click',()=>setTimeout(refresh,120)));
- 
- window.addEventListener('qx:wallet-connected',()=>{session=null;cexAbortPending();});
- window.addEventListener('pagehide',cexAbortPending,{once:true});
- refresh();
-})();
-</script>
-
-<!-- QX_BUILD_MARKER: V85-HOME-BOOT-LOCK -->
-<script id="qx-v85-home-boot-lock">
-(function(){
-  "use strict";
-  /* V85: the token terminal is NOT allowed to be visible during initial page boot.
-     A token can only become visible after openToken()/QXOpenToken is called by a
-     real user interaction. This runs before the later controllers are initialized. */
-  window.__QXTokenUserOpen=false;
-  try{
-    if(location.hash && /^#token=[1-9A-HJ-NP-Za-km-z]{32,44}$/i.test(location.hash)){
-      history.replaceState({},"",location.pathname+location.search);
-    }
-  }catch(_){ }
-  function lockHome(){
-    try{
-      document.body.classList.remove("qx-token-open","qx-trade-modal-open","qx-token-focus");
-      const d=document.getElementById("detail");
-      if(d){d.style.setProperty("display","none","important");d.hidden=true;d.setAttribute("aria-hidden","true");}
-      const m=document.getElementById("marketsPage");
-      if(m){m.classList.add("active");m.setAttribute("aria-hidden","false");m.style.setProperty("display","block","important");if("inert" in m)m.inert=false;}
-    }catch(_){ }
-  }
-  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",lockHome,{once:true});
-  else lockHome();
-  window.addEventListener("pageshow",lockHome);
-})();
-</script>
-<!-- QX_BUILD_MARKER: V84-MIGRATED-DAMM-ROUTING-STRICT-VERIFIED -->
-
-<script id="qx-final-home-route-guard">
-(function(){
-  "use strict";
-  function qxForceRealHome(){
-    try{
-      // IMPORTANT: a token terminal is never the default landing view.
-      // Clear any stale token route/state left by a previous visit.
-      try{history.replaceState({},"",location.pathname+location.search);}catch(_){}
-      document.body.classList.remove("qx-token-open","qx-trade-modal-open","qx-token-focus");
-      const detail=document.getElementById("detail");
-      if(detail){
-        detail.style.setProperty("display","none","important");
-        detail.hidden=true;
-        detail.removeAttribute("aria-hidden");
-      }
-      const markets=document.getElementById("marketsPage");
-      if(markets){
-        markets.classList.add("active");
-        markets.setAttribute("aria-hidden","false");
-        markets.style.setProperty("display","block","important");
-        markets.style.setProperty("visibility","visible","important");
-        if("inert" in markets)markets.inert=false;
-      }
-      const exchange=document.getElementById("exchangePage");
-      if(exchange){
-        exchange.classList.remove("active");
-        exchange.setAttribute("aria-hidden","true");
-        exchange.style.setProperty("display","none","important");
-        if("inert" in exchange)exchange.inert=true;
-      }
-      document.querySelectorAll(".page").forEach(function(page){
-        if(page!==markets){
-          page.classList.remove("active");
-          page.setAttribute("aria-hidden","true");
-          if("inert" in page)page.inert=true;
-        }
-      });
-      window.__QXSelectedToken=null;
-      window.QXTerminalTokenMint="";
-    }catch(e){console.warn("QX startup home reset:",e);}
-  }
-  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",qxForceRealHome,{once:true});
-  else qxForceRealHome();
-  window.addEventListener("pageshow",qxForceRealHome);
-})();
-</script>
-
-</body>
-</html>
-
-
+  ar:{kicker:'دفتر أوامر QX المركزي',title:'التداول الفوري',tag:'أوامر محددة السعر',intro:'دفتر أوامر تداول فوري داخلي لدى QX. يلزم التحقق من المحفظة بتوقيع رسالة قبل عرض الأرصدة أو الأوامر. لا توجد عناوين إيداع 
