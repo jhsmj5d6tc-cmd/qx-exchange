@@ -1180,6 +1180,13 @@ html[dir="rtl"] .market-price,html[dir="rtl"] .market-change,html[dir="rtl"] .as
 body.qx-token-open #detail{width:100%!important;max-width:1080px!important;margin:12px auto 100px!important;padding:clamp(14px,2.4vw,26px)!important;border:1px solid rgba(105,126,164,.24)!important;border-radius:22px!important;background:radial-gradient(ellipse at 90% 0%,rgba(72,108,174,.13),transparent 42%),linear-gradient(160deg,#101725,#0a101a 70%)!important;box-shadow:0 24px 70px rgba(0,0,0,.32)!important}
 body.qx-token-open #tokenBackBtn,body.qx-token-open #qxTerminalBack{position:sticky!important;top:8px!important;z-index:2205!important;display:inline-flex!important;align-items:center!important;gap:9px!important;min-height:42px!important;padding:0 15px!important;margin:0 0 16px!important;border:1px solid rgba(90,226,174,.35)!important;border-radius:12px!important;background:rgba(12,25,29,.96)!important;color:#8ff3c8!important;font-size:11px!important;font-weight:900!important;box-shadow:0 8px 24px #0007!important;backdrop-filter:blur(14px)!important}
 body.qx-token-open #detail #tokenBackBtn{display:inline-flex!important;position:fixed!important;top:max(10px,env(safe-area-inset-top))!important;inset-inline-start:12px!important;z-index:100000!important;min-height:46px!important;padding:0 16px!important;margin:0!important;background:linear-gradient(135deg,#103329,#0b211f)!important;border:1px solid rgba(53,232,154,.55)!important;border-radius:12px!important;color:#67f0b6!important;box-shadow:0 8px 24px rgba(0,0,0,.42)!important;visibility:visible!important;opacity:1!important;}
+/* QX token focus: keep one DOM tree and one back control. Market stays the parent page. */
+body.qx-token-focus #marketsPage > *:not(#detail){display:none!important;}
+body.qx-token-focus #marketsPage{display:block!important;}
+body.qx-token-focus #detail{display:block!important;width:100%!important;max-width:100%!important;margin:0!important;}
+body.qx-token-focus #qxTerminalBack{display:none!important;}
+body.qx-token-focus #tokenBackBtn{position:sticky!important;top:8px!important;inset-inline-start:auto!important;z-index:1000!important;margin:0 0 14px!important;}
+
 body.qx-token-open #detail{padding-top:78px!important;}
 body.qx-token-open #detail .detail-top{display:flex!important;align-items:center!important;gap:13px!important;padding:14px 0 8px!important}
 body.qx-token-open #detailName{font-size:clamp(22px,4vw,32px)!important;letter-spacing:-.7px!important}
@@ -4084,13 +4091,13 @@ function qxSetupChartRanges(token){document.querySelectorAll("#chartRanges [data
 function openToken(token){
  try{const mint=String(token?.baseToken?.address||token?.address||"");if(mint&&history.pushState&&location.pathname!==location.pathname.replace(/\/$/,"")+"/token/"+encodeURIComponent(mint)){history.pushState({qxTokenMint:mint},"",location.pathname.replace(/\/$/,"")+"/token/"+encodeURIComponent(mint)+location.search+location.hash);}}catch(_){}
  window.QXEnsureTerminalPlacement?.();
- selectedToken=token;selectedTokenDecimals=qxTokenDecimals(token);tradeDirection="buy";document.body.classList.add("qx-token-open");
+ selectedToken=token;selectedTokenDecimals=qxTokenDecimals(token);tradeDirection="buy";
+ document.body.classList.add("qx-token-open","qx-token-focus");
  const amountInput=$("tradeAmountInput");if(amountInput)amountInput.value="";
  const percentRange=$("percentRange");if(percentRange)percentRange.value="25";
  const detail=$("detail");if(!detail)return;detail.style.display="block";
  pendingSwapOrder=null;$("swapNowBtn").disabled=true;
- if(typeof showPage==="function")showPage("exchangePage");
- $("detailName").textContent=cleanTokenText(token.baseToken?.name,"Unknown Token");$("detailSymbol").textContent=cleanTokenText(token.baseToken?.symbol,"TOKEN");$("detailPrice").textContent=qxNum(token.priceUsd)>0?qxFormatTokenPrice(token.priceUsd):"Awaiting live price";
+  $("detailName").textContent=cleanTokenText(token.baseToken?.name,"Unknown Token");$("detailSymbol").textContent=cleanTokenText(token.baseToken?.symbol,"TOKEN");$("detailPrice").textContent=qxNum(token.priceUsd)>0?qxFormatTokenPrice(token.priceUsd):"Awaiting live price";
  const ch=qxNum(token.priceChange?.h24);$("detailChange").textContent=ch?(ch>0?"+":"")+ch.toFixed(2)+"%":"—";$("detailChange").className="detail-change "+(ch>0?"up":ch<0?"down":"neutral");
  $("detailAddress").textContent=token.baseToken.address;
  const cap=qxNum(token.marketCap||token.fdv),liq=qxNum(token.liquidity?.usd),vol=qxNum(token.volume?.h24);$("detailMarketCap").textContent=cap>0?money(cap):"—";$("detailLiquidity").textContent=liq>0?money(liq):"—";$("detailVolume").textContent=vol>0?money(vol):"—";
@@ -4110,7 +4117,6 @@ function openToken(token){
 }
 window.QXOpenToken=openToken;
 
-$("tokenBackBtn")?.addEventListener("click",()=>{try{window.QXCloseTokenTerminal?.();}finally{document.body.classList.remove("qx-token-open","qx-trade-modal-open");const detail=document.getElementById("detail");if(detail)detail.style.display="none";if(typeof showPage==="function")showPage("marketsPage");const market=document.getElementById("tokenResults");if(market)setTimeout(()=>market.scrollIntoView({behavior:"smooth",block:"start"}),100);}});
 $("tradeBuyBtn")?.addEventListener("click",()=>setTradeDirection("buy"));
 $("tradeSellBtn")?.addEventListener("click",()=>setTradeDirection("sell"));
 $("swapDirectionBtn")?.addEventListener("click",()=>setTradeDirection(tradeDirection==="buy"?"sell":"buy"));
@@ -5164,15 +5170,10 @@ loadMarket();
     const tx=$('qxTxBtn');if(tx)tx.onclick=()=>loadTransactions(String(window.QXTerminalTokenMint||mint));
   }
   function ensureTerminalPlacement(){
-    const detail=$('detail'),page=$('exchangePage'),back=$('qxTerminalBack');
-    if(!detail||!page)return false;
-    // The terminal was originally nested in marketsPage. showPage('exchangePage')
-    // hides marketsPage, which caused the black/empty screen. Move the same node
-    // (not a clone) into the exchange page so all existing IDs and listeners survive.
-    if(detail.parentElement!==page){
-      if(back&&back.parentElement===page)back.insertAdjacentElement('afterend',detail);
-      else page.insertBefore(detail,page.firstChild);
-    }
+    const detail=$('detail'),markets=$('marketsPage'),page=$('exchangePage');
+    if(!detail||!markets||!page)return false;
+    // Keep the terminal in its original DOM location. Moving it between pages
+    // was causing the blank/black detail screen and breaking market listeners.
     return true;
   }
   window.QXEnsureTerminalPlacement=ensureTerminalPlacement;
@@ -5192,7 +5193,7 @@ loadMarket();
     const chartHost=$("detailChart");
     try{if(chartHost?.__qxChart?.remove)chartHost.__qxChart.remove();}catch(_){}
     if(chartHost){chartHost.__qxChart=null;chartHost.__qxSeries=null;chartHost.__qxLastCandle=null;chartHost.__qxLiveCandle=null;chartHost.dataset.mint="";}
-    document.body.classList.remove("qx-token-open","qx-trade-modal-open");
+    document.body.classList.remove("qx-token-open","qx-token-focus","qx-trade-modal-open");
     const modal=$("qxTradeModal");if(modal)modal.classList.remove("open");
     const detail=$("detail");if(detail)detail.style.display="none";
     selectedToken=null;window.__QXSelectedToken=null;window.QXTerminalTokenMint="";pendingSwapOrder=null;
@@ -5215,10 +5216,10 @@ loadMarket();
     window.__QXSelectedToken=token;
     window.QXTerminalTokenMint=String(token.baseToken.address);
     if(!ensureTerminalPlacement())return;
-    const detail=$('detail'),page=$('exchangePage');
-    page.querySelectorAll(':scope > *').forEach(n=>{if(n!==detail)n.style.display='none'});
+    const detail=$('detail');
+    if(!detail)return;
     detail.style.display='block';
-    document.body.classList.add('qx-token-open');
+    document.body.classList.add('qx-token-open','qx-token-focus');
     setWatchButton(token);
     setupOnchain(token);
     detail.scrollIntoView({behavior:'smooth',block:'start'});
