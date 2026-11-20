@@ -1396,6 +1396,24 @@ body.qx-token-open #detail .qx-trade-launch{margin:14px 0 18px!important;}
 #marketsPage #marketTabs .market-tab{flex:0 0 auto}
 #marketsPage #marketTabs .market-tab.active{background:rgba(183,140,255,.17)!important;border-color:rgba(183,140,255,.48)!important;color:#fff!important}
 @media(max-width:760px){#marketsPage .qx-filter-row{display:block!important}#marketsPage #marketTabs{display:flex!important;overflow-x:auto!important;flex-wrap:nowrap!important;padding:4px 1px 9px!important;gap:6px!important}#marketsPage #marketTabs .market-tab{min-height:35px!important;padding:0 11px!important;font-size:9px!important}#marketsPage .qx-sort-compact{display:flex!important;justify-content:space-between!important;margin-top:4px!important;padding:5px 1px!important}}
+
+/* QX MARKET LIST — compact card metrics, no detached column header */
+#marketsPage #tokenResults:before{content:none!important;display:none!important;height:0!important;padding:0!important;border:0!important}
+#marketsPage #tokenResults{display:flex!important;flex-direction:column!important;gap:0!important;padding:0!important}
+#marketsPage #tokenResults .qx-market-card{display:grid!important;grid-template-columns:minmax(150px,1.1fr) minmax(0,2fr)!important;grid-template-areas:"asset metrics" "asset chart"!important;align-items:center!important;gap:7px 14px!important;min-height:0!important;height:auto!important;padding:12px 14px!important;border:0!important;border-bottom:1px solid rgba(145,160,190,.12)!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
+#marketsPage #tokenResults .qx-market-card .coin-button{grid-area:asset!important;align-self:center!important;min-width:0!important}
+#marketsPage #tokenResults .qx-card-metrics{grid-area:metrics!important;display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:8px 10px!important;min-width:0!important;align-items:start!important}
+#marketsPage #tokenResults .qx-card-metric{display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:3px!important;min-width:0!important}
+#marketsPage #tokenResults .qx-card-sort{display:inline-flex!important;align-items:center!important;gap:4px!important;padding:0!important;border:0!important;background:transparent!important;color:#8491a5!important;font-size:8px!important;font-weight:850!important;letter-spacing:.45px!important;white-space:nowrap!important;cursor:pointer!important}
+#marketsPage #tokenResults .qx-card-sort span{color:#a88aff!important;font-size:10px!important}
+#marketsPage #tokenResults .qx-card-sort.active{color:#e4d8ff!important}
+#marketsPage #tokenResults .qx-card-metric strong{display:block!important;max-width:100%!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;color:#eef2fa!important;font-size:10px!important;font-weight:800!important;font-variant-numeric:tabular-nums!important}
+#marketsPage #tokenResults .qx-card-metric.qx-metric-change strong.positive{color:#45dfa0!important}
+#marketsPage #tokenResults .qx-card-metric.qx-metric-change strong.negative{color:#ff7188!important}
+#marketsPage #tokenResults .market-card-right{grid-area:chart!important;display:flex!important;justify-content:flex-end!important;align-items:center!important;min-width:0!important;min-height:0!important}
+#marketsPage .qx-sponsored-inline{margin:14px 0 0!important}
+@media(max-width:680px){#marketsPage #tokenResults .qx-market-card{grid-template-columns:minmax(0,1fr)!important;grid-template-areas:"asset" "metrics" "chart"!important;gap:9px!important;padding:12px!important}#marketsPage #tokenResults .qx-card-metrics{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:9px 7px!important}#marketsPage #tokenResults .qx-card-sort{font-size:7px!important}#marketsPage #tokenResults .qx-card-metric strong{font-size:9px!important}#marketsPage #tokenResults .market-card-right{justify-content:flex-end!important}}
+@media(max-width:360px){#marketsPage #tokenResults .qx-card-metrics{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
 </style>
 </head>
 <body>
@@ -1649,12 +1667,13 @@ body.qx-token-open #detail .qx-trade-launch{margin:14px 0 18px!important;}
       </div>
       <div class="qx-sort-compact"><span id="categoryTitle">New Solana markets</span><span id="coinCount" role="status" aria-live="polite" aria-atomic="true">Loading…</span></div>
     </div>
+
+    <div class="list"><div id="tokenResults" class="market-empty">Loading Solana markets…</div></div>
+    <p class="market-status" id="marketStatus">Connecting to Solana market feeds…</p>
     <section class="ads-shell qx-sponsored-inline" aria-label="Featured projects">
       <div class="ads-head"><div><div class="ads-title">✦ FEATURED PROJECTS</div><div class="ads-sub">Sponsored launches and community discoveries</div></div><div class="ads-menu-wrap"><button type="button" class="ads-menu-btn" id="adsMenuBtn" aria-label="Project promotion options" aria-expanded="false">⋯</button><div class="ads-menu" id="adsMenu"><button type="button" id="addAdMenuBtn">+ Promote project</button></div></div></div>
       <div class="ads-list" id="publicAdsList"><div class="ad-empty">Featured projects will appear here.</div></div>
     </section>
-    <div class="list"><div id="tokenResults" class="market-empty">Loading Solana markets…</div></div>
-    <p class="market-status" id="marketStatus">Connecting to Solana market feeds…</p>
   </section>
   <section id="detail" class="panel" style="display:none">
    <button class="token-back-btn" id="tokenBackBtn" type="button" aria-label="Return to QX Exchange markets"><span aria-hidden="true">←</span> QX EXCHANGE · BACK TO MARKETS</button>
@@ -4148,7 +4167,7 @@ $("tradeAmountInput")?.addEventListener("input",()=>{
  qxQuoteTimer=setTimeout(()=>{if(connected&&selectedToken&&String($("tradeAmountInput")?.value||"").trim())qxRequestLiveQuote();else $("swapReceive").textContent="Enter amount to estimate";},350);
 });
 /* Percent controls use the single delegated trade-percent handler. */
-document.addEventListener("click",e=>{const b=e.target.closest("#tokenResults #sortOptions button[data-sort]");if(!b)return;const m=b.dataset.sort;if(m==="default"){sortMetric="";sortDirection="desc";}else if(sortMetric===m){sortDirection=sortDirection==="desc"?"asc":"desc";}else{sortMetric=m;sortDirection="desc";}renderMarket();});
+document.addEventListener("click",e=>{const b=e.target.closest("#tokenResults button[data-sort]");if(!b)return;const m=b.dataset.sort;if(!m)return;if(sortMetric===m){sortDirection=sortDirection==="desc"?"asc":"desc";}else{sortMetric=m;sortDirection="desc";}renderMarket();});
 
 /* MARKET DATA — QX SOLANA GLOBAL MARKET v24
    Primary discovery: GeckoTerminal Solana pools (public on-chain DEX index).
@@ -4502,8 +4521,7 @@ function renderMarket(){
  if(heroVolume)heroVolume.textContent=money(allPairs.reduce((sum,p)=>sum+qxNum(p?.volume?.h24),0));
  window.QXRefreshTrendingSpotlight?.();
  const list=sortPairs(qxCategoryList());const countEl=$("coinCount");if(countEl)countEl.textContent=list.length.toLocaleString()+" tokens";const box=$("tokenResults");if(!box)return;
- const sortItems=[['default','DEFAULT'],['age','TOKEN AGE'],['price','PRICE'],['change','24H CHANGE'],['volume','24H VOLUME'],['marketcap','MARKET CAP / FDV'],['liquidity','LIQUIDITY'],['txns','24H TXNS']];
- const sortHead='<div class="qx-market-columns" id="sortOptions" aria-label="Sort coins directly in the market list"><span class="qx-sort-caption">SORT COINS</span>'+sortItems.map(([key,label])=>{const active=(key==='default'?!sortMetric:sortMetric===key);return '<button type="button" class="qx-col-sort '+(active?'active':'')+'" data-sort="'+key+'" aria-pressed="'+active+'" aria-label="Sort by '+label+'">'+label+' <span>'+(active?(sortDirection==='desc'?'↓':'↑'):'↕')+'</span></button>';}).join('')+'</div>';
+ const sortHead="";
  if(!list.length){
   const query=$("search")?.value?.trim()||"";
   const message=query?'No Solana markets matched “'+escapeHTML(query)+'”. Check the token name, symbol or mint address.':currentCategory==="new"?'No recently created Solana markets were found in the rolling 30-day discovery window. QX is continuing to refresh new-pool feeds.':'No Solana market data is available in this category right now. QX will retry the market feeds automatically.';
@@ -4518,11 +4536,15 @@ function renderMarket(){
   const mint=escapeHTML(p.baseToken.address),spark=qxRealSparkline(p),marketState=hasPrice?'<span class="token-live-state">LIVE</span>':'<span class="token-live-state waiting">WAITING</span>';
   const createdRaw=Number(p.tokenCreatedAt||p.pairCreatedAt||0),createdMs=qxTimestampMs(createdRaw),isFresh=createdMs>0&&(Date.now()-createdMs)<86400000;
   const freshness=isFresh?'<span class="coin-fresh-tag">NEW</span>':'';
-  return '<div class="market-row market-row-rich qx-market-card"><button type="button" class="coin-button" data-mint="'+mint+'">'+img+fallback+'<span class="coin-info"><span class="coin-title-line"><strong>'+name+'</strong>'+freshness+'</span><small>'+symbol+' · '+mint.slice(0,6)+'…'+mint.slice(-4)+'</small><span class="coin-inline-meta"><span class="qx-age-label">'+qxMarketAgeLabel(p)+' IN MARKET</span>'+marketState+'</span></span></button><div class="qx-row-metrics"><span class="qx-row-change '+cls+'">'+changeText+'</span><span>'+qxMarketMetric(p.volume?.h24)+'</span><span>'+qxMarketMetric(p.marketCap||p.fdv)+'</span><span>'+qxMarketMetric(p.liquidity?.usd)+'</span></div><div class="market-card-right"><div class="market-price">'+(hasPrice?qxFormatTokenPrice(p.priceUsd):"—")+'</div>'+spark+'</div></div>';
+  const sortButton=(key,label)=>'<button type="button" class="qx-card-sort '+(sortMetric===key?'active':'')+'" data-sort="'+key+'" aria-label="Sort by '+label+'">'+label+' <span>'+(sortMetric===key?(sortDirection==='desc'?'↓':'↑'):'↕')+'</span></button>';
+  const metric=(key,label,value,extra='')=>'<div class="qx-card-metric '+extra+'">'+sortButton(key,label)+'<strong class="'+(extra.includes('positive')?'positive':extra.includes('negative')?'negative':'')+'">'+value+'</strong></div>';
+  const txns=qxNum(p.txns?.h24?.buys)+qxNum(p.txns?.h24?.sells);
+  const ageValue=qxMarketAgeLabel(p);
+  return '<article class="market-row market-row-rich qx-market-card"><button type="button" class="coin-button" data-mint="'+mint+'">'+img+fallback+'<span class="coin-info"><span class="coin-title-line"><strong>'+name+'</strong>'+freshness+'</span><small>'+symbol+' · '+mint.slice(0,6)+'…'+mint.slice(-4)+'</small><span class="coin-inline-meta"><span class="qx-age-label">'+ageValue+' IN MARKET</span>'+marketState+'</span></span></button><div class="qx-card-metrics">'+metric('price','PRICE',hasPrice?qxFormatTokenPrice(p.priceUsd):'—')+metric('change','24H %',changeText,'qx-metric-change '+cls)+metric('volume','VOLUME',qxMarketMetric(p.volume?.h24))+metric('marketcap','MKT CAP',qxMarketMetric(p.marketCap||p.fdv))+metric('liquidity','LIQUIDITY',qxMarketMetric(p.liquidity?.usd))+metric('age','AGE',ageValue)+metric('txns','TXNS',txns>0?txns.toLocaleString():'—')+'</div><div class="market-card-right">'+spark+'</div></article>';
  }).join("");
 }
 
-$("marketTabs").addEventListener("click",event=>{const button=event.target.closest("[data-category]");if(!button)return;currentCategory=button.dataset.category;console.info("QX market category",currentCategory,{all:allPairs.length,newCoins:newPairs.length});document.querySelectorAll(".market-tab").forEach(t=>t.classList.toggle("active",t===button));renderMarket();});
+$("marketTabs").addEventListener("click",event=>{const button=event.target.closest("[data-category]");if(!button)return;const category=button.dataset.category;const metric=category==="volume"?"volume":category==="spot"?"liquidity":"";if(metric){if(sortMetric===metric)sortDirection=sortDirection==="desc"?"asc":"desc";else{sortMetric=metric;sortDirection="desc";}}else{sortMetric="";sortDirection="desc";}currentCategory=category;console.info("QX market category",currentCategory,{all:allPairs.length,newCoins:newPairs.length});document.querySelectorAll(".market-tab").forEach(t=>t.classList.toggle("active",t===button));renderMarket();});
 let qxMarketSearchRequestId=0;
 async function searchMarket(){
  const query=$("search").value.trim();
@@ -5889,3 +5911,5 @@ loadMarket();
 <!-- QX_BUILD_MARKER: V84-MIGRATED-DAMM-ROUTING-STRICT-VERIFIED -->
 </body>
 </html>
+
+
