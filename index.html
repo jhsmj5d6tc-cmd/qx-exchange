@@ -4308,7 +4308,27 @@ function qxNum(v){const n=Number(v);return Number.isFinite(n)?n:0;}
 function qxTimestampMs(v){const n=Number(v);if(!Number.isFinite(n)||n<=0)return 0;return n<1e12?n*1000:n;}
 // Expose the timestamp normalizer for classic-script widgets outside this ES module.
 window.qxTimestampMs=qxTimestampMs;
-function qxSafeUrl(v){try{const u=new URL(String(v||""));return /^https?:$/i.test(u.protocol)?u.href:"";}catch(_){return "";}}
+function qxSafeUrl(v){try{const u=new URL(String(v||""));return /^https?:$/i.test(u.protocol)?u.href:"";}catch(_){return "";}
+}
+function qxTokenImageUrl(token){
+ try{
+  const mint=String(token?.baseToken?.address||token?.address||"");
+  const candidates=[
+   token?.info?.imageUrl,
+   token?.baseToken?.logoURI,
+   token?.baseToken?.logoUri,
+   token?.logoURI,
+   token?.logoUri,
+   token?.imageUrl,
+   token?.image_url,
+   token?.logo,
+   qxJupiterMeta?.get?.(mint)?.imageUrl
+  ];
+  for(const value of candidates){const url=qxSafeUrl(value);if(url)return url;}
+ }catch(_){}
+ return "";
+}
+window.qxTokenImageUrl=qxTokenImageUrl;
 function qxIsValidSolanaMint(mint){return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(String(mint||""));}
 function normalizedTokenLabel(value){return cleanTokenText(value||"").toLowerCase().replace(/\s+/g," ").trim();}
 function qxLooksLikeFakeNative(p){
@@ -4640,7 +4660,7 @@ function renderMarket(){
   box.innerHTML=sortHead+'<div class="market-empty">'+message+'</div>';return;
  }
  box.innerHTML=sortHead+list.slice(0,80).map((p,i)=>{
-  const name=escapeHTML(qxTokenDisplayName(p)),symbol=escapeHTML(qxIsPlaceholderTokenLabel(p.baseToken.symbol,"symbol")?String(p.baseToken.address||"").slice(0,6).toUpperCase():p.baseToken.symbol),image=qxSafeUrl(p.info?.imageUrl);
+  const name=escapeHTML(qxTokenDisplayName(p)),symbol=escapeHTML(qxIsPlaceholderTokenLabel(p.baseToken.symbol,"symbol")?String(p.baseToken.address||"").slice(0,6).toUpperCase():p.baseToken.symbol),image=qxTokenImageUrl(p);
   const hasPrice=qxNum(p.priceUsd)>0,change=qxNum(p.priceChange?.h24),cls=change>0?"positive":change<0?"negative":"neutral";
   const changeText=hasPrice?((change>0?"+":"")+change.toFixed(2)+"% "):"—";
   const img=image?'<img class="coin-logo" src="'+escapeHTML(image)+'" alt="" loading="lazy" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\';">':"";
