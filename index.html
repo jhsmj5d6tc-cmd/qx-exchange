@@ -987,7 +987,7 @@ header{height:70px;max-width:1540px;margin:0 auto 10px;padding:0 4px;border-bott
 .sort-panel{margin:0 10px;padding:8px 2px;border:0;border-top:1px solid #141d28;border-bottom:1px solid #141d28;background:transparent;box-shadow:none;}
 .sort-option button{border:1px solid #202b38;background:#0b0f15;color:#7f8da0;border-radius:6px;}
 #tokenResults{display:block;padding:0;background:#070a0f;}
-#tokenResults:before{content:"ASSET\A PRICE\A CHART\A 24H\A VOLUME\A LIQUIDITY";display:grid;grid-template-columns:minmax(250px,2.3fr) 120px 130px 100px 110px 90px;gap:12px;align-items:center;height:36px;padding:0 14px;background:#080c12;border-bottom:1px solid #141d28;color:#566476;font-size:8px;font-weight:800;letter-spacing:1px;box-sizing:border-box;white-space:pre-wrap;}
+#tokenResults:before{content:none!important;display:none!important;}
 .market-row-rich.qx-market-card{display:grid;grid-template-columns:minmax(250px,2.3fr) minmax(270px,1fr);align-items:center;min-height:62px;height:62px;margin:0;padding:0 14px;border:0;border-bottom:1px solid #121b26;border-radius:0;background:#070a0f;box-shadow:none;transition:background .12s ease;}
 .market-row-rich.qx-market-card:hover{background:#0c1119;transform:none;border-color:#172332;}
 .market-row-rich .coin-button{display:flex;align-items:center;min-width:0;gap:10px;background:transparent;}
@@ -1038,7 +1038,7 @@ header{height:70px;max-width:1540px;margin:0 auto 10px;padding:0 4px;border-bott
 .market-row-rich .coin-logo,.market-row-rich .coin-fallback{width:30px;height:30px;flex-basis:30px;}
 .market-row-rich .coin-info strong{font-size:10px;}
 .market-row-rich .coin-info small{font-size:7px;}
-#tokenResults:before{grid-template-columns:1fr 190px;content:"ASSET\A PRICE        CHART        24H";height:32px;padding:0 9px;font-size:7px;}}
+#tokenResults:before{content:none!important;display:none!important;}}
 @media (max-width:520px){.market-row-rich.qx-market-card{grid-template-columns:minmax(130px,1fr) 165px;}
 .market-row-rich .market-card-right{grid-template-columns:60px 68px 48px;gap:4px;}
 .market-row-rich .qx-mini-chart{width:68px;}
@@ -1355,7 +1355,9 @@ body.qx-token-open #detail .qx-trade-launch{margin:14px 0 18px!important;}
  #marketsPage #tokenResults .qx-market-card{grid-template-columns:minmax(150px,1.35fr) repeat(4,minmax(66px,.7fr)) minmax(95px,.8fr)!important;gap:7px!important;padding:10px!important}
 }
 @media(max-width:680px){
- #marketsPage #tokenResults .qx-market-columns{display:none!important}
+ #marketsPage #tokenResults .qx-market-columns{display:flex!important;align-items:center!important;gap:6px!important;width:100%!important;min-height:42px!important;padding:7px 9px!important;overflow-x:auto!important;overflow-y:hidden!important;white-space:nowrap!important;scrollbar-width:none!important;background:#0b1018!important;border-bottom:1px solid rgba(145,160,190,.13)!important}
+ #marketsPage #tokenResults .qx-sort-caption{display:none!important}
+ #marketsPage #tokenResults .qx-col-sort{flex:0 0 auto!important;min-height:29px!important;padding:0 9px!important;font-size:8px!important;border-radius:7px!important}
  #marketsPage #tokenResults{border-radius:13px!important}
  #marketsPage #tokenResults .qx-market-card{grid-template-columns:minmax(0,1fr) auto!important;grid-template-areas:'asset price' 'metrics metrics'!important;column-gap:10px!important;row-gap:9px!important;min-height:0!important;padding:13px 12px!important}
  #marketsPage #tokenResults .coin-button{grid-area:asset!important;align-self:center!important;gap:9px!important}
@@ -1378,6 +1380,8 @@ body.qx-token-open #detail .qx-trade-launch{margin:14px 0 18px!important;}
  #marketsPage #tokenResults .qx-chart-pending{font-size:7px!important}
 }
 @media(max-width:380px){
+ #marketsPage #tokenResults .qx-market-columns{gap:5px!important;padding:7px 7px!important}
+ #marketsPage #tokenResults .qx-col-sort{padding:0 8px!important;font-size:7px!important}
  #marketsPage #tokenResults .qx-market-card{padding:11px 9px!important}
  #marketsPage #tokenResults .qx-row-metrics{gap:4px!important}
  #marketsPage #tokenResults .qx-row-metrics>span:before{font-size:6px!important;letter-spacing:0!important}
@@ -4481,8 +4485,8 @@ function renderMarket(){
  if(heroVolume)heroVolume.textContent=money(allPairs.reduce((sum,p)=>sum+qxNum(p?.volume?.h24),0));
  window.QXRefreshTrendingSpotlight?.();
  const list=sortPairs(qxCategoryList());const countEl=$("coinCount");if(countEl)countEl.textContent=list.length.toLocaleString()+" tokens";const box=$("tokenResults");if(!box)return;
- const sortItems=[['default','DEFAULT'],['age','TOKEN AGE'],['price','PRICE'],['change','24H CHANGE'],['volume','24H VOLUME'],['marketcap','MARKET CAP / FDV'],['liquidity','LIQUIDITY'],['txns','24H TXNS']];
- const sortHead='<div class="qx-market-columns" id="sortOptions" aria-label="Sort coins directly in the market list"><span class="qx-sort-caption">SORT COINS</span>'+sortItems.map(([key,label])=>{const active=(key==='default'?!sortMetric:sortMetric===key);return '<button type="button" class="qx-col-sort '+(active?'active':'')+'" data-sort="'+key+'" aria-pressed="'+active+'" aria-label="Sort by '+label+'">'+label+' <span>'+(active?(sortDirection==='desc'?'↓':'↑'):'↕')+'</span></button>';}).join('')+'</div>';
+ const sortItems=[['default','DEFAULT'],['price','PRICE'],['change','24H %'],['volume','VOLUME'],['marketcap','MKT CAP'],['liquidity','LIQUIDITY'],['age','AGE'],['txns','TXNS']];
+ const sortHead='<div class="qx-market-columns" id="sortOptions" aria-label="Sort coins directly above the market list"><span class="qx-sort-caption">SORT</span>'+sortItems.map(([key,label])=>{const active=(key==='default'?!sortMetric:sortMetric===key);return '<button type="button" class="qx-col-sort '+(active?'active':'')+'" data-sort="'+key+'" aria-pressed="'+active+'" aria-label="Sort by '+label+'">'+label+' <span>'+(active?(sortDirection==='desc'?'↓':'↑'):'↕')+'</span></button>';}).join('')+'</div>';
  if(!list.length){
   const query=$("search")?.value?.trim()||"";
   const message=query?'No Solana markets matched “'+escapeHTML(query)+'”. Check the token name, symbol or mint address.':currentCategory==="new"?'No recently created Solana markets were found in the rolling 30-day discovery window. QX is continuing to refresh new-pool feeds.':'No Solana market data is available in this category right now. QX will retry the market feeds automatically.';
@@ -5852,5 +5856,3 @@ loadMarket();
 <!-- QX_BUILD_MARKER: V84-MIGRATED-DAMM-ROUTING-STRICT-VERIFIED -->
 </body>
 </html>
-
-
