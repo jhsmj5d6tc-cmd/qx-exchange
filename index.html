@@ -4003,6 +4003,8 @@ let qxMarketStage="idle",qxMarketLastError="";
 
 function qxNum(v){const n=Number(v);return Number.isFinite(n)?n:0;}
 function qxTimestampMs(v){const n=Number(v);if(!Number.isFinite(n)||n<=0)return 0;return n<1e12?n*1000:n;}
+// Expose the timestamp normalizer for classic-script widgets outside this ES module.
+window.qxTimestampMs=qxTimestampMs;
 function qxSafeUrl(v){try{const u=new URL(String(v||""));return /^https?:$/i.test(u.protocol)?u.href:"";}catch(_){return "";}}
 function qxIsValidSolanaMint(mint){return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(String(mint||""));}
 function normalizedTokenLabel(value){return cleanTokenText(value||"").toLowerCase().replace(/\s+/g," ").trim();}
@@ -4113,6 +4115,56 @@ async function qxFetchDexLatestSolana(){
   }).filter(Boolean);
  }catch(e){console.warn("QX latest Solana profile discovery failed",e);return [];}
 }
+/* QX PUBLIC LIVE SNAPSHOT FALLBACK
+   DexScreener snapshots are polled when the private Birdeye relay is not configured.
+   This is real provider data (not simulated ticks); trade-by-trade streaming still
+   requires the Birdeye relay/key. Requests are chunked to 30 mints per call. */
+let qxPublicSnapshotBusy=false,qxPublicSnapshotLast=0,qxPublicSnapshotFailures=0;
+async function qxRefreshPublicLiveSnapshots(){
+ if(qxPublicSnapshotBusy||document.visibilityState==='hidden'||!allPairs.length)return;
+ qxPublicSnapshotBusy=true;
+ try{
+  const source=bestPairsByMint(allPairs.filter(qxIsDisplayReady)).slice(0,90);
+  const mints=[...new Set(source.map(p=>String(p?.baseToken?.address||'')).filter(qxIsValidSolanaMint))];
+  if(!mints.length)return;
+  const batches=[];
+  for(let i=0;i<mints.length;i+=30)batches.push(mints.slice(i,i+30));
+  const responses=await Promise.allSettled(batches.map(batch=>getJSON(QX_DEX_TOKENS+batch.join(','),10000,1)));
+  const fresh=responses.flatMap(r=>r.status==='fulfilled'&&Array.isArray(r.value)?r.value:[]);
+  if(!fresh.length){qxPublicSnapshotFailures++;if(!qxMarketStreamLive)qxSetStreamStatus('Public live price refresh unavailable · retrying');return;}
+  const best=new Map();
+  for(const p of fresh){
+   if(p?.chainId!=='solana')continue;
+   const mint=String(p?.baseToken?.address||'');if(!mints.includes(mint)||!qxIsValidSolanaMint(mint))continue;
+   const old=best.get(mint);if(!old||qxNum(p?.liquidity?.usd)>qxNum(old?.liquidity?.usd))best.set(mint,p);
+  }
+  let updated=0;
+  for(const [mint,snap] of best){
+   const price=Number(snap?.priceUsd);if(!(price>0))continue;
+   for(const item of qxFindMarketObjects(mint)){
+    item.priceUsd=String(price);
+    item.priceChange=item.priceChange||{};item.priceChange.h24=qxNum(snap?.priceChange?.h24);
+    item.volume=item.volume||{};item.volume.h24=qxNum(snap?.volume?.h24);
+    item.liquidity=item.liquidity||{};item.liquidity.usd=qxNum(snap?.liquidity?.usd);
+    item.txns=snap?.txns||item.txns||{h24:{buys:0,sells:0}};
+    if(snap?.marketCap)item.marketCap=qxNum(snap.marketCap);
+    if(snap?.fdv)item.fdv=qxNum(snap.fdv);
+   }
+   qxUpdateLiveCard(mint,qxFindMarketObjects(mint)[0]||snap);
+   updated++;
+  }
+  if(updated){
+   qxPublicSnapshotLast=Date.now();qxPublicSnapshotFailures=0;
+   if(!qxMarketStreamLive)qxSetStreamStatus('LIVE SNAPSHOTS · '+updated+' Solana markets refreshed · '+new Date().toLocaleTimeString());
+   const heroVolume=$('qxHeroVolume');if(heroVolume)heroVolume.textContent=money(allPairs.reduce((sum,p)=>sum+qxNum(p?.volume?.h24),0));
+   const heroMarkets=$('qxHeroMarketCount');if(heroMarkets)heroMarkets.textContent=allPairs.length.toLocaleString();
+   if(['gainers','losers','trending','volume'].includes(currentCategory)||sortMetric)renderMarket();
+   if(selectedToken){const current=qxFindMarketObjects(String(selectedToken?.baseToken?.address||''))[0];if(current){selectedToken=current;const price=$('detailPrice');if(price)price.textContent=qxFormatTokenPrice(current.priceUsd);const vol=$('detailVolume');if(vol)vol.textContent=money(current.volume?.h24||0);}}
+  }
+ }catch(e){qxPublicSnapshotFailures++;console.warn('QX public live snapshot refresh failed',e);if(!qxMarketStreamLive)qxSetStreamStatus('Public market snapshots interrupted · retrying');}
+ finally{qxPublicSnapshotBusy=false;}
+}
+
 async function qxFetchJupiterMarketFallback(){
  try{
   const meta=await qxFetchJupiterMeta();
@@ -4689,7 +4741,7 @@ async function qxStartLiveMarketStream(){
   const status=await health.json().catch(()=>({}));
   qxMarketStreamKeyReady=Boolean(status.providerKeyConfigured);
   if(!health.ok||!status.providerKeyConfigured){
-   qxMarketStreamLive=false;qxSetStreamStatus('Live price stream unavailable · market discovery continues using public Solana data sources');
+   qxMarketStreamLive=false;qxSetStreamStatus('Birdeye stream unavailable · public price snapshots retry every 20s');
    qxMarketStreamCheckTimer=setTimeout(qxStartLiveMarketStream,60000);return;
   }
  }catch(e){qxSetStreamStatus('Live feed connection unavailable · retrying');qxMarketStreamCheckTimer=setTimeout(qxStartLiveMarketStream,15000);return;}
@@ -4744,6 +4796,9 @@ document.addEventListener('visibilitychange',()=>{
 });
 
 setInterval(()=>{if(document.visibilityState!=="hidden"&&!marketBusy)loadMarket();},QX_SOLANA_REFRESH_MS);
+// Refresh real provider snapshots more frequently than the heavier discovery scan.
+setInterval(()=>{if(document.visibilityState!=="hidden")void qxRefreshPublicLiveSnapshots();},20000);
+
 // New-pool discovery is already included in the consolidated market refresh above.
 // Do not run a second 45s discovery loop; live new-pair events are handled by the stream.
 
@@ -5264,6 +5319,8 @@ loadMarket();
 
 <script>
 (function(){
+  // This classic-script widget is isolated from the market ES module scope.
+  const qxStamp=v=>{const n=Number(v);if(!Number.isFinite(n)||n<=0)return 0;return n<1e12?n*1000:n;};
   const qxRefreshNewStrip=()=>{
     const host=document.getElementById('qxNewStrip'); if(!host) return;
     const marketPairs=Array.isArray(window.QXMarketPairs)?window.QXMarketPairs:[];
@@ -5278,7 +5335,7 @@ loadMarket();
       const img=(typeof window.qxSafeUrl==='function'?window.qxSafeUrl(p?.info?.imageUrl||p?.baseToken?.logoURI||p?.logoURI||''):'');
       const price=typeof qxFormatTokenPrice==='function'?qxFormatTokenPrice(p?.priceUsd):'$—';
       const ch=Number(p?.priceChange?.h24||0); const cls=ch>0?'up':ch<0?'down':''; const sign=ch>0?'+':'';
-      const createdAt=qxTimestampMs(p?.tokenCreatedAt||p?.pairCreatedAt); const age=createdAt?Math.max(0,Math.floor((Date.now()-createdAt)/60000)):null;
+      const createdAt=qxStamp(p?.tokenCreatedAt||p?.pairCreatedAt); const age=createdAt?Math.max(0,Math.floor((Date.now()-createdAt)/60000)):null;
       const ageText=age===null?'NEW':age<60?age+'m ago':age<1440?Math.floor(age/60)+'h ago':Math.floor(age/1440)+'d ago';
       return '<article class="qx-new-card" data-mint="'+mint+'"><div class="qx-new-card-top"><img src="'+img+'" alt="" onerror="this.style.visibility=\'hidden\'"><span class="qx-new-age">'+ageText+'</span></div><div class="qx-new-name">'+name+'</div><div class="qx-new-symbol">'+symbol+'</div><div class="qx-new-price">'+price+'</div><div class="qx-new-change '+cls+'">'+sign+ch.toFixed(2)+'%</div></article>';
     }).join('');
