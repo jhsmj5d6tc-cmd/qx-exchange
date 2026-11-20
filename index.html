@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#080711">
 <meta name="google-site-verification" content="A5ntuJ6pvvK-Uo8HHA96o5bUPFGOg_70p-Nh_rsZ8NM">
 <title>QX Exchange — Solana Discovery</title>
-<meta name="qx-build" content="QX-APP-REBUILD-V104-TOKEN-METADATA-ENRICHMENT-AND-LABEL-RECOVERY">
+<meta name="qx-build" content="QX-APP-REBUILD-V106-DISCOVERY-RESPONSIVE-RELAYOUT">
 
 <style id="qx-core-theme">:root{--bg:#070812;--panel:#0d1120;--panel2:#11172a;--line:#232b43;--line2:#303a58;--text:#f6f8ff;--muted:#8994b2;--green:#35e89a;--red:#ff5d72;--purple:#8b5cf6;--purple2:#5b4bdb;--gold:#d9b45c;--radius:16px;--shadow:0 18px 55px rgba(0,0,0,.28);--max:1440px}
 *{box-sizing:border-box;}
@@ -1308,47 +1308,81 @@ body.qx-trade-modal-open{overflow:hidden!important;}
 @media(prefers-reduced-motion:reduce){#tokenResults .market-row-rich .qx-mini-chart *{animation:none!important;transition:none!important;}}
 
 
-/* QX 105 — compact terminal market rows, inline sorting, age and animated real samples */
-#marketsPage .market-list-column>.list{padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;overflow:visible!important;}
-#marketsPage .market-list-column>.list>.sort-panel{display:none!important;}
-#marketsPage #qxSortToggle{display:none!important;}
-#marketsPage .qx-sort-compact{justify-content:flex-end!important;}
-
-#marketsPage #tokenResults{display:flex;flex-direction:column;gap:0;border:1px solid rgba(130,145,175,.16);border-radius:13px;background:rgba(9,13,22,.78);overflow:hidden;}
-#marketsPage #tokenResults .qx-market-card{display:grid;grid-template-columns:minmax(190px,1.25fr) repeat(4,minmax(0,1fr)) 104px;align-items:center;gap:12px;min-height:67px;padding:9px 12px;border:0!important;border-bottom:1px solid rgba(145,160,190,.11)!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;transition:background .18s ease!important;}
-#marketsPage #tokenResults .qx-market-card:hover{transform:none!important;background:rgba(135,115,190,.075)!important;}
-#marketsPage #tokenResults .qx-market-card:last-child{border-bottom:0!important;}
-#marketsPage #tokenResults .qx-market-card::after{display:none!important;}
-#marketsPage #tokenResults .coin-button{display:flex;align-items:center;gap:9px;padding:0!important;text-align:left;}
-#marketsPage #tokenResults .coin-info{min-width:0;flex:1;}
-#marketsPage #tokenResults .coin-title-line strong{font-size:11px;}
-#marketsPage #tokenResults .coin-info small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:8px;}
-#marketsPage #tokenResults .coin-inline-meta{display:flex;align-items:center;gap:7px;margin-top:3px;}
-#marketsPage #tokenResults .qx-age-label{font-size:8px;font-weight:800;letter-spacing:.25px;color:#a9b6cb;white-space:nowrap;}
-#marketsPage #tokenResults .market-card-right{grid-column:6;display:flex;flex-direction:column;align-items:flex-end;gap:3px;min-width:0;}
-#marketsPage #tokenResults .market-price{font-size:10px;font-weight:850;}
-#marketsPage #tokenResults .qx-mini-chart{width:94px;height:29px;}
-#marketsPage #tokenResults .qx-row-metrics{display:contents;grid-template-columns:repeat(4,minmax(0,1fr));align-items:center;gap:5px;text-align:right;font-size:9px;font-weight:750;font-variant-numeric:tabular-nums;color:#c7d0df;}
-#marketsPage #tokenResults .qx-row-change.positive{color:#45dfa0;}#marketsPage #tokenResults .qx-row-change.negative{color:#ff718c;}#marketsPage #tokenResults .qx-row-change.neutral{color:#94a1b4;}
-#marketsPage #tokenResults .qx-market-columns{position:sticky;top:0;z-index:2;display:grid;grid-template-columns:minmax(190px,1.25fr) minmax(250px,1fr) 104px;align-items:center;gap:12px;padding:9px 12px;background:#101725;border-bottom:1px solid rgba(145,160,190,.17);}
-#marketsPage #tokenResults .qx-col-asset{font-size:8px;font-weight:900;letter-spacing:.65px;color:#8392a8;}
-#marketsPage #tokenResults .qx-col-sort{display:inline-flex;justify-content:flex-end;align-items:center;gap:3px;min-width:0;padding:3px 0;border:0;background:transparent;color:#8998ad;font-size:8px;font-weight:900;white-space:nowrap;}
-#marketsPage #tokenResults .qx-col-sort span{color:#a98aff;font-size:11px;}
-#marketsPage #tokenResults .qx-col-sort.active{color:#d9cbff;}
-#marketsPage #tokenResults .qx-market-columns .qx-col-sort:nth-of-type(1){grid-column:2;}
-#marketsPage #tokenResults .qx-market-columns{grid-template-columns:minmax(190px,1.25fr) repeat(4,minmax(0,1fr)) 104px;}
-#marketsPage #tokenResults .qx-market-columns .qx-col-asset{grid-column:1;}
-#marketsPage #tokenResults .qx-market-columns .qx-col-sort{grid-column:auto;}
-#marketsPage #tokenResults .qx-market-columns .qx-col-sort:nth-of-type(1){grid-column:2;}
-#marketsPage #tokenResults .qx-market-columns .qx-col-sort:nth-of-type(2){grid-column:3;}
-#marketsPage #tokenResults .qx-market-columns .qx-col-sort:nth-of-type(3){grid-column:4;}
-#marketsPage #tokenResults .qx-market-columns .qx-col-sort:nth-of-type(4){grid-column:5;}
-#marketsPage #tokenResults .qx-market-columns::after{content:"PRICE / CHART";grid-column:6;text-align:right;font-size:8px;font-weight:900;color:#8392a8;letter-spacing:.5px;}
-#marketsPage #tokenResults .qx-spark{stroke-dasharray:180;stroke-dashoffset:0;animation:qxSparkFlow 5s linear infinite;}
-@keyframes qxSparkFlow{to{stroke-dashoffset:-180;}}
-@media(max-width:760px){#marketsPage #tokenResults .qx-market-columns{grid-template-columns:minmax(105px,1.25fr) repeat(4,minmax(48px,.8fr)) 72px;gap:5px;padding:8px 7px;}#marketsPage #tokenResults .qx-market-card{grid-template-columns:minmax(105px,1.25fr) repeat(4,minmax(48px,.8fr)) 72px;gap:5px;padding:8px 7px;min-height:62px;}#marketsPage #tokenResults .qx-row-metrics{display:contents;}#marketsPage #tokenResults .qx-row-metrics span{font-size:8px;text-align:right;white-space:nowrap;}#marketsPage #tokenResults .market-card-right{grid-column:6;}#marketsPage #tokenResults .qx-mini-chart{width:68px;height:23px;}#marketsPage #tokenResults .coin-logo,#marketsPage #tokenResults .coin-fallback{width:25px;height:25px;border-radius:8px;}#marketsPage #tokenResults .coin-info small{max-width:105px;font-size:7px;}#marketsPage #tokenResults .coin-title-line strong{font-size:9px;}#marketsPage #tokenResults .token-live-state{font-size:7px;}#marketsPage #tokenResults .qx-col-sort{font-size:7px;letter-spacing:-.2px;}#marketsPage #tokenResults .qx-market-columns::after{font-size:6px;}}
-@media(max-width:390px){#marketsPage #tokenResults .qx-market-columns,#marketsPage #tokenResults .qx-market-card{grid-template-columns:minmax(92px,1.2fr) repeat(4,minmax(42px,.75fr)) 60px;gap:3px;padding-left:5px;padding-right:5px;}#marketsPage #tokenResults .qx-mini-chart{width:58px;}#marketsPage #tokenResults .qx-age-label{font-size:7px;}}
-@media(prefers-reduced-motion:reduce){#marketsPage #tokenResults .qx-spark{animation:none;}}
+/* QX 106 — rebuilt discovery market layout; one responsive grid, no mobile overflow */
+#marketsPage .market-list-column>.list{padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;overflow:visible!important}
+#marketsPage .market-list-column>.list>.sort-panel,#marketsPage #qxSortToggle{display:none!important}
+#marketsPage .qx-sort-compact{justify-content:flex-end!important}
+#marketsPage #tokenResults{display:flex!important;flex-direction:column!important;gap:0!important;width:100%!important;min-width:0!important;border:1px solid rgba(130,145,175,.16)!important;border-radius:15px!important;background:#090d15!important;overflow:hidden!important}
+#marketsPage #tokenResults .qx-market-columns{position:sticky;top:68px;z-index:4;display:grid;grid-template-columns:minmax(190px,1.5fr) repeat(4,minmax(82px,.72fr)) minmax(112px,.9fr);align-items:center;gap:10px;padding:13px 15px;background:#111827;border-bottom:1px solid rgba(145,160,190,.16)}
+#marketsPage #tokenResults .qx-col-asset,#marketsPage #tokenResults .qx-col-sort{min-width:0;color:#91a0b6;font-size:9px;font-weight:850;letter-spacing:.55px;white-space:nowrap}
+#marketsPage #tokenResults .qx-col-sort{display:flex;justify-content:flex-end;align-items:center;gap:5px;padding:3px 0;border:0;background:transparent;text-align:right}
+#marketsPage #tokenResults .qx-col-sort span{color:#a88aff;font-size:12px}
+#marketsPage #tokenResults .qx-col-sort.active{color:#f0eaff}
+#marketsPage #tokenResults .qx-market-columns:after{content:'PRICE / CHART';grid-column:6;text-align:right;color:#91a0b6;font-size:9px;font-weight:850;letter-spacing:.55px;white-space:nowrap}
+#marketsPage #tokenResults .qx-market-card{display:grid!important;grid-template-columns:minmax(190px,1.5fr) repeat(4,minmax(82px,.72fr)) minmax(112px,.9fr)!important;align-items:center!important;gap:10px!important;min-width:0!important;min-height:76px!important;height:auto!important;margin:0!important;padding:11px 15px!important;border:0!important;border-bottom:1px solid rgba(145,160,190,.10)!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;transition:background .16s ease!important}
+#marketsPage #tokenResults .qx-market-card:last-child{border-bottom:0!important}
+#marketsPage #tokenResults .qx-market-card:hover{transform:none!important;background:rgba(145,124,205,.065)!important}
+#marketsPage #tokenResults .qx-market-card:after{display:none!important}
+#marketsPage #tokenResults .coin-button{display:flex!important;align-items:center!important;gap:11px!important;min-width:0!important;width:100%!important;padding:0!important;border:0!important;border-radius:0!important;outline:0!important;background:transparent!important;text-align:left!important;box-shadow:none!important}
+#marketsPage #tokenResults .coin-button:focus-visible{outline:2px solid rgba(139,124,255,.8)!important;outline-offset:4px!important;border-radius:8px!important}
+#marketsPage #tokenResults .coin-logo,#marketsPage #tokenResults .coin-fallback{display:flex;flex:0 0 38px!important;align-items:center;justify-content:center;width:38px!important;height:38px!important;border:1px solid rgba(150,166,195,.18)!important;border-radius:50%!important;background:#211b35!important;box-shadow:none!important;object-fit:cover}
+#marketsPage #tokenResults .coin-info{display:block!important;flex:1!important;min-width:0!important;gap:0!important}
+#marketsPage #tokenResults .coin-title-line{display:flex;align-items:center;gap:7px;min-width:0}
+#marketsPage #tokenResults .coin-title-line strong{display:block;min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#f0f3fa;font-size:12px;font-weight:850;line-height:1.3}
+#marketsPage #tokenResults .coin-fresh-tag{flex:0 0 auto;padding:3px 6px;border-radius:5px;background:rgba(57,230,160,.12);color:#4ce3a4;font-size:8px;font-weight:900;letter-spacing:.5px}
+#marketsPage #tokenResults .coin-info small{display:block;max-width:100%;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#8290a6;font-size:9px}
+#marketsPage #tokenResults .coin-inline-meta{display:flex;align-items:center;gap:8px;min-width:0;margin-top:5px}
+#marketsPage #tokenResults .qx-age-label{color:#9aa8bd;font-size:9px;font-weight:750;white-space:nowrap}
+#marketsPage #tokenResults .token-live-state{color:#3bd99b;font-size:8px;font-weight:900;letter-spacing:.6px;white-space:nowrap}
+#marketsPage #tokenResults .token-live-state:before{content:'';display:inline-block;width:6px;height:6px;margin-right:5px;border-radius:50%;background:currentColor;vertical-align:1px}
+#marketsPage #tokenResults .token-live-state.waiting{color:#d2a85e}
+#marketsPage #tokenResults .qx-row-metrics{display:contents!important}
+#marketsPage #tokenResults .qx-row-metrics>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right;color:#c2ccdb;font-size:10px;font-weight:750;font-variant-numeric:tabular-nums}
+#marketsPage #tokenResults .qx-row-metrics .qx-row-change.positive{color:#45dfa0}
+#marketsPage #tokenResults .qx-row-metrics .qx-row-change.negative{color:#ff7188}
+#marketsPage #tokenResults .qx-row-metrics .qx-row-change.neutral{color:#9aa7ba}
+#marketsPage #tokenResults .market-card-right{display:flex!important;flex-direction:column!important;align-items:flex-end!important;justify-content:center!important;gap:5px!important;grid-column:6!important;min-width:0!important;text-align:right!important}
+#marketsPage #tokenResults .market-price{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#f4f6fb;font-size:11px;font-weight:900;font-variant-numeric:tabular-nums}
+#marketsPage #tokenResults .qx-mini-chart{display:flex!important;align-items:center!important;justify-content:flex-end!important;width:100px!important;height:24px!important;min-width:0!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;overflow:hidden!important}
+#marketsPage #tokenResults .qx-mini-chart svg{display:block;width:100%;height:100%}
+#marketsPage #tokenResults .qx-chart-pending{color:#7d8ba0!important;font-size:8px!important;font-weight:750!important;letter-spacing:.15px!important;white-space:nowrap!important}
+#marketsPage #tokenResults .qx-chart-pending span{display:inline!important}
+#marketsPage #tokenResults .qx-spark{animation:none!important}
+@media(max-width:900px){
+ #marketsPage #tokenResults .qx-market-columns{grid-template-columns:minmax(150px,1.35fr) repeat(4,minmax(66px,.7fr)) minmax(95px,.8fr);gap:7px;padding:11px 10px}
+ #marketsPage #tokenResults .qx-market-card{grid-template-columns:minmax(150px,1.35fr) repeat(4,minmax(66px,.7fr)) minmax(95px,.8fr)!important;gap:7px!important;padding:10px!important}
+}
+@media(max-width:680px){
+ #marketsPage #tokenResults .qx-market-columns{display:none!important}
+ #marketsPage #tokenResults{border-radius:13px!important}
+ #marketsPage #tokenResults .qx-market-card{grid-template-columns:minmax(0,1fr) auto!important;grid-template-areas:'asset price' 'metrics metrics'!important;column-gap:10px!important;row-gap:9px!important;min-height:0!important;padding:13px 12px!important}
+ #marketsPage #tokenResults .coin-button{grid-area:asset!important;align-self:center!important;gap:9px!important}
+ #marketsPage #tokenResults .coin-logo,#marketsPage #tokenResults .coin-fallback{width:36px!important;height:36px!important;flex-basis:36px!important}
+ #marketsPage #tokenResults .coin-title-line strong{font-size:12px!important}
+ #marketsPage #tokenResults .coin-info small{font-size:9px!important}
+ #marketsPage #tokenResults .coin-inline-meta{margin-top:4px!important}
+ #marketsPage #tokenResults .qx-age-label{font-size:8px!important}
+ #marketsPage #tokenResults .market-card-right{grid-area:price!important;grid-column:auto!important;align-items:flex-end!important;gap:3px!important;max-width:132px!important}
+ #marketsPage #tokenResults .market-price{font-size:12px!important}
+ #marketsPage #tokenResults .qx-mini-chart{width:88px!important;height:19px!important}
+ #marketsPage #tokenResults .qx-row-metrics{grid-area:metrics!important;display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:6px!important;width:100%!important;padding-top:8px!important;border-top:1px solid rgba(145,160,190,.09)!important}
+ #marketsPage #tokenResults .qx-row-metrics>span{display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:3px!important;min-width:0!important;text-align:left!important;font-size:10px!important}
+ #marketsPage #tokenResults .qx-row-metrics>span:before{display:block!important;color:#74839a!important;font-size:7px!important;font-weight:850!important;letter-spacing:.45px!important}
+ #marketsPage #tokenResults .qx-row-metrics>span:nth-child(1):before{content:'24H CHANGE'}
+ #marketsPage #tokenResults .qx-row-metrics>span:nth-child(2):before{content:'VOLUME'}
+ #marketsPage #tokenResults .qx-row-metrics>span:nth-child(3):before{content:'MARKET CAP'}
+ #marketsPage #tokenResults .qx-row-metrics>span:nth-child(4):before{content:'LIQUIDITY'}
+ #marketsPage #tokenResults .qx-row-metrics>span{font-size:9px!important}
+ #marketsPage #tokenResults .qx-chart-pending{font-size:7px!important}
+}
+@media(max-width:380px){
+ #marketsPage #tokenResults .qx-market-card{padding:11px 9px!important}
+ #marketsPage #tokenResults .qx-row-metrics{gap:4px!important}
+ #marketsPage #tokenResults .qx-row-metrics>span:before{font-size:6px!important;letter-spacing:0!important}
+ #marketsPage #tokenResults .qx-row-metrics>span{font-size:8px!important}
+ #marketsPage #tokenResults .market-price{font-size:11px!important}
+}
+@media(prefers-reduced-motion:reduce){#marketsPage #tokenResults .qx-market-card{transition:none!important}}
 
 </style>
 
@@ -4418,7 +4452,7 @@ function qxRealSparkline(p){
  const h=qxRememberObservedPrice(p); const current=Number(p?.priceUsd)||0;
  const vals=h.map(x=>Number(x.value)).filter(v=>Number.isFinite(v)&&v>0);
  // Do not draw a made-up flat line from a single observation.
- if(vals.length<2){return '<div class="qx-mini-chart qx-chart-pending" aria-label="Collecting real price samples"><span>COLLECTING</span></div>';}
+ if(vals.length<2){return '<div class="qx-mini-chart qx-chart-pending" aria-label="Collecting real price samples"><span>Chart warming up</span></div>';}
  const lo=Math.min(...vals),hi=Math.max(...vals),span=Math.max(hi-lo,Math.abs(current)*0.000001,1e-12);
  const coords=vals.map((v,i)=>({x:4+(i/(Math.max(vals.length-1,1)))*88,y:27-((v-lo)/span)*21}));
  const line=coords.map((q,i)=>{if(i===0)return 'M '+q.x.toFixed(2)+' '+q.y.toFixed(2);const prev=coords[i-1],mid=(prev.x+q.x)/2;return 'C '+mid.toFixed(2)+' '+prev.y.toFixed(2)+' '+mid.toFixed(2)+' '+q.y.toFixed(2)+' '+q.x.toFixed(2)+' '+q.y.toFixed(2);}).join(' ');
@@ -5819,5 +5853,3 @@ loadMarket();
 <!-- QX_BUILD_MARKER: V84-MIGRATED-DAMM-ROUTING-STRICT-VERIFIED -->
 </body>
 </html>
-
-
