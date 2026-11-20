@@ -1307,6 +1307,49 @@ body.qx-trade-modal-open{overflow:hidden!important;}
 @media(max-width:760px){#tokenResults .market-row-rich .qx-mini-chart{width:78px!important;height:30px!important;padding:2px 3px!important;border-radius:6px!important;}#tokenResults .market-row-rich .qx-chart-pending{font-size:6px!important;letter-spacing:.3px!important;}}
 @media(prefers-reduced-motion:reduce){#tokenResults .market-row-rich .qx-mini-chart *{animation:none!important;transition:none!important;}}
 
+
+/* QX 105 — compact terminal market rows, inline sorting, age and animated real samples */
+#marketsPage .market-list-column>.list{padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;overflow:visible!important;}
+#marketsPage .market-list-column>.list>.sort-panel{display:none!important;}
+#marketsPage #qxSortToggle{display:none!important;}
+#marketsPage .qx-sort-compact{justify-content:flex-end!important;}
+
+#marketsPage #tokenResults{display:flex;flex-direction:column;gap:0;border:1px solid rgba(130,145,175,.16);border-radius:13px;background:rgba(9,13,22,.78);overflow:hidden;}
+#marketsPage #tokenResults .qx-market-card{display:grid;grid-template-columns:minmax(190px,1.25fr) repeat(4,minmax(0,1fr)) 104px;align-items:center;gap:12px;min-height:67px;padding:9px 12px;border:0!important;border-bottom:1px solid rgba(145,160,190,.11)!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;transition:background .18s ease!important;}
+#marketsPage #tokenResults .qx-market-card:hover{transform:none!important;background:rgba(135,115,190,.075)!important;}
+#marketsPage #tokenResults .qx-market-card:last-child{border-bottom:0!important;}
+#marketsPage #tokenResults .qx-market-card::after{display:none!important;}
+#marketsPage #tokenResults .coin-button{display:flex;align-items:center;gap:9px;padding:0!important;text-align:left;}
+#marketsPage #tokenResults .coin-info{min-width:0;flex:1;}
+#marketsPage #tokenResults .coin-title-line strong{font-size:11px;}
+#marketsPage #tokenResults .coin-info small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:8px;}
+#marketsPage #tokenResults .coin-inline-meta{display:flex;align-items:center;gap:7px;margin-top:3px;}
+#marketsPage #tokenResults .qx-age-label{font-size:8px;font-weight:800;letter-spacing:.25px;color:#a9b6cb;white-space:nowrap;}
+#marketsPage #tokenResults .market-card-right{grid-column:6;display:flex;flex-direction:column;align-items:flex-end;gap:3px;min-width:0;}
+#marketsPage #tokenResults .market-price{font-size:10px;font-weight:850;}
+#marketsPage #tokenResults .qx-mini-chart{width:94px;height:29px;}
+#marketsPage #tokenResults .qx-row-metrics{display:contents;grid-template-columns:repeat(4,minmax(0,1fr));align-items:center;gap:5px;text-align:right;font-size:9px;font-weight:750;font-variant-numeric:tabular-nums;color:#c7d0df;}
+#marketsPage #tokenResults .qx-row-change.positive{color:#45dfa0;}#marketsPage #tokenResults .qx-row-change.negative{color:#ff718c;}#marketsPage #tokenResults .qx-row-change.neutral{color:#94a1b4;}
+#marketsPage #tokenResults .qx-market-columns{position:sticky;top:0;z-index:2;display:grid;grid-template-columns:minmax(190px,1.25fr) minmax(250px,1fr) 104px;align-items:center;gap:12px;padding:9px 12px;background:#101725;border-bottom:1px solid rgba(145,160,190,.17);}
+#marketsPage #tokenResults .qx-col-asset{font-size:8px;font-weight:900;letter-spacing:.65px;color:#8392a8;}
+#marketsPage #tokenResults .qx-col-sort{display:inline-flex;justify-content:flex-end;align-items:center;gap:3px;min-width:0;padding:3px 0;border:0;background:transparent;color:#8998ad;font-size:8px;font-weight:900;white-space:nowrap;}
+#marketsPage #tokenResults .qx-col-sort span{color:#a98aff;font-size:11px;}
+#marketsPage #tokenResults .qx-col-sort.active{color:#d9cbff;}
+#marketsPage #tokenResults .qx-market-columns .qx-col-sort:nth-of-type(1){grid-column:2;}
+#marketsPage #tokenResults .qx-market-columns{grid-template-columns:minmax(190px,1.25fr) repeat(4,minmax(0,1fr)) 104px;}
+#marketsPage #tokenResults .qx-market-columns .qx-col-asset{grid-column:1;}
+#marketsPage #tokenResults .qx-market-columns .qx-col-sort{grid-column:auto;}
+#marketsPage #tokenResults .qx-market-columns .qx-col-sort:nth-of-type(1){grid-column:2;}
+#marketsPage #tokenResults .qx-market-columns .qx-col-sort:nth-of-type(2){grid-column:3;}
+#marketsPage #tokenResults .qx-market-columns .qx-col-sort:nth-of-type(3){grid-column:4;}
+#marketsPage #tokenResults .qx-market-columns .qx-col-sort:nth-of-type(4){grid-column:5;}
+#marketsPage #tokenResults .qx-market-columns::after{content:"PRICE / CHART";grid-column:6;text-align:right;font-size:8px;font-weight:900;color:#8392a8;letter-spacing:.5px;}
+#marketsPage #tokenResults .qx-spark{stroke-dasharray:180;stroke-dashoffset:0;animation:qxSparkFlow 5s linear infinite;}
+@keyframes qxSparkFlow{to{stroke-dashoffset:-180;}}
+@media(max-width:760px){#marketsPage #tokenResults .qx-market-columns{grid-template-columns:minmax(105px,1.25fr) repeat(4,minmax(48px,.8fr)) 72px;gap:5px;padding:8px 7px;}#marketsPage #tokenResults .qx-market-card{grid-template-columns:minmax(105px,1.25fr) repeat(4,minmax(48px,.8fr)) 72px;gap:5px;padding:8px 7px;min-height:62px;}#marketsPage #tokenResults .qx-row-metrics{display:contents;}#marketsPage #tokenResults .qx-row-metrics span{font-size:8px;text-align:right;white-space:nowrap;}#marketsPage #tokenResults .market-card-right{grid-column:6;}#marketsPage #tokenResults .qx-mini-chart{width:68px;height:23px;}#marketsPage #tokenResults .coin-logo,#marketsPage #tokenResults .coin-fallback{width:25px;height:25px;border-radius:8px;}#marketsPage #tokenResults .coin-info small{max-width:105px;font-size:7px;}#marketsPage #tokenResults .coin-title-line strong{font-size:9px;}#marketsPage #tokenResults .token-live-state{font-size:7px;}#marketsPage #tokenResults .qx-col-sort{font-size:7px;letter-spacing:-.2px;}#marketsPage #tokenResults .qx-market-columns::after{font-size:6px;}}
+@media(max-width:390px){#marketsPage #tokenResults .qx-market-columns,#marketsPage #tokenResults .qx-market-card{grid-template-columns:minmax(92px,1.2fr) repeat(4,minmax(42px,.75fr)) 60px;gap:3px;padding-left:5px;padding-right:5px;}#marketsPage #tokenResults .qx-mini-chart{width:58px;}#marketsPage #tokenResults .qx-age-label{font-size:7px;}}
+@media(prefers-reduced-motion:reduce){#marketsPage #tokenResults .qx-spark{animation:none;}}
+
 </style>
 
 </head>
@@ -1570,7 +1613,7 @@ body.qx-trade-modal-open{overflow:hidden!important;}
     </div>
     <div class="sort-panel qx-sort-drawer">
       <div class="sort-title">SORT <span id="sortLabel">Default order</span></div>
-      <div class="sort-options" id="sortOptions">
+      <div class="sort-options" id="sortOptionsLegacy">
         <div class="sort-option"><span>Price</span><button type="button" data-sort="price" aria-label="Sort price">↕</button></div>
         <div class="sort-option"><span>Change</span><button type="button" data-sort="change" aria-label="Sort change">↕</button></div>
         <div class="sort-option"><span>Volume</span><button type="button" data-sort="volume" aria-label="Sort volume">↕</button></div>
@@ -4058,7 +4101,7 @@ $("tradeAmountInput")?.addEventListener("input",()=>{
  qxQuoteTimer=setTimeout(()=>{if(connected&&selectedToken&&String($("tradeAmountInput")?.value||"").trim())qxRequestLiveQuote();else $("swapReceive").textContent="Enter amount to estimate";},350);
 });
 /* Percent controls use the single delegated trade-percent handler. */
-$("sortOptions")?.addEventListener("click",e=>{const b=e.target.closest("button[data-sort]");if(!b)return;const m=b.dataset.sort;if(sortMetric===m)sortDirection=sortDirection==="desc"?"asc":"desc";else{sortMetric=m;sortDirection="desc";}document.querySelectorAll("#sortOptions button").forEach(x=>x.classList.toggle("active",x===b));$("sortLabel").textContent=m+" "+(sortDirection==="desc"?"descending":"ascending");renderMarket();});
+document.addEventListener("click",e=>{const b=e.target.closest("#tokenResults #sortOptions button[data-sort]");if(!b)return;const m=b.dataset.sort;if(sortMetric===m)sortDirection=sortDirection==="desc"?"asc":"desc";else{sortMetric=m;sortDirection="desc";}const label=$("sortLabel");if(label)label.textContent=m+" "+(sortDirection==="desc"?"descending":"ascending");renderMarket();});
 
 /* MARKET DATA — QX SOLANA GLOBAL MARKET v24
    Primary discovery: GeckoTerminal Solana pools (public on-chain DEX index).
@@ -4384,6 +4427,17 @@ function qxRealSparkline(p){
  return '<div class="qx-mini-chart" aria-hidden="true" title="Chart from QX observed real price samples"><svg viewBox="0 0 96 36" preserveAspectRatio="none"><path d="M 3 8 H 93 M 3 19 H 93 M 3 30 H 93" fill="none" stroke="rgba(150,170,195,.10)" stroke-width=".7"/><path d="'+area+'" fill="'+fill+'" stroke="none"/><path class="qx-spark" d="'+line+'" fill="none" stroke="'+stroke+'" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/><circle cx="'+last.x.toFixed(2)+'" cy="'+last.y.toFixed(2)+'" r="4" fill="'+stroke+'" opacity=".16"/><circle class="qx-dot" cx="'+last.x.toFixed(2)+'" cy="'+last.y.toFixed(2)+'" r="2" fill="'+stroke+'" stroke="#080c12" stroke-width="1"/></svg></div>';
 }
 
+function qxMarketAgeLabel(p){
+ const ms=qxTimestampMs(p?.tokenCreatedAt||p?.pairCreatedAt||p?.createdAt||0);
+ if(!ms||ms>Date.now()+5*60*1000)return 'AGE N/A';
+ const seconds=Math.max(0,Math.floor((Date.now()-ms)/1000));
+ if(seconds<60)return 'JUST NOW';
+ if(seconds<3600)return Math.floor(seconds/60)+'m';
+ if(seconds<86400)return Math.floor(seconds/3600)+'h';
+ if(seconds<2592000)return Math.floor(seconds/86400)+'d';
+ return Math.floor(seconds/2592000)+'mo';
+}
+function qxMarketMetric(v){const n=qxNum(v);if(!(n>0))return '—';if(n>=1e9)return '$'+(n/1e9).toFixed(2)+'B';if(n>=1e6)return '$'+(n/1e6).toFixed(2)+'M';if(n>=1e3)return '$'+(n/1e3).toFixed(1)+'K';return '$'+n.toFixed(2);}
 function renderMarket(){
  window.QXMarketPairs=Array.isArray(allPairs)?allPairs.slice():[];
  window.allPairs=window.QXMarketPairs;
@@ -4395,33 +4449,25 @@ function renderMarket(){
  if(heroVolume)heroVolume.textContent=money(allPairs.reduce((sum,p)=>sum+qxNum(p?.volume?.h24),0));
  window.QXRefreshTrendingSpotlight?.();
  const list=sortPairs(qxCategoryList());const countEl=$("coinCount");if(countEl)countEl.textContent=list.length.toLocaleString()+" tokens";const box=$("tokenResults");if(!box)return;
+ const sortHead='<div class="qx-market-columns" id="sortOptions" aria-label="Sort market columns"><span class="qx-col-asset">ASSET / AGE</span>'+[['change','CHANGE'],['volume','VOLUME'],['marketcap','MARKET CAP'],['liquidity','LIQUIDITY']].map(([key,label])=>'<button type="button" class="qx-col-sort '+(sortMetric===key?'active':'')+'" data-sort="'+key+'" aria-label="Sort by '+label+'">'+label+' <span>'+(sortMetric===key?(sortDirection==='desc'?'↓':'↑'):'↕')+'</span></button>').join('')+'</div>';
  if(!list.length){
   const query=$("search")?.value?.trim()||"";
-  const message=query
-   ? 'No Solana markets matched “'+escapeHTML(query)+'”. Check the token name, symbol or mint address.'
-   : currentCategory==="new"
-    ? 'No recently created Solana markets were found in the rolling 30-day discovery window. QX is continuing to refresh new-pool feeds.'
-    : 'No Solana market data is available in this category right now. QX will retry the market feeds automatically.';
-  box.innerHTML='<div class="market-empty">'+message+'</div>';return;
+  const message=query?'No Solana markets matched “'+escapeHTML(query)+'”. Check the token name, symbol or mint address.':currentCategory==="new"?'No recently created Solana markets were found in the rolling 30-day discovery window. QX is continuing to refresh new-pool feeds.':'No Solana market data is available in this category right now. QX will retry the market feeds automatically.';
+  box.innerHTML=sortHead+'<div class="market-empty">'+message+'</div>';return;
  }
- box.innerHTML=list.slice(0,80).map((p,i)=>{
- const name=escapeHTML(qxTokenDisplayName(p)),symbol=escapeHTML(qxIsPlaceholderTokenLabel(p.baseToken.symbol,"symbol")?String(p.baseToken.address||"").slice(0,6).toUpperCase():p.baseToken.symbol),image=qxSafeUrl(p.info?.imageUrl);
- const hasPrice=qxNum(p.priceUsd)>0;
- const change=qxNum(p.priceChange?.h24),cls=change>0?"positive":change<0?"negative":"neutral";
- const changeText=hasPrice?((change>0?"+":"")+change.toFixed(2)+"%"):"—";
- const img=image?'<img class="coin-logo" src="'+escapeHTML(image)+'" alt="" loading="lazy" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\';">':"";
- const fallback='<span class="coin-fallback" style="display:'+(image?'none':'flex')+'">'+escapeHTML(symbol.replace(/[^A-Za-z0-9]/g,'').slice(0,2)||'?')+'</span>';
- const mint=escapeHTML(p.baseToken.address);
- const spark=qxRealSparkline(p);
- const marketState=hasPrice?'<span class="token-live-state">LIVE</span>':'<span class="token-live-state waiting">WAITING</span>';
- const createdRaw=Number(p.tokenCreatedAt||p.pairCreatedAt||0),createdMs=createdRaw>0?(createdRaw<1e12?createdRaw*1000:createdRaw):0;
- const isFresh=createdMs>0&&(Date.now()-createdMs)<86400000;
- const trendArrow=change>0?'↗':change<0?'↘':'•';
- const freshness=isFresh?'<span class="coin-fresh-tag">NEW</span>':'';
- const trendBadge='<span class="coin-trend '+cls+'"><b>'+trendArrow+'</b>'+changeText+'</span>';
- return '<div class="market-row market-row-rich qx-market-card"><button type="button" class="coin-button" data-mint="'+mint+'">'+img+fallback+'<span class="coin-info"><span class="coin-title-line"><strong>'+name+'</strong>'+freshness+'</span><small>'+symbol+' · '+mint.slice(0,6)+'…'+mint.slice(-4)+'</small><span class="coin-inline-meta">'+trendBadge+marketState+'</span></span></button><div class="market-card-right"><div class="market-price">'+(hasPrice?qxFormatTokenPrice(p.priceUsd):"—")+'</div>'+spark+'</div></div>';
-}).join("");
+ box.innerHTML=sortHead+list.slice(0,80).map((p,i)=>{
+  const name=escapeHTML(qxTokenDisplayName(p)),symbol=escapeHTML(qxIsPlaceholderTokenLabel(p.baseToken.symbol,"symbol")?String(p.baseToken.address||"").slice(0,6).toUpperCase():p.baseToken.symbol),image=qxSafeUrl(p.info?.imageUrl);
+  const hasPrice=qxNum(p.priceUsd)>0,change=qxNum(p.priceChange?.h24),cls=change>0?"positive":change<0?"negative":"neutral";
+  const changeText=hasPrice?((change>0?"+":"")+change.toFixed(2)+"% "):"—";
+  const img=image?'<img class="coin-logo" src="'+escapeHTML(image)+'" alt="" loading="lazy" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\';">':"";
+  const fallback='<span class="coin-fallback" style="display:'+(image?'none':'flex')+'">'+escapeHTML(symbol.replace(/[^A-Za-z0-9]/g,'').slice(0,2)||'?')+'</span>';
+  const mint=escapeHTML(p.baseToken.address),spark=qxRealSparkline(p),marketState=hasPrice?'<span class="token-live-state">LIVE</span>':'<span class="token-live-state waiting">WAITING</span>';
+  const createdRaw=Number(p.tokenCreatedAt||p.pairCreatedAt||0),createdMs=qxTimestampMs(createdRaw),isFresh=createdMs>0&&(Date.now()-createdMs)<86400000;
+  const freshness=isFresh?'<span class="coin-fresh-tag">NEW</span>':'';
+  return '<div class="market-row market-row-rich qx-market-card"><button type="button" class="coin-button" data-mint="'+mint+'">'+img+fallback+'<span class="coin-info"><span class="coin-title-line"><strong>'+name+'</strong>'+freshness+'</span><small>'+symbol+' · '+mint.slice(0,6)+'…'+mint.slice(-4)+'</small><span class="coin-inline-meta"><span class="qx-age-label">'+qxMarketAgeLabel(p)+' IN MARKET</span>'+marketState+'</span></span></button><div class="qx-row-metrics"><span class="qx-row-change '+cls+'">'+changeText+'</span><span>'+qxMarketMetric(p.volume?.h24)+'</span><span>'+qxMarketMetric(p.marketCap||p.fdv)+'</span><span>'+qxMarketMetric(p.liquidity?.usd)+'</span></div><div class="market-card-right"><div class="market-price">'+(hasPrice?qxFormatTokenPrice(p.priceUsd):"—")+'</div>'+spark+'</div></div>';
+ }).join("");
 }
+
 $("marketTabs").addEventListener("click",event=>{const button=event.target.closest("[data-category]");if(!button)return;currentCategory=button.dataset.category;console.info("QX market category",currentCategory,{all:allPairs.length,newCoins:newPairs.length});document.querySelectorAll(".market-tab").forEach(t=>t.classList.toggle("active",t===button));renderMarket();});
 let qxMarketSearchRequestId=0;
 async function searchMarket(){
@@ -5735,4 +5781,43 @@ loadMarket();
    const p=Number($('qxCexPrice').value),q=Number($('qxCexQuantity').value),m=market();
    if(!(p>0&&q>0&&Number.isFinite(p)&&Number.isFinite(q)))throw new Error('Enter a positive limit price and quantity.');
    const signed=await signedPayload('place-order',{market:m,side,order_type:'limit',price:p,quantity:q});
-   status('Submitting t
+   status('Submitting the signed limit order to QX matching…');
+   const result=await request('POST',signed);
+   status('QX accepted the order request. Result: '+JSON.stringify(result.result??result));
+   await loadBook();await loadBalances();await loadHistory();
+  }catch(e){status(e.message||'Could not place order.');}
+  finally{busy=false;$('qxCexPlace').disabled=false;}
+ }
+ async function refresh(){
+  if(cexHidden||document.hidden)return;
+  // Both readers share one abort controller. Run sequentially so the second
+  // request cannot abort the first; isolate failures so a trades-feed error
+  // never overwrites a successfully loaded order book.
+  try{await loadBook();}
+  catch(e){if(e?.name==='AbortError'||cexHidden||document.hidden)return;$('qxCexBids').textContent=e.message;$('qxCexAsks').textContent=e.message;}
+  try{await loadTrades();}
+  catch(e){if(e?.name==='AbortError'||cexHidden||document.hidden)return;$('qxCexTrades').textContent=e.message;}
+ }
+ $('qxCexBuy')?.addEventListener('click',()=>setSide('buy'));$('qxCexSell')?.addEventListener('click',()=>setSide('sell'));
+ $('qxCexPrice')?.addEventListener('input',updateTotal);$('qxCexQuantity')?.addEventListener('input',updateTotal);
+ $('qxCexRefresh')?.addEventListener('click',refresh);$('qxCexMarket')?.addEventListener('change',refresh);
+ $('qxCexAuth')?.addEventListener('click',async()=>{try{await loadBalances();await loadHistory();status('QX account authenticated; balances and private history refreshed.');}catch(e){status(e.message);}});
+ $('qxCexBalances')?.addEventListener('click',async()=>{try{await loadBalances();await loadHistory();status('Balances and private history refreshed.');}catch(e){status(e.message);}});
+ $('qxCexHistoryRefresh')?.addEventListener('click',async()=>{try{await loadHistory();status('Private order history refreshed.');}catch(e){status(e.message);}});
+ document.getElementById('qxLanguage')?.addEventListener('change',()=>{applyCexLanguage();if(lastHistory)renderHistory(lastHistory);updateTotal();});
+ applyCexLanguage();
+ cexHidden=document.visibilityState==='hidden';
+ $('qxCexPlace')?.addEventListener('click',place);
+ document.querySelectorAll('.qx-menu-link[data-page="exchangePage"]').forEach(b=>b.addEventListener('click',()=>setTimeout(refresh,120)));
+ 
+ window.addEventListener('qx:wallet-connected',()=>{session=null;cexAbortPending();});
+ window.addEventListener('pagehide',cexAbortPending,{once:true});
+ refresh();
+})();
+</script>
+
+<!-- QX_BUILD_MARKER: V84-MIGRATED-DAMM-ROUTING-STRICT-VERIFIED -->
+</body>
+</html>
+
+
