@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#080711">
 <meta name="google-site-verification" content="A5ntuJ6pvvK-Uo8HHA96o5bUPFGOg_70p-Nh_rsZ8NM">
 <title>QX Exchange — Solana Discovery</title>
-<meta name="qx-build" content="QX-APP-REBUILD-V106-DISCOVERY-RESPONSIVE-RELAYOUT">
+<meta name="qx-build" content="QX-APP-REBUILD-V107-DISCOVERY-CLEAN-MARKET-TERMINAL">
 
 <style id="qx-core-theme">:root{--bg:#070812;--panel:#0d1120;--panel2:#11172a;--line:#232b43;--line2:#303a58;--text:#f6f8ff;--muted:#8994b2;--green:#35e89a;--red:#ff5d72;--purple:#8b5cf6;--purple2:#5b4bdb;--gold:#d9b45c;--radius:16px;--shadow:0 18px 55px rgba(0,0,0,.28);--max:1440px}
 *{box-sizing:border-box;}
@@ -798,7 +798,9 @@ body{background:radial-gradient(ellipse at 50% -15%,rgba(132,83,190,.20),transpa
 @media (prefers-reduced-motion:reduce){.market-row-rich::after,#detailChartWrap::after,.token-live-state::before{animation:none;}}
 body.qx-token-open #exchangePage{display:block;min-height:0;}
 body.qx-token-open #exchangePage > #detail{display:block;visibility:visible;opacity:1;}
-body.qx-token-open #marketsPage{display:none;}
+body.qx-token-open #marketsPage{display:block!important;visibility:visible!important;opacity:1!important;}
+body.qx-token-open #exchangePage{display:none!important;visibility:hidden!important;}
+body.qx-token-open #marketsPage > #detail{display:block!important;visibility:visible!important;opacity:1!important;}
 .ads-shell{padding:17px;margin:10px 0 14px;border-radius:15px;}
 .ads-shell .ads-head{margin-bottom:12px;}
 .ads-shell .ads-title{font-size:15px;letter-spacing:.55px;}
@@ -1227,7 +1229,7 @@ header{position:sticky!important;top:0!important;z-index:1500!important;display:
 .page{display:none!important;width:100%!important;min-width:0!important;min-height:0!important;margin:0 auto!important;padding:18px 0 34px!important}.page.active{display:block!important}#marketsPage{max-width:none!important}.page>.panel,.page>.hero,.page>.list{margin-bottom:14px!important;border:1px solid var(--qx-line)!important;border-radius:var(--qx-radius)!important;background:var(--qx-panel)!important;box-shadow:0 12px 38px rgba(0,0,0,.18)!important}.page h1,.page h2,.page h3{letter-spacing:-.35px}.page input,.page select,.page textarea{max-width:100%;min-width:0;background:#0b0e18!important;color:var(--qx-text)!important;border:1px solid var(--qx-line)!important;border-radius:10px!important}.page .btn{min-height:38px;padding:9px 13px!important;border-radius:10px!important;font-size:11px!important;font-weight:800!important}.page .btn.primary,.qx-hero-actions .btn.primary{background:linear-gradient(120deg,#8d6bff,#6748d9)!important;border:0!important;color:white!important}.small,.market-status{color:var(--qx-muted)}
 /* DISCOVERY is the home screen and the primary product surface. */
 .qx-v2-markets{padding:16px 0 38px!important}.qx-discovery-hero{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;align-items:center!important;gap:24px!important;min-height:0!important;padding:24px 26px!important;border:1px solid rgba(154,124,255,.19)!important;border-radius:20px!important;background:linear-gradient(112deg,rgba(89,62,164,.19),rgba(18,21,34,.96) 48%,rgba(31,75,62,.13))!important;box-shadow:none!important}.qx-eyebrow,.qx-section-kicker{font-size:9px!important;font-weight:850!important;letter-spacing:1.5px!important;color:#a998ff!important}.qx-pulse{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--qx-green);box-shadow:0 0 12px var(--qx-green);margin-right:7px}.qx-hero-copy h1{font-size:clamp(26px,3.2vw,42px)!important;line-height:1.08!important;max-width:700px!important;margin:9px 0!important;letter-spacing:-1.5px!important}.qx-hero-copy p{max-width:650px!important;margin:0!important;color:#aeb5c8!important;font-size:12px!important;line-height:1.65!important}.qx-hero-actions{display:flex!important;gap:8px!important;flex-wrap:wrap!important;margin-top:16px!important}.qx-hero-actions .btn{min-height:38px!important;padding:9px 14px!important;font-size:10px!important}.qx-ghost-btn{background:rgba(255,255,255,.045)!important;border:1px solid var(--qx-line)!important;color:#e8eaf2!important}.qx-hero-stats{display:grid!important;grid-template-columns:repeat(3,minmax(86px,1fr))!important;gap:8px!important}.qx-hero-stats div{min-width:0!important;padding:13px!important;border:1px solid var(--qx-line)!important;border-radius:12px!important;background:rgba(8,10,18,.5)!important}.qx-hero-stats span{display:block!important;color:var(--qx-muted)!important;font-size:8px!important;letter-spacing:1px!important}.qx-hero-stats strong{display:block!important;margin-top:6px!important;font-size:18px!important;font-weight:850!important}
-.qx-new-zone{margin:20px 0 0!important;padding:0!important}.qx-section-head{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;margin:0 0 10px!important}.qx-section-head h2,.qx-market-head h2{font-size:17px!important;margin:4px 0!important}.qx-section-head p{margin:3px 0 0!important;color:var(--qx-muted)!important;font-size:10px!important}.qx-link-btn{border:0!important;background:transparent!important;color:var(--qx-green)!important;font-size:10px!important;font-weight:850!important}.qx-new-strip{display:flex!important;gap:9px!important;overflow-x:auto!important;padding:2px 1px 8px!important;scroll-snap-type:x mandatory!important;scrollbar-width:thin}.qx-new-card{display:block!important;flex:0 0 190px!important;min-width:0!important;padding:12px!important;border:1px solid var(--qx-line)!important;border-radius:13px!important;background:linear-gradient(145deg,#15192a,#10131f)!important;scroll-snap-align:start!important}.qx-new-card img,.qx-new-card .coin-logo{width:30px!important;height:30px!important;border-radius:9px!important}.qx-new-name{font-size:11px!important;margin-top:8px!important}.qx-new-symbol,.qx-new-age{font-size:9px!important;color:var(--qx-muted)!important}.qx-new-price{font-size:12px!important;margin-top:7px!important}.qx-new-change{font-size:10px!important}.qx-new-loading{min-height:75px!important;padding:20px!important;border:1px dashed var(--qx-line)!important;border-radius:13px!important;color:var(--qx-muted)!important}
+.qx-new-zone{margin:20px 0 0!important;padding:0!important}.qx-section-head{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;margin:0 0 10px!important}.qx-section-head h2,.qx-market-head h2{font-size:17px!important;margin:4px 0!important}.qx-section-head p{margin:3px 0 0!important;color:var(--qx-muted)!important;font-size:10px!important}.qx-link-btn{border:0!important;background:transparent!important;color:var(--qx-green)!important;font-size:10px!important;font-weight:850!important} .qx-section-head .qx-link-btn,.qx-hero-actions .qx-ghost-btn[aria-label="Discover newest markets"]{display:inline-flex!important;align-items:center!important;justify-content:center!important;flex:0 0 34px!important;width:34px!important;height:34px!important;min-width:34px!important;padding:0!important;border:1px solid var(--qx-line)!important;border-radius:10px!important;background:#141827!important;color:var(--qx-green)!important;font-size:18px!important;font-weight:900!important;line-height:1!important;white-space:nowrap!important}.qx-section-head .qx-link-btn{margin-left:auto!important}.qx-hero-actions .qx-ghost-btn[aria-label="Discover newest markets"]{font-size:18px!important}.qx-new-strip{display:flex!important;gap:9px!important;overflow-x:auto!important;padding:2px 1px 8px!important;scroll-snap-type:x mandatory!important;scrollbar-width:thin}.qx-new-card{display:block!important;flex:0 0 190px!important;min-width:0!important;padding:12px!important;border:1px solid var(--qx-line)!important;border-radius:13px!important;background:linear-gradient(145deg,#15192a,#10131f)!important;scroll-snap-align:start!important}.qx-new-card img,.qx-new-card .coin-logo{width:30px!important;height:30px!important;border-radius:9px!important}.qx-new-name{font-size:11px!important;margin-top:8px!important}.qx-new-symbol,.qx-new-age{font-size:9px!important;color:var(--qx-muted)!important}.qx-new-price{font-size:12px!important;margin-top:7px!important}.qx-new-change{font-size:10px!important}.qx-new-loading{min-height:75px!important;padding:20px!important;border:1px dashed var(--qx-line)!important;border-radius:13px!important;color:var(--qx-muted)!important}
 .qx-market-shell{margin:14px 0 0!important;padding:16px!important;border:1px solid var(--qx-line)!important;border-radius:17px!important;background:var(--qx-panel)!important;box-shadow:none!important}.qx-market-head{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;margin-bottom:12px!important}.qx-market-head-actions{display:flex!important;align-items:center!important;gap:7px!important}.qx-icon-btn{width:36px!important;height:36px!important;border:1px solid var(--qx-line)!important;border-radius:10px!important;background:#171b2a!important;color:var(--qx-text)!important}.qx-market-toolbar{display:flex!important;align-items:center!important;gap:10px!important;margin:10px 0 12px!important}.qx-search-wrap{display:flex!important;align-items:center!important;flex:1!important;min-width:0!important;height:44px!important;border:1px solid var(--qx-line)!important;border-radius:11px!important;background:#0b0e18!important}.qx-search-wrap input{flex:1!important;width:100%!important;height:100%!important;border:0!important;background:transparent!important;padding:0 12px!important;font-size:11px!important}.qx-search-wrap button{height:32px!important;margin:0 6px!important;padding:0 13px!important;border:0!important;border-radius:8px!important;background:#24203b!important;color:#c9bcff!important;font-size:9px!important;font-weight:850!important}.qx-quick-links{display:flex!important;gap:7px!important}.qx-quick-links button{height:38px!important;padding:0 12px!important;border:1px solid var(--qx-line)!important;border-radius:9px!important;background:#141827!important;color:#c5cada!important;font-size:9px!important;font-weight:800!important}.qx-filter-row{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;margin:0 0 10px!important}.market-tabs{display:flex!important;gap:5px!important;min-width:0!important;overflow-x:auto!important;scrollbar-width:none!important}.market-tab{min-height:34px!important;padding:0 12px!important;border:1px solid transparent!important;border-radius:9px!important;background:transparent!important;color:#929bb1!important;font-size:9px!important;font-weight:850!important;white-space:nowrap!important}.market-tab.active{background:rgba(154,124,255,.12)!important;border-color:rgba(154,124,255,.24)!important;color:#d9d0ff!important}.qx-sort-compact{display:flex!important;align-items:center!important;gap:10px!important;white-space:nowrap!important;color:var(--qx-muted)!important;font-size:9px!important}.qx-sort-compact button{padding:7px 9px!important;border:1px solid var(--qx-line)!important;border-radius:8px!important;background:#171b2a!important;color:#d5d9e5!important;font-size:9px!important}.qx-market-shell .sort-panel{display:none!important;margin:8px 0!important;padding:10px!important;border:1px solid var(--qx-line)!important;border-radius:10px!important;background:#0b0e18!important}.qx-market-shell .sort-panel.qx-sort-open,.qx-market-shell .sort-panel.open{display:block!important}.qx-market-shell .ads-shell{margin:10px 0!important;padding:12px!important;border:1px solid rgba(154,124,255,.18)!important;border-radius:12px!important;background:rgba(154,124,255,.035)!important}.qx-market-shell .ads-title{font-size:10px!important}.qx-market-shell .ads-sub{font-size:9px!important;color:var(--qx-muted)!important}.qx-market-shell .list{margin-top:10px!important;border:1px solid var(--qx-line)!important;border-radius:12px!important;background:#0c0f19!important;overflow:hidden!important}.qx-market-shell #tokenResults{min-height:80px!important}.qx-market-shell .market-row,.qx-market-shell .market-row-rich{min-height:54px!important;padding:8px 12px!important;border-bottom:1px solid rgba(159,169,198,.09)!important;background:transparent!important}.qx-market-shell .coin-logo,.qx-market-shell .coin-fallback{width:32px!important;height:32px!important;border-radius:10px!important}.qx-market-shell .coin-info strong{font-size:11px!important}.qx-market-shell .coin-info small{font-size:9px!important;color:var(--qx-muted)!important}.qx-market-shell .market-price,.qx-market-shell .market-change{font-size:10px!important}.market-status{font-size:9px!important;margin:9px 2px 0!important}
 /* Token selected: collapse discovery into a dedicated focused trade/detail view. */
 body.qx-token-open #marketsPage .qx-discovery-hero,body.qx-token-open #marketsPage .qx-new-zone,body.qx-token-open #marketsPage .qx-market-shell{display:none!important}body.qx-token-open #marketsPage #detail{display:block!important;position:relative!important;top:auto!important;max-height:none!important;overflow:visible!important;margin:0!important;padding:16px!important;border:1px solid var(--qx-line)!important;border-radius:16px!important;background:var(--qx-panel)!important}#detailChart{height:300px!important;min-height:220px!important}
@@ -1605,7 +1607,7 @@ body.qx-token-open #detail .qx-trade-launch{margin:14px 0 18px!important;}
       <div class="qx-hero-actions">
         <button class="btn primary" type="button" onclick="showPage('createPage')">＋ CREATE TOKEN</button>
         <button class="btn qx-ghost-btn" type="button" onclick="showPage('launchPage')">↗ LAUNCH A MARKET</button>
-        <button class="btn qx-ghost-btn" type="button" onclick="document.querySelector('#marketTabs [data-category=new]')?.click()">DISCOVER NEW ↗</button>
+        <button class="btn qx-ghost-btn" type="button" onclick="document.querySelector('#marketTabs [data-category=newest]')?.click(); document.querySelector('#marketTabs')?.scrollIntoView({behavior:'smooth',block:'center'})" aria-label="Discover newest markets">→</button>
       </div>
     </div>
     <div class="qx-hero-stats" aria-label="QX market overview">
@@ -1618,7 +1620,7 @@ body.qx-token-open #detail .qx-trade-launch{margin:14px 0 18px!important;}
   <section class="qx-new-zone" aria-label="New Solana tokens">
     <div class="qx-section-head">
       <div><span class="qx-section-kicker">NEW ON SOLANA</span><h2>Fresh discoveries</h2><p>Newly detected markets appear here first.</p></div>
-      <button class="qx-link-btn" type="button" onclick="document.querySelector('#marketTabs [data-category=new]')?.click()">VIEW ALL →</button>
+      <button class="qx-link-btn" type="button" onclick="document.querySelector('#marketTabs [data-category=newest]')?.click(); document.querySelector('#marketTabs')?.scrollIntoView({behavior:'smooth',block:'center'})" aria-label="View all newest markets">→</button>
     </div>
     <div class="qx-new-strip" id="qxNewStrip"><div class="qx-new-loading">Scanning new Solana markets…</div></div>
   </section>
@@ -1640,8 +1642,8 @@ body.qx-token-open #detail .qx-trade-launch{margin:14px 0 18px!important;}
         <button type="button" class="market-tab" data-category="hour">UNDER 1H</button>
         <button type="button" class="market-tab" data-category="day">UNDER 24H</button>
         <button type="button" class="market-tab" data-category="trending">TRENDING</button>
-        <button type="button" class="market-tab" data-category="gainers">↗ GAINERS</button>
-        <button type="button" class="market-tab" data-category="losers">↘ LOSERS</button>
+        <button type="button" class="market-tab" data-category="gainers">↗ UP</button>
+        <button type="button" class="market-tab" data-category="losers">↘ DOWN</button>
         <button type="button" class="market-tab" data-category="volume">VOLUME</button>
         <button type="button" class="market-tab" data-category="spot">LIQUIDITY</button>
       </div>
@@ -1671,7 +1673,7 @@ body.qx-token-open #detail .qx-trade-launch{margin:14px 0 18px!important;}
     <div class="detail-stat"><small>Holders</small><strong id="detailHolders" title="A token-holder indexer/API is required for a reliable total">Indexer required</strong></div>
    </div>
    <div class="chart-section" id="detailChartWrap" style="display:none">
-    <div class="chart-toolbar"><strong>QX LIVE CHART</strong><div class="chart-ranges" id="chartRanges"><button type="button" class="chart-range active" data-chart-range="5m">5M</button><button type="button" class="chart-range" data-chart-range="15m">15M</button><button type="button" class="chart-range" data-chart-range="1H">1H</button><button type="button" class="chart-range" data-chart-range="4H">4H</button><button type="button" class="chart-range" data-chart-range="1D">1D</button></div></div>
+    <div class="chart-toolbar"><strong>QX LIVE CHART</strong><div class="chart-ranges" id="chartRanges"><button type="button" class="chart-range active" data-chart-range="now">NOW</button><button type="button" class="chart-range" data-chart-range="15s">15S</button><button type="button" class="chart-range" data-chart-range="30s">30S</button><button type="button" class="chart-range" data-chart-range="1m">1M</button><button type="button" class="chart-range" data-chart-range="5m">5M</button><button type="button" class="chart-range" data-chart-range="15m">15M</button><button type="button" class="chart-range" data-chart-range="30m">30M</button><button type="button" class="chart-range" data-chart-range="1H">1H</button><button type="button" class="chart-range" data-chart-range="4H">4H</button><button type="button" class="chart-range" data-chart-range="1D">1D</button></div></div>
     <div id="detailChart" role="img" aria-label="QX native Solana candlestick chart"></div>
     <div id="chartMessage" class="chart-message" style="display:none"></div>
     <div class="chart-credit">Chart rendered inside QX | Solana market data</div>
@@ -4007,7 +4009,7 @@ async function qxLoadLiveChart(token,range="1H"){
  if(!wrap||!host)return;
  wrap.style.display="block";host.innerHTML="";
  if(msg){msg.style.display="block";msg.textContent="Loading Solana market chart…";}
- const intervals={"5m":{cmc:"1min",gt:"minute","aggregate":5},"15m":{cmc:"1min",gt:"minute","aggregate":15},"1H":{cmc:"5min",gt:"hour","aggregate":1},"4H":{cmc:"15min",gt:"hour","aggregate":4},"1D":{cmc:"1h",gt:"day","aggregate":1}};
+ const intervals={"now":{cmc:"1min",gt:"minute","aggregate":1},"15s":{cmc:"1min",gt:"minute","aggregate":1},"30s":{cmc:"1min",gt:"minute","aggregate":1},"1m":{cmc:"1min",gt:"minute","aggregate":1},"5m":{cmc:"1min",gt:"minute","aggregate":5},"15m":{cmc:"1min",gt:"minute","aggregate":15},"30m":{cmc:"1min",gt:"minute","aggregate":30},"1H":{cmc:"5min",gt:"hour","aggregate":1},"4H":{cmc:"15min",gt:"hour","aggregate":4},"1D":{cmc:"1h",gt:"day","aggregate":1}};
  const cfg=intervals[range]||intervals["1H"];
  const chartJSON=async url=>{const r=await fetch(url,{signal:chartController.signal,headers:{accept:"application/json"}});if(!r.ok)throw new Error("Chart data request failed ("+r.status+")");return r.json();};
  let pool=String(token?.cmcPairAddress||token?.pairAddress||token?.poolAddress||"");
@@ -4080,7 +4082,8 @@ async function qxLoadTrades(token){
  }catch(e){if(e?.name==="AbortError"||requestId!==qxTradesRequestId)return;status.textContent="No verified trade feed returned";list.innerHTML='<div class="qx-trades-empty">No verified trade data is available for this token and pool right now.</div>';}
 }
 
-function qxSetupChartRanges(token){document.querySelectorAll("#chartRanges [data-chart-range]").forEach(b=>b.onclick=()=>{document.querySelectorAll("#chartRanges [data-chart-range]").forEach(x=>x.classList.toggle("active",x===b));qxLoadLiveChart(token,b.dataset.chartRange);});}
+let qxChartLiveTimer=null;
+function qxSetupChartRanges(token){document.querySelectorAll("#chartRanges [data-chart-range]").forEach(b=>b.onclick=()=>{document.querySelectorAll("#chartRanges [data-chart-range]").forEach(x=>x.classList.toggle("active",x===b));clearInterval(qxChartLiveTimer);qxChartLiveTimer=null;qxLoadLiveChart(token,b.dataset.chartRange);const r=b.dataset.chartRange;if(r==="now"||r==="15s"||r==="30s")qxChartLiveTimer=setInterval(()=>{if(document.body.classList.contains("qx-token-open")&&selectedToken===token)qxLoadLiveChart(token,r);},r==="now"?5000:Number(r.replace("s",""))*1000);});}
 function openToken(token){
  try{const mint=String(token?.baseToken?.address||token?.address||"");if(mint&&history.pushState&&location.pathname!==location.pathname.replace(/\/$/,"")+"/token/"+encodeURIComponent(mint)){history.pushState({qxTokenMint:mint},"",location.pathname.replace(/\/$/,"")+"/token/"+encodeURIComponent(mint)+location.search+location.hash);}}catch(_){}
  /* Keep the existing detail terminal as a single DOM node. It is already placed by QXEnsureTerminalPlacement; do not move it again or switch pages before populating it. */
@@ -4107,7 +4110,7 @@ function openToken(token){
  $("confirmSwapBtn").disabled=true;$("confirmSwapBtn").textContent="GET LIVE QUOTE FIRST";$("confirmSwapBtn").style.display="none";$("confirmSwapBtn").setAttribute("aria-hidden","true");$("confirmSwapBtn").setAttribute("tabindex","-1");$("qxFeeDisplay").textContent="1.00% · live quote required";$("swapRoute").textContent="QX best available Jupiter route";
  updateTradePercentUI();refreshTradeBalances();
  qxSetupChartRanges(token);
- qxLoadLiveChart(token,"1H");
+ qxLoadLiveChart(token,"now");
  qxLoadCmcTokenDetail(token);
  qxLoadTrades(token);
  const detailTop=document.getElementById("detail");
@@ -5198,6 +5201,7 @@ loadMarket();
   else ensureTerminalPlacement();
 
   function qxCloseTokenTerminal(){
+    clearInterval(qxChartLiveTimer);qxChartLiveTimer=null;
     // Invalidate every in-flight detail request so an older token can never repaint
     // the terminal after the user has already gone back or opened another token.
     qxChartRequestId++;
@@ -5243,8 +5247,9 @@ loadMarket();
     window.__QXSelectedToken=token;
     window.QXTerminalTokenMint=String(token.baseToken.address);
     if(!ensureTerminalPlacement())return;
-    const detail=$('detail'),page=$('exchangePage');
-    page.querySelectorAll(':scope > *').forEach(n=>{if(n!==detail)n.style.display='none'});
+    const detail=$('detail'),markets=$('marketsPage'),exchange=$('exchangePage');
+    if(markets){markets.classList.add('active');markets.setAttribute('aria-hidden','false');markets.style.display='block';if('inert' in markets)markets.inert=false;}
+    if(exchange){exchange.classList.remove('active');exchange.setAttribute('aria-hidden','true');exchange.style.display='none';if('inert' in exchange)exchange.inert=true;}
     detail.style.display='block';
     document.body.classList.add('qx-token-open');
     setWatchButton(token);
@@ -5884,5 +5889,3 @@ loadMarket();
 <!-- QX_BUILD_MARKER: V84-MIGRATED-DAMM-ROUTING-STRICT-VERIFIED -->
 </body>
 </html>
-
-
