@@ -3999,6 +3999,7 @@ const MAX_NEW_COINS=2000;
 let qxJupiterMeta=null;
 let qxMarketGeneration=0;
 let qxLastMarketSource="";
+let qxMarketStage="idle",qxMarketLastError="";
 
 function qxNum(v){const n=Number(v);return Number.isFinite(n)?n:0;}
 function qxTimestampMs(v){const n=Number(v);if(!Number.isFinite(n)||n<=0)return 0;return n<1e12?n*1000:n;}
@@ -4449,6 +4450,7 @@ async function qxReadVerifiedQXLaunchMarkets(){
  return bestPairsByMint(out);
 }
 async function qxFetchMarketUniverse(){
+ qxMarketStage="requesting GeckoTerminal and DexScreener feeds";
  // Discovery is resilient: no single provider, metadata call, or "new" feed is
  // allowed to blank the terminal. A cached successful universe is used while
  // public providers recover, and Jupiter->DexScreener supplies a real-market
@@ -4464,16 +4466,20 @@ async function qxFetchMarketUniverse(){
   qxFetchDexSearch('JUP')
  ];
  const results=await Promise.allSettled(requests);
+ qxMarketStage="processing public market responses";
  let rows=results.flatMap(r=>r.status==='fulfilled'?(r.value||[]):[]);
  let pairs=bestPairsByMint(rows);
  if(pairs.length<10){
+  qxMarketStage="checking Jupiter token fallback";
   const fallback=await qxFetchJupiterMarketFallback();
   pairs=bestPairsByMint([...pairs,...fallback]);
  }
+ qxMarketStage="checking local market cache";
  const cached=qxReadMarketCache();
  if(pairs.length<10&&cached.length)pairs=bestPairsByMint([...cached,...pairs]);
  // Add only launches that QX can read back from the real Meteora pool on
  // Solana. These rows are not synthetic: the mint and pool are verified on-chain.
+ qxMarketStage="verifying QX launches";
  const verifiedLaunches=await qxReadVerifiedQXLaunchMarkets();
  if(verifiedLaunches.length)pairs=bestPairsByMint([...pairs,...verifiedLaunches]);
  if(pairs.length)qxWriteMarketCache(pairs);
@@ -4483,6 +4489,7 @@ function qxUpdateMarketStatus(source,total){qxLastMarketSource=source;const el=$
 async function loadMarket(){
  if(marketBusy)return;
  marketBusy=true;
+ qxMarketStage="starting market refresh";qxMarketLastError="";
  const generation=++qxMarketGeneration;
  try{
   const box=$("tokenResults"),count=$("coinCount");
@@ -4490,6 +4497,7 @@ async function loadMarket(){
    if(box)box.innerHTML='<div class="market-empty">Loading Solana markets…</div>';
    if(count)count.textContent='Loading…';
   }
+  qxMarketStage="loading public Solana markets";
   const seed=await qxFetchMarketUniverse();
   if(generation!==qxMarketGeneration)return;
   // A freshly launched QX DBC pool may not yet be indexed by GeckoTerminal or
@@ -4498,6 +4506,7 @@ async function loadMarket(){
   // for the creator without manufacturing a market row. External indexing can
   // enrich the same pool later with price/volume/liquidity/trade statistics.
   let verifiedLaunchPairs=[];
+  qxMarketStage="verifying locally launched QX markets";
   try{verifiedLaunchPairs=await qxReadVerifiedQXLaunchMarkets();}catch(e){console.warn("QX verified launch market merge unavailable",e);}
   const mergedSeedPairs=bestPairsByMint([...(seed.pairs||[]),...verifiedLaunchPairs]);
   const mergedSeedNew=qxFreshNewPairs(mergedSeedPairs);
@@ -4506,6 +4515,7 @@ async function loadMarket(){
    // Keep the live universe even if a metadata/display pass temporarily rejects
    // every enriched row. The fallback still enforces Solana + valid mint + fake-
    // native filtering; it never invents placeholder markets.
+   qxMarketStage="validating discovered Solana pools";
    allPairs=bestPairsByMint(seedWithVerified.pairs).filter(qxIsDisplayReady);
    if(!allPairs.length){
     allPairs=bestPairsByMint(seedWithVerified.pairs).filter(qxIsTokenDiscoveryReady);
@@ -4525,6 +4535,7 @@ async function loadMarket(){
    window.QXMarketLastSuccess=Date.now();
    window.QXNewPairs=newPairs;window.QXTrendingPairs=trendingPairs;
    qxWriteMarketCache(allPairs);
+   qxMarketStage="rendering discovered markets";
    qxUpdateMarketStatus(seedWithVerified.source+' discovery loaded · '+allPairs.length.toLocaleString()+' markets',newPairs.length||allPairs.length);
    renderMarket();
    qxRefreshNewStrip();
@@ -4548,12 +4559,13 @@ async function loadMarket(){
    }
   }
  }catch(e){
-  console.warn('QX market discovery failed',e);
+  qxMarketLastError=String(e?.message||e||"Unknown market error").slice(0,220);
+  console.error('QX market discovery failed at '+qxMarketStage,e);
   const box=$("tokenResults"),status=$("marketStatus");
-  if(status)status.textContent='Solana market retrying automatically';
-  if(box&&!allPairs.length&&!newPairs.length)box.innerHTML='<div class="market-empty">Solana market data is temporarily unavailable. Retrying automatically…</div>';
+  if(status)status.textContent='Market error · '+qxMarketStage+' · '+qxMarketLastError;
+  if(box&&!allPairs.length&&!newPairs.length)box.innerHTML='<div class="market-empty">Market data error at <b>'+escapeHTML(qxMarketStage)+'</b><br>'+escapeHTML(qxMarketLastError)+'<br>QX will retry automatically.</div>';
  }finally{
-  marketBusy=false;
+  marketBusy=false;qxMarketStage="idle";
   // One bounded CMC page is scanned in the background per refresh. The page
   // cursor advances through 20 x 250 rows without delaying the first render.
   if(document.visibilityState!=="hidden")void qxLoadCmcDiscoveryPage();
@@ -4770,7 +4782,7 @@ function qxStartPumpPortalNewTokenFeed(){
 window.QXMarketModuleReady=true;
 qxStartPumpPortalNewTokenFeed();
 qxStartLiveMarketStream();
-window.QXMarketDiagnostics=()=>({all:allPairs.length,newCoins:newPairs.length,cmcPages:QX_CMC_PAGES,cmcPagesLoaded:qxCmcScanPagesLoaded,nextCmcStart:qxCmcScanStart,source:qxLastMarketSource,lastSuccess:window.QXMarketLastSuccess||0,streamConnected:qxMarketStreamLive,newWindowDays:30,maxNewCoins:MAX_NEW_COINS});
+window.QXMarketDiagnostics=()=>({all:allPairs.length,newCoins:newPairs.length,stage:qxMarketStage,lastError:qxMarketLastError,cmcPages:QX_CMC_PAGES,cmcPagesLoaded:qxCmcScanPagesLoaded,nextCmcStart:qxCmcScanStart,source:qxLastMarketSource,lastSuccess:window.QXMarketLastSuccess||0,streamConnected:qxMarketStreamLive,newWindowDays:30,maxNewCoins:MAX_NEW_COINS});
 window.QXNewPairs=newPairs;window.QXTrendingPairs=trendingPairs;
 loadSolPrice();
 setInterval(()=>{if(document.visibilityState!=="hidden"&&!qxMarketStreamLive)loadSolPrice();},300000);
