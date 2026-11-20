@@ -3799,7 +3799,7 @@ async function qxBuildDirectDbcQuote(){
  if(!Number.isFinite(amount)||amount<=0)throw new Error("Enter a trade amount greater than zero.");
  const balanceReady=await refreshTradeBalances();
  if(!balanceReady)throw new Error("QX could not verify your latest SOL and token balances. No quote was prepared; refresh the wallet and try again.");
- await qxLibraryReady;const dbc=await qxDbcReady;const connection=await qxGetHealthyConnection();
+ await qxLibraryReady;const dbc=await qxDbcReady;
  const launchRecord=token?.qxLaunchRecord||{};
  const knownSuccessor=String(launchRecord?.dammV2Pool||((token?.qxActivePool&&String(token?.qxLiveVenue||"").toLowerCase().includes("damm"))?token.qxActivePool:""));
  // A verified migrated QX launch must go straight to its exact DAMM v2 successor.
