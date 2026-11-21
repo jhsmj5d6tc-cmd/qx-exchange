@@ -187,6 +187,8 @@ body.qx-ads-active .qx-ads-links{display:flex;}
 .amount-entry input{border:0;background:transparent;padding:7px 2px;font-size:20px;font-weight:800;outline:none;box-shadow:none;}
 .amount-entry .amount-symbol{flex:0 0 auto;border:1px solid #49336b;background:#211a30;border-radius:8px;padding:8px 10px;font-size:11px;font-weight:800;color:#e8def8;}
 .percent-available{font-size:10px;color:var(--muted);text-align:right;margin:-3px 2px 8px;}
+.qx-wallet-balance-line{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:4px 0 7px;padding:6px 8px;border:1px solid rgba(67,255,173,.16);border-radius:8px;background:rgba(67,255,173,.045);font-size:10px;color:var(--muted);}
+.qx-wallet-balance-line strong{color:#eafcf5;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .detail-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:10px 0;}
 .detail-stat{background:#100c1c;border:1px solid var(--line);border-radius:10px;padding:9px;}
 .detail-stat small{display:block;color:var(--muted);font-size:10px;margin-bottom:5px;}
@@ -1715,6 +1717,7 @@ body:not(.qx-token-open) #marketsPage>.market-heading{display:flex!important;vis
     <div class="qx-swap-purchase">
      <div class="percent-panel qx-pay-card" id="percentPanel">
       <div class="qx-swap-label"><span id="qxPayLabel">YOU PAY</span><span id="qxSolUsd">SOL/USD: —</span></div>
+      <div class="qx-wallet-balance-line" id="qxWalletBalanceLine"><span>Wallet balance</span><strong id="qxWalletBalanceValue">—</strong></div>
       <div class="qx-swap-value"><input id="tradeAmountInput" type="number" min="0" step="any" inputmode="decimal" placeholder="0.00" aria-label="Trade amount"><span class="qx-swap-coin" id="tradeAmountSymbol">SOL</span></div>
       <div class="percent-available" id="percentAvailable">Available balance: -</div><span id="percentAmount" hidden></span>
       <div class="percent-buttons"><button type="button" class="percent-btn" data-percent="25">25%</button><button type="button" class="percent-btn" data-percent="50">50%</button><button type="button" class="percent-btn" data-percent="75">75%</button><button type="button" class="percent-btn" data-percent="100">MAX</button></div>
@@ -2368,7 +2371,16 @@ function bytesToBase64(bytes){
  for(let i=0;i<a.length;i+=0x8000)out+=String.fromCharCode(...a.subarray(i,i+0x8000));
  return btoa(out);
 }
+function updateQxWalletBalanceUI(){
+ const el=$("qxWalletBalanceValue");if(!el)return;
+ if(!connected||!walletAddress){el.textContent="Not connected";return;}
+ const n=Number(walletSolBalance);
+ if(!Number.isFinite(n)||n<0){el.textContent="Balance unavailable";return;}
+ const usd=Number(solPrice)>0?n*Number(solPrice):null;
+ el.textContent=n.toLocaleString(undefined,{maximumFractionDigits:9})+" SOL"+(usd!==null?" · "+qxFormatMoney(usd):"");
+}
 function updateIndicativeEstimate(){
+ updateQxWalletBalanceUI();
  const receive=$("swapReceive");
  if(!receive||!selectedToken)return;
  const amount=Number($("tradeAmountInput")?.value||0);
@@ -2620,7 +2632,7 @@ async function loadSolPrice(){
   try{const fallback=await getJSON("https://api.binance.com/api/v3/ticker/price?symbol=SOLUSDT",null,8000,0);nextPrice=Number(fallback?.price||0);}catch(e){console.warn("Binance SOL price fallback:",e);}
  }
  if(Number.isFinite(nextPrice)&&nextPrice>0){
-  solPrice=nextPrice;updateIndicativeEstimate();
+  solPrice=nextPrice;updateQxWalletBalanceUI();updateIndicativeEstimate();
   const usd=$("qxSolUsd"),live=$("qxLivePrice");if(usd)usd.textContent="SOL/USD: "+qxFormatTokenPrice(nextPrice);if(live)live.textContent="Live SOL price: "+qxFormatTokenPrice(nextPrice);
   if(connected)await loadPortfolio();
   if(allPairs.length)renderMarket();
@@ -2635,6 +2647,7 @@ async function loadPortfolio(){
  try{
   const balance=await rpc("getBalance",[walletAddress]);
   walletSolBalance=Number(balance.value||0)/1e9;
+  updateQxWalletBalanceUI();
   let total=walletSolBalance*solPrice;
   const rows=[{
    name:"Solana",symbol:"SOL",mint:SOL,amount:walletSolBalance,
@@ -3796,30 +3809,43 @@ async function qxBuildDirectDbcQuote(){
  // A verified migrated QX launch must go straight to its exact DAMM v2 successor.
  // Do not require DBC getPoolByBaseMint to keep returning an active curve after migration.
  if(knownSuccessor||String(token?.qxLiveVenue||"").toLowerCase().includes("damm"))return await qxBuildDammV2Quote(token,direction,amountText);
- // Meteora DBC getPoolByBaseMint uses an indexed RPC request (getProgramAccounts).
- // Do NOT bind this lookup to whichever RPC qxGetHealthyConnection happened to choose.
- // Some public RPCs allow normal reads but reject indexed requests with HTTP 403.
- // Try each configured RPC independently and keep the exact connection that succeeded.
+ // ROOT FIX: never discover a QX launch pool through getPoolByBaseMint when
+ // the launch record already contains the exact on-chain pool. That Meteora SDK
+ // helper is an indexed getProgramAccounts-style request and some public RPCs
+ // reject it with HTTP 403 / personal-token requirements. QX already knows the
+ // pool created for its own launch, so read that exact account directly instead.
  let client=null,poolState=null,dbcConnection=null,lastIndexedError=null;
- const indexedEndpoints=RPCS.filter(endpoint=>!qxRpcIsCooling(endpoint));
- for(const endpoint of (indexedEndpoints.length?indexedEndpoints:RPCS)){
+ const knownPool=String(launchRecord?.pool||token?.qxActivePool||token?.pairAddress||token?.poolAddress||"");
+ const knownPoolIsValid=knownPool&&qxIsValidSolanaMint(knownPool);
+ const directEndpoints=RPCS.filter(endpoint=>!qxRpcIsCooling(endpoint));
+ for(const endpoint of (directEndpoints.length?directEndpoints:RPCS)){
   try{
    const candidate=new Connection(endpoint,"confirmed");
    await candidate.getLatestBlockhash("confirmed");
    const candidateClient=new dbc.DynamicBondingCurveClient(candidate,"confirmed");
-   const candidatePool=await candidateClient.state.getPoolByBaseMint(new PublicKey(mint));
+   let candidatePool=null;
+   if(knownPoolIsValid){
+    const directResult=await candidateClient.state.getPool(new PublicKey(knownPool));
+    candidatePool=directResult?.poolState||directResult||null;
+    if(candidatePool&&!candidatePool.publicKey)candidatePool={...candidatePool,publicKey:new PublicKey(knownPool)};
+   }else{
+    // External/non-QX launch: indexed discovery is still required, but isolate
+    // it as the final fallback rather than making every QX launch depend on it.
+    candidatePool=await candidateClient.state.getPoolByBaseMint(new PublicKey(mint));
+   }
+   if(!candidatePool)throw new Error(knownPoolIsValid?"The configured QX DBC pool account was not found.":"No DBC pool matched this token mint.");
    qxRpcMarkSuccess(endpoint);
    client=candidateClient;poolState=candidatePool;dbcConnection=candidate;
    break;
-  }catch(indexedError){
-   lastIndexedError=indexedError;
-   qxRpcMarkFailure(endpoint,indexedError);
-   console.warn("QX Meteora indexed RPC failed:",endpoint,indexedError?.message||indexedError);
+  }catch(poolReadError){
+   lastIndexedError=poolReadError;
+   qxRpcMarkFailure(endpoint,poolReadError);
+   console.warn("QX Meteora pool read failed:",endpoint,poolReadError?.message||poolReadError);
   }
  }
  if(!client||!dbcConnection){
-  const msg=String(lastIndexedError?.message||lastIndexedError||"No indexed RPC available");
-  throw new Error("QX could not read the Meteora DBC pool from any configured Solana RPC. Last RPC error: "+msg);
+  const msg=String(lastIndexedError?.message||lastIndexedError||"No Solana RPC could read the Meteora pool account");
+  throw new Error(knownPoolIsValid?"QX could not read the known Meteora DBC pool account from any configured Solana RPC. Last RPC error: "+msg:"QX could not discover the Meteora DBC pool from any configured Solana RPC. Last RPC error: "+msg);
  }
  const connection=dbcConnection;
  // A token may have graduated to DAMM v2 without a readable active DBC curve.
@@ -3962,7 +3988,7 @@ async function qxRequestLiveQuote(){
  }catch(e){
   if(e?.name==="AbortError")return;
   try{
-   qxSetSwapStatus("Jupiter has no executable route for this launch. Checking the live Meteora DBC pool directly…");
+   qxSetSwapStatus("Jupiter has no executable route for this token. Checking the verified Meteora pool directly…");
    const direct=await qxBuildDirectDbcQuote();
    if(requestId!==qxQuoteRequestId||requestMint!==String(selectedToken?.baseToken?.address||"")||requestWallet!==String(walletAddress||"")||requestDirection!==tradeDirection)return;
    pendingSwapOrder=direct;
@@ -4151,7 +4177,7 @@ async function refreshTradeBalances(){
  try{
   const sol=await rpc("getBalance",[owner,{commitment:"confirmed"}]);
   if(requestId!==qxTradeBalanceRequestId||selectedToken!==token||walletAddress!==owner)return;
-  walletSolBalance=Number(sol?.value||0)/1e9;selectedTokenBalance=0;selectedTokenDecimals=qxTokenDecimals(token);
+  walletSolBalance=Number(sol?.value||0)/1e9;updateQxWalletBalanceUI();selectedTokenBalance=0;selectedTokenDecimals=qxTokenDecimals(token);
   // BUY only needs the SOL balance. A token-account RPC failure must not erase
   // a valid SOL balance or make the whole trade ticket report "unavailable".
   if(tradeDirection==="sell"){
@@ -4161,6 +4187,7 @@ async function refreshTradeBalances(){
   }
   const available=tradeDirection==="buy"?Math.max(0,walletSolBalance-SOL_RESERVE):selectedTokenBalance;
   if(availableEl)availableEl.textContent="Available balance: "+available.toLocaleString(undefined,{maximumFractionDigits:9})+" "+(tradeDirection==="buy"?"SOL":token.baseToken.symbol);
+  updateQxWalletBalanceUI();
   $("swapWallet").textContent=short(owner);updateTradePercentUI();return true;
  }catch(e){if(requestId===qxTradeBalanceRequestId&&selectedToken===token&&walletAddress===owner&&connected){if(availableEl)availableEl.textContent="Balance unavailable";console.warn("QX trade balance refresh",e);}return false;}
 }
@@ -5109,7 +5136,7 @@ function qxUpdateLiveChart(mint,price,unixTime,candleData){
 function qxApplyLivePrice(mint,price,unixTime,candleData,source){
  mint=String(mint||'');price=Number(price);
  if(mint===SOL&&price>0){
-  solPrice=price;updateIndicativeEstimate();
+  solPrice=price;updateQxWalletBalanceUI();updateIndicativeEstimate();
   const usd=$('qxSolUsd'),live=$('qxLivePrice');if(usd)usd.textContent='SOL/USD: '+qxFormatTokenPrice(price);if(live)live.textContent='Live SOL price: '+qxFormatTokenPrice(price);
   window.dispatchEvent(new CustomEvent('qx:live-market-tick',{detail:{mint,price,source,timestamp:unixTime||Date.now()}}));return;
  }
@@ -5510,6 +5537,7 @@ loadMarket();
     if(!window.QXGetWalletState?.().connected||window.QXGetWalletState?.().address!==owner)return false;
     if(!result||!Number.isFinite(Number(result.value))||Number(result.value)<0)throw new Error('Invalid Solana balance response');
     window.QXSetWalletSolBalance(Number(result.value)/1e9);
+    if(typeof updateQxWalletBalanceUI==='function')updateQxWalletBalanceUI();
     const formatted=window.QXGetWalletSolBalance().toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:9});
     setHeaderBalance('ready',formatted+' SOL');
     const terminal=$('qxTerminalSolBalance');if(terminal)terminal.textContent=formatted+' SOL';
