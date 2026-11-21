@@ -2125,10 +2125,16 @@ const USDC="EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
 // return HTTP 403/429 from some browser networks, so QX must not treat either
 // one as the only source for wallet balances or Meteora account reads.
 const RPCS=[
+ // Primary public Solana Mainnet RPC. PublicNode currently exposes this
+ // endpoint for browser JSON-RPC requests without an API key.
+ "https://solana-rpc.publicnode.com",
+ // Secondary public endpoint. Keep the official Solana endpoint as a
+ // fallback, but do not depend on it because shared public RPC traffic
+ // can receive HTTP 403/429 responses.
  "https://api.mainnet.solana.com",
  "https://api.mainnet-beta.solana.com",
- "https://free.rpcpool.com",
- "https://solana.drpc.org"
+ // Additional public fallback.
+ "https://public.rpc.solanavibestation.com"
 ];
 const SOL_RESERVE=0.0001;
 
@@ -2356,7 +2362,8 @@ async function rpc(method,params){
    const response=await fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({jsonrpc:"2.0",id:Date.now(),method,params}),signal:controller.signal,cache:"no-store"});
    if(!response.ok){
     const detail=await response.text().catch(()=>"");
-    throw new Error(endpoint+" returned HTTP "+response.status+(detail?": "+detail.slice(0,140):""));
+    const cleanDetail=String(detail||"").replace(/\s+/g," " ).slice(0,180);
+    throw new Error(endpoint+" returned HTTP "+response.status+(cleanDetail?": "+cleanDetail:""));
    }
    const data=await response.json();
    if(data&&Object.prototype.hasOwnProperty.call(data,"result")){qxRpcMarkSuccess(endpoint);return data.result;}
