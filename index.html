@@ -3998,16 +3998,12 @@ async function qxRequestLiveQuote(){
  }catch(e){
   if(e?.name==="AbortError")return;
   try{
-   let launch=selectedToken?.qxLaunchRecord||{};
-   if(!launch?.pool&&!launch?.dammV2Pool){try{const saved=JSON.parse(localStorage.getItem("qxRealLaunches")||"[]");launch=saved.find(x=>String(x?.mint||"")===String(selectedToken?.baseToken?.address||""))||launch;}catch(_){} }
-   const knownQxPool=String(launch?.pool||((selectedToken?.qxActivePool&&["dbc","damm","meteora"].includes(String(selectedToken?.qxLiveVenue||"").toLowerCase()))?selectedToken.qxActivePool:""));
-   const knownQxSuccessor=String(launch?.dammV2Pool||"");
-   const isVerifiedQxLaunch=!!(launch?.pool||launch?.dammV2Pool||(["dbc","damm","meteora"].includes(String(selectedToken?.qxLiveVenue||"").toLowerCase())&&qxIsValidSolanaMint(String(selectedToken?.qxActivePool||""))));
-   if(!isVerifiedQxLaunch){
-    pendingSwapOrder=null;$("confirmSwapBtn").disabled=true;$("confirmSwapBtn").style.display="none";$("confirmSwapBtn").setAttribute("aria-hidden","true");
-    qxSetSwapStatus("Jupiter could not prepare an executable order for this Solana token: "+(e?.message||"no executable route returned by Jupiter")+". This token is not a verified QX Meteora launch, so QX will not attempt a direct Meteora pool.");return;
-   }
-   qxSetSwapStatus("Jupiter has no executable route for this QX launch. Checking its verified Meteora pool directly…");
+   // Jupiter is the primary route for every Solana token. If Jupiter cannot
+   // build an executable order, do not classify the token as a QX launch and
+   // do not use pairAddress/poolAddress metadata. The direct Meteora builder
+   // performs its own on-chain mint/pool discovery and is safe for external
+   // Solana tokens as well as QX launches.
+   qxSetSwapStatus("Jupiter could not prepare an executable order. Checking the token's real Meteora liquidity directly…");
    const direct=await qxBuildDirectDbcQuote();
    if(requestId!==qxQuoteRequestId||requestMint!==String(selectedToken?.baseToken?.address||"")||requestWallet!==String(walletAddress||"")||requestDirection!==tradeDirection)return;
    pendingSwapOrder=direct;
@@ -4019,7 +4015,7 @@ async function qxRequestLiveQuote(){
    $("swapRoute").textContent=direct.route==="DAMM_V2"?"Meteora DAMM v2 · POST-GRADUATION ROUTE":"Meteora DBC · DIRECT ON-CHAIN ROUTE";
    $("swapNowBtn").disabled=false;$("swapNowBtn").querySelector("span").textContent="CONFIRM SWAP";
    qxSetSwapStatus(direct.route==='DAMM_V2'?"Direct Meteora DAMM v2 order ready. The 1.00% QX fee and swap are signed together in one transaction.":"Direct Meteora DBC order ready. The 1.00% QX fee and swap are signed together in one transaction.");return;
-  }catch(dbcError){pendingSwapOrder=null;$("confirmSwapBtn").disabled=true;$("confirmSwapBtn").style.display="none";$("confirmSwapBtn").setAttribute("aria-hidden","true");qxSetSwapStatus(e?.message?e.message+" QX direct Meteora route unavailable: "+(dbcError?.message||String(dbcError)):dbcError?.message||"No executable Jupiter or verified QX Meteora route is available for this token.");}
+  }catch(dbcError){pendingSwapOrder=null;$("confirmSwapBtn").disabled=true;$("confirmSwapBtn").style.display="none";$("confirmSwapBtn").setAttribute("aria-hidden","true");const jupiterError=e?.message||"Jupiter returned no executable route";const directError=dbcError?.message||String(dbcError||"");qxSetSwapStatus(jupiterError+" Direct Meteora route unavailable: "+directError);}
  }
  finally{if(qxQuoteAbortController===quoteController)qxQuoteAbortController=null;quoteBusy=false;if(btn)btn.disabled=false;}
 }
@@ -6198,5 +6194,3 @@ loadMarket();
 
 </body>
 </html>
-
-
