@@ -3836,11 +3836,16 @@ async function qxBuildDirectDbcQuote(){
     candidatePool=directResult?.poolState||directResult||null;
     if(candidatePool&&!candidatePool.publicKey)candidatePool={...candidatePool,publicKey:new PublicKey(knownPool)};
    }else{
-    // External/non-QX launch: indexed discovery is still required, but isolate
-    // it as the final fallback rather than making every QX launch depend on it.
-    candidatePool=await candidateClient.state.getPoolByBaseMint(new PublicKey(mint));
+    // Meteora SDK v2 getPoolByBaseMint() returns the matching program-account
+    // wrapper (publicKey), not the decoded VirtualPool state used by swapQuote2.
+    // Resolve that address with getPool() before touching poolState.config.
+    const discovered=await candidateClient.state.getPoolByBaseMint(new PublicKey(mint));
+    const discoveredAddress=discovered?.publicKey||discovered?.address||null;
+    if(discoveredAddress)candidatePool=await candidateClient.state.getPool(new PublicKey(discoveredAddress));
    }
    if(!candidatePool)throw new Error(knownPoolIsValid?"The configured QX DBC pool account was not found.":"No DBC pool matched this token mint.");
+   if(!candidatePool?.publicKey||!candidatePool?.poolState)throw new Error("Meteora returned a pool account, but QX could not decode its VirtualPool state.");
+   if(!candidatePool.poolState.config)throw new Error("Meteora returned a VirtualPool without its config account. The DBC pool state is incomplete.");
    qxRpcMarkSuccess(endpoint);
    client=candidateClient;poolState=candidatePool;dbcConnection=candidate;
    break;
@@ -6194,3 +6199,5 @@ loadMarket();
 
 </body>
 </html>
+
+
