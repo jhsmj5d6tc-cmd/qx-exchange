@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#080711">
 <meta name="google-site-verification" content="A5ntuJ6pvvK-Uo8HHA96o5bUPFGOg_70p-Nh_rsZ8NM">
 <title>QX Exchange — Solana Discovery</title>
-<meta name="qx-build" content="QX-APP-REBUILD-V111-CHART-UNIVERSAL-ROUTE-SOL-PRICE-FIX">
+<meta name="qx-build" content="QX-APP-REBUILD-V112-JUPITER-REFERRAL-ROOT-FIX">
 
 <style id="qx-qmerged-static-css">:root{--bg:#070812;--panel:#0d1120;--panel2:#11172a;--line:#232b43;--line2:#303a58;--text:#f6f8ff;--muted:#8994b2;--green:#35e89a;--red:#ff5d72;--purple:#8b5cf6;--purple2:#5b4bdb;--gold:#d9b45c;--radius:16px;--shadow:0 18px 55px rgba(0,0,0,.28);--max:1440px}
 *{box-sizing:border-box;}
@@ -3804,7 +3804,14 @@ async function qxBuildDirectDbcQuote(){
  const balanceReady=await refreshTradeBalances();
  if(!balanceReady)console.warn("QX balance verification unavailable; continuing to build the Meteora order. On-chain preflight will enforce spendable funds.");
  await qxLibraryReady;const dbc=await qxDbcReady;
- const launchRecord=token?.qxLaunchRecord||{};
+ let launchRecord=token?.qxLaunchRecord||{};
+ if(!launchRecord?.pool&&!launchRecord?.dammV2Pool){
+  try{
+   const saved=JSON.parse(localStorage.getItem("qxRealLaunches")||"[]");
+   const recovered=saved.find(x=>String(x?.mint||"")===mint);
+   if(recovered)launchRecord=recovered;
+  }catch(_){}
+ }
  const knownSuccessor=String(launchRecord?.dammV2Pool||((token?.qxActivePool&&String(token?.qxLiveVenue||"").toLowerCase().includes("damm"))?token.qxActivePool:""));
  // A verified migrated QX launch must go straight to its exact DAMM v2 successor.
  // Do not require DBC getPoolByBaseMint to keep returning an active curve after migration.
@@ -3940,14 +3947,17 @@ async function qxBuildJupiterQuote(){
  if(direction==="sell"&&balanceReady&&amount>selectedTokenBalance)throw new Error("The amount exceeds your available token balance.");
  // Current Jupiter Swap V2 Meta-Aggregator: request an executable order and
  // route QX's 100 bps integrator fee through the already-created referral account.
- const params=new URLSearchParams({inputMint,outputMint,amount:raw,taker:owner,referralAccount:QX_JUP_REFERRAL_ACCOUNT,referralFee:"100"});
+ const params=new URLSearchParams({inputMint,outputMint,amount:raw,taker:owner,referralAccount:QX_JUP_REFERRAL_ACCOUNT,referralFee:"100",maxSupportedTransactionVersion:"1"});
  const response=await fetch("https://api.jup.ag/swap/v2/order?"+params.toString(),{signal:qxQuoteAbortController?.signal,headers:{accept:"application/json","x-api-key":QX_JUP_API_KEY}});
  const order=await response.json().catch(()=>({}));
- if(!response.ok)throw new Error(order.errorMessage||order.error||("Jupiter order failed (HTTP "+response.status+")."));
+ if(!response.ok)throw new Error(order.errorMessage||order.error||("Jupiter order failed (HTTP "+response.status+", code "+String(order.errorCode??"unknown")+")."));
  if(!order||typeof order!=="object")throw new Error("Jupiter returned an invalid order response.");
- if(typeof order.transaction!=="string"||!order.transaction)throw new Error(order.errorMessage||("Jupiter returned a quote but no executable transaction. Router: "+String(order.router||"unknown")+", error code: "+String(order.errorCode??"unknown")+". No transaction was created."));
+ if(String(order.status||"").toLowerCase()==="failed")throw new Error(order.errorMessage||order.error||("Jupiter order failed. Router: "+String(order.router||"unknown")+", error code: "+String(order.errorCode??"unknown")+"."));
+ if(typeof order.transaction!=="string"||!order.transaction)throw new Error(order.errorMessage||("Jupiter returned a quote but no executable transaction. Router: "+String(order.router||"unknown")+", mode: "+String(order.mode||"unknown")+", error code: "+String(order.errorCode??"unknown")+". No transaction was created."));
  if(!order.requestId)throw new Error("Jupiter order is missing its execution request ID. No transaction was signed.");
- if(String(order.referralAccount||"")!==QX_JUP_REFERRAL_ACCOUNT)throw new Error("Jupiter did not confirm the QX referral account on this order. Trading is paused to avoid an untracked fee.");
+ // Jupiter Swap V2 does not guarantee an echoed referralAccount field in the order response.
+ // The fee request is sent above; verify the returned fee terms instead of rejecting a valid order
+ // merely because Jupiter omitted the referralAccount echo.
  if(!Number.isFinite(Number(order.feeBps))||Number(order.feeBps)<100||!order.feeMint)throw new Error("Jupiter did not confirm the requested 1.00% QX referral fee and fee token. Check that the referral token account for the returned fee mint is initialized.");
  await qxEnsureJupiterReferralTokenAccount(order.feeMint);
  if(!order.outAmount)throw new Error("Jupiter returned no executable output amount.");
@@ -3988,7 +3998,16 @@ async function qxRequestLiveQuote(){
  }catch(e){
   if(e?.name==="AbortError")return;
   try{
-   qxSetSwapStatus("Jupiter has no executable route for this token. Checking the verified Meteora pool directly…");
+   let launch=selectedToken?.qxLaunchRecord||{};
+   if(!launch?.pool&&!launch?.dammV2Pool){try{const saved=JSON.parse(localStorage.getItem("qxRealLaunches")||"[]");launch=saved.find(x=>String(x?.mint||"")===String(selectedToken?.baseToken?.address||""))||launch;}catch(_){} }
+   const knownQxPool=String(launch?.pool||selectedToken?.qxActivePool||selectedToken?.pairAddress||selectedToken?.poolAddress||"");
+   const knownQxSuccessor=String(launch?.dammV2Pool||"");
+   const isVerifiedQxLaunch=!!(qxIsValidSolanaMint(knownQxPool)||qxIsValidSolanaMint(knownQxSuccessor));
+   if(!isVerifiedQxLaunch){
+    pendingSwapOrder=null;$("confirmSwapBtn").disabled=true;$("confirmSwapBtn").style.display="none";$("confirmSwapBtn").setAttribute("aria-hidden","true");
+    qxSetSwapStatus(e?.message||"Jupiter could not prepare an executable order for this Solana token. No verified QX Meteora pool is configured for this market.");return;
+   }
+   qxSetSwapStatus("Jupiter has no executable route for this QX launch. Checking its verified Meteora pool directly…");
    const direct=await qxBuildDirectDbcQuote();
    if(requestId!==qxQuoteRequestId||requestMint!==String(selectedToken?.baseToken?.address||"")||requestWallet!==String(walletAddress||"")||requestDirection!==tradeDirection)return;
    pendingSwapOrder=direct;
@@ -4000,7 +4019,7 @@ async function qxRequestLiveQuote(){
    $("swapRoute").textContent=direct.route==="DAMM_V2"?"Meteora DAMM v2 · POST-GRADUATION ROUTE":"Meteora DBC · DIRECT ON-CHAIN ROUTE";
    $("swapNowBtn").disabled=false;$("swapNowBtn").querySelector("span").textContent="CONFIRM SWAP";
    qxSetSwapStatus(direct.route==='DAMM_V2'?"Direct Meteora DAMM v2 order ready. The 1.00% QX fee and swap are signed together in one transaction.":"Direct Meteora DBC order ready. The 1.00% QX fee and swap are signed together in one transaction.");return;
-  }catch(dbcError){pendingSwapOrder=null;$("confirmSwapBtn").disabled=true;$("confirmSwapBtn").style.display="none";$("confirmSwapBtn").setAttribute("aria-hidden","true");qxSetSwapStatus(e?.message?e.message+" Direct DBC route unavailable: "+(dbcError?.message||String(dbcError)):dbcError?.message||"No executable Jupiter or direct DBC route is available for this token.");}
+  }catch(dbcError){pendingSwapOrder=null;$("confirmSwapBtn").disabled=true;$("confirmSwapBtn").style.display="none";$("confirmSwapBtn").setAttribute("aria-hidden","true");qxSetSwapStatus(e?.message?e.message+" QX direct Meteora route unavailable: "+(dbcError?.message||String(dbcError)):dbcError?.message||"No executable Jupiter or verified QX Meteora route is available for this token.");}
  }
  finally{if(qxQuoteAbortController===quoteController)qxQuoteAbortController=null;quoteBusy=false;if(btn)btn.disabled=false;}
 }
