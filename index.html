@@ -2042,7 +2042,7 @@ window.QXConnectWallet=async function(){
 // prevent the public market, search, navigation, or other page buttons from running.
 let createAppKit,SolanaAdapter,solana;
 let Connection,PublicKey,Keypair,SystemProgram,Transaction,TransactionInstruction,VersionedTransaction;
-let MINT_SIZE,TOKEN_PROGRAM_ID,TOKEN_2022_PROGRAM_ID,getAssociatedTokenAddress,getMint,getAccount,getMemoTransfer,getTransferFeeConfig,calculateEpochFee,getExtensionTypes,ExtensionType,createInitializeMintInstruction,createAssociatedTokenAccountInstruction,createMintToInstruction,createTransferInstruction,createTransferCheckedInstruction,createTransferCheckedWithFeeInstruction;
+let MINT_SIZE,TOKEN_PROGRAM_ID,TOKEN_2022_PROGRAM_ID,getAssociatedTokenAddress,getMint,getAccount,getMemoTransfer,getTransferFeeConfig,calculateEpochFee,getExtensionTypes,ExtensionType,createInitializeMintInstruction,createAssociatedTokenAccountInstruction,createAssociatedTokenAccountIdempotentInstruction,createMintToInstruction,createTransferInstruction,createTransferCheckedInstruction,createTransferCheckedWithFeeInstruction;
 // Load only the three required Reown modules first. Keep the actual CDN error so
 // Safari shows the failing package instead of a misleading generic message.
 const qxReownReady = (async()=>{
@@ -2075,7 +2075,7 @@ const qxLibraryReady = (async()=>{
    import("https://esm.sh/@solana/spl-token@0.4.15?target=es2022&deps=@solana/web3.js@1.98.4,@solana/buffer-layout@4.0.1")
   ]);
   ({Connection,PublicKey,Keypair,SystemProgram,Transaction,TransactionInstruction,VersionedTransaction}=optional[0]);
-  ({MINT_SIZE,TOKEN_PROGRAM_ID,TOKEN_2022_PROGRAM_ID,getAssociatedTokenAddress,getMint,getAccount,getMemoTransfer,getTransferFeeConfig,calculateEpochFee,getExtensionTypes,ExtensionType,createInitializeMintInstruction,createAssociatedTokenAccountInstruction,createMintToInstruction,createTransferInstruction,createTransferCheckedInstruction,createTransferCheckedWithFeeInstruction}=optional[1]);
+  ({MINT_SIZE,TOKEN_PROGRAM_ID,TOKEN_2022_PROGRAM_ID,getAssociatedTokenAddress,getMint,getAccount,getMemoTransfer,getTransferFeeConfig,calculateEpochFee,getExtensionTypes,ExtensionType,createInitializeMintInstruction,createAssociatedTokenAccountInstruction,createAssociatedTokenAccountIdempotentInstruction,createMintToInstruction,createTransferInstruction,createTransferCheckedInstruction,createTransferCheckedWithFeeInstruction}=optional[1]);
   if(!Connection||!PublicKey||!Keypair||!SystemProgram||!Transaction||!MINT_SIZE||!TOKEN_PROGRAM_ID){
    throw new Error("Required Solana libraries loaded without the required exports.");
   }
@@ -3557,7 +3557,7 @@ function qxBytesToB64(bytes){let s="";const a=bytes instanceof Uint8Array?bytes:
 let qxDamm=null,qxDammReady=null,qxDammError="";
 qxDammReady=(async()=>{
  try{
-  const sdk=await import("https://esm.sh/@meteora-ag/cp-amm-sdk@1.5.0?target=es2022&bundle");
+  const sdk=await import("https://esm.sh/@meteora-ag/cp-amm-sdk@1.4.6?target=es2022&bundle");
   qxDamm=sdk;
   if(!qxDamm.CpAmm)throw new Error("DAMM v2 SDK loaded without CpAmm.");
   return qxDamm;
@@ -3619,10 +3619,6 @@ async function qxGetDammTokenInfo(connection,mintAddress){
 async function qxBuildDammV2Quote(token, direction, amountText){
  const amount=Number(amountText);
  if(!Number.isFinite(amount)||amount<=0)throw new Error("Enter a trade amount greater than zero.");
- // Balance reads are safety checks only. They must never become an accidental
- // hard dependency of the quote builder when a public RPC is rate-limited.
- const balanceReady=await refreshTradeBalances();
- if(!balanceReady)console.warn("QX balance verification unavailable; continuing with the DAMM v2 quote. Solana preflight remains authoritative.");
  const decimals=await qxEnsureTokenDecimals(token),inputDecimals=direction==="buy"?9:decimals;
  // Treat the entered amount as the user's total spend, with the 1% QX fee
  // reserved inside it. This makes MAX usable without charging 101% of balance.
@@ -3882,8 +3878,8 @@ async function qxBuildDirectDbcQuote(){
  const currentSlot=await connection.getSlot("confirmed"),blockTime=await connection.getBlockTime(currentSlot),currentPoint=new dbc.BN(Number(config.activationType)===1?(blockTime||Math.floor(Date.now()/1000)):currentSlot);
  const quote=await client.pool.swapQuote2({virtualPool:poolState,config,swapBaseForQuote:direction==="sell",swapMode:dbc.SwapMode.ExactIn,amountIn:swapRaw,slippageBps:100,hasReferral:false,currentPoint,eligibleForFirstSwapWithMinFee:false});
  if(!quote?.minimumAmountOut||!quote?.actualInputAmount)throw new Error("Meteora returned no executable DBC quote for this token.");
- if(balanceReady&&direction==="buy"&&amount>walletSolBalance-SOL_RESERVE)throw new Error("Your SOL balance does not cover the entered amount and network reserve.");
- if(balanceReady&&direction==="sell"&&amount>selectedTokenBalance)throw new Error("The entered sell amount exceeds your available token balance.");
+ if(direction==="buy"&&amount>walletSolBalance-SOL_RESERVE)throw new Error("Your SOL balance does not cover the entered amount and network reserve.");
+ if(direction==="sell"&&amount>selectedTokenBalance)throw new Error("The entered sell amount exceeds your available token balance.");
  return {route:"DBC",quote,client,poolAddress,tokenMint:mint,tokenSymbol:token.baseToken.symbol,direction,walletAddress:owner,amount,inputDecimals,verifiedTokenDecimals:decimals,raw:swapRaw.toString(),quotedAt:Date.now(),qxFeeRaw:feeRaw.toString(),quoteMint:String(config.quoteMint||SOL)};
 }
 async function qxExecuteDirectDbcSwap(q){
@@ -3921,17 +3917,41 @@ async function qxExecuteDirectDbcSwap(q){
 async function qxEnsureJupiterReferralTokenAccount(feeMint){
  const mintText=String(feeMint||"");
  if(!qxIsValidSolanaMint(mintText))throw new Error("Jupiter returned an invalid referral fee mint. No transaction was signed.");
+ await qxLibraryReady;
  const connection=await qxGetHealthyConnection(),mint=new PublicKey(mintText),referral=new PublicKey(QX_JUP_REFERRAL_ACCOUNT);
  const mintInfo=await connection.getAccountInfo(mint,"confirmed"),tokenProgramId=mintInfo?.owner;
  if(!tokenProgramId||!(tokenProgramId.equals(TOKEN_PROGRAM_ID)||(TOKEN_2022_PROGRAM_ID&&tokenProgramId.equals(TOKEN_2022_PROGRAM_ID))))throw new Error("QX could not verify the on-chain token program for Jupiter's referral fee mint. No transaction was signed.");
  // Jupiter credits the associated referral token account owned by the referral PDA.
- // A missing account does not stop Jupiter from returning an order, so check it
- // before wallet approval to avoid executing a swap with no QX referral credit.
+ // If it does not exist yet, initialize it on demand. This is the same deterministic
+ // referral ATA Jupiter expects for this mint and avoids requiring manual Dashboard
+ // setup for every token that QX can route.
  const referralAta=await getAssociatedTokenAddress(mint,referral,true,tokenProgramId);
  const accountInfo=await connection.getAccountInfo(referralAta,"confirmed");
- if(!accountInfo)throw new Error("QX referral token account is not initialized for fee mint "+mintText+". Initialize this mint in Jupiter Referral Dashboard before trading this route. No transaction was signed.");
- if(!accountInfo.owner.equals(tokenProgramId))throw new Error("The QX referral token account is owned by an unexpected token program. No transaction was signed.");
- return referralAta.toBase58();
+ if(accountInfo){
+  if(!accountInfo.owner.equals(tokenProgramId))throw new Error("The QX referral token account is owned by an unexpected token program. No transaction was signed.");
+  return {address:referralAta.toBase58(),initializedNow:false};
+ }
+ if(!connected||!walletAddress)throw new Error("Connect your Solana wallet before initializing the one-time Jupiter referral token account. No transaction was signed.");
+ if(typeof createAssociatedTokenAccountIdempotentInstruction!=="function")throw new Error("QX could not load the Solana associated-token-account initializer. No transaction was signed.");
+ const payer=new PublicKey(walletAddress),latest=await connection.getLatestBlockhash("confirmed");
+ const tx=new Transaction({feePayer:payer,recentBlockhash:latest.blockhash});
+ tx.add(createAssociatedTokenAccountIdempotentInstruction(payer,referralAta,referral,mint,tokenProgramId));
+ const provider=window.QXGetActiveWalletProvider?.()||null;
+ if(typeof provider?.signTransaction!=="function")throw new Error("The connected wallet cannot sign the one-time Jupiter referral account setup transaction. Reconnect your wallet and try again.");
+ qxSetSwapStatus("One-time Jupiter fee-account setup is required for this token. Approve the network setup transaction in your wallet; QX will then request the live trade order.");
+ const signed=await provider.signTransaction(tx);
+ const signature=await connection.sendRawTransaction(signed.serialize(),{skipPreflight:false,preflightCommitment:"confirmed"});
+ const confirmation=await connection.confirmTransaction({signature,blockhash:latest.blockhash,lastValidBlockHeight:latest.lastValidBlockHeight},"confirmed");
+ if(confirmation.value?.err)throw new Error("Jupiter referral token account setup failed on-chain: "+JSON.stringify(confirmation.value.err));
+ for(let attempt=0;attempt<4;attempt++){
+  const created=await connection.getAccountInfo(referralAta,"confirmed");
+  if(created){
+   if(!created.owner.equals(tokenProgramId))throw new Error("The newly initialized Jupiter referral token account has an unexpected owner. No transaction was signed.");
+   return {address:referralAta.toBase58(),initializedNow:true,setupSignature:signature};
+  }
+  await new Promise(r=>setTimeout(r,500*(attempt+1)));
+ }
+ throw new Error("Jupiter referral token account setup was confirmed, but QX could not read the account yet. Setup transaction: "+signature);
 }
 async function qxBuildJupiterQuote(){
  const token=selectedToken,direction=tradeDirection,owner=walletAddress;
@@ -3954,36 +3974,35 @@ async function qxBuildJupiterQuote(){
  const raw=qxToRawAmount(amountText,inputDecimals);
  if(direction==="buy"&&balanceReady&&amount>Math.max(0,walletSolBalance-SOL_RESERVE))throw new Error("The amount exceeds your available SOL after the QX reserve.");
  if(direction==="sell"&&balanceReady&&amount>selectedTokenBalance)throw new Error("The amount exceeds your available token balance.");
- // Jupiter builds the executable transaction at /order time. The referral
- // token account therefore MUST already exist before this request; creating it
- // after /order is too late for that transaction and can produce a successful
- // swap with zero QX referral revenue. Prepare both possible fee mints first.
- // This is one-time per mint; qxEnsureJupiterReferralTokenAccount() is idempotent.
- qxSetSwapStatus("Checking QX referral fee accounts before requesting the executable order…");
- const referralMints=[inputMint,outputMint].filter((m,i,a)=>a.indexOf(m)===i);
- for(const referralMint of referralMints){
-  if(qxQuoteAbortController?.signal?.aborted)throw new DOMException("Quote request aborted","AbortError");
-  await qxEnsureJupiterReferralTokenAccount(referralMint);
- }
- if(selectedToken!==token||tradeDirection!==direction||walletAddress!==owner||String($("tradeAmountInput")?.value||"").trim()!==amountText)throw new Error("The selected token, amount or wallet changed while the QX referral account was being prepared. Request a fresh quote.");
  // Current Jupiter Swap V2 Meta-Aggregator: request an executable order and
- // route QX's 100 bps integrator fee through the referral account.
+ // route QX's 100 bps integrator fee through the already-created referral account.
  const params=new URLSearchParams({inputMint,outputMint,amount:raw,taker:owner,referralAccount:QX_JUP_REFERRAL_ACCOUNT,referralFee:"100",maxSupportedTransactionVersion:"1"});
- const response=await fetch("https://api.jup.ag/swap/v2/order?"+params.toString(),{signal:qxQuoteAbortController?.signal,headers:{accept:"application/json","x-api-key":QX_JUP_API_KEY}});
- const order=await response.json().catch(()=>({}));
- if(!response.ok)throw new Error(order.errorMessage||order.error||("Jupiter order failed (HTTP "+response.status+", code "+String(order.errorCode??"unknown")+")."));
- if(!order||typeof order!=="object")throw new Error("Jupiter returned an invalid order response.");
- if(String(order.status||"").toLowerCase()==="failed")throw new Error(order.errorMessage||order.error||("Jupiter order failed. Router: "+String(order.router||"unknown")+", error code: "+String(order.errorCode??"unknown")+"."));
- if(typeof order.transaction!=="string"||!order.transaction)throw new Error(order.errorMessage||("Jupiter returned a quote but no executable transaction. Router: "+String(order.router||"unknown")+", mode: "+String(order.mode||"unknown")+", error code: "+String(order.errorCode??"unknown")+". No transaction was created."));
- if(!order.requestId)throw new Error("Jupiter order is missing its execution request ID. No transaction was signed.");
+ async function requestJupiterOrder(){
+  const response=await fetch("https://api.jup.ag/swap/v2/order?"+params.toString(),{signal:qxQuoteAbortController?.signal,headers:{accept:"application/json","x-api-key":QX_JUP_API_KEY}});
+  const order=await response.json().catch(()=>({}));
+  if(!response.ok)throw new Error(order.errorMessage||order.error||("Jupiter order failed (HTTP "+response.status+", code "+String(order.errorCode??"unknown")+")."));
+  if(!order||typeof order!=="object")throw new Error("Jupiter returned an invalid order response.");
+  if(String(order.status||"").toLowerCase()==="failed")throw new Error(order.errorMessage||order.error||("Jupiter order failed. Router: "+String(order.router||"unknown")+", error code: "+String(order.errorCode??"unknown")+"."));
+  if(typeof order.transaction!=="string"||!order.transaction)throw new Error(order.errorMessage||("Jupiter returned a quote but no executable transaction. Router: "+String(order.router||"unknown")+", mode: "+String(order.mode||"unknown")+", error code: "+String(order.errorCode??"unknown")+". No transaction was created."));
+  if(!order.requestId)throw new Error("Jupiter order is missing its execution request ID. No transaction was signed.");
+  return order;
+ }
+ // Jupiter can return an order even when the referral ATA for the selected fee mint
+ // does not exist. In that case feeBps can be zero, so checking feeBps before reading
+ // feeMint creates the exact dead-end seen in QX. First inspect the returned fee mint,
+ // initialize its deterministic referral ATA if needed, then request a fresh executable
+ // order so Jupiter assembles the transaction with the 1.00% referral fee.
+ let order=await requestJupiterOrder();
+ if(!Number.isFinite(Number(order.feeBps))||Number(order.feeBps)<100){
+  if(!order.feeMint)throw new Error("Jupiter returned an order without a usable referral fee mint, so QX cannot initialize the referral account automatically. No transaction was signed.");
+  await qxEnsureJupiterReferralTokenAccount(order.feeMint);
+  order=await requestJupiterOrder();
+ }
  // Jupiter Swap V2 does not guarantee an echoed referralAccount field in the order response.
  // The fee request is sent above; verify the returned fee terms instead of rejecting a valid order
  // merely because Jupiter omitted the referralAccount echo.
- if(!Number.isFinite(Number(order.feeBps))||Number(order.feeBps)<100||!order.feeMint)throw new Error("Jupiter did not confirm the requested 1.00% QX referral fee and fee token. No transaction was signed.");
- // The current order must use one of the referral token accounts prepared
- // before /order. Do not create a new account here: that cannot modify the
- // already-assembled Jupiter transaction.
- if(!referralMints.includes(String(order.feeMint)))throw new Error("Jupiter selected an unexpected fee mint that was not prepared for the QX referral account. No transaction was signed.");
+ if(!Number.isFinite(Number(order.feeBps))||Number(order.feeBps)<100||!order.feeMint)throw new Error("Jupiter did not confirm the requested 1.00% QX referral fee after referral-account initialization. No transaction was signed.");
+ await qxEnsureJupiterReferralTokenAccount(order.feeMint);
  if(!order.outAmount)throw new Error("Jupiter returned no executable output amount.");
  if(selectedToken!==token||tradeDirection!==direction||walletAddress!==owner||String($("tradeAmountInput")?.value||"").trim()!==amountText)throw new Error("The selected token, amount or wallet changed while the Jupiter order was loading. Request a fresh order.");
  return {quote:order,referralAccount:QX_JUP_REFERRAL_ACCOUNT,requestedReferralFeeBps:100,inputMint,outputMint,raw,amount,inputDecimals,verifiedTokenDecimals,tokenMint:mint,tokenSymbol:token.baseToken.symbol,direction,walletAddress:owner,quotedAt:Date.now()};
@@ -3999,28 +4018,6 @@ async function qxRequestLiveQuote(){
  const requestAmount=Number($("tradeAmountInput")?.value||0);
  quoteBusy=true;const btn=$("getQuoteBtn");if(btn)btn.disabled=true;
  try{
-  // QX launches are created on Meteora DBC and can later graduate to DAMM v2.
-  // Those pools are the authoritative venue for a verified QX launch; asking
-  // Jupiter first only creates a false failure path when the launch is not yet
-  // indexed by Jupiter. External Solana tokens still use Jupiter first.
-  const launch=selectedToken?.qxLaunchRecord||{};
-  const launchVenue=String(selectedToken?.qxLiveVenue||launch?.qxLiveVenue||"").toLowerCase();
-  const hasVerifiedDirectVenue=Boolean(selectedToken?.qxVerifiedLaunch&&((launchVenue.includes("damm")&&String(launch?.dammV2Pool||selectedToken?.qxActivePool||"").trim())||(launchVenue.includes("dbc")&&String(launch?.pool||selectedToken?.qxActivePool||"").trim())));
-  if(hasVerifiedDirectVenue){
-   qxSetSwapStatus(launchVenue.includes("damm")?"Reading the verified QX DAMM v2 pool directly from Solana…":"Reading the verified QX Meteora DBC pool directly from Solana…");
-   const direct=await qxBuildDirectDbcQuote();
-   if(requestId!==qxQuoteRequestId||requestMint!==String(selectedToken?.baseToken?.address||"")||requestWallet!==String(walletAddress||"")||requestDirection!==tradeDirection)return;
-   pendingSwapOrder=direct;
-   const rawOut=direct.route==="DAMM_V2"?direct.quote.swapOutAmount:direct.quote.outputAmount;
-   const out=qxFromRaw(rawOut.toString(),direct.direction==="buy"?direct.verifiedTokenDecimals:9),outSymbol=direct.direction==="buy"?direct.tokenSymbol:"SOL";
-   $("swapReceive").textContent=out.toLocaleString(undefined,{maximumFractionDigits:Math.min(9,direct.direction==="buy"?direct.verifiedTokenDecimals:9)})+" "+outSymbol;
-   $("swapPay").textContent=direct.amount+" "+(direct.direction==="buy"?"SOL":direct.tokenSymbol);
-   $("qxFeeDisplay").textContent="QX "+(direct.route==="DAMM_V2"?"DAMM v2":"direct DBC")+" fee: 1.00% · charged in the same approved transaction";
-   $("swapRoute").textContent=direct.route==="DAMM_V2"?"Meteora DAMM v2 · VERIFIED QX POOL":"Meteora DBC · VERIFIED QX POOL";
-   $("swapNowBtn").disabled=false;$("swapNowBtn").querySelector("span").textContent="CONFIRM SWAP";
-   qxSetSwapStatus(direct.route==="DAMM_V2"?"Verified QX DAMM v2 order ready. The 1.00% QX fee and swap are signed together in one transaction.":"Verified QX DBC order ready. The 1.00% QX fee and swap are signed together in one transaction.");
-   return;
-  }
   qxSetSwapStatus("Requesting a fresh executable Jupiter V2 order with the QX referral fee…");
   const q=await qxBuildJupiterQuote();
   const stillCurrent=requestId===qxQuoteRequestId&&requestMint===String(selectedToken?.baseToken?.address||"")&&requestWallet===String(walletAddress||"")&&requestDirection===tradeDirection&&requestAmount===Number($("tradeAmountInput")?.value||0)&&document.visibilityState!=="hidden";
@@ -4155,10 +4152,7 @@ async function qxExecuteSwap(){
  try{
   const q=pendingSwapOrder,order=q?.quote;
   if(!q||!order?.transaction||!order?.requestId)throw new Error("The Jupiter order expired or is incomplete. Request a fresh order.");
-  const nowSec=Math.floor(Date.now()/1000);
-  if(order.expireAt&&Number.isFinite(Number(order.expireAt))&&nowSec>=Number(order.expireAt))throw new Error("The Jupiter order has expired. Request a fresh order.");
   if(Date.now()-Number(q.quotedAt||0)>=12000)throw new Error("The Jupiter order is too old to sign safely. Request a fresh order.");
-  // Do not infer freshness from cached numeric values. The fresh execution read above is the only valid local balance gate.
   const balanceReady=executionBalanceReady;
   if(q.tokenMint!==selectedToken?.baseToken?.address||q.direction!==tradeDirection||q.walletAddress!==walletAddress||Number(q.amount)!==Number($("tradeAmountInput")?.value||0))throw new Error("The selected token, amount, trade direction or wallet changed. Request a fresh order.");
   // A stale/unreadable public-RPC balance must not prevent Jupiter from being
@@ -4166,9 +4160,9 @@ async function qxExecuteSwap(){
   // funds. If QX has a fresh balance, keep the local safety check.
   if(balanceReady&&q.direction==="buy"&&q.amount>Math.max(0,walletSolBalance-SOL_RESERVE))throw new Error("Your SOL balance changed and is no longer sufficient for this swap.");
   if(balanceReady&&q.direction==="sell"&&q.amount>selectedTokenBalance)throw new Error("Your token balance changed and is no longer sufficient for this swap.");
-  const requestedReferral=String(q.referralAccount||QX_JUP_REFERRAL_ACCOUNT);
+  const requestedReferral=String(qx.quote?.referralAccount||QX_JUP_REFERRAL_ACCOUNT);
   const returnedReferral=String(order.referralAccount||"");
-  const requestedReferralFee=Number(q.requestedReferralFeeBps||100);
+  const requestedReferralFee=Number(qx.quote?.requestedReferralFeeBps||100);
   const returnedFeeBps=Number(order.feeBps);
   if(returnedReferral&&returnedReferral!==requestedReferral)throw new Error("Jupiter returned a different referral account for this order. No transaction was signed.");
   if(!Number.isFinite(returnedFeeBps)||returnedFeeBps<requestedReferralFee)throw new Error("The QX 1.00% referral fee is not confirmed on this order. No transaction was signed.");
