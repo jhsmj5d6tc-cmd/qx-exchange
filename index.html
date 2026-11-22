@@ -2777,7 +2777,7 @@ const QX_AD_TREASURY="9C6bcBgeHnRwJfTYKqPjEGeP9egxKWQgR5GCXVSEeDXH";
 // Public Supabase project values used by the QX Ads Edge Function.
 // Never place a Supabase service-role/secret key or any private wallet key in this file.
 const QX_ADS_SUPABASE_URL="https://qkazosqvnmknnzkukggj.supabase.co";
-const QX_ADS_SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrYXpvc3F2bm1rbnprdWtnZ2oiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTc5MzYzODQ2MSwiZXhwIjoyMTA5MjE0NDYxfQ.HDZyq99QqTo6kFEm5msYF7CbTOj3QSQfW6PohVixpyg";
+const QX_ADS_SUPABASE_ANON_KEY="sb_publishable_GTQFfhodqE5XgMHM__tFWQ_Y0Xdyyhf";
 const QX_AD_FUNCTION="qx-ads";
 const QX_REFERRAL_FUNCTION="qx-referrals";
 let qxReferralBusy=false;
@@ -3034,7 +3034,7 @@ async function qxUploadTokenImage({owner,mint}){
  const binary=atob(qxTokenImageData.slice(comma+1));
  const bytes=new Uint8Array(binary.length);for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);
  const path="tokens/"+String(owner)+"/"+String(mint)+"."+ext;
- const response=await fetch(QX_TOKEN_MEDIA_SUPABASE_URL+"/storage/v1/object/"+QX_TOKEN_MEDIA_BUCKET+"/"+encodeURIComponent(path).replace(/%2F/g,"/"),{method:"POST",headers:{apikey:QX_TOKEN_MEDIA_SUPABASE_KEY,Authorization:"Bearer "+QX_TOKEN_MEDIA_SUPABASE_KEY,"Content-Type":mime,"x-upsert":"false"},body:bytes});
+ const response=await fetch(QX_TOKEN_MEDIA_SUPABASE_URL+"/storage/v1/object/"+QX_TOKEN_MEDIA_BUCKET+"/"+encodeURIComponent(path).replace(/%2F/g,"/"),{method:"POST",headers:{apikey:QX_TOKEN_MEDIA_SUPABASE_KEY,"Content-Type":mime,"x-upsert":"false"},body:bytes});
  if(!response.ok){let detail="";try{detail=JSON.stringify(await response.json());}catch(_){try{detail=await response.text();}catch(__){}}throw new Error("Token image upload failed: "+(detail||response.status+" "+response.statusText));}
  return QX_TOKEN_MEDIA_SUPABASE_URL+"/storage/v1/object/public/"+QX_TOKEN_MEDIA_BUCKET+"/"+encodeURIComponent(path).replace(/%2F/g,"/");
 }
@@ -3165,7 +3165,7 @@ async function qxUploadTokenMetadataUri(name,symbol,description,image,socials={}
  const uri=QX_TOKEN_MEDIA_SUPABASE_URL+"/storage/v1/object/public/"+QX_TOKEN_MEDIA_BUCKET+"/"+encodeURIComponent(path).replace(/%2F/g,"/");
  if(new TextEncoder().encode(uri).length>200)throw new Error("The public metadata URL exceeds Solana's 200-byte on-chain URI limit.");
  const response=await fetch(QX_TOKEN_MEDIA_SUPABASE_URL+"/storage/v1/object/"+QX_TOKEN_MEDIA_BUCKET+"/"+encodeURIComponent(path).replace(/%2F/g,"/"),{
-  method:"POST",headers:{apikey:QX_TOKEN_MEDIA_SUPABASE_KEY,Authorization:"Bearer "+QX_TOKEN_MEDIA_SUPABASE_KEY,"Content-Type":"application/json","x-upsert":"false"},body:bytes
+  method:"POST",headers:{apikey:QX_TOKEN_MEDIA_SUPABASE_KEY,"Content-Type":"application/json","x-upsert":"false"},body:bytes
  });
  if(!response.ok){let detail="";try{detail=JSON.stringify(await response.json());}catch(_){try{detail=await response.text();}catch(__){}}throw new Error("Token metadata upload failed: "+(detail||response.status+" "+response.statusText));}
  return uri;
@@ -3302,9 +3302,39 @@ async function qxLaunchToken(options={}){
 
   // The DBC pool is created on-chain. Graduation is performed by Meteora's
   // mainnet migration keeper once the configured quote threshold is reached.
-  const poolState=await client.state.getPoolByBaseMint(baseMint.publicKey);
+  // Never rediscover this QX pool with getPoolByBaseMint(): that is an indexed
+  // getProgramAccounts-style request and may be rejected by public RPCs with 403.
+  // The confirmed creation transaction already contains the exact pool account.
+  async function qxReadCreatedDbcPoolFromTx(signature, expectedMint, expectedConfig){
+   const tx=await connection.getTransaction(signature,{commitment:"confirmed",maxSupportedTransactionVersion:1});
+   if(!tx)throw new Error("Solana confirmed the pool transaction, but QX could not read the confirmed transaction yet.");
+   const keys=[];
+   const pushKey=k=>{const v=String(k?.pubkey?.toBase58?.()||k?.toBase58?.()||k||"");if(qxIsValidSolanaMint(v)&&!keys.includes(v))keys.push(v);};
+   for(const k of (tx.transaction?.message?.staticAccountKeys||tx.transaction?.message?.accountKeys||[]))pushKey(k);
+   for(const k of (tx.meta?.loadedAddresses?.writable||[]))pushKey(k);
+   for(const k of (tx.meta?.loadedAddresses?.readonly||[]))pushKey(k);
+   // Never accept a merely readable Meteora account as the launch pool. The
+   // candidate must prove both the expected mint and the expected config.
+   // Otherwise a token/config/system account appearing in the transaction can
+   // be stored as the pool and poison every later quote.
+   for(const address of keys){
+    try{
+     const candidate=await client.state.getPool(new PublicKey(address));
+     const state=candidate?.poolState||candidate;
+     if(!candidate||!state)continue;
+     const candidateMint=String(state?.baseMint||state?.tokenBaseMint||state?.baseTokenMint||"");
+     const candidateConfig=String(state?.config||"");
+     if(candidateMint!==String(expectedMint))continue;
+     if(String(expectedConfig)&&candidateConfig!==String(expectedConfig))continue;
+     const publicKey=candidate?.publicKey||candidate?.address||new PublicKey(address);
+     return {...candidate,publicKey};
+    }catch(_){}
+   }
+   throw new Error("The confirmed QX pool transaction did not expose a readable Meteora DBC virtual-pool account matching the new mint and launch config. Launch was not recorded as verified.");
+  }
+  const poolState=await qxReadCreatedDbcPoolFromTx(poolSig,baseMint.publicKey.toBase58(),config.publicKey.toBase58());
   const poolAddress=poolState?.publicKey?.toBase58?.()||poolState?.address?.toBase58?.()||"";
-  if(!poolState||!poolAddress)throw new Error("Meteora confirmed the pool transaction, but QX could not read the new DBC pool back from Solana. Launch was not recorded as verified.");
+  if(!poolState||!poolAddress)throw new Error("Meteora confirmed the pool transaction, but QX could not resolve the exact DBC pool account from that transaction. Launch was not recorded as verified.");
   let poolMetadataSignature="",poolMetadataVerified=false;
   try{
    const metadataTx=await client.creator.createPoolMetadata({virtualPool:poolState.publicKey||new PublicKey(poolAddress),name,website:metadataSocials.website||"",logo:image||"",payer});
@@ -3589,14 +3619,12 @@ async function qxFindDammV2Pool(tokenMint, dbcPoolAddress="", knownSuccessorAddr
   }catch(_){/* exact successor may not be indexed/readable yet */}
   if(!found)throw new Error("The verified DAMM v2 migration successor is not readable yet. QX has paused this trade instead of routing it through a different pool.");
  }else{
-  let pools=[];
-  try{pools=await cpAmm.fetchPoolStatesByTokenMint(mint);}catch(_){pools=[];}
-  const normalized=Array.isArray(pools)?pools.map(x=>({publicKey:x?.publicKey||x?.pubkey||x?.address,account:x?.account||x?.poolState||x})).filter(x=>x.publicKey&&x.account):[];
-  found=normalized.find(x=>{
-   const st=x.account||{};
-   const a=String(st?.tokenAMint||st?.tokenAMint?.toBase58?.()||""),b=String(st?.tokenBMint||st?.tokenBMint?.toBase58?.()||"");
-   return (a===tokenMint&&b===target)||(a===target&&b===tokenMint);
-  });
+  // ROOT POLICY: QX must never perform indexed DAMM v2 pool discovery from a
+  // token mint. fetchPoolStatesByTokenMint can fan out to program-account
+  // indexing and recreates the same RPC permission/rate-limit failure that
+  // broke the DBC path. A QX launch without an authoritative successor is a
+  // registry/data-propagation problem, not a reason to guess a pool.
+  throw new Error("No verified DAMM v2 pool address is attached to this QX launch. Refresh QX markets so the migration successor is propagated; QX will not use indexed DAMM pool discovery.");
  }
  if(!found?.publicKey)throw new Error("No verified DAMM v2 SOL pool was found for this token.");
  const state=found.account;
@@ -3620,8 +3648,6 @@ async function qxBuildDammV2Quote(token, direction, amountText){
  const amount=Number(amountText);
  if(!Number.isFinite(amount)||amount<=0)throw new Error("Enter a trade amount greater than zero.");
  const decimals=await qxEnsureTokenDecimals(token),inputDecimals=direction==="buy"?9:decimals;
- const balanceReady=await refreshTradeBalances();
- if(!balanceReady)console.warn("QX balance verification unavailable; continuing to build the DAMM v2 order. On-chain preflight will enforce spendable funds.");
  // Treat the entered amount as the user's total spend, with the 1% QX fee
  // reserved inside it. This makes MAX usable without charging 101% of balance.
  const grossRaw=new qxDbc.BN(qxToRawAmount(amountText,inputDecimals));
@@ -3709,21 +3735,14 @@ async function qxVerifyJupiterReferralFee(signature, order, execution){
  // accountIndex in pre/postTokenBalances indexes the full message account list,
  // including address-table accounts. Do not use staticAccountKeys alone.
  const accountKey=(index)=>qxParsedAccountKey(tx,index);
- // Verify the exact referral token account QX configured for this mint.
- // Aggregating every token account owned by the referral PDA can produce a false
- // positive when another credit for the same mint happens in the same transaction.
- const feeMintKey=new PublicKey(feeMint);
- const mintInfo=await connection.getAccountInfo(feeMintKey,"confirmed");
- const feeTokenProgram=mintInfo?.owner;
- if(!feeTokenProgram||!(feeTokenProgram.equals(TOKEN_PROGRAM_ID)||(TOKEN_2022_PROGRAM_ID&&feeTokenProgram.equals(TOKEN_2022_PROGRAM_ID))))throw new Error("QX could not verify the token program for Jupiter fee mint "+feeMint+". The transaction is confirmed; do not retry it.");
- const referralAta=await getAssociatedTokenAddress(feeMintKey,new PublicKey(referral),true,feeTokenProgram);
- const referralAtaText=referralAta.toBase58();
- const before=(tx.meta.preTokenBalances||[]).filter(x=>String(x?.mint||"")===feeMint&&accountKey(x?.accountIndex)===referralAtaText);
- const after=(tx.meta.postTokenBalances||[]).filter(x=>String(x?.mint||"")===feeMint&&accountKey(x?.accountIndex)===referralAtaText);
+ // Jupiter pays the referral PDA's associated referralTokenAccount, not the
+ // PDA address itself. Token-balance owner identifies the referral PDA.
+ const before=(tx.meta.preTokenBalances||[]).filter(x=>String(x?.mint||"")===feeMint&&String(x?.owner||"")===referral);
+ const after=(tx.meta.postTokenBalances||[]).filter(x=>String(x?.mint||"")===feeMint&&String(x?.owner||"")===referral);
  const sum=(rows)=>rows.reduce((n,x)=>n+BigInt(String(x?.uiTokenAmount?.amount||"0")),0n);
  const tokenDelta=sum(after)-sum(before);
- if(tokenDelta>0n)return {verified:true,feeVerified:true,feeMint,feeRaw:tokenDelta.toString(),referralAccount:referral,referralTokenAccount:referralAtaText,feeBps,source:"exact-referral-token-account"};
- throw new Error("Jupiter confirmed the swap, but QX could not verify a positive credit to the configured referral token account "+referralAtaText+" for "+feeMint+". The transaction is confirmed; do not retry it. Check that this mint's referral token account is initialized.");
+ if(tokenDelta>0n)return {verified:true,feeVerified:true,feeMint,feeRaw:tokenDelta.toString(),referralAccount:referral,feeBps,source:"referral-token-account-owned-by-pda"};
+ throw new Error("Jupiter confirmed the swap, but QX could not verify a positive credit to the referral token account owned by the configured referral PDA for "+feeMint+". The transaction is confirmed; do not retry it. Check that this mint's referral token account is initialized.");
 }
 async function qxVerifyConfirmedSwapOnChain(signature, tokenMint, direction, wallet){
  const connection=await qxGetHealthyConnection();
@@ -3804,6 +3823,30 @@ async function qxExecuteDammV2Swap(q){
  if(!(actualInput>0&&actualOutput>0)){const e=new Error("The confirmed transaction did not produce verifiable positive fill amounts. Do not retry; inspect the confirmed signature.");e.qxConfirmed=true;e.signature=sig;throw e;}
  return {sig,actualInput,actualOutput,chain,fee};
 }
+async function qxRecoverVerifiedQXLaunchRecord(mint){
+ const target=String(mint||"");if(!qxIsValidSolanaMint(target))return null;
+ try{
+  const saved=JSON.parse(localStorage.getItem("qxRealLaunches")||"[]");
+  const local=Array.isArray(saved)?saved.find(x=>String(x?.mint||"")===target):null;
+  if(local?.pool)return local;
+ }catch(_){}
+ // The global QX registry is an HTTP application-data lookup, not an indexed
+ // Solana RPC request. It is safe as a recovery source when the selected market
+ // object was produced by a third-party indexer and lost its QX metadata.
+ try{
+  const url=String(window.QX_ADS_SUPABASE_URL||QX_ADS_SUPABASE_URL||"").trim();
+  const key=String(window.QX_ADS_SUPABASE_ANON_KEY||QX_ADS_SUPABASE_ANON_KEY||"").trim();
+  if(!/^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(url)||!key)return null;
+  const endpoint=url+"/rest/v1/qx_launches?select=*&mint=eq."+encodeURIComponent(target)+"&status=in.(verified,migrated)&limit=1";
+  const r=await fetch(endpoint,{headers:{apikey:key,Authorization:"Bearer "+key},cache:"no-store"});
+  if(!r.ok)return null;
+  const rows=await r.json().catch(()=>[]);
+  const x=Array.isArray(rows)?rows[0]:null;
+  if(!x?.pool)return null;
+  return {name:x.name,symbol:x.symbol,decimals:x.decimals,mint:x.mint,config:x.config,pool:x.pool,dammV2Pool:x.damm_v2_pool||"",creator:x.creator_wallet,createdAt:Date.parse(x.created_at||"")||Date.now(),migrationMarketCap:Number(x.migration_mc||0),firstBuySol:Number(x.first_buy_sol||0),poolSignature:x.pool_signature,configSignature:x.config_signature,metadataUri:x.metadata_uri,image:x.image_url||"",qxLiveVenue:String(x.venue||"").toLowerCase().includes("damm")?"DAMM v2":"DBC"};
+ }catch(e){console.warn("QX verified launch registry recovery unavailable",e);return null;}
+}
+
 async function qxBuildDirectDbcQuote(){
  const token=selectedToken,direction=tradeDirection,owner=walletAddress;
  if(!token||!connected||!owner)throw new Error("Select a token and connect your Solana wallet first.");
@@ -3821,6 +3864,10 @@ async function qxBuildDirectDbcQuote(){
    if(recovered)launchRecord=recovered;
   }catch(_){}
  }
+ if(!launchRecord?.pool&&!launchRecord?.dammV2Pool){
+  const recoveredGlobal=await qxRecoverVerifiedQXLaunchRecord(mint);
+  if(recoveredGlobal)launchRecord=recoveredGlobal;
+ }
  const knownSuccessor=String(launchRecord?.dammV2Pool||((token?.qxActivePool&&String(token?.qxLiveVenue||"").toLowerCase().includes("damm"))?token.qxActivePool:""));
  // A verified migrated QX launch must go straight to its exact DAMM v2 successor.
  // Do not require DBC getPoolByBaseMint to keep returning an active curve after migration.
@@ -3830,7 +3877,7 @@ async function qxBuildDirectDbcQuote(){
  // helper is an indexed getProgramAccounts-style request and some public RPCs
  // reject it with HTTP 403 / personal-token requirements. QX already knows the
  // pool created for its own launch, so read that exact account directly instead.
- let client=null,poolState=null,dbcConnection=null,lastIndexedError=null;
+ let client=null,poolState=null,dbcConnection=null,lastPoolReadError=null;
  const knownPool=String(launchRecord?.pool||((token?.qxActivePool&&["dbc","damm","meteora"].includes(String(token?.qxLiveVenue||"").toLowerCase()))?token.qxActivePool:""));
  const knownPoolIsValid=knownPool&&qxIsValidSolanaMint(knownPool);
  const directEndpoints=RPCS.filter(endpoint=>!qxRpcIsCooling(endpoint));
@@ -3845,12 +3892,21 @@ async function qxBuildDirectDbcQuote(){
     candidatePool=directResult?.poolState||directResult||null;
     if(candidatePool&&!candidatePool.publicKey)candidatePool={...candidatePool,publicKey:new PublicKey(knownPool)};
    }else{
-    // Meteora SDK v2 getPoolByBaseMint() returns the matching program-account
-    // wrapper (publicKey), not the decoded VirtualPool state used by swapQuote2.
-    // Resolve that address with getPool() before touching poolState.config.
-    const discovered=await candidateClient.state.getPoolByBaseMint(new PublicKey(mint));
-    const discoveredAddress=discovered?.publicKey||discovered?.address||null;
-    if(discoveredAddress)candidatePool=await candidateClient.state.getPool(new PublicKey(discoveredAddress));
+    // A QX-verified launch without a propagated pool address is a data-integrity
+    // failure, not permission to perform indexed discovery. The launch registry
+    // is authoritative for QX-created pools; re-reading by mint would recreate
+    // the exact 403 failure this route is designed to avoid.
+    if(token?.qxVerifiedLaunch||token?.qxGlobalLaunch||token?.qxLaunchRecord){
+     throw new Error("QX launch metadata is incomplete: the verified DBC pool address was not propagated to this market. Refresh QX markets before trading.");
+    }
+    // Non-QX external DBC tokens may still use indexed discovery as an explicit
+    // fallback. Jupiter remains the primary generic route for those markets.
+    // ROOT POLICY: QX never performs Meteora indexed pool discovery from a mint.
+    // getPoolByBaseMint() is a getProgramAccounts-style indexed request and is
+    // exactly what causes HTTP 403 / personal-token failures on some public RPCs.
+    // For external tokens, Jupiter is the generic route; this direct builder is
+    // reserved for a pool address that QX already knows and can read directly.
+    throw new Error("No verified QX pool address is attached to this market. Refresh QX markets so the on-chain launch registry can propagate the exact pool address; QX will not use indexed Meteora pool discovery.");
    }
    if(!candidatePool)throw new Error(knownPoolIsValid?"The configured QX DBC pool account was not found.":"No DBC pool matched this token mint.");
    if(!candidatePool?.publicKey||!candidatePool?.poolState)throw new Error("Meteora returned a pool account, but QX could not decode its VirtualPool state.");
@@ -3859,13 +3915,13 @@ async function qxBuildDirectDbcQuote(){
    client=candidateClient;poolState=candidatePool;dbcConnection=candidate;
    break;
   }catch(poolReadError){
-   lastIndexedError=poolReadError;
+   lastPoolReadError=poolReadError;
    qxRpcMarkFailure(endpoint,poolReadError);
    console.warn("QX Meteora pool read failed:",endpoint,poolReadError?.message||poolReadError);
   }
  }
  if(!client||!dbcConnection){
-  const msg=String(lastIndexedError?.message||lastIndexedError||"No Solana RPC could read the Meteora pool account");
+  const msg=String(lastPoolReadError?.message||lastPoolReadError||"No Solana RPC could read the Meteora pool account");
   throw new Error(knownPoolIsValid?"QX could not read the known Meteora DBC pool account from any configured Solana RPC. Last RPC error: "+msg:"QX could not discover the Meteora DBC pool from any configured Solana RPC. Last RPC error: "+msg);
  }
  const connection=dbcConnection;
@@ -3887,8 +3943,8 @@ async function qxBuildDirectDbcQuote(){
  const currentSlot=await connection.getSlot("confirmed"),blockTime=await connection.getBlockTime(currentSlot),currentPoint=new dbc.BN(Number(config.activationType)===1?(blockTime||Math.floor(Date.now()/1000)):currentSlot);
  const quote=await client.pool.swapQuote2({virtualPool:poolState,config,swapBaseForQuote:direction==="sell",swapMode:dbc.SwapMode.ExactIn,amountIn:swapRaw,slippageBps:100,hasReferral:false,currentPoint,eligibleForFirstSwapWithMinFee:false});
  if(!quote?.minimumAmountOut||!quote?.actualInputAmount)throw new Error("Meteora returned no executable DBC quote for this token.");
- if(balanceReady&&direction==="buy"&&amount>Math.max(0,walletSolBalance-SOL_RESERVE))throw new Error("Your SOL balance does not cover the entered amount and network reserve.");
- if(balanceReady&&direction==="sell"&&amount>selectedTokenBalance)throw new Error("The entered sell amount exceeds your available token balance.");
+ if(direction==="buy"&&amount>walletSolBalance-SOL_RESERVE)throw new Error("Your SOL balance does not cover the entered amount and network reserve.");
+ if(direction==="sell"&&amount>selectedTokenBalance)throw new Error("The entered sell amount exceeds your available token balance.");
  return {route:"DBC",quote,client,poolAddress,tokenMint:mint,tokenSymbol:token.baseToken.symbol,direction,walletAddress:owner,amount,inputDecimals,verifiedTokenDecimals:decimals,raw:swapRaw.toString(),quotedAt:Date.now(),qxFeeRaw:feeRaw.toString(),quoteMint:String(config.quoteMint||SOL)};
 }
 async function qxExecuteDirectDbcSwap(q){
@@ -3934,7 +3990,7 @@ async function qxEnsureJupiterReferralTokenAccount(feeMint){
  // before wallet approval to avoid executing a swap with no QX referral credit.
  const referralAta=await getAssociatedTokenAddress(mint,referral,true,tokenProgramId);
  const accountInfo=await connection.getAccountInfo(referralAta,"confirmed");
- if(!accountInfo)throw new Error("Jupiter referral token account is not initialized for fee mint "+mintText+". Initialize this mint in the Jupiter Referral Dashboard before trading this route. No transaction was signed.");
+ if(!accountInfo)throw new Error("QX referral token account is not initialized for fee mint "+mintText+". Initialize this mint in Jupiter Referral Dashboard before trading this route. No transaction was signed.");
  if(!accountInfo.owner.equals(tokenProgramId))throw new Error("The QX referral token account is owned by an unexpected token program. No transaction was signed.");
  return referralAta.toBase58();
 }
@@ -3966,13 +4022,13 @@ async function qxBuildJupiterQuote(){
  const order=await response.json().catch(()=>({}));
  if(!response.ok)throw new Error(order.errorMessage||order.error||("Jupiter order failed (HTTP "+response.status+", code "+String(order.errorCode??"unknown")+")."));
  if(!order||typeof order!=="object")throw new Error("Jupiter returned an invalid order response.");
- if(String(order.status||"").toLowerCase()==="failed"){const err=new Error(order.errorMessage||order.error||("Jupiter order failed. Router: "+String(order.router||"unknown")+", error code: "+String(order.errorCode??"unknown")+"."));err.jupiterRouter=String(order.router||"");err.jupiterErrorCode=Number(order.errorCode);err.qxNoFallback=true;throw err;}
- if(typeof order.transaction!=="string"||!order.transaction){const router=String(order.router||"").toLowerCase(),code=Number(order.errorCode);const reason=router==="jupiterz"&&code===1?"Insufficient balance to fund the swap":router==="jupiterz"&&code===2?"Missing associated token account":router==="jupiterz"&&code===3?"JupiterZ could not build the swap transaction":code===1?"Insufficient funds":code===2?"Insufficient SOL for gas":code===3?"Swap is below the minimum for gasless execution":"Jupiter could not build the transaction";const err=new Error(order.errorMessage||("Jupiter returned a quote but no executable transaction. "+reason+". Router: "+String(order.router||"unknown")+", error code: "+String(order.errorCode??"unknown")+". No transaction was created."));err.jupiterRouter=router;err.jupiterErrorCode=code;err.qxNoFallback=true;throw err;}
+ if(String(order.status||"").toLowerCase()==="failed")throw new Error(order.errorMessage||order.error||("Jupiter order failed. Router: "+String(order.router||"unknown")+", error code: "+String(order.errorCode??"unknown")+"."));
+ if(typeof order.transaction!=="string"||!order.transaction)throw new Error(order.errorMessage||("Jupiter returned a quote but no executable transaction. Router: "+String(order.router||"unknown")+", mode: "+String(order.mode||"unknown")+", error code: "+String(order.errorCode??"unknown")+". No transaction was created."));
  if(!order.requestId)throw new Error("Jupiter order is missing its execution request ID. No transaction was signed.");
  // Jupiter Swap V2 does not guarantee an echoed referralAccount field in the order response.
  // The fee request is sent above; verify the returned fee terms instead of rejecting a valid order
  // merely because Jupiter omitted the referralAccount echo.
- if(!Number.isFinite(Number(order.feeBps))||Number(order.feeBps)<100||!order.feeMint)throw new Error("Jupiter referral fee was not applied at 1.00%. Initialize the referral token account for fee mint "+String(order.feeMint||"unknown")+" in the Jupiter Referral Dashboard, then request a fresh order. No transaction was signed.");
+ if(!Number.isFinite(Number(order.feeBps))||Number(order.feeBps)<100||!order.feeMint)throw new Error("Jupiter did not confirm the requested 1.00% QX referral fee and fee token. Check that the referral token account for the returned fee mint is initialized.");
  await qxEnsureJupiterReferralTokenAccount(order.feeMint);
  if(!order.outAmount)throw new Error("Jupiter returned no executable output amount.");
  if(selectedToken!==token||tradeDirection!==direction||walletAddress!==owner||String($("tradeAmountInput")?.value||"").trim()!==amountText)throw new Error("The selected token, amount or wallet changed while the Jupiter order was loading. Request a fresh order.");
@@ -3999,7 +4055,7 @@ async function qxRequestLiveQuote(){
   const outSymbol=tradeDirection==="buy"?selectedToken.baseToken.symbol:"SOL";
   $("swapReceive").textContent=out.toLocaleString(undefined,{maximumFractionDigits:Math.min(9,outDecimals)})+" "+outSymbol;
   $("swapPay").textContent=q.amount+" "+(tradeDirection==="buy"?"SOL":selectedToken.baseToken.symbol);
-  $("qxFeeDisplay").textContent="QX referral fee: 1.00% · fee mint "+short(q.quote.feeMint)+" · total order fee "+(Number(q.quote.feeBps)/100).toFixed(2)+"%";
+  $("qxFeeDisplay").textContent="QX referral fee: "+(Number(q.quote.feeBps)/100).toFixed(2)+"% · "+short(q.quote.feeMint);
   $("swapRoute").textContent="Jupiter V2 · "+String(q.quote.router||"best available route").toUpperCase();
   $("confirmSwapBtn").textContent="CONFIRM SWAP IN WALLET";
   $("confirmSwapBtn").style.display="none";
@@ -4011,11 +4067,6 @@ async function qxRequestLiveQuote(){
   qxSetSwapStatus("Executable order ready. Review the output and QX referral fee, then confirm in your wallet.");
  }catch(e){
   if(e?.name==="AbortError")return;
-  const jupiterErrorText=String(e?.message||"");
-  const jupiterRouter=String(e?.jupiterRouter||"").toLowerCase();
-  const jupiterErrorCode=Number(e?.jupiterErrorCode);
-  const noFallback=(e?.qxNoFallback===true)||/referral\s+(?:fee|account|token account)|integrator fee/i.test(jupiterErrorText);
-  if(noFallback){pendingSwapOrder=null;qxSetSwapStatus(jupiterErrorText||"Jupiter could not build an executable transaction.");return;}
   try{
    // Jupiter is the primary route for every Solana token. If Jupiter cannot
    // build an executable order, do not classify the token as a QX launch and
@@ -4129,7 +4180,7 @@ async function qxExecuteSwap(){
   const q=pendingSwapOrder,order=q?.quote;
   if(!q||!order?.transaction||!order?.requestId)throw new Error("The Jupiter order expired or is incomplete. Request a fresh order.");
   if(Date.now()-Number(q.quotedAt||0)>=12000)throw new Error("The Jupiter order is too old to sign safely. Request a fresh order.");
-  const balanceReady=qxTradeBalanceFreshAt>0&&Number.isFinite(Number(walletSolBalance));
+  const balanceReady=walletSolBalance>=0&&selectedTokenBalance>=0&&Number.isFinite(Number(walletSolBalance));
   if(q.tokenMint!==selectedToken?.baseToken?.address||q.direction!==tradeDirection||q.walletAddress!==walletAddress||Number(q.amount)!==Number($("tradeAmountInput")?.value||0))throw new Error("The selected token, amount, trade direction or wallet changed. Request a fresh order.");
   // A stale/unreadable public-RPC balance must not prevent Jupiter from being
   // signed. Jupiter/chain preflight remains the final authority on spendable
@@ -4178,7 +4229,7 @@ async function qxExecuteSwap(){
   const receiveEl=$("swapReceive"),swapButtonLabel=$("swapNowBtn")?.querySelector("span"),feeDisplay=$("qxFeeDisplay");
   if(receiveEl)receiveEl.textContent=actualOutput.toLocaleString(undefined,{maximumFractionDigits:Math.min(12,outputDecimals)})+" "+(q.direction==="buy"?q.tokenSymbol:"SOL");
   if(swapButtonLabel)swapButtonLabel.textContent="SWAP CONFIRMED";
-  if(feeDisplay)feeDisplay.textContent="QX referral fee: 1.00% · verified on-chain · fee mint "+short(order.feeMint);
+  if(feeDisplay)feeDisplay.textContent="QX referral fee: 1.00% · verified on-chain · "+short(order.feeMint);
   qxSetSwapStatus("Swap confirmed by Jupiter on Solana. Token settlement and QX referral-fee credit verified on-chain. Transaction: "+sig);
   const link=$("solscanLink");if(link)link.href="https://solscan.io/tx/"+encodeURIComponent(sig);
   window.QXCloseTradeModal?.();
@@ -4211,7 +4262,6 @@ async function qxRefreshTerminalBalances(mint,symbol){
 window.QXRefreshTerminalBalances=qxRefreshTerminalBalances;
 
 let qxTradeBalanceRequestId=0;
-let qxTradeBalanceFreshAt=0;
 async function refreshTradeBalances(){
  const requestId=++qxTradeBalanceRequestId,token=selectedToken,mint=String(token?.baseToken?.address||""),owner=walletAddress;
  const availableEl=$("percentAvailable");
@@ -4231,8 +4281,8 @@ async function refreshTradeBalances(){
   const available=tradeDirection==="buy"?Math.max(0,walletSolBalance-SOL_RESERVE):selectedTokenBalance;
   if(availableEl)availableEl.textContent="Available balance: "+available.toLocaleString(undefined,{maximumFractionDigits:9})+" "+(tradeDirection==="buy"?"SOL":token.baseToken.symbol);
   updateQxWalletBalanceUI();
-  $("swapWallet").textContent=short(owner);updateTradePercentUI();qxTradeBalanceFreshAt=Date.now();return true;
- }catch(e){if(requestId===qxTradeBalanceRequestId&&selectedToken===token&&walletAddress===owner&&connected){qxTradeBalanceFreshAt=0;if(availableEl)availableEl.textContent="Balance unavailable";console.warn("QX trade balance refresh",e);}return false;}
+  $("swapWallet").textContent=short(owner);updateTradePercentUI();return true;
+ }catch(e){if(requestId===qxTradeBalanceRequestId&&selectedToken===token&&walletAddress===owner&&connected){if(availableEl)availableEl.textContent="Balance unavailable";console.warn("QX trade balance refresh",e);}return false;}
 }
 
 async function refreshTradeBalance(force=false){return refreshTradeBalances();}
@@ -4683,7 +4733,7 @@ function bestPairsByMint(list){
   if(!qxIsValidSolanaMint(mint)||p?.chainId!=="solana"||qxLooksLikeFakeNative(p))continue;
   const old=map.get(mint);
   if(!old){map.set(mint,p);continue;}
-  const chosen=qxPairScore(p)>qxPairScore(old)?p:old;
+  const chosen=(p?.qxVerifiedLaunch&&!old?.qxVerifiedLaunch)?p:(old?.qxVerifiedLaunch&&!p?.qxVerifiedLaunch)?old:(qxPairScore(p)>qxPairScore(old)?p:old);
   const other=chosen===p?old:p;
   chosen.baseToken=chosen.baseToken||{};
   if(qxIsPlaceholderTokenLabel(chosen.baseToken.name,"name")&&!qxIsPlaceholderTokenLabel(other?.baseToken?.name,"name"))chosen.baseToken.name=other.baseToken.name;
@@ -4894,7 +4944,7 @@ async function qxEnrichVerifiedLaunchMarket(record){
   const idx=(allPairs||[]).findIndex(x=>String(x?.baseToken?.address||"")===mint&&String(x?.pairAddress||x?.poolAddress||x?.cmcPairAddress||"")===pool);
   if(idx<0)return false;
   const current=allPairs[idx];
-  const enriched=qxMergeJupiterMeta([current],[exact])[0]||current;
+  const enriched=qxMergeJupiterMeta([current],new Map([[mint,{name:cleanTokenText(exact?.baseToken?.name||""),symbol:cleanTokenText(exact?.baseToken?.symbol||""),imageUrl:qxSafeUrl(exact?.info?.imageUrl||exact?.baseToken?.logoURI||"")}]]))[0]||current;
   // Never replace the verified QX pool address with another pool for the same token.
   enriched.pairAddress=pool;enriched.poolAddress=pool;enriched.cmcPairAddress=pool;
   enriched.qxVerifiedLaunch=true;enriched.qxLiveVenue=current.qxLiveVenue||exact.dexId||"meteora-dbc";
@@ -6216,3 +6266,6 @@ loadMarket();
 </script>
 
 </body>
+</html>
+
+
