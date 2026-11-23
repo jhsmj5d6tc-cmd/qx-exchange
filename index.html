@@ -1415,6 +1415,25 @@ body:not(.qx-token-open) #marketsPage #detail{display:none!important;visibility:
 body:not(.qx-token-open) #marketsPage .market-list-column{display:block!important;visibility:visible!important;opacity:1!important;}
 body:not(.qx-token-open) #marketsPage>.market-heading{display:flex!important;visibility:visible!important;opacity:1!important;}
 </style>
+<style id="qx-v122-terminal-and-image-fixes">
+
+/* QX v122: viewport-owned back control; never position it inside the scrolling terminal. */
+body.qx-token-open > #tokenBackBtn{
+ position:fixed!important;top:max(10px,env(safe-area-inset-top))!important;
+ inset-inline-start:12px!important;inset-inline-end:auto!important;z-index:2147483000!important;
+ display:inline-flex!important;align-items:center!important;justify-content:center!important;
+ width:48px!important;min-width:48px!important;height:46px!important;min-height:46px!important;
+ padding:0!important;margin:0!important;border:1px solid rgba(53,232,154,.58)!important;
+ border-radius:13px!important;background:linear-gradient(135deg,#103329,#0b211f)!important;
+ color:#67f0b6!important;box-shadow:0 8px 24px rgba(0,0,0,.48)!important;
+ opacity:1!important;visibility:visible!important;transform:none!important;
+}
+body.qx-token-open > #tokenBackBtn span{font-size:24px!important;line-height:1!important;}
+.qx-detail-image-fallback{width:58px;height:58px;flex:0 0 58px;display:flex;align-items:center;justify-content:center;border-radius:16px;border:1px solid rgba(160,130,255,.38);background:radial-gradient(circle at 30% 20%,rgba(170,130,255,.42),transparent 58%),linear-gradient(145deg,#24183b,#10101d);color:#e5d9ff;font-size:17px;font-weight:900;letter-spacing:.04em;}
+#detailImage{width:58px;height:58px;flex:0 0 58px;object-fit:cover;border-radius:16px;border:1px solid rgba(160,130,255,.3);}
+.coin-fallback{border:1px solid rgba(160,130,255,.38)!important;background:radial-gradient(circle at 30% 20%,rgba(170,130,255,.42),transparent 58%),linear-gradient(145deg,#24183b,#10101d)!important;color:#e5d9ff!important;font-weight:900!important;}
+
+</style>
 </head>
 <body>
 <div class="wrap">
@@ -1681,6 +1700,7 @@ body:not(.qx-token-open) #marketsPage>.market-heading{display:flex!important;vis
    <button class="token-back-btn" id="tokenBackBtn" type="button" aria-label="Back to markets" title="Back to markets"><span aria-hidden="true">←</span></button>
    <div class="detail-top">
     <img id="detailImage" alt="" src="" style="display:none">
+    <span id="detailImageFallback" class="qx-detail-image-fallback" aria-hidden="true" style="display:none">QX</span>
     <div><h2 id="detailName">Token</h2><span class="small" id="detailSymbol"></span><span id="detailQxLaunchBadge" class="coin-fresh-tag" style="display:none;margin-top:6px;border-color:rgba(139,92,246,.45);color:#c4b5fd;background:rgba(139,92,246,.12)">QX LAUNCH · CREATED ON QX</span></div>
    </div>
    <div class="detail-price" id="detailPrice">-</div>
@@ -2433,8 +2453,8 @@ function refreshSelectedTokenDetails(token){
  if(liq)liq.textContent=money(token.liquidity?.usd||0);
  if(vol)vol.textContent=money(token.volume?.h24||0);
  if(tx){const n=qxNum(token.txns?.h24?.buys)+qxNum(token.txns?.h24?.sells);tx.textContent=n?n.toLocaleString():"—";}
- const img=$("detailImage"),url=qxSafeUrl(token.info?.imageUrl||"");
- if(img){if(url){img.src=url;img.style.display="block";}else{img.removeAttribute("src");img.style.display="none";}}
+ const img=$("detailImage"),url=(typeof qxTokenImageUrl==="function"?qxTokenImageUrl(token):qxSafeUrl(token.info?.imageUrl||"")),imgFallback=$("detailImageFallback");
+ if(img){if(url){img.onerror=()=>{img.style.display="none";if(imgFallback)imgFallback.style.display="flex";};img.onload=()=>{if(imgFallback)imgFallback.style.display="none";};img.src=url;img.style.display="block";if(imgFallback)imgFallback.style.display="none";}else{img.removeAttribute("src");img.style.display="none";if(imgFallback){imgFallback.textContent=String(token.baseToken?.symbol||token.baseToken?.name||"QX").trim().slice(0,2).toUpperCase()||"QX";imgFallback.style.display="flex";}}}
  const link=$("solscanLink");if(link)link.href="https://solscan.io/token/"+encodeURIComponent(token.baseToken?.address||"");
  updateIndicativeEstimate();
 }
@@ -3844,7 +3864,7 @@ async function qxVerifyJupiterReferralFee(signature, order, execution){
  const connection=await qxGetHealthyConnection();
  const referral=String(order?.referralAccount||QX_JUP_REFERRAL_ACCOUNT);
  const feeMint=String(order?.feeMint||"");
- const feeBps=Number(order?.platformFee?.feeBps||0);
+ const feeBps=Number(order?.feeBps??0);
  if(!referral||!feeMint||feeBps<100)throw new Error("Jupiter did not provide enough fee metadata to verify the QX referral fee.");
  let tx=null;
  for(let attempt=0;attempt<4;attempt++){
@@ -4145,6 +4165,18 @@ async function qxEnsureJupiterReferralTokenAccount(feeMint){
  }
  return setup.tokenAccount.toBase58();
 }
+function qxJupiterFailureDetails(payload,status){
+ const x=payload&&typeof payload==="object"?payload:{};
+ const parts=[];
+ if(status!==undefined&&status!==null)parts.push("HTTP "+status);
+ if(x.router)parts.push("router="+String(x.router));
+ if(x.errorCode!==undefined&&x.errorCode!==null)parts.push("code="+String(x.errorCode));
+ if(x.mode)parts.push("mode="+String(x.mode));
+ if(x.errorMessage||x.error)parts.push(String(x.errorMessage||x.error).slice(0,420));
+ if(x.outAmount)parts.push("quoted output="+String(x.outAmount));
+ if(x.transaction==="")parts.push("Jupiter returned pricing but could not build a transaction");
+ return parts.join(" · ")||"Jupiter returned no diagnostic details";
+}
 async function qxBuildJupiterQuote(){
  const token=selectedToken,direction=tradeDirection,owner=walletAddress;
  if(!token)throw new Error("Select a Solana token first.");
@@ -4176,14 +4208,27 @@ async function qxBuildJupiterQuote(){
  if(direction==="buy"&&balanceReady&&amount>Math.max(0,walletSolBalance-SOL_RESERVE))throw new Error("The amount exceeds your available SOL after the QX reserve.");
  if(direction==="sell"&&balanceReady&&amount>selectedTokenBalance)throw new Error("The amount exceeds your available token balance.");
  // Current Jupiter Swap V2 Meta-Aggregator: request an executable order and
- // route QX's 100 bps integrator fee through the already-created referral account.
+ // route QX's 100 bps integrator fee through the referral account. For /order,
+ // referral fees are reported in top-level feeBps; platformFee.feeBps is a
+ // separate Jupiter platform fee and must not be used to validate our fee.
+ // First ask Jupiter for a quote without asking it to assemble a transaction.
+ // This separates "no supported liquidity route" from "route exists but the
+ // taker cannot fund/build the transaction". The API documents that /order
+ // returns outAmount/router without taker and transaction:null in quote mode.
+ const quoteParams=new URLSearchParams({inputMint,outputMint,amount:raw,referralAccount:QX_JUP_REFERRAL_ACCOUNT,referralFee:"100"});
+ const quoteResponse=await fetch("https://api.jup.ag/swap/v2/order?"+quoteParams.toString(),{signal:qxQuoteAbortController?.signal,headers:{accept:"application/json","x-api-key":QX_JUP_API_KEY}});
+ const quoteOnly=await quoteResponse.json().catch(()=>({}));
+ if(!quoteResponse.ok)throw new Error("Jupiter quote preflight failed: "+qxJupiterFailureDetails(quoteOnly,quoteResponse.status));
+ if(!quoteOnly||typeof quoteOnly!=="object"||!quoteOnly.outAmount){
+  throw new Error("Jupiter found no executable liquidity quote for this token and amount. "+qxJupiterFailureDetails(quoteOnly,quoteResponse.status)+". This is a route/liquidity response, not a Meteora RPC failure.");
+ }
  const params=new URLSearchParams({inputMint,outputMint,amount:raw,taker:owner,referralAccount:QX_JUP_REFERRAL_ACCOUNT,referralFee:"100",maxSupportedTransactionVersion:"0"});
  const response=await fetch("https://api.jup.ag/swap/v2/order?"+params.toString(),{signal:qxQuoteAbortController?.signal,headers:{accept:"application/json","x-api-key":QX_JUP_API_KEY}});
  const order=await response.json().catch(()=>({}));
- if(!response.ok)throw new Error(order.errorMessage||order.error||("Jupiter order failed (HTTP "+response.status+", code "+String(order.errorCode??"unknown")+")."));
- if(!order||typeof order!=="object")throw new Error("Jupiter returned an invalid order response.");
- if(String(order.status||"").toLowerCase()==="failed")throw new Error(order.errorMessage||order.error||("Jupiter order failed. Router: "+String(order.router||"unknown")+", error code: "+String(order.errorCode??"unknown")+"."));
- if(typeof order.transaction!=="string"||!order.transaction)throw new Error(order.errorMessage||("Jupiter returned a quote but no executable transaction. Router: "+String(order.router||"unknown")+", mode: "+String(order.mode||"unknown")+", error code: "+String(order.errorCode??"unknown")+". No transaction was created."));
+ if(!response.ok)throw new Error("Jupiter transaction order failed: "+qxJupiterFailureDetails(order,response.status));
+ if(!order||typeof order!=="object")throw new Error("Jupiter returned an invalid executable-order response.");
+ if(String(order.status||"").toLowerCase()==="failed")throw new Error("Jupiter rejected the executable order: "+qxJupiterFailureDetails(order,response.status));
+ if(typeof order.transaction!=="string"||!order.transaction)throw new Error("Jupiter has a price quote but did not build an executable transaction: "+qxJupiterFailureDetails(order,response.status)+". Check taker balance, token account setup and router eligibility. No transaction was signed.");
  if(!order.requestId)throw new Error("Jupiter order is missing its execution request ID. No transaction was signed.");
  // Jupiter Swap V2 does not guarantee an echoed referralAccount field in the order response.
  // The fee request is sent above; verify the returned fee terms instead of rejecting a valid order
@@ -4196,16 +4241,16 @@ async function qxBuildJupiterQuote(){
  // returned fee mint, then request a fresh order and verify the fee again.
  const referralReady=await qxEnsureJupiterReferralTokenAccount(order.feeMint);
  if(!referralReady)throw new Error("QX Jupiter referral fee account could not be initialized for "+String(order.feeMint||"the fee mint")+".");
- if(!Number.isFinite(Number(order.platformFee?.feeBps))||Number(order.platformFee?.feeBps)<100||String(order.referralAccount||"")!==String(QX_JUP_REFERRAL_ACCOUNT)){
+ if(!Number.isFinite(Number(order.feeBps))||Number(order.feeBps)<100){
   const retryParams=new URLSearchParams({inputMint,outputMint,amount:raw,taker:owner,referralAccount:QX_JUP_REFERRAL_ACCOUNT,referralFee:"100",maxSupportedTransactionVersion:"0"});
   const retryResponse=await fetch("https://api.jup.ag/swap/v2/order?"+retryParams.toString(),{signal:qxQuoteAbortController?.signal,headers:{accept:"application/json","x-api-key":QX_JUP_API_KEY}});
   const retryOrder=await retryResponse.json().catch(()=>({}));
-  if(!retryResponse.ok)throw new Error(retryOrder.errorMessage||retryOrder.error||("Jupiter retry order failed (HTTP "+retryResponse.status+")."));
-  if(!retryOrder||typeof retryOrder.transaction!=="string"||!retryOrder.transaction)throw new Error(retryOrder.errorMessage||"Jupiter did not return an executable transaction after QX fee-account initialization.");
-  if(!retryOrder.feeMint||!Number.isFinite(Number(retryOrder.platformFee?.feeBps))||Number(retryOrder.platformFee?.feeBps)<100)throw new Error("Jupiter still did not apply the requested 1.00% QX referral fee after referral-account initialization. No transaction was signed.");
+  if(!retryResponse.ok)throw new Error("Jupiter retry order failed: "+qxJupiterFailureDetails(retryOrder,retryResponse.status));
+  if(!retryOrder||typeof retryOrder.transaction!=="string"||!retryOrder.transaction)throw new Error("Jupiter still could not build an executable order after fee-account initialization: "+qxJupiterFailureDetails(retryOrder,retryResponse.status));
+  if(!retryOrder.feeMint||!Number.isFinite(Number(retryOrder.feeBps))||Number(retryOrder.feeBps)<100)throw new Error("Jupiter did not confirm at least 1.00% integrator fee in its top-level feeBps after referral-account initialization. No transaction was signed. Returned feeBps: "+String(retryOrder.feeBps??"missing")+".");
   Object.assign(order,retryOrder);
  }
- if(!Number.isFinite(Number(order.platformFee?.feeBps))||Number(order.platformFee?.feeBps)<100||!order.feeMint)throw new Error("Jupiter did not confirm the requested 1.00% QX referral fee and fee token. No transaction was signed.");
+ if(!Number.isFinite(Number(order.feeBps))||Number(order.feeBps)<100||!order.feeMint)throw new Error("Jupiter did not confirm the requested 1.00% QX referral fee and fee token. No transaction was signed. Returned feeBps: "+String(order.feeBps??"missing")+".");
  if(!order.outAmount)throw new Error("Jupiter returned no executable output amount.");
  if(selectedToken!==token||tradeDirection!==direction||walletAddress!==owner||String($("tradeAmountInput")?.value||"").trim()!==amountText)throw new Error("The selected token, amount or wallet changed while the Jupiter order was loading. Request a fresh order.");
  return {quote:order,referralAccount:QX_JUP_REFERRAL_ACCOUNT,requestedReferralFeeBps:100,inputMint,outputMint,raw,amount,inputDecimals,verifiedTokenDecimals,tokenMint:mint,tokenSymbol:token.baseToken.symbol,direction,walletAddress:owner,quotedAt:Date.now()};
@@ -4231,7 +4276,7 @@ async function qxRequestLiveQuote(){
   const outSymbol=tradeDirection==="buy"?selectedToken.baseToken.symbol:"SOL";
   $("swapReceive").textContent=out.toLocaleString(undefined,{maximumFractionDigits:Math.min(9,outDecimals)})+" "+outSymbol;
   $("swapPay").textContent=q.amount+" "+(tradeDirection==="buy"?"SOL":selectedToken.baseToken.symbol);
-  $("qxFeeDisplay").textContent="QX referral fee: "+(Number(q.quote.platformFee?.feeBps||0)/100).toFixed(2)+"% · "+short(q.quote.feeMint);
+  $("qxFeeDisplay").textContent="QX referral fee: "+(Number(q.quote.feeBps||0)/100).toFixed(2)+"% · "+short(q.quote.feeMint);
   $("swapRoute").textContent="Jupiter V2 · "+String(q.quote.router||"best available route").toUpperCase();
   $("confirmSwapBtn").textContent="CONFIRM SWAP IN WALLET";
   $("confirmSwapBtn").style.display="none";
@@ -4366,9 +4411,9 @@ async function qxExecuteSwap(){
   const requestedReferral=String(q.referralAccount||QX_JUP_REFERRAL_ACCOUNT);
   const returnedReferral=String(order.referralAccount||"");
   const requestedReferralFee=Number(q.requestedReferralFeeBps||100);
-  const returnedFeeBps=Number(order.platformFee?.feeBps||0);
+  const returnedFeeBps=Number(order.feeBps??0);
   if(returnedReferral&&returnedReferral!==requestedReferral)throw new Error("Jupiter returned a different referral account for this order. No transaction was signed.");
-  if(!Number.isFinite(returnedFeeBps)||returnedFeeBps<requestedReferralFee)throw new Error("The QX 1.00% referral fee is not confirmed on this order. No transaction was signed.");
+  if(!Number.isFinite(returnedFeeBps)||returnedFeeBps<requestedReferralFee)throw new Error("Jupiter order feeBps does not confirm the requested QX 1.00% referral fee. No transaction was signed. Returned feeBps: "+String(order.feeBps??"missing")+".");
   const provider=window.QXGetActiveWalletProvider?.()||null;
   if(typeof provider?.signTransaction!=="function")throw new Error("The connected wallet cannot sign this swap. Reconnect your wallet and try again.");
   qxSetSwapStatus("Preparing the real Jupiter V2 transaction. Approve it in your connected wallet…");
@@ -4575,7 +4620,15 @@ function openToken(token){
  try{const mint=String(token?.baseToken?.address||token?.address||"");if(mint&&history.pushState){history.pushState({qxTokenMint:mint},"",location.pathname+location.search+"#token="+encodeURIComponent(mint));}}catch(_){}
  /* Keep the existing detail terminal as a single DOM node. It is already placed by QXEnsureTerminalPlacement; do not move it again or switch pages before populating it. */
  window.QXEnsureTerminalPlacement?.();
- selectedToken=token;selectedTokenDecimals=qxTokenDecimals(token);tradeDirection="buy";document.body.classList.add("qx-token-open");
+ selectedToken=token;selectedTokenDecimals=qxTokenDecimals(token);tradeDirection="buy";
+ // Keep the back control outside the scrolling/positioned terminal. A fixed
+ // descendant of a transformed/contained ancestor is not viewport-fixed on iOS.
+ const qxBack=$("tokenBackBtn");
+ if(qxBack&&qxBack.parentElement!==document.body){
+  const oldParent=qxBack.parentNode;
+  if(oldParent){const marker=document.createComment("QX_BACK_BUTTON_HOME");oldParent.insertBefore(marker,qxBack);window.__QXBackButtonHome=marker;document.body.appendChild(qxBack);}
+ }
+ document.body.classList.add("qx-token-open");
  const amountInput=$("tradeAmountInput");if(amountInput)amountInput.value="";
  const percentRange=$("percentRange");if(percentRange)percentRange.value="25";
  const detail=$("detail");if(!detail)return;detail.style.display="block";
@@ -4590,7 +4643,9 @@ function openToken(token){
  $("detailAddress").textContent=token.baseToken.address;
  const cap=qxNum(token.marketCap||token.fdv),liq=qxNum(token.liquidity?.usd),vol=qxNum(token.volume?.h24);$("detailMarketCap").textContent=cap>0?money(cap):"—";$("detailLiquidity").textContent=liq>0?money(liq):"—";$("detailVolume").textContent=vol>0?money(vol):"—";
  const tx=qxNum(token.txns?.h24?.buys)+qxNum(token.txns?.h24?.sells);$("detailTransactions").textContent=tx?tx.toLocaleString():"—";
- const img=$("detailImage"),url=qxSafeUrl(token.info?.imageUrl||"");if(url){img.src=url;img.style.display="block";}else img.style.display="none";
+ const img=$("detailImage"),url=(typeof qxTokenImageUrl==="function"?qxTokenImageUrl(token):qxSafeUrl(token.info?.imageUrl||""));
+  const imgFallback=$("detailImageFallback");
+  if(img){if(url){img.onerror=()=>{img.style.display="none";if(imgFallback)imgFallback.style.display="flex";};img.onload=()=>{if(imgFallback)imgFallback.style.display="none";};img.src=url;img.style.display="block";if(imgFallback)imgFallback.style.display="none";}else{img.removeAttribute("src");img.style.display="none";if(imgFallback){imgFallback.textContent=String(token.baseToken?.symbol||token.baseToken?.name||"QX").trim().slice(0,2).toUpperCase()||"QX";imgFallback.style.display="flex";}}}
  const link=$("solscanLink");if(link)link.href="https://solscan.io/token/"+encodeURIComponent(token.baseToken.address);
  $("swapWallet").textContent=connected?short(walletAddress):"Not connected";
  const swapDirectionBtn=$("swapDirectionBtn");if(swapDirectionBtn){swapDirectionBtn.hidden=false;swapDirectionBtn.textContent="⇅";swapDirectionBtn.title="Reverse the currency order";}
@@ -4657,6 +4712,8 @@ const QX_CMC_PAGE_SIZE=250;
 const QX_CMC_PAGES=20;
 const MAX_NEW_COINS=2000;
 let qxJupiterMeta=null;
+let qxLogoEnrichBusy=false;
+const qxLogoCheckedAt=new Map();
 let qxMarketGeneration=0;
 let qxLastMarketSource="";
 let qxMarketStage="idle",qxMarketLastError="";
@@ -5001,6 +5058,51 @@ function qxMarketAgeLabel(p){
  return Math.floor(seconds/2592000)+'mo';
 }
 function qxMarketMetric(v){const n=qxNum(v);if(!(n>0))return '—';if(n>=1e9)return '$'+(n/1e9).toFixed(2)+'B';if(n>=1e6)return '$'+(n/1e6).toFixed(2)+'M';if(n>=1e3)return '$'+(n/1e3).toFixed(1)+'K';return '$'+n.toFixed(2);}
+async function qxEnrichVisibleTokenImages(visibleList){
+ if(qxLogoEnrichBusy||!Array.isArray(visibleList)||!visibleList.length)return;
+ const now=Date.now(),targets=[];
+ for(const p of visibleList.slice(0,80)){
+  const mint=String(p?.baseToken?.address||"");
+  if(!qxIsValidSolanaMint(mint)||qxTokenImageUrl(p))continue;
+  const checked=qxLogoCheckedAt.get(mint)||0;if(now-checked<10*60*1000)continue;
+  qxLogoCheckedAt.set(mint,now);targets.push(mint);
+ }
+ if(!targets.length)return;
+ qxLogoEnrichBusy=true;let changed=false;
+ try{
+  const found=new Map();
+  for(let i=0;i<targets.length;i+=30){
+   try{
+    const rows=await getJSON(QX_DEX_TOKENS+targets.slice(i,i+30).join(","),10000,1);
+    for(const row of Array.isArray(rows)?rows:[]){
+     const mint=String(row?.baseToken?.address||"");
+     const image=qxSafeUrl(row?.info?.imageUrl||row?.baseToken?.logoURI||row?.baseToken?.logoUri||"");
+     if(qxIsValidSolanaMint(mint)&&image&&!found.has(mint))found.set(mint,image);
+    }
+   }catch(e){console.warn("QX token logo enrichment batch unavailable",i,e);}
+  }
+  for(const mint of targets){
+   const image=found.get(mint);if(!image)continue;
+   for(const pair of allPairs){
+    if(String(pair?.baseToken?.address||"")!==mint)continue;
+    pair.info=pair.info||{};if(!qxSafeUrl(pair.info.imageUrl)){pair.info.imageUrl=image;changed=true;}
+   }
+   for(const pair of newPairs){
+    if(String(pair?.baseToken?.address||"")!==mint)continue;
+    pair.info=pair.info||{};if(!qxSafeUrl(pair.info.imageUrl))pair.info.imageUrl=image;
+   }
+   for(const pair of trendingPairs){
+    if(String(pair?.baseToken?.address||"")!==mint)continue;
+    pair.info=pair.info||{};if(!qxSafeUrl(pair.info.imageUrl))pair.info.imageUrl=image;
+   }
+  }
+  if(changed&&document.getElementById("tokenResults")){
+   // Re-render once after enrichment; the checked-at map prevents a request loop.
+   renderMarket();
+  }
+ }catch(e){console.warn("QX visible token logo enrichment failed",e);for(const mint of targets)qxLogoCheckedAt.delete(mint);}
+ finally{qxLogoEnrichBusy=false;}
+}
 function renderMarket(){
  window.QXMarketPairs=Array.isArray(allPairs)?allPairs.slice():[];
  window.allPairs=window.QXMarketPairs;
@@ -5034,6 +5136,7 @@ function renderMarket(){
   return '<article class="market-row market-row-rich qx-market-card"><button type="button" class="coin-button" data-mint="'+mint+'">'+img+fallback+'<span class="coin-info"><span class="coin-title-line"><strong>'+name+'</strong>'+freshness+qxLaunchBadge+'</span><small>'+symbol+' · '+mint.slice(0,6)+'…'+mint.slice(-4)+'</small><span class="coin-inline-meta">'+marketState+'</span></span></button><span class="qx-market-value">'+(hasPrice?qxFormatTokenPrice(p.priceUsd):"—")+'</span><span class="qx-market-value '+cls+'">'+changeText.trim()+'</span><span class="qx-market-value">'+qxMarketMetric(p.volume?.h24)+'</span><span class="qx-market-value">'+qxMarketMetric(p.marketCap||p.fdv)+'</span><span class="qx-market-value">'+qxMarketMetric(p.liquidity?.usd)+'</span><span class="qx-market-value">'+ageValue+'</span><span class="qx-market-value">'+(txns>0?txns.toLocaleString():"—")+'</span><div class="market-card-right">'+spark+'</div></article>';
  }).join("");
  window.QXApplyLanguage?.(false);
+ void qxEnrichVisibleTokenImages(list);
 }
 
 $("marketTabs").addEventListener("click",event=>{const button=event.target.closest("[data-category]");if(!button)return;currentCategory=button.dataset.category;if(currentCategory==="volume"||currentCategory==="spot"){sortMetric=currentCategory==="volume"?"volume":"liquidity";sortDirection="desc";}else{sortMetric="default";sortDirection="desc";}console.info("QX market category",currentCategory,{all:allPairs.length,newCoins:newPairs.length});document.querySelectorAll(".market-tab").forEach(t=>t.classList.toggle("active",t===button));renderMarket();});
@@ -5740,6 +5843,9 @@ loadMarket();
   else ensureTerminalPlacement();
 
   function qxCloseTokenTerminal(){
+    // Restore the button to its original DOM position after leaving the terminal.
+    const qxBack=$("tokenBackBtn"),qxBackHome=window.__QXBackButtonHome;
+    if(qxBack&&qxBackHome?.parentNode){qxBackHome.parentNode.insertBefore(qxBack,qxBackHome);qxBackHome.remove();window.__QXBackButtonHome=null;}
     clearInterval(qxChartLiveTimer);qxChartLiveTimer=null;
     // Invalidate every in-flight detail request so an older token can never repaint
     // the terminal after the user has already gone back or opened another token.
@@ -6067,9 +6173,21 @@ loadMarket();
  const dictionaries={
  en:{'连接钱包':'Connect Wallet','钱包':'Wallet','创建代币':'Create Token','市场':'Markets','广告':'Advertisements','我的资产':'My Assets','导航':'NAVIGATION','偏好设置':'PREFERENCES','语言':'Language','货币':'Currency','Solana 市场':'Solana Markets','全部代币':'All Coins','新代币':'New Coins','涨幅榜':'Top Gainers','跌幅榜':'Top Losers','热门':'Trending','成交量':'Top Volume','搜索':'Search','搜索名称、代码或合约地址':'Search name, symbol or contract','返回市场':'BACK TO MARKETS','QX 实时图表':'QX CHART','交易':'TRADES','买入':'BUY','卖出':'SELL','支付':'YOU PAY','收到':'YOU RECEIVE','路径':'Route','确认兑换':'CONFIRM SWAP','更新报价':'UPDATE QUOTE','连接钱包查看资产':'Connect your wallet to view assets','刷新':'Refresh','实时余额':'Balance','链上':'ON-CHAIN','资产':'Asset','余额':'Balance','价值':'Value','市值 / FDV':'Market Cap / FDV','流动性':'Liquidity','24小时成交量':'24h Volume','24小时交易笔数':'24h Transactions','持有人':'Holders','网络':'NETWORK','返回市场':'BACK TO MARKETS','广告标题':'Advertisement title','项目或代币名称':'Project or token name','写下广告内容':'Write your advertisement here...'},
  ar:{'Connect Wallet':'ربط المحفظة','Wallet':'المحفظة','Create Token':'إنشاء عملة','Markets':'الأسواق','Advertisements':'الإعلانات','My Assets':'أصولي','NAVIGATION':'التنقل','PREFERENCES':'التفضيلات','Language':'اللغة','Currency':'العملة','Solana Markets':'أسواق سولانا','All Coins':'كل العملات','New Coins':'عملات جديدة','Top Gainers':'الأعلى ارتفاعاً','Top Losers':'الأعلى انخفاضاً','Trending':'الرائجة','Top Volume':'الأعلى تداولاً','Search':'بحث','Search name, symbol or contract':'ابحث بالاسم أو الرمز أو عنوان العقد','BACK TO MARKETS':'العودة إلى الأسواق','QX CHART':'الرسم البياني من QX','TRADES':'التداولات','BUY':'شراء','SELL':'بيع','YOU PAY':'أنت تدفع','YOU RECEIVE':'أنت تستلم','Route':'مسار التداول','CONFIRM SWAP':'تأكيد المبادلة','UPDATE QUOTE':'تحديث السعر','Connect your wallet to view assets.':'اربط محفظتك لعرض الأصول','Refresh':'تحديث','Balance':'الرصيد المباشر','ON-CHAIN':'على الشبكة','Asset':'الأصل','Balance':'الرصيد','Value':'القيمة','Market Cap / FDV':'القيمة السوقية / FDV','Liquidity':'السيولة','24h Volume':'حجم التداول خلال 24 ساعة','24h Transactions':'معاملات 24 ساعة','Holders':'المالكون','NETWORK':'الشبكة','Creator Dashboard':'لوحة المنشئ','Add advertisement':'إضافة إعلان','No sponsored advertisements yet.':'لا توجد إعلانات ممولة حالياً.','Featured projects':'مشاريع مميزة','Sponsored':'إعلانات ممولة','Total price':'السعر الإجمالي','Estimated SOL payment':'الدفع التقديري بعملة SOL','PAY WITH CONNECTED WALLET':'ادفع بالمحفظة المتصلة','Close':'إغلاق','My orders & executions':'أوامري والتنفيذات','Refresh history':'تحديث السجل','Private to the connected wallet. Open limit orders can be cancelled before they are filled.':'السجل خاص بالمحفظة المتصلة. يمكنك إلغاء أوامر الحد المفتوحة قبل تنفيذها.','Connect and authenticate your wallet to load your private order history.':'اربط محفظتك وسجّل الدخول لعرض سجل أوامرك الخاص.','My executions':'تنفيذاتي','No orders recorded for this wallet yet.':'لا توجد أوامر مسجلة لهذه المحفظة بعد.','No executions for this wallet yet.':'لا توجد تنفيذات لهذه المحفظة بعد.','Cancel':'إلغاء','Fee:':'الرسوم:','maker':'صانع السوق','taker':'آخذ السيولة','open':'مفتوح','partially_filled':'منفذ جزئياً','filled':'مكتمل','cancelled':'ملغي','buy':'شراء','sell':'بيع','Estimated total / proceeds (1% fee)':'الإجمالي / صافي العائد التقديري (رسوم 1%)','Completed spot trades charge a 1% fee to each side; the estimate above includes that fee.':'تُخصم رسوم 1% من كل طرف عند تنفيذ صفقة فورية، والتقدير أعلاه يشمل الرسوم.','this is a spot limit-order interface backed by QX\'s internal ledger and matching function.':'هذه واجهة أوامر تداول فوري لدى QX، وتعتمد على دفتر QX الداخلي ومحرك المطابقة.'},
- zh:{'Connect Wallet':'连接钱包','Wallet':'钱包','Create Token':'创建代币','Markets':'市场','Advertisements':'广告','My Assets':'我的资产','NAVIGATION':'导航','PREFERENCES':'偏好设置','Language':'语言','Currency':'货币','Solana Markets':'Solana 市场','All Coins':'全部代币','New Coins':'新代币','Top Gainers':'涨幅榜','Top Losers':'跌幅榜','Trending':'热门','Top Volume':'成交量排行','Search':'搜索','Search name, symbol or contract':'搜索名称、代币代码或合约地址','BACK TO MARKETS':'返回市场','QX CHART':'QX 实时图表','TRADES':'交易记录','BUY':'买入','SELL':'卖出','YOU PAY':'支付','YOU RECEIVE':'收到','Route':'交易路径','CONFIRM SWAP':'确认兑换','UPDATE QUOTE':'更新报价','Connect your wallet to view assets.':'连接钱包以查看资产','Refresh':'刷新','Balance':'实时余额','ON-CHAIN':'链上','Asset':'资产','Balance':'余额','Value':'价值','Market Cap / FDV':'市值 / 完全稀释估值','Liquidity':'流动性','24h Volume':'24小时交易量','24h Transactions':'24小时交易笔数','Holders':'持有者','NETWORK':'网络','Creator Dashboard':'创建者中心','Add advertisement':'添加广告','No sponsored advertisements yet.':'暂无赞助广告','Featured projects':'精选项目','Sponsored':'赞助内容','Total price':'总价','Estimated SOL payment':'预计 SOL 付款','PAY WITH CONNECTED WALLET':'使用已连接的钱包付款','Close':'关闭','My orders & executions':'我的订单与成交','Refresh history':'刷新记录','Private to the connected wallet. Open limit orders can be cancelled before they are filled.':'仅连接的钱包可见。限价单完全成交前可取消。','Connect and authenticate your wallet to load your private order history.':'连接并验证钱包以加载私人订单记录。','My executions':'我的成交','No orders recorded for this wallet yet.':'此钱包暂无订单记录。','No executions for this wallet yet.':'此钱包暂无成交记录。','Cancel':'取消','Fee:':'手续费：','maker':'挂单方','taker':'吃单方','open':'未成交','partially_filled':'部分成交','filled':'已成交','cancelled':'已取消','buy':'买入','sell':'卖出','Discover Solana':'探索 Solana','Loading...':'加载中...','Loading market...':'正在加载市场...','TOKEN':'代币','PRICE':'价格','24H %':'24小时涨跌','VOLUME':'成交量','MKT CAP':'市值','LIQUIDITY':'流动性','AGE':'创建时间','TXNS':'交易笔数','UNDER 1H':'最近1小时','UNDER 2H':'最近2小时','UNDER 5H':'最近5小时','UNDER 10H':'最近10小时','UNDER 24H':'最近24小时','NEW':'新','QX LAUNCH':'QX发行','Sort by':'排序方式','Create Your Token':'创建你的代币','Token name':'代币名称','Symbol':'代币代码','Initial supply':'初始供应量','Total supply':'总供应量','Decimals':'小数位','Create token':'创建代币','Create and launch':'创建并发行','Connect wallet & create token':'连接钱包并创建代币','No verified trade feed returned':'暂无已验证的交易数据','No real price history is available for this pool yet.':'此流动性池暂无真实价格历史','No verified new Solana markets with live price and liquidity yet.':'暂无同时具备实时价格和流动性的已验证新市场','Estimated total / proceeds (1% fee)':'预计总额 / 净收入（1% 手续费）','Completed spot trades charge a 1% fee to each side; the estimate above includes that fee.':'现货成交时买卖双方各收取 1% 手续费；上方估算已包含该费用。','this is a spot limit-order interface backed by QX\'s internal ledger and matching function.':'这是由 QX 内部账本和撮合引擎支持的现货交易界面。'}
+ zh:{'Connect Wallet':'连接钱包','Wallet':'钱包','Create Token':'创建代币','Markets':'市场','Advertisements':'广告','My Assets':'我的资产','NAVIGATION':'导航','PREFERENCES':'偏好设置','Language':'语言','Currency':'货币','Solana Markets':'Solana 市场','All Coins':'全部代币','New Coins':'新代币','Top Gainers':'涨幅榜','Top Losers':'跌幅榜','Trending':'热门','Top Volume':'成交量排行','Search':'搜索','Search name, symbol or contract':'搜索名称、代币代码或合约地址','BACK TO MARKETS':'返回市场','QX CHART':'QX 实时图表','TRADES':'交易记录','BUY':'买入','SELL':'卖出','YOU PAY':'支付','YOU RECEIVE':'收到','Route':'交易路径','CONFIRM SWAP':'确认兑换','UPDATE QUOTE':'更新报价','Connect your wallet to view assets.':'连接钱包以查看资产','Refresh':'刷新','Balance':'实时余额','ON-CHAIN':'链上','Asset':'资产','Balance':'余额','Value':'价值','Market Cap / FDV':'市值 / 完全稀释估值','Liquidity':'流动性','24h Volume':'24小时交易量','24h Transactions':'24小时交易笔数','Holders':'持有者','NETWORK':'网络','Creator Dashboard':'创建者中心','Add advertisement':'添加广告','No sponsored advertisements yet.':'暂无赞助广告','Featured projects':'精选项目','Sponsored':'赞助内容','Total price':'总价','Estimated SOL payment':'预计 SOL 付款','PAY WITH CONNECTED WALLET':'使用已连接的钱包付款','Close':'关闭','My orders & executions':'我的订单与成交','Refresh history':'刷新记录','Private to the connected wallet. Open limit orders can be cancelled before they are filled.':'仅连接的钱包可见。限价单完全成交前可取消。','Connect and authenticate your wallet to load your private order history.':'连接并验证钱包以加载私人订单记录。','My executions':'我的成交','No orders recorded for this wallet yet.':'此钱包暂无订单记录。','No executions for this wallet yet.':'此钱包暂无成交记录。','Cancel':'取消','Fee:':'手续费：','maker':'挂单方','taker':'吃单方','open':'未成交','partially_filled':'部分成交','filled':'已成交','cancelled':'已取消','buy':'买入','sell':'卖出','Discover Solana':'探索 Solana','Loading...':'加载中...','Loading market...':'正在加载市场...','TOKEN':'代币','PRICE':'价格','24H %':'24小时涨跌','VOLUME':'成交量','MKT CAP':'市值','LIQUIDITY':'流动性','AGE':'创建时间','TXNS':'交易笔数','UNDER 1H':'最近1小时','UNDER 2H':'最近2小时','UNDER 5H':'最近5小时','UNDER 10H':'最近10小时','UNDER 24H':'最近24小时','NEW':'新','QX LAUNCH':'QX发行','Sort by':'排序方式','Create Your Token':'创建你的代币','Token name':'代币名称','Symbol':'代币代码','Initial supply':'初始供应量','Total supply':'总供应量','Decimals':'小数位','Create token':'创建代币','Create and launch':'创建并发行','Connect wallet & create token':'连接钱包并创建代币','No verified trade feed returned':'暂无已验证的交易数据','No real price history is available for this pool yet.':'此流动性池暂无真实价格历史','No verified new Solana markets with live price and liquidity yet.':'暂无同时具备实时价格和流动性的已验证新市场','Estimated total / proceeds (1% fee)':'预计总额 / 净收入（1% 手续费）','Completed spot trades charge a 1% fee to each side; the estimate above includes that fee.':'现货成交时买卖双方各收取 1% 手续费；上方估算已包含该费用。','this is a spot limit-order interface backed by QX\'s internal ledger and matching function.':'这是由 QX 内部账本和撮合引擎支持的现货交易界面。','Exchange':'兑换','Creator':'创建者','Launch Token':'发行代币','Launch Market':'启动市场','Discover New':'发现新币','View All':'查看全部','All':'全部','New':'新币','DEFAULT':'默认','DEFAULT ORDER':'默认排序','PRICE LOW TO HIGH':'价格从低到高','PRICE HIGH TO LOW':'价格从高到低','Loading Solana markets…':'正在加载 Solana 市场…','Searching Solana tokens…':'正在搜索 Solana 代币…','No Solana markets matched your search.':'没有找到符合条件的 Solana 市场。','No matching Solana market found. Try the token name, symbol, or full contract address.':'没有找到匹配的 Solana 市场。请尝试代币名称、代码或完整合约地址。','Solana token search is temporarily unavailable. Try again shortly.':'Solana 代币搜索暂时不可用，请稍后重试。','Featured projects will appear here.':'精选项目将在此处显示。','Connect wallet':'连接钱包','Open main menu':'打开主菜单','Back to markets':'返回市场','View contract on Solscan ->':'在 Solscan 查看合约 ->','You pay':'支付','Estimated receive':'预计收到','QX commission':'QX 手续费','GET QUOTE & APPROVE':'获取报价并授权','Available balance: -':'可用余额：-','Enter amount to estimate':'输入金额以估算','Route will be selected after executable quote':'获得可执行报价后将选择交易路径','No matching Solana market found.':'没有找到匹配的 Solana 市场。','JUST NOW':'刚刚','1 hour':'1小时','3 hours':'3小时','9 hours':'9小时','24 hours':'24小时','3 days':'3天','QX EXCHANGE / INSTANT TRADE':'QX 交易所 / 即时交易','Trade directly inside QX. No external swap page.':'直接在 QX 内交易，无需跳转到外部兑换页面。','Chart rendered inside QX | Solana market data':'图表由 QX 提供 | Solana 市场数据','Portfolio value':'投资组合价值','Market status':'市场状态','Live market':'实时市场','Price':'价格','Volume':'成交量','Market Cap':'市值','Age':'创建时间','Transactions':'交易笔数','No market data is available in this category right now. QX will retry the market feeds automatically.':'此类别目前没有可用的市场数据。QX 将自动重试市场数据源。','Getting live quote…':'正在获取实时报价…','Fetching executable quote…':'正在获取可执行报价…','Failed to get quotes':'获取报价失败','Wallet balance':'钱包余额','SOL/USD':'SOL/USD','No executable route':'没有可执行的交易路径','Token metadata upload failed':'代币元数据上传失败','Connect your wallet first.':'请先连接钱包。','Waiting for wallet approval':'等待钱包确认','Transaction submitted':'交易已提交','Transaction confirmed':'交易已确认','Swap failed':'兑换失败','Quote expired':'报价已过期','Last updated':'最后更新','Market data unavailable':'市场数据暂不可用','Retry':'重试','Refresh markets':'刷新市场','No token image available':'暂无代币图片'}
  };
  const reverse={};for(const [l,map] of Object.entries(dictionaries))for(const [a,b] of Object.entries(map)){(reverse[a]??=[]).push(a);(reverse[b]??=[]).push(a)}
+ // Keep a canonical source string for every text node. This prevents Chinese
+ // text from remaining behind when the user switches back to English or Arabic.
+ const qxTextNodeState=new WeakMap();
+ function qxCanonicalText(value){
+  const v=String(value??"");
+  for(const [language,map] of Object.entries(dictionaries)){
+   if(language==="en")continue;
+   if(Object.prototype.hasOwnProperty.call(map,v))return v;
+   for(const [source,translated] of Object.entries(map))if(v===translated)return source;
+  }
+  return v;
+ }
  function tr(value,language){const map=dictionaries[language]||{};if(map[value])return map[value];for(const [from,to] of Object.entries(map))if(value===to)return language==='en'?from:to;return value;}
  function apply(runBase=true){const language=langSelect.value||localStorage.getItem('qxLanguage')||'en';window.qxLanguage=language;document.documentElement.lang=language==='zh'?'zh-CN':language;document.documentElement.dir=language==='ar'?'rtl':'ltr';
   if(runBase&&typeof originalApply==='function'){try{originalApply();}catch(e){console.warn('QX base language pass:',e)}}
@@ -6077,7 +6195,22 @@ loadMarket();
   document.documentElement.lang=language==='zh'?'zh-CN':language;document.documentElement.dir=language==='ar'?'rtl':'ltr';
   const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,{acceptNode(n){const p=n.parentElement;if(!p||['SCRIPT','STYLE','NOSCRIPT'].includes(p.tagName)||p.closest('[data-no-translate],.token-symbol,.token-address,.mint-address,.coin-address,.price,.amount,.numeric'))return NodeFilter.FILTER_REJECT;return NodeFilter.FILTER_ACCEPT;}});
   const nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);
-  for(const node of nodes){const raw=node.nodeValue;const trimmed=raw.trim();if(!trimmed)continue;let next=map[trimmed];if(!next){for(const [en,translated] of Object.entries(map)){if(trimmed===translated){next=language==='en'?en:translated;break}}}if(next&&next!==trimmed){const start=raw.indexOf(trimmed);node.nodeValue=raw.slice(0,start)+next+raw.slice(start+trimmed.length)}}
+  for(const node of nodes){
+   const state=qxTextNodeState.get(node);
+   let raw;
+   if(!state){raw=qxCanonicalText(node.nodeValue);qxTextNodeState.set(node,{source:raw,last:node.nodeValue});}
+   else if(node.nodeValue!==state.last){raw=qxCanonicalText(node.nodeValue);state.source=raw;}
+   else raw=state.source;
+   const trimmed=raw.trim();if(!trimmed)continue;let next=map[trimmed];
+   if(!next&&language==='zh'){
+    let m=trimmed.match(/^(\d[\d,]*)\s+tokens?$/i);if(m)next=m[1]+' 个代币';
+    if(!next){m=trimmed.match(/^(\d[\d,]*)\s+markets?$/i);if(m)next=m[1]+' 个市场';}
+    if(!next){m=trimmed.match(/^No Solana markets matched [“\"](.+?)[”\"]\.?$/i);if(m)next='没有找到与“'+m[1]+'”匹配的 Solana 市场。';}
+   }
+   if(!next){for(const [en,translated] of Object.entries(map)){if(trimmed===translated){next=language==='en'?en:translated;break}}}
+   if(next&&next!==trimmed){const start=raw.indexOf(trimmed);node.nodeValue=raw.slice(0,start)+next+raw.slice(start+trimmed.length)}else node.nodeValue=raw;
+   const saved=qxTextNodeState.get(node);if(saved)saved.last=node.nodeValue;
+  }
   document.querySelectorAll('[placeholder]').forEach(el=>{const key=el.getAttribute('data-qx-placeholder-en')||el.placeholder;if(!el.dataset.qxPlaceholderEn)el.dataset.qxPlaceholderEn=key;el.placeholder=map[key]||key});
   document.querySelectorAll('[aria-label]').forEach(el=>{const key=el.getAttribute('data-qx-aria-en')||el.getAttribute('aria-label');if(!el.dataset.qxAriaEn)el.dataset.qxAriaEn=key;if(map[key])el.setAttribute('aria-label',map[key])});
   const opts=langSelect.options; if(opts.length>=3){const optionLabels=[language==='ar'?'الإنجليزية (EN)':language==='zh'?'英语 (EN)':'English (EN)',language==='ar'?'العربية (AR)':language==='zh'?'阿拉伯语 (AR)':'العربية (AR)',language==='ar'?'الصينية المبسطة (ZH)':language==='zh'?'简体中文 (ZH)':'简体中文 (ZH)'];[...opts].slice(0,3).forEach((o,i)=>{if(o.textContent!==optionLabels[i])o.textContent=optionLabels[i]})}
@@ -6273,217 +6406,4 @@ loadMarket();
   const save=a=>localStorage.setItem(key,JSON.stringify(a.slice(0,50)));
   function current(){return window.__QXSelectedToken||window.QXSelectedToken||window.selectedToken||window.QXCurrentToken||null;}
   function render(){const host=$("qxAlertList");if(!host)return;const a=read();if(!a.length){host.innerHTML='<div class="qx-empty">No active price alerts.</div>';return;}host.innerHTML=a.map((x,i)=>`<div class="qx-list-row"><div><strong>${esc(x.symbol)} · ${esc(x.direction==="above"?"≥":"≤")} ${esc(x.price)}</strong><small>${esc(x.name||x.mint.slice(0,8)+"…")} · ${x.triggered?"Triggered":"Active"}</small></div><button type="button" data-qx-alert-remove="${i}">Remove</button></div>`).join("");host.querySelectorAll("[data-qx-alert-remove]").forEach(b=>b.onclick=()=>{const a=read();a.splice(Number(b.dataset.qxAlertRemove),1);save(a);render();});}
-  function open(){const t=current();if(!t){alert("Open a token first.");return;}const m=$("qxAlertModal");if(!m)return;m.style.display="flex";m.dataset.mint=String(t?.baseToken?.address||t?.mint||t?.address||"");$("qxAlertTokenLabel").textContent=(t?.baseToken?.symbol||t?.symbol||"TOKEN")+" · "+(t?.baseToken?.name||t?.name||"Token");}
-  function close(){$("qxAlertModal")?.style.setProperty("display","none");}
-  $("qxAlertAddBtn")?.addEventListener("click",open);$("qxAlertClose")?.addEventListener("click",close);$("qxAlertCancel")?.addEventListener("click",close);
-  $("qxAlertSave")?.addEventListener("click",()=>{const m=$("qxAlertModal"),t=current(),price=Number($("qxAlertPrice")?.value),direction=$("qxAlertDirection")?.value||"above",mint=String(m?.dataset.mint||t?.baseToken?.address||t?.mint||"");if(!mint||!Number.isFinite(price)||price<=0){return;}const a=read();a.unshift({mint,name:t?.baseToken?.name||t?.name||"Token",symbol:t?.baseToken?.symbol||t?.symbol||"TOKEN",price,direction,createdAt:Date.now(),triggered:false});save(a);render();close();requestNotificationPermission();});
-  render();
-  async function requestNotificationPermission(){try{if("Notification" in window&&Notification.permission==="default")await Notification.requestPermission();}catch(_){}}
-  window.QXCheckPriceAlerts=function(pairs){const a=read();let changed=false;for(const x of a){if(x.triggered)continue;const p=(pairs||[]).find(v=>String(v?.baseToken?.address||v?.mint||"")===x.mint);const price=Number(p?.priceUsd??p?.price);if(!Number.isFinite(price))continue;const hit=x.direction==="above"?price>=x.price:price<=x.price;if(hit){x.triggered=true;x.triggeredAt=Date.now();changed=true;try{if("Notification" in window&&Notification.permission==="granted")new Notification("QX price alert",{body:`${x.symbol} reached ${price}`});}catch(_){}}}if(changed){save(a);render();}};
-  document.addEventListener("click",e=>{if(e.target?.id==="qxAlertModal" )close();});
-  window.addEventListener("QXMarketUpdated",e=>{try{window.QXCheckPriceAlerts(e.detail?.pairs||window.QXMarketPairs||[]);}catch(_){}});
-  setInterval(()=>{if(document.visibilityState!=="hidden"){try{window.QXCheckPriceAlerts(window.QXMarketPairs||[]);}catch(_){}}},15000);
-})();
-</script>
-<script id="qx-cex-spot-controller">
-(function(){
- const $=id=>document.getElementById(id);
- const API='https://qkazosqvnmknnzkukggj.supabase.co/functions/v1/qx-trading';
- const ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrYXpvc3F2bm5rbnprdWtnZ2oiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTc5MzYzODQ2MSwiZXhwIjoyMTA5MjE0NDYxfQ.HDZyq99QqTo6kFEm5msYF7CbTOj3QSQfW6PohVixpyg';
- let side='buy',session=null,busy=false,lastHistory=null,cexRequestController=null,cexRequestSeq=0,cexHidden=false;
- const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
- const fmt=v=>{const n=Number(v),lang=window.qxLanguage||$('qxLanguage')?.value||'en';return Number.isFinite(n)?n.toLocaleString(lang==='zh'?'zh-CN':lang==='ar'?'ar':'en',{maximumFractionDigits:8}):'—'};
- const dateFmt=v=>{const lang=window.qxLanguage||$('qxLanguage')?.value||'en';return new Date(v).toLocaleString(lang==='zh'?'zh-CN':lang==='ar'?'ar':'en')};
- const words={ar:{'My executions':'تنفيذاتي','No orders recorded for this wallet yet.':'لا توجد أوامر مسجلة لهذه المحفظة بعد.','No executions for this wallet yet.':'لا توجد تنفيذات لهذه المحفظة بعد.','Cancel':'إلغاء','Fee:':'الرسوم:','maker':'صانع السوق','taker':'آخذ السيولة','open':'مفتوح','partially_filled':'منفذ جزئياً','filled':'مكتمل','cancelled':'ملغي','buy':'شراء','sell':'بيع','Cancel this open QX limit order?':'هل تريد إلغاء أمر QX المحدد المفتوح؟','Authenticating wallet and loading private history…':'جارٍ التحقق من المحفظة وتحميل السجل الخاص…','Requesting a one-time QX authentication challenge…':'جارٍ طلب رمز تحقق لمرة واحدة من QX…','Approve the free authentication message in your wallet. This is not a transaction.':'وافق على رسالة التحقق المجانية في محفظتك. هذه ليست معاملة على الشبكة.','QX account authenticated.':'تم التحقق من حساب QX.','Cancellation request processed. Refreshing your order history…':'تمت معالجة طلب الإلغاء. جارٍ تحديث سجل الأوامر…','Private order history refreshed.':'تم تحديث سجل الأوامر الخاص.','Balances and private history refreshed.':'تم تحديث الأرصدة والسجل الخاص.','QX account authenticated; balances and private history refreshed.':'تم التحقق من حساب QX وتحديث الأرصدة والسجل الخاص.','Submitting the signed limit order to QX matching…':'جارٍ إرسال أمر الحد الموقّع إلى محرك مطابقة QX…','Estimated total / proceeds (1% fee)':'الإجمالي / صافي العائد التقديري (رسوم 1%)','Completed spot trades charge a 1% fee to each side; the estimate above includes that fee.':'تُخصم رسوم 1% من كل طرف عند تنفيذ صفقة فورية، والتقدير أعلاه يشمل الرسوم.','Gross':'قبل الرسوم','Fee 1%':'رسوم 1%','Total':'الإجمالي','Receive':'الصافي المستلم','No open orders yet.':'لا توجد أوامر مفتوحة حالياً.','No QX trades recorded for this market.':'لا توجد تداولات مسجلة لهذا السوق في QX.','Connect your Solana wallet first.':'اربط محفظة سولانا أولاً.','This connected wallet does not support message signing. Use a compatible Solana wallet.':'هذه المحفظة لا تدعم توقيع الرسائل. استخدم محفظة سولانا متوافقة.','Wallet did not return a valid signature.':'لم تُرجع المحفظة توقيعاً صالحاً.','Enter a valid market pair such as SOL/USDC.':'أدخل زوج تداول صحيحاً مثل SOL/USDC.','Enter a positive limit price and quantity.':'أدخل سعراً محدداً وكمية أكبر من صفر.','Could not cancel this order.':'تعذر إلغاء هذا الأمر.'},zh:{'My executions':'我的成交','No orders recorded for this wallet yet.':'此钱包暂无订单记录。','No executions for this wallet yet.':'此钱包暂无成交记录。','Cancel':'取消','Fee:':'手续费：','maker':'挂单方','taker':'吃单方','open':'未成交','partially_filled':'部分成交','filled':'已成交','cancelled':'已取消','buy':'买入','sell':'卖出','Cancel this open QX limit order?':'确定取消这笔尚未完成的 QX 限价单吗？','Authenticating wallet and loading private history…':'正在验证钱包并加载私人记录…','Requesting a one-time QX authentication challenge…':'正在请求 QX 一次性验证挑战…','Approve the free authentication message in your wallet. This is not a transaction.':'请在钱包中签署免费的身份验证消息。这不是链上交易。','QX account authenticated.':'QX 账户验证成功。','Cancellation request processed. Refreshing your order history…':'取消请求已处理，正在刷新订单记录…','Private order history refreshed.':'私人订单记录已刷新。','Balances and private history refreshed.':'余额和私人记录已刷新。','QX account authenticated; balances and private history refreshed.':'QX 账户验证成功，余额和私人记录已刷新。','Submitting the signed limit order to QX matching…':'正在将已签名限价单提交至 QX 撮合引擎…','Estimated total / proceeds (1% fee)':'预计总额 / 净收入（1% 手续费）','Completed spot trades charge a 1% fee to each side; the estimate above includes that fee.':'现货成交时买卖双方各收取 1% 手续费；上方估算已包含该费用。','Gross':'费用前','Fee 1%':'1% 手续费','Total':'总额','Receive':'预计到账','No open orders yet.':'暂无未完成订单。','No QX trades recorded for this market.':'该市场暂无 QX 成交记录。','Connect your Solana wallet first.':'请先连接 Solana 钱包。','This connected wallet does not support message signing. Use a compatible Solana wallet.':'当前钱包不支持消息签名，请使用兼容的 Solana 钱包。','Wallet did not return a valid signature.':'钱包未返回有效签名。','Enter a valid market pair such as SOL/USDC.':'请输入有效交易对，例如 SOL/USDC。','Enter a positive limit price and quantity.':'请输入大于零的限价和数量。','Could not cancel this order.':'无法取消此订单。'}};
- const tr=(v)=>words[window.qxLanguage||document.getElementById('qxLanguage')?.value||'en']?.[v]||v;
- const staticWords={
-  en:{kicker:'QX CENTRAL LIMIT ORDER BOOK',title:'Spot Trading',tag:'LIMIT ORDERS',intro:'QX internal spot order book. Wallet message-signature authentication is required before balances or orders can be accessed. No deposit addresses are assigned yet. Withdrawals are disabled until secure custody and an audited Solana signing/broadcast service are configured.',market:'Market pair',refresh:'Refresh market',account:'QX account',sol:'Available SOL',usdc:'Available USDC',auth:'Authenticate QX account',balances:'Refresh balances',bids:'Order book · Bids',asks:'Order book · Asks',trades:'Recent QX trades',place:'Place a spot limit order',price:'Limit price',quantity:'Quantity',total:'Estimated total / proceeds (1% fee)',history:'My orders & executions',historyNote:'Private to the connected wallet. Open limit orders can be cancelled before they are filled.',buy:'BUY',sell:'SELL',placeButton:'AUTHENTICATE AND PLACE LIMIT ORDER',availability:'Spot limit orders: enabled · Market orders: disabled · Margin: disabled · Deposits: not configured · Withdrawals: disabled'},
-  ar:{kicker:'دفتر أوامر QX المركزي',title:'التداول الفوري',tag:'أوامر محددة السعر',intro:'دفتر أوامر تداول فوري داخلي لدى QX. يلزم التحقق من المحفظة بتوقيع رسالة قبل عرض الأرصدة أو الأوامر. لا توجد عناوين إيداع مخصصة حالياً، والسحب معطّل حتى إعداد حفظ آمن للأصول وخدمة معتمدة لتوقيع وبث تحويلات سولانا.',market:'زوج التداول',refresh:'تحديث السوق',account:'حساب QX',sol:'رصيد SOL المتاح',usdc:'رصيد USDC المتاح',auth:'التحقق من حساب QX',balances:'تحديث الأرصدة',bids:'دفتر الأوامر · طلبات الشراء',asks:'دفتر الأوامر · طلبات البيع',trades:'أحدث تداولات QX',place:'إنشاء أمر تداول فوري محدد السعر',price:'السعر المحدد',quantity:'الكمية',total:'الإجمالي / صافي العائد التقديري (رسوم 1%)',history:'أوامري والتنفيذات',historyNote:'السجل خاص بالمحفظة المتصلة. يمكنك إلغاء أوامر الحد المفتوحة قبل تنفيذها.',buy:'شراء',sell:'بيع',placeButton:'تحقق من المحفظة وأرسل أمر الحد',availability:'أوامر الحد الفورية: مفعّلة · أوامر السوق: معطّلة · الهامش: غير متاح · الإيداع: غير مجهّز · السحب: معطّل'},
-  zh:{kicker:'QX 中央限价订单簿',title:'现货交易',tag:'限价订单',intro:'QX 内部现货订单簿。查看余额或订单前，必须通过钱包签名消息完成身份验证。目前尚未分配充值地址；在配置安全托管及经过审计的 Solana 签名和广播服务前，提现功能保持关闭。',market:'交易对',refresh:'刷新市场',account:'QX 账户',sol:'可用 SOL',usdc:'可用 USDC',auth:'验证 QX 账户',balances:'刷新余额',bids:'订单簿 · 买单',asks:'订单簿 · 卖单',trades:'QX 最新成交',place:'创建现货限价单',price:'限价',quantity:'数量',total:'预计总额 / 净收入（1% 手续费）',history:'我的订单与成交',historyNote:'仅连接的钱包可见。限价单完全成交前可以取消。',buy:'买入',sell:'卖出',placeButton:'验证钱包并提交限价单',availability:'现货限价单：已启用 · 市价单：已禁用 · 杠杆：未启用 · 充值：未配置 · 提现：已禁用'}
- };
- function applyCexLanguage(){
-  const language=window.qxLanguage||$('qxLanguage')?.value||'en';const d=staticWords[language]||staticWords.en;
-  const set=(id,key)=>{const el=$(id);if(el)el.textContent=d[key]||staticWords.en[key]||key;};
-  Object.entries({qxCexKicker:'kicker',qxCexTitle:'title',qxCexOrderTag:'tag',qxCexIntro:'intro',qxCexAvailability:'availability',qxCexMarketLabel:'market',qxCexRefresh:'refresh',qxCexAccountLabel:'account',qxCexSolLabel:'sol',qxCexUsdcLabel:'usdc',qxCexAuth:'auth',qxCexBalances:'balances',qxCexBidsTitle:'bids',qxCexAsksTitle:'asks',qxCexTradesTitle:'trades',qxCexPlaceTitle:'place',qxCexPriceLabel:'price',qxCexQuantityLabel:'quantity',qxCexTotalLabel:'total',qxCexHistoryTitle:'history',qxCexHistoryNote:'historyNote',qxCexBuy:'buy',qxCexSell:'sell',qxCexPlace:'placeButton'}).forEach(([id,key])=>set(id,key));
-  const price=$('qxCexPrice'),quantity=$('qxCexQuantity');if(price)price.placeholder=language==='ar'?'USDC لكل SOL':language==='zh'?'每 SOL 的 USDC 价格':'USDC per SOL';if(quantity)quantity.placeholder=language==='ar'?'كمية SOL':language==='zh'?'SOL 数量':'SOL amount';
- }
- function status(message){const el=$('qxCexStatus');if(el)el.textContent=tr(message);}
- function market(){return String($('qxCexMarket')?.value||'SOL/USDC').trim().toUpperCase();}
- async function request(method='GET',payload=null,query='',signal=null){
-  const options={method,cache:'no-store',headers:{apikey:ANON},signal:signal||undefined};
-  if(payload){options.headers['Content-Type']='application/json';options.body=JSON.stringify(payload);}
-  const response=await fetch(API+(method==='GET'?'?'+query:''),options);
-  const data=await response.json().catch(()=>({}));
-  if(!response.ok||data.error||data.ok===false)throw new Error(data.error||('QX trading request failed ('+response.status+').'));
-  return data;
- }
- function cexAbortPending(){
-  if(cexRequestController){try{cexRequestController.abort();}catch(_){}cexRequestController=null;}
-  cexRequestSeq++;
- }
- function cexSignal(){
-  cexAbortPending();
-  cexRequestController=new AbortController();
-  return {signal:cexRequestController.signal,seq:cexRequestSeq};
- }
- function cexIsCurrent(seq){return seq===cexRequestSeq&&!cexHidden&&!document.hidden;}
- window.addEventListener('visibilitychange',()=>{
-  cexHidden=document.visibilityState==='hidden';
-  if(cexHidden)cexAbortPending();
- });
- function provider(){try{return window.QXGetActiveWalletProvider?.()||null;}catch(_){return null;}}
- function wallet(){try{return window.QXGetWalletState?.()||{connected:false,address:''};}catch(_){return {connected:false,address:''};}}
- function signatureBase64(signed){const bytes=signed?.signature||signed;if(!(bytes instanceof Uint8Array)&&!ArrayBuffer.isView(bytes))throw new Error('Wallet did not return a valid signature.');const v=new Uint8Array(bytes.buffer,bytes.byteOffset,bytes.byteLength);let b='';for(let i=0;i<v.length;i++)b+=String.fromCharCode(v[i]);return btoa(b);}
- async function authenticate(force=false){
-  const w=wallet();if(!w.connected||!w.address)throw new Error('Connect your Solana wallet first.');
-  // qx-trading consumes every challenge after one successful request; sign a fresh challenge for each protected call.
-  session=null;
-  const signer=provider();if(!signer||typeof signer.signMessage!=='function')throw new Error('This connected wallet does not support message signing. Use a compatible Solana wallet.');
-  status('Requesting a one-time QX authentication challenge…');
-  const challenge=await request('POST',{action:'challenge',wallet:w.address});
-  status('Approve the free authentication message in your wallet. This is not a transaction.');
-  const signed=await signer.signMessage(new TextEncoder().encode(challenge.message));
-  session={wallet:w.address,signature:signatureBase64(signed)};
-  $('qxCexAccount').textContent=w.address.slice(0,5)+'…'+w.address.slice(-5);
-  status('QX account authenticated.');
-  return session;
- }
- async function signedPayload(action,extra={}){const s=await authenticate();return {action,wallet:s.wallet,signature:s.signature,...extra};}
- async function loadBook(){
-  const m=market();if(!/^[A-Z0-9._-]{2,20}\/[A-Z0-9._-]{2,20}$/.test(m))throw new Error('Enter a valid market pair such as SOL/USDC.');
-  const {signal,seq}=cexSignal();
-  const d=await request('GET',null,'action=book&market='+encodeURIComponent(m),signal);
-  if(!cexIsCurrent(seq))return;
-  const render=(rows)=>rows?.length?rows.slice(0,15).map(x=>'<div class="swap-quote"><span>'+fmt(x.price)+'</span><strong>'+fmt(Math.max(0,Number(x.quantity)-Number(x.filled_quantity)))+'</strong></div>').join(''):'<div class="empty">'+tr('No open orders yet.')+'</div>';
-  $('qxCexBids').innerHTML=render(d.bids);$('qxCexAsks').innerHTML=render(d.asks);
- }
- async function loadTrades(){
-  const m=market(),{signal,seq}=cexSignal();
-  const d=await request('GET',null,'action=trades&market='+encodeURIComponent(m),signal);
-  if(!cexIsCurrent(seq))return;
-  $('qxCexTrades').innerHTML=d.trades?.length?d.trades.slice(0,15).map(x=>'<div class="swap-quote"><span>'+esc(dateFmt(x.executed_at))+'</span><strong>'+fmt(x.price)+' · '+fmt(x.quantity)+'</strong></div>').join(''):'<div class="empty">'+tr('No QX trades recorded for this market.')+'</div>';
- }
- async function loadBalances(){
-  const p=await signedPayload('balances');const d=await request('POST',p);
-  const rows=d.balances||[];const sol=rows.find(x=>x.qx_assets?.symbol==='SOL'),usdc=rows.find(x=>x.qx_assets?.symbol==='USDC');
-  $('qxCexSolBalance').textContent=fmt(sol?.available||0);$('qxCexUsdcBalance').textContent=fmt(usdc?.available||0);
-  $('qxCexAccount').textContent=(d.account?.wallet||'').slice(0,5)+'…'+(d.account?.wallet||'').slice(-5);
- }
- function renderHistory(d){
-  const host=$('qxCexOrders'),tradesHost=$('qxCexMyTrades');
-  const orders=Array.isArray(d?.orders)?d.orders:[],trades=Array.isArray(d?.trades)?d.trades:[];
-  if(host)host.innerHTML=orders.length?orders.map(o=>{
-   const open=['open','partially_filled'].includes(String(o.status||''));
-   return '<div class="swap-quote" style="gap:8px;align-items:center"><span><b>'+esc(tr(String(o.side||'').toLowerCase()))+'</b> · '+esc(o.market)+'<br><small>'+esc(tr(o.status))+' · '+esc(dateFmt(o.created_at))+'</small></span><span style="text-align:right">'+fmt(o.price)+'<br><small>'+fmt(o.filled_quantity)+' / '+fmt(o.quantity)+'</small></span>'+(open?'<button class="btn" type="button" data-qx-cancel="'+esc(o.id)+'" style="padding:6px 9px">'+tr('Cancel')+'</button>':'')+'</div>';
-  }).join(''):'<div class="empty">'+tr('No orders recorded for this wallet yet.')+'</div>';
-  if(tradesHost)tradesHost.innerHTML='<h4 style="margin:10px 0">'+tr('My executions')+'</h4>'+(trades.length?trades.map(t=>'<div class="swap-quote"><span>'+esc(t.market)+' · '+esc(tr(t.role))+'<br><small>'+esc(dateFmt(t.executed_at))+'</small></span><strong>'+fmt(t.price)+' × '+fmt(t.quantity)+'<br><small>'+tr('Fee:')+' '+fmt(t.fee)+'</small></strong></div>').join(''):'<div class="empty">'+tr('No executions for this wallet yet.')+'</div>');
-  host?.querySelectorAll('[data-qx-cancel]').forEach(btn=>btn.addEventListener('click',()=>cancelOrder(btn.dataset.qxCancel,btn)));
- }
- async function loadHistory(){
-  const host=$('qxCexOrders');if(host)host.textContent=tr('Authenticating wallet and loading private history…');
-  const payload=await signedPayload('history');const d=await request('POST',payload);lastHistory=d;renderHistory(d);
- }
- async function cancelOrder(orderId,button){
-  if(!orderId||busy)return;
-  if(!window.confirm(tr('Cancel this open QX limit order?')))return;
-  busy=true;if(button)button.disabled=true;
-  try{const payload=await signedPayload('cancel-order',{order_id:orderId});await request('POST',payload);status('Cancellation request processed. Refreshing your order history…');await loadHistory();await loadBook();await loadBalances();}
-  catch(e){status(e.message||'Could not cancel this order.');if(button)button.disabled=false;}
-  finally{busy=false;}
- }
- function updateTotal(){const p=Number($('qxCexPrice')?.value),q=Number($('qxCexQuantity')?.value),el=$('qxCexTotal');if(!el)return;if(!(p>0&&q>0&&Number.isFinite(p)&&Number.isFinite(q))){el.textContent='—';return;}const gross=p*q,fee=gross*0.01,net=side==='buy'?gross+fee:gross-fee;el.textContent=tr('Gross')+': '+fmt(gross)+' USDC · '+tr('Fee 1%')+': '+fmt(fee)+' USDC · '+tr(side==='buy'?'Total':'Receive')+': '+fmt(net)+' USDC';}
- function setSide(v){side=v;$('qxCexBuy').classList.toggle('active',v==='buy');$('qxCexSell').classList.toggle('active',v==='sell');$('qxCexBuy').classList.toggle('buy',true);$('qxCexSell').classList.toggle('sell',true);updateTotal();}
- async function place(){
-  if(busy)return;busy=true;$('qxCexPlace').disabled=true;
-  try{
-   const p=Number($('qxCexPrice').value),q=Number($('qxCexQuantity').value),m=market();
-   if(!(p>0&&q>0&&Number.isFinite(p)&&Number.isFinite(q)))throw new Error('Enter a positive limit price and quantity.');
-   const signed=await signedPayload('place-order',{market:m,side,order_type:'limit',price:p,quantity:q});
-   status('Submitting the signed limit order to QX matching…');
-   const result=await request('POST',signed);
-   status('QX accepted the order request. Result: '+JSON.stringify(result.result??result));
-   await loadBook();await loadBalances();await loadHistory();
-  }catch(e){status(e.message||'Could not place order.');}
-  finally{busy=false;$('qxCexPlace').disabled=false;}
- }
- async function refresh(){
-  if(cexHidden||document.hidden)return;
-  // Both readers share one abort controller. Run sequentially so the second
-  // request cannot abort the first; isolate failures so a trades-feed error
-  // never overwrites a successfully loaded order book.
-  try{await loadBook();}
-  catch(e){if(e?.name==='AbortError'||cexHidden||document.hidden)return;$('qxCexBids').textContent=e.message;$('qxCexAsks').textContent=e.message;}
-  try{await loadTrades();}
-  catch(e){if(e?.name==='AbortError'||cexHidden||document.hidden)return;$('qxCexTrades').textContent=e.message;}
- }
- $('qxCexBuy')?.addEventListener('click',()=>setSide('buy'));$('qxCexSell')?.addEventListener('click',()=>setSide('sell'));
- $('qxCexPrice')?.addEventListener('input',updateTotal);$('qxCexQuantity')?.addEventListener('input',updateTotal);
- $('qxCexRefresh')?.addEventListener('click',refresh);$('qxCexMarket')?.addEventListener('change',refresh);
- $('qxCexAuth')?.addEventListener('click',async()=>{try{await loadBalances();await loadHistory();status('QX account authenticated; balances and private history refreshed.');}catch(e){status(e.message);}});
- $('qxCexBalances')?.addEventListener('click',async()=>{try{await loadBalances();await loadHistory();status('Balances and private history refreshed.');}catch(e){status(e.message);}});
- $('qxCexHistoryRefresh')?.addEventListener('click',async()=>{try{await loadHistory();status('Private order history refreshed.');}catch(e){status(e.message);}});
- document.getElementById('qxLanguage')?.addEventListener('change',()=>{applyCexLanguage();if(lastHistory)renderHistory(lastHistory);updateTotal();});
- applyCexLanguage();
- cexHidden=document.visibilityState==='hidden';
- $('qxCexPlace')?.addEventListener('click',place);
- /* Internal CEX page is intentionally not exposed in the QX navigation. */
- 
- window.addEventListener('qx:wallet-connected',()=>{session=null;cexAbortPending();});
- window.addEventListener('pagehide',cexAbortPending,{once:true});
- refresh();
-})();
-</script>
-
-<script id="qx-final-home-route-guard">
-(function(){
-  "use strict";
-  /* Single startup guard: keep the Markets page as the default home view and
-     clear stale token-route state. This replaces the former V85 + V84 guards
-     so the same startup reset is not installed twice. */
-  window.__QXTokenUserOpen=false;
-  function qxForceRealHome(){
-    try{
-      try{history.replaceState({},"",location.pathname+location.search);}catch(_){ }
-      document.body.classList.remove("qx-token-open","qx-trade-modal-open","qx-token-focus");
-      const detail=document.getElementById("detail");
-      if(detail){
-        detail.style.setProperty("display","none","important");
-        detail.hidden=true;
-        detail.removeAttribute("aria-hidden");
-      }
-      const markets=document.getElementById("marketsPage");
-      if(markets){
-        markets.classList.add("active");
-        markets.setAttribute("aria-hidden","false");
-        markets.style.setProperty("display","block","important");
-        markets.style.setProperty("visibility","visible","important");
-        if("inert" in markets)markets.inert=false;
-      }
-      const exchange=document.getElementById("exchangePage");
-      if(exchange){
-        exchange.classList.remove("active");
-        exchange.setAttribute("aria-hidden","true");
-        exchange.style.setProperty("display","none","important");
-        if("inert" in exchange)exchange.inert=true;
-      }
-      document.querySelectorAll(".page").forEach(function(page){
-        if(page!==markets){
-          page.classList.remove("active");
-          page.setAttribute("aria-hidden","true");
-          if("inert" in page)page.inert=true;
-        }
-      });
-      window.__QXSelectedToken=null;
-      window.QXTerminalTokenMint="";
-    }catch(e){console.warn("QX startup home reset:",e);}
-  }
-  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",qxForceRealHome,{once:true});
-  else qxForceRealHome();
-  window.addEventListener("pageshow",qxForceRealHome);
-})();
-</script>
-
-</body>
-</html>
-
-
+  function open(){const t=current();if(!t){alert("Open a token first.");return;}const m=$("qxAlertModal");if(!m)return;m.style.display="flex";m.dataset.mint=String(t?.baseToken?.address||t?.mint||t?.address||"");$("qxAlertTokenLabel").textContent=(t?.baseToken?.symbol||t?.symbol||"TOK
