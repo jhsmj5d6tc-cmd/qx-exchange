@@ -216,6 +216,16 @@ button,select,input,textarea{touch-action:manipulation}button,.btn,.market-tab,.
 @media(max-width:390px){.wrap{width:calc(100% - 20px)!important}.brand-name{font-size:12px!important}.qx-preferences-toggle{max-width:94px!important;padding-inline:7px!important;font-size:10px!important}.qx-nav-toggle{width:40px!important;min-width:40px!important;padding:0!important}.panel,.hero{padding:12px!important}.qx-stats{gap:6px!important}.qx-stat{padding:9px!important}.qx-stat strong{font-size:11px!important}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto!important}}
 </style>
+
+<style id="qx-trending-motion-fix">
+#publicAdsList.qx-trending-grid{display:block!important;overflow:hidden!important;width:100%;max-width:100%;position:relative;}
+#publicAdsList .qx-trending-track{display:flex;flex-flow:row nowrap;align-items:stretch;gap:10px;width:max-content;min-width:100%;animation:qxTrendingMarquee 34s linear infinite;will-change:transform;}
+#publicAdsList .qx-trending-card{display:block;flex:0 0 clamp(190px,24vw,245px);width:clamp(190px,24vw,245px);}
+#publicAdsList:hover .qx-trending-track,#publicAdsList:focus-within .qx-trending-track{animation-play-state:paused;}
+@keyframes qxTrendingMarquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@media(max-width:620px){#publicAdsList .qx-trending-track{gap:8px;animation-duration:28s;}#publicAdsList .qx-trending-card{flex-basis:210px;width:210px;}}
+@media(prefers-reduced-motion:reduce){#publicAdsList .qx-trending-track{animation:none;overflow-x:auto;}}
+</style>
 </head>
 <body>
 <div class="wrap">
@@ -461,11 +471,11 @@ button,select,input,textarea{touch-action:manipulation}button,.btn,.market-tab,.
    </div>
    <div class="chart-section qx-full-dex-chart" id="detailChartWrap" style="display:none">
     <div class="chart-ranges" id="chartRanges" role="group" aria-label="Chart interval">
-     <button type="button" class="chart-range active" data-chart-range="1s" aria-pressed="true">1S</button>
+     <button type="button" class="chart-range" data-chart-range="1s" aria-pressed="false">1S</button>
      <button type="button" class="chart-range" data-chart-range="5s" aria-pressed="false">5S</button>
      <button type="button" class="chart-range" data-chart-range="15s" aria-pressed="false">15S</button>
      <button type="button" class="chart-range" data-chart-range="30s" aria-pressed="false">30S</button>
-     <button type="button" class="chart-range" data-chart-range="1m" aria-pressed="false">1M</button>
+     <button type="button" class="chart-range active" data-chart-range="1m" aria-pressed="true">1M</button>
      <button type="button" class="chart-range" data-chart-range="5m" aria-pressed="false">5M</button>
      <button type="button" class="chart-range" data-chart-range="15m" aria-pressed="false">15M</button>
      <button type="button" class="chart-range" data-chart-range="30m" aria-pressed="false">30M</button>
@@ -3353,9 +3363,13 @@ async function qxLoadLiveChart(token,range="1H"){
  const canvas=$("qxOwnedChartCanvas"),ctx=canvas?.getContext?.("2d");if(!canvas||!ctx)return;
  const statusBeforeLoad=$("qxOwnedChartStatus");if(statusBeforeLoad)statusBeforeLoad.textContent="Refreshing verified market data…";
  try{
- let pair=String(token?.cmcPairAddress||token?.pairAddress||token?.poolAddress||token?.qxActivePool||"");
- if(!pair){const found=(allPairs||[]).find(p=>String(p?.baseToken?.address||"")===mint);pair=String(found?.cmcPairAddress||found?.pairAddress||found?.poolAddress||found?.qxActivePool||"");}
- if(!pair){host.innerHTML='<div class="chart-message">No verified liquidity pool is available for this token.</div>';return;}
+ let pair=String(token?.cmcPairAddress||token?.pairAddress||token?.poolAddress||token?.qxActivePool||token?.pairId||"");
+ if(!pair){const found=(allPairs||[]).find(p=>String(p?.baseToken?.address||"")===mint);pair=String(found?.cmcPairAddress||found?.pairAddress||found?.poolAddress||found?.qxActivePool||found?.pairId||"");}
+ if(!pair){
+  const lookup=await fetch("https://api.dexscreener.com/tokens/v1/solana/"+encodeURIComponent(mint),{signal:chartController.signal,headers:{accept:"application/json"},cache:"no-store"});
+  if(lookup.ok){const rows=await lookup.json();const best=(Array.isArray(rows)?rows:[]).filter(x=>x?.chainId==="solana"&&String(x?.baseToken?.address||"")===mint&&Number(x?.liquidity?.usd)>0).sort((a,b)=>Number(b?.liquidity?.usd||0)-Number(a?.liquidity?.usd||0))[0];pair=String(best?.pairAddress||"");if(best){token.pairAddress=pair;token.poolAddress=pair;}}
+ }
+ if(!pair){const status=$("qxOwnedChartStatus");if(status)status.textContent="No verified liquidity pool is available yet. QX will retry automatically.";return;}
  const seconds=({"1s":1,"5s":5,"15s":15,"30s":30})[String(range).toLowerCase()]||0;
  let points=[],sourceLabel="GeckoTerminal pool OHLCV";
  if(seconds){
@@ -3378,17 +3392,21 @@ async function qxLoadLiveChart(token,range="1H"){
   const buckets=new Map();
   for(const t of ticks){const bucket=Math.floor(t.time/(seconds*1000))*(seconds*1000);let c=buckets.get(bucket);if(!c){c={time:Math.floor(bucket/1000),open:t.price,high:t.price,low:t.price,close:t.price,volume:0,trades:0};buckets.set(bucket,c);}c.high=Math.max(c.high,t.price);c.low=Math.min(c.low,t.price);c.close=t.price;c.volume+=t.volume;c.trades++;}
   points=[...buckets.values()].slice(-120);sourceLabel="Real pool trades · "+seconds+"s candles";
- }else{
+ }
+ // A quiet token may have no trades in the latest page. Never leave the chart blank:
+ // show the provider's real 1-minute OHLCV history instead of fabricated candles.
+ if(!points.length){
   const rangeMap={"1m":["minute",1],"5m":["minute",5],"15m":["minute",15],"30m":["minute",30],"1H":["hour",1],"4H":["hour",4],"1D":["day",1]};
-  const cfg=rangeMap[range]||rangeMap["1H"],unit=cfg[0],aggregate=cfg[1];
+  const cfg=seconds?["minute",1]:(rangeMap[range]||rangeMap["1H"]),unit=cfg[0],aggregate=cfg[1];
   const endpoint=unit==="minute"?"minute":unit==="hour"?"hour":"day";
-  const url="https://api.geckoterminal.com/api/v2/networks/solana/pools/"+encodeURIComponent(pair)+"/ohlcv/"+endpoint+"?aggregate="+aggregate+"&limit=120";
+  const url="https://api.geckoterminal.com/api/v2/networks/solana/pools/"+encodeURIComponent(pair)+"/ohlcv/"+endpoint+"?aggregate="+aggregate+"&limit=120&token=base";
   const r=await fetch(url,{signal:chartController.signal,headers:{accept:"application/json"},cache:"no-store"});if(!r.ok)throw new Error("Historical OHLCV request failed ("+r.status+")");
   const j=await r.json(),rows=Array.isArray(j?.data?.attributes?.ohlcv_list)?j.data.attributes.ohlcv_list:[];
   points=rows.map(x=>({time:Number(x?.[0]),open:Number(x?.[1]),high:Number(x?.[2]),low:Number(x?.[3]),close:Number(x?.[4]),volume:Number(x?.[5]||0)})).filter(x=>Number.isFinite(x.time)&&x.open>0&&x.high>0&&x.low>0&&x.close>0).sort((a,b)=>a.time-b.time);
+  if(points.length)sourceLabel=seconds?"Real 1m pool OHLCV · no recent sub-minute trades":"GeckoTerminal pool OHLCV";
  }
  if(requestId!==qxChartRequestId||String(selectedToken?.baseToken?.address||"")!==mint)return;
- if(!points.length){const status=$("qxOwnedChartStatus");if(status)status.textContent='No new real '+(seconds?'pool trades':'historical candles')+' are available for this interval yet. Waiting for the next update.';return;}
+ if(!points.length){const status=$("qxOwnedChartStatus");if(status)status.textContent='No verified price candles are available from the selected pool yet. QX will retry automatically.';return;}
  const draw=()=>{
   const rect=host.getBoundingClientRect(),dpr=Math.max(1,window.devicePixelRatio||1),w=Math.max(280,Math.floor(rect.width||700)),h=Math.max(220,Math.floor(rect.height||340));
   canvas.width=w*dpr;canvas.height=h*dpr;canvas.style.width=w+"px";canvas.style.height=h+"px";ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
@@ -3547,7 +3565,7 @@ function qxSetupChartRanges(token){
   document.querySelectorAll("#chartRanges [data-chart-range]").forEach(x=>{const active=x===b;x.classList.toggle("active",active);x.setAttribute("aria-pressed",String(active));});
   refresh(b.dataset.chartRange);
  });
- const active=document.querySelector("#chartRanges [data-chart-range].active")?.dataset.chartRange||"1s";
+ const active=document.querySelector("#chartRanges [data-chart-range].active")?.dataset.chartRange||"1m";
  refresh(active);
 }
 function openToken(token){
@@ -4840,8 +4858,8 @@ void loadMarket().then(()=>qxRefreshPublicLiveSnapshots()).catch(e=>console.warn
     try{if(typeof window.QXOpenToken==="function")window.QXOpenToken(token);else if(typeof window.QXUnifiedOpenToken==="function")window.QXUnifiedOpenToken(token);}catch(err){console.error("QX token terminal open failed",err);}
   },true);
 
-  /* The Sponsored block stays in Markets. Five live trending currency slots are always visible;
-     verified paid ads can occupy slots when returned by the QX ads backend. */
+  /* The Sponsored block stays in Markets. Up to six verified trending tokens move continuously;
+     the list is sourced only from current public Solana market data. */
   let pool=[],slotIndex=0,rotationTimer=null,refreshTimer=null,refreshBusy=false,lastFetchAt=0,lastSignature="";
   function money(v){const n=num(v);if(!n)return "—";if(typeof window.QXFormatMoney==="function")return window.QXFormatMoney(n,true);if(n>=1e9)return "$"+(n/1e9).toFixed(2)+"B";if(n>=1e6)return "$"+(n/1e6).toFixed(2)+"M";if(n>=1e3)return "$"+(n/1e3).toFixed(1)+"K";return "$"+n.toFixed(2);}
   function price(v){const n=num(v);if(!n)return "—";if(typeof window.QXFormatTokenPrice==="function")return window.QXFormatTokenPrice(n);if(n>=1)return "$"+n.toLocaleString("en-US",{maximumFractionDigits:4});if(n>=.01)return "$"+n.toFixed(4);if(n>=.0001)return "$"+n.toFixed(6);return "$"+n.toExponential(2);}
@@ -4866,9 +4884,10 @@ void loadMarket().then(()=>qxRefreshPublicLiveSnapshots()).catch(e=>console.warn
   function renderThreeSlots(){
     const host=$("publicAdsList");if(!host)return;const section=host.closest(".qx-sponsored-inline");
     if(!pool.length){host.innerHTML="<div class=\"ad-empty\">No verified trending tokens are ready yet.</div>";if(section)section.hidden=false;return;}
-    const items=Array.from({length:Math.min(5,pool.length)},(_,i)=>pool[(slotIndex+i)%pool.length]);
+    const items=pool.slice(0,6);
     host.classList.add("qx-trending-grid");
-    host.innerHTML=items.map(trendCard).join("");
+    const cards=items.map(trendCard).join("");
+    host.innerHTML='<div class="qx-trending-track">'+cards+(items.length>1?cards:'')+'</div>';
     if(section)section.hidden=false;
   }
   async function refreshTrending(force=false){
@@ -4879,7 +4898,7 @@ void loadMarket().then(()=>qxRefreshPublicLiveSnapshots()).catch(e=>console.warn
       renderThreeSlots();return pool;
     }catch(error){console.warn("QX trending feed refresh failed",error);if(!pool.length)renderThreeSlots();return pool;}finally{refreshBusy=false;}
   }
-  function start(){void refreshTrending(true);if(!refreshTimer)refreshTimer=setInterval(()=>{if(document.visibilityState!=="hidden")void refreshTrending(true);},60000);if(!rotationTimer)rotationTimer=setInterval(()=>{if(document.visibilityState!=="hidden"&&pool.length>5){const host=$("publicAdsList");host?.classList.add("is-changing");setTimeout(()=>{slotIndex=(slotIndex+1)%pool.length;renderThreeSlots();host?.classList.remove("is-changing");},320);}},8000);}
+  function start(){void refreshTrending(true);if(!refreshTimer)refreshTimer=setInterval(()=>{if(document.visibilityState!=="hidden")void refreshTrending(true);},60000);}
   document.addEventListener("DOMContentLoaded",start,{once:true});if(document.readyState!=="loading")start();
   window.QXRefreshTrendingSpotlight=refreshTrending;window.QXRenderTrendingSpotlight=refreshTrending;
 
