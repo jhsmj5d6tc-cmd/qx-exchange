@@ -159,6 +159,21 @@ html[dir="rtl"] .qx-main-menu select,html[dir="rtl"] .qx-main-menu label{text-al
   .qx-main-menu{width:calc(100vw - 12px)!important;right:-2px!important;}
 }
 </style>
+
+<style id="qx-final-market-repair">
+#publicAdsList.qx-trending-grid{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:9px!important;align-items:stretch!important;overflow:hidden!important;}
+#publicAdsList.qx-trending-grid .qx-trending-card{min-width:0!important;padding:11px!important;display:flex!important;flex-direction:column!important;justify-content:space-between!important;transition:opacity .32s ease,transform .32s ease,border-color .2s ease!important;}
+#publicAdsList.qx-trending-grid .qx-trending-token{gap:8px!important;align-items:center!important;}
+#publicAdsList.qx-trending-grid .qx-trending-logo{width:34px!important;height:34px!important;flex-basis:34px!important;}
+#publicAdsList.qx-trending-grid .qx-trending-name{font-size:11px!important;}
+#publicAdsList.qx-trending-grid .qx-trending-symbol{font-size:8px!important;}
+#publicAdsList.qx-trending-grid .qx-trending-price{font-size:11px!important;}
+#publicAdsList.qx-trending-grid .qx-trending-foot{font-size:8px!important;}
+#publicAdsList.qx-trending-grid.is-changing .qx-trending-card{opacity:.35!important;transform:translateY(5px)!important;}
+@media(max-width:900px){#publicAdsList.qx-trending-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important;}}
+@media(max-width:620px){#publicAdsList.qx-trending-grid{display:flex!important;gap:8px!important;overflow-x:auto!important;scroll-snap-type:x mandatory!important;padding:2px 1px 7px!important;-webkit-overflow-scrolling:touch!important;}#publicAdsList.qx-trending-grid .qx-trending-card{flex:0 0 min(78vw,270px)!important;scroll-snap-align:start!important;}}
+@media(prefers-reduced-motion:reduce){#publicAdsList.qx-trending-grid .qx-trending-card{transition:none!important;}}
+</style>
 </head>
 <body>
 <div class="wrap">
@@ -825,7 +840,7 @@ function qxHasFreshTradeBalance(mint,wallet,direction=tradeDirection,maxAgeMs=20
  if(!Number.isFinite(Number(s.sol))||Number(s.sol)<0)return false;
  return direction==="buy"||Number.isFinite(Number(s.token))&&Number(s.token)>=0;
 }
-let allPairs=[],newPairs=[],trendingPairs=[],currentCategory="all",marketDisplayLimit=80;
+let allPairs=[],newPairs=[],trendingPairs=[],currentCategory="all",marketDisplayLimit=120;
 let marketBusy=false,canonicalSolPair=null,selectedToken=null;
 let tradeDirection="buy",balancesHidden=false,lastAssetRows=[];
 let sortMetric="",sortDirection="desc",tradePercent=0;
@@ -1602,11 +1617,11 @@ function openAdModal(){
  adEl("adModalBackdrop").classList.add("open");
 }
 function closeAdModal(){if(!adBusy)adEl("adModalBackdrop").classList.remove("open");}
-adEl("adsMenuBtn").addEventListener("click",()=>{
+adEl("adsMenuBtn")?.addEventListener("click",()=>{
  const open=adEl("adsMenu").classList.toggle("open");
  adEl("adsMenuBtn").setAttribute("aria-expanded",String(open));
 });
-adEl("addAdMenuBtn").addEventListener("click",openAdModal);
+adEl("addAdMenuBtn")?.addEventListener("click",openAdModal);
 adEl("adCloseBtn").addEventListener("click",closeAdModal);
 adEl("adModalBackdrop").addEventListener("click",e=>{if(e.target===adEl("adModalBackdrop"))closeAdModal();});
 adEl("adDuration").addEventListener("change",updateAdPrice);
@@ -3448,7 +3463,7 @@ function qxLooksLikeFakeNative(p){
 async function qxFetchGecko(path){const out=await getJSON(QX_GECKO_BASE+path,8000,0);return (out?.data||[]).map(x=>qxGeckoPoolToPair(x,out?.included||[])).filter(Boolean);}
 async function qxFetchDexSearch(q){
  try{
-  const out=await getJSON(QX_DEX_SEARCH+encodeURIComponent(String(q||"")),10000,1);
+  const out=await getJSON(QX_DEX_SEARCH+encodeURIComponent(String(q||"")),7000,0);
   const rows=Array.isArray(out?.pairs)?out.pairs:[];
   return rows.filter(p=>String(p?.chainId||"").toLowerCase()==="solana").map(p=>{
    const mint=String(p?.baseToken?.address||"");
@@ -3460,7 +3475,7 @@ async function qxFetchDexSearch(q){
  }
 }
 async function qxFetchDexScreenerUniverse(){
- const queries=["SOL","USDC","JUP","BONK","WIF","RAY","PUMP","TRUMP","POPCAT","GOAT"];
+ const queries=["SOL","USDC","JUP","BONK","WIF","RAY","PUMP","TRUMP","POPCAT","GOAT","MEME","Meme coin","AI","DOG","CAT","PEPE","INU","FROG","JITO","ORCA","MEW","FARTCOIN","PENGU","BOME","SLERF","DEGEN","CHILL","NEW SOLANA","SOLANA TOKEN","LAUNCH"];
  const settled=await Promise.allSettled([qxFetchDexLatestSolana(),...queries.map(q=>qxFetchDexSearch(q))]);
  return bestPairsByMint(settled.flatMap(r=>r.status==="fulfilled"?(r.value||[]):[]));
 }
@@ -3474,7 +3489,7 @@ async function qxFetchDexLatestSolana(){
    if(!qxIsValidSolanaMint(mint)||mint===SOL)continue;
    byMint.set(mint,profile);
   }
-  const mints=[...byMint.keys()].slice(0,90);if(!mints.length)return [];
+  const mints=[...byMint.keys()].slice(0,180);if(!mints.length)return [];
   const batches=[];for(let i=0;i<mints.length;i+=30)batches.push(mints.slice(i,i+30));
   const results=await Promise.allSettled(batches.map(batch=>getJSON(QX_DEX_TOKENS+batch.join(","),8000,0)));
   const pairs=results.flatMap(result=>result.status==="fulfilled"&&Array.isArray(result.value)?result.value:[]).filter(pair=>pair?.chainId==="solana");
@@ -4027,6 +4042,16 @@ async function loadMarket(){
  qxMarketStage="starting market refresh";qxMarketLastError="";
  const generation=++qxMarketGeneration;
  try{
+  // Paint the last verified public snapshot immediately; refresh it in the background.
+  if(!allPairs.length){
+   const warm=qxReadMarketCache();
+   if(warm.length){
+    allPairs=bestPairsByMint(warm).filter(qxIsDisplayReady);
+    newPairs=qxFreshNewPairs(allPairs);
+    trendingPairs=allPairs.slice().sort((a,b)=>qxNum(b?.volume?.h24)-qxNum(a?.volume?.h24));
+    renderMarket();qxUpdateMarketStatus("cached verified Solana snapshot",allPairs.length);
+   }
+  }
   const box=$("tokenResults"),count=$("coinCount");
   if(!allPairs.length&&!newPairs.length){
    if(box)box.innerHTML='<div class="market-empty">Loading Solana markets…</div>';
@@ -4560,13 +4585,13 @@ void loadMarket().then(()=>qxRefreshPublicLiveSnapshots()).catch(e=>console.warn
     const src=Array.isArray(window.QXMarketPairs)?window.QXMarketPairs:[];const seen=new Set();
     return src.filter(p=>{
       const mint=String(p?.baseToken?.address||""),sym=String(p?.baseToken?.symbol||"").toUpperCase(),name=String(p?.baseToken?.name||"");
-      if(!/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(mint)||seen.has(mint)||!name||/^(new token|unknown token|token|coin|n\/a|none|null)$/i.test(name)||/^(token|coin|unknown|n\/a|none|null)$/i.test(sym)||num(p?.priceUsd)<=0||num(p?.liquidity?.usd)<2500||!safeHttps(p?.info?.imageUrl||p?.baseToken?.logoURI||""))return false;
+      if(!/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(mint)||seen.has(mint)||!name||/^(new token|unknown token|token|coin|n\/a|none|null)$/i.test(name)||/^(token|coin|unknown|n\/a|none|null)$/i.test(sym)||num(p?.priceUsd)<=0||num(p?.liquidity?.usd)<750||!safeHttps(p?.info?.imageUrl||p?.baseToken?.logoURI||""))return false;
       if(["USDC","USDT","USDH","UXD","USDS","WSOL","SOL"].includes(sym))return false;
       seen.add(mint);return true;
     }).sort((a,b)=>{
       const score=p=>Math.log10(1+num(p?.volume?.h24))*4+Math.log10(1+num(p?.liquidity?.usd))*2+Math.log10(1+num(p?.txns?.h24?.buys)+num(p?.txns?.h24?.sells))*3+Math.min(Math.abs(num(p?.priceChange?.h24)),100)*.025;
       return score(b)-score(a);
-    }).slice(0,12);
+    }).slice(0,30);
   }
   function safeHttps(v){try{const u=new URL(String(v||""));return u.protocol==="https:"?u.href:"";}catch(_){return "";}}
   function trendCard(p){
@@ -4590,7 +4615,7 @@ void loadMarket().then(()=>qxRefreshPublicLiveSnapshots()).catch(e=>console.warn
       renderThreeSlots();return pool;
     }catch(error){console.warn("QX trending feed refresh failed",error);if(!pool.length)renderThreeSlots();return pool;}finally{refreshBusy=false;}
   }
-  function start(){void refreshTrending(true);if(!refreshTimer)refreshTimer=setInterval(()=>{if(document.visibilityState!=="hidden")void refreshTrending(true);},60000);if(!rotationTimer)rotationTimer=setInterval(()=>{if(document.visibilityState!=="hidden"&&pool.length>5){const host=$("publicAdsList");host?.classList.add("is-changing");setTimeout(()=>{slotIndex=(slotIndex+1)%pool.length;renderThreeSlots();host?.classList.remove("is-changing");},220);}},12000);}
+  function start(){void refreshTrending(true);if(!refreshTimer)refreshTimer=setInterval(()=>{if(document.visibilityState!=="hidden")void refreshTrending(true);},60000);if(!rotationTimer)rotationTimer=setInterval(()=>{if(document.visibilityState!=="hidden"&&pool.length>5){const host=$("publicAdsList");host?.classList.add("is-changing");setTimeout(()=>{slotIndex=(slotIndex+1)%pool.length;renderThreeSlots();host?.classList.remove("is-changing");},320);}},8000);}
   document.addEventListener("DOMContentLoaded",start,{once:true});if(document.readyState!=="loading")start();
   window.QXRefreshTrendingSpotlight=refreshTrending;window.QXRenderTrendingSpotlight=refreshTrending;
 
