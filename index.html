@@ -825,6 +825,9 @@ const RPCS=[
  "https://solana.drpc.org",
  "https://api.mainnet.solana.com"
 ];
+// Remember the last RPC endpoint that returned a valid JSON-RPC result.
+// This must be declared in the module scope because ES modules run in strict mode.
+let qxPreferredRpcEndpoint=RPCS[0];
 const SOL_RESERVE=0.0001;
 
 let appKit,activeWalletProvider=null,walletAddress="",connected=false,solPrice=0,qxWalletInitError=null;
