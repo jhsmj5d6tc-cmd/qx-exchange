@@ -3425,6 +3425,16 @@ function qxTokenImageUrl(token){
 }
 window.qxTokenImageUrl=qxTokenImageUrl;
 function qxIsValidSolanaMint(mint){return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(String(mint||""));}
+function qxGeckoPoolToPair(item,included){
+ try{const attrs=item?.attributes||{},rel=item?.relationships||{},rows=Array.isArray(included)?included:[],byId=new Map(rows.map(x=>[String(x?.id||""),x]));
+  const baseRef=String(rel?.base_token?.data?.id||""),quoteRef=String(rel?.quote_token?.data?.id||""),base=byId.get(baseRef)?.attributes||{},quote=byId.get(quoteRef)?.attributes||{};
+  const poolAddress=String(attrs?.address||String(item?.id||"").replace(/^solana_/i,"")),mint=String(base?.address||base?.token_address||baseRef.replace(/^solana_/i,""));
+  if(!qxIsValidSolanaMint(mint)||!qxIsValidSolanaMint(poolAddress))return null;
+  const tx=attrs?.transactions||{},vol=attrs?.volume_usd||{},ch=attrs?.price_change_percentage||{};
+  return {chainId:"solana",pairAddress:poolAddress,baseToken:{address:mint,name:cleanTokenText(base?.name||attrs?.name?.split("/")[0]||"Unknown Token"),symbol:cleanTokenText(base?.symbol||"TOKEN")},quoteToken:{address:String(quote?.address||quote?.token_address||quoteRef.replace(/^solana_/i,"")),name:cleanTokenText(quote?.name||""),symbol:cleanTokenText(quote?.symbol||"")},priceUsd:String(attrs?.base_token_price_usd??attrs?.price_usd??0),priceChange:{h1:qxNum(ch?.h1),h24:qxNum(ch?.h24)},volume:{h1:qxNum(vol?.h1),h24:qxNum(vol?.h24)},liquidity:{usd:qxNum(attrs?.reserve_in_usd??attrs?.liquidity_usd)},marketCap:qxNum(attrs?.market_cap_usd),fdv:qxNum(attrs?.fdv_usd),txns:{h1:{buys:qxNum(tx?.h1?.buys),sells:qxNum(tx?.h1?.sells)},h24:{buys:qxNum(tx?.h24?.buys),sells:qxNum(tx?.h24?.sells)}},pairCreatedAt:qxTimestampMs(attrs?.pool_created_at||attrs?.created_at),tokenCreatedAt:qxTimestampMs(base?.created_at||base?.token_created_at),info:{imageUrl:qxSafeUrl(base?.image_url||base?.imageUrl||attrs?.image_url||"")},dexId:cleanTokenText(String(rel?.dex?.data?.id||attrs?.dex_name||"geckoterminal"))};
+ }catch(_){return null;}
+}
+window.qxGeckoPoolToPair=qxGeckoPoolToPair;
 function normalizedTokenLabel(value){return cleanTokenText(value||"").toLowerCase().replace(/\s+/g," ").trim();}
 function qxLooksLikeFakeNative(p){
  const mint=String(p?.baseToken?.address||"");
@@ -3988,8 +3998,12 @@ async function qxFetchMarketUniverse(){
  // jobs. The terminal gets a real Solana universe first, then enriches it.
  qxMarketStage="requesting fast Solana market feeds";
  const fast=await Promise.allSettled([
-  qxFetchGecko('/new_pools?page=1&include=base_token'),
-  qxFetchGecko('/pools?page=1&include=base_token'),
+  qxFetchGecko('/new_pools?page=1&include=base_token,quote_token,dex'),
+  qxFetchGecko('/new_pools?page=2&include=base_token,quote_token,dex'),
+  qxFetchGecko('/new_pools?page=3&include=base_token,quote_token,dex'),
+  qxFetchGecko('/pools?page=1&include=base_token,quote_token,dex&sort=h24_volume_usd_desc'),
+  qxFetchGecko('/pools?page=2&include=base_token,quote_token,dex&sort=h24_volume_usd_desc'),
+  qxFetchGecko('/trending_pools?page=1&include=base_token,quote_token,dex'),
   qxFetchDexLatestSolana(),
   qxFetchDexSearch('SOL'),
   qxFetchDexSearch('USDC'),
