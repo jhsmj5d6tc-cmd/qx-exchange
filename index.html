@@ -1924,7 +1924,10 @@ async function qxLaunchToken(options={}){
     tokenQuoteDecimal:9,
     tokenAuthorityOption:dbc.TokenAuthorityOption.Immutable,
     totalTokenSupply:supplyHuman,
-    leftover:0
+    // QX platform allocation: exactly 5% of the fixed total token supply
+    // remains outside the bonding curve and is claimable by QX after migration.
+    // The creator launch fee remains 0 SOL; this is a token-supply allocation.
+    leftover:supplyHuman*0.05
    },
    fee:{
     baseFeeParams:{
@@ -1976,7 +1979,9 @@ async function qxLaunchToken(options={}){
   const pair=await client.partner.createConfigAndPoolWithFirstBuy({
    config:config.publicKey,
    feeClaimer:payer,
-   leftoverReceiver:payer,
+   // The 5% fixed-supply QX allocation is controlled by the QX treasury.
+   // It must not be sent back to the creator wallet.
+   leftoverReceiver:new PublicKey(QX_TOKEN_FEE_RECIPIENT),
    payer,
    quoteMint:new PublicKey(SOL),
    ...curve,
