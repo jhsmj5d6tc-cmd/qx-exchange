@@ -2847,7 +2847,15 @@ async function qxBuildJupiterQuote(){
   const fallbackParams=new URLSearchParams({inputMint,outputMint,amount:raw,taker:owner,maxSupportedTransactionVersion:"0"});
   response=await fetch("https://api.jup.ag/swap/v2/order?"+fallbackParams.toString(),{signal:qxQuoteAbortController?.signal,headers:{accept:"application/json","x-api-key":QX_JUP_API_KEY}});
   order=await response.json().catch(()=>({}));
-  if(!response.ok||!isExecutable())throw new Error(order?.errorMessage||order?.error||referralOrderError||("Jupiter executable order failed (HTTP "+response.status+", code "+String(order?.errorCode??"unknown")+")."));
+  if(!response.ok||!isExecutable()){
+   const message=order?.errorMessage||order?.error||referralOrderError||("Jupiter executable order failed (HTTP "+response.status+", code "+String(order?.errorCode??"unknown")+").");
+   const failure=new Error(message);
+   failure.jupiterOrder=order;
+   failure.jupiterRouter=String(order?.router||"").toLowerCase();
+   failure.jupiterErrorCode=Number(order?.errorCode);
+   failure.jupiterHttpStatus=response.status;
+   throw failure;
+  }
  }
  if(!order||typeof order!=="object")throw new Error("Jupiter returned an invalid order response.");
  if(!order.requestId)throw new Error("Jupiter order is missing its execution request ID. No transaction was signed.");
@@ -2897,13 +2905,27 @@ async function qxRequestLiveQuote(){
   qxSetSwapStatus(totalFeeBps>0?"Executable order ready. Review the output and QX fee, then confirm in your wallet.":"Executable Jupiter order ready. Confirm the real Solana transaction in your wallet.");
  }catch(e){
   if(e?.name==="AbortError")return;
+  // Jupiter errorCode 3 on an aggregator router means the order is below
+  // Jupiter's dynamic gasless minimum. It is not a liquidity/pool failure.
+  // Preserve the provider's exact reason and do not hide it behind Meteora.
+  if(Number(e?.jupiterErrorCode)===3&&["metis","dflow","okx"].includes(String(e?.jupiterRouter||""))){
+   pendingSwapOrder=null;qxUpdateSwapButtonLabel("quote");
+   const available=Number(walletSolBalance||0),availableUsd=available*Number(solPrice||0);
+   const balanceText=available>0?" Wallet balance: "+available.toFixed(6)+" SOL (about $"+availableUsd.toFixed(2)+").":"";
+   qxSetSwapStatus("Jupiter minimum-size restriction: "+(e.message||"This order is below the current minimum for a gasless swap.")+balanceText+" Increase the trade amount only when your wallet has enough SOL for the purchase and network costs.");
+   return;
+  }
+  // The direct Meteora adapter is intentionally limited to verified QX
+  // launches with a known on-chain pool. External Solana tokens must use the
+  // generic Jupiter aggregator; do not waste time probing QX's launch registry.
+  const isVerifiedQXLaunch=selectedToken?.qxVerifiedLaunch===true||selectedToken?.qxGlobalLaunch===true||!!selectedToken?.qxLaunchRecord;
+  if(!isVerifiedQXLaunch){
+   pendingSwapOrder=null;qxUpdateSwapButtonLabel("quote");
+   qxSetSwapStatus("Jupiter could not prepare an executable route for this token: "+(e?.message||"No executable Jupiter order was returned.")+" QX has no verified Meteora launch pool for this external token, so no unverified pool will be used.");
+   return;
+  }
   try{
-   // Jupiter is the primary route for every Solana token. If Jupiter cannot
-   // build an executable order, do not classify the token as a QX launch and
-   // do not use pairAddress/poolAddress metadata. The direct Meteora builder
-   // performs its own on-chain mint/pool discovery and is safe for external
-   // Solana tokens as well as QX launches.
-   qxSetSwapStatus("Jupiter could not prepare an executable order. Checking the token's real Meteora liquidity directly…");
+   qxSetSwapStatus("Jupiter could not prepare an executable order. Checking this verified QX launch pool directly…");
    const direct=await qxBuildDirectDbcQuote();
    if(requestId!==qxQuoteRequestId||requestMint!==String(selectedToken?.baseToken?.address||"")||requestWallet!==String(walletAddress||"")||requestDirection!==tradeDirection)return;
    pendingSwapOrder=direct;
@@ -2930,7 +2952,9 @@ async function qxSwapNow(){
  try{
   if(!quoteIsFresh){
    await qxRequestLiveQuote();
-   if(!pendingSwapOrder)throw new Error("A live executable order could not be prepared. Check the amount, token liquidity and wallet balance.");
+   // qxRequestLiveQuote already reports the exact provider/pool failure. Do not
+   // overwrite that useful diagnosis with a generic error from this wrapper.
+   if(!pendingSwapOrder)return;
    const fresh=pendingSwapOrder;
    if(fresh.tokenMint!==selectedToken.baseToken.address||fresh.direction!==tradeDirection||fresh.walletAddress!==walletAddress||Number(fresh.amount)!==amount||Date.now()-Number(fresh.quotedAt||0)>=25000)throw new Error("The quote expired or the trade details changed. Please request a new quote.");
    return;
