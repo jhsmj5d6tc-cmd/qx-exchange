@@ -4467,6 +4467,58 @@ void loadMarket().then(()=>qxRefreshPublicLiveSnapshots()).catch(e=>console.warn
   const num=v=>{const n=Number(v);return Number.isFinite(n)?n:0;};
   const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
 
+  /* Independent market bootstrap. This controller is a separate classic script,
+     so it can recover the visible market if the main module fails during startup. */
+  let qxFallbackStarted=false,qxRuntimeFailure="";
+  window.addEventListener("error",e=>{qxRuntimeFailure=String(e?.message||e?.error?.message||"Main market module runtime error").slice(0,180);},{capture:true});
+  window.addEventListener("unhandledrejection",e=>{qxRuntimeFailure=String(e?.reason?.message||e?.reason||"Main market module rejected").slice(0,180);},{capture:true});
+  function qxFallbackPrice(v){const n=num(v);if(!n)return "—";if(n>=1)return "$"+n.toLocaleString("en-US",{maximumFractionDigits:5});if(n>=.01)return "$"+n.toFixed(5);if(n>=.0001)return "$"+n.toFixed(7);return "$"+n.toExponential(2);}
+  function qxFallbackMoney(v){const n=num(v);if(!n)return "—";if(n>=1e9)return "$"+(n/1e9).toFixed(2)+"B";if(n>=1e6)return "$"+(n/1e6).toFixed(2)+"M";if(n>=1e3)return "$"+(n/1e3).toFixed(1)+"K";return "$"+n.toFixed(2);}
+  async function qxIndependentMarketBootstrap(){
+    if(qxFallbackStarted)return;qxFallbackStarted=true;
+    if(Array.isArray(window.QXMarketPairs)&&window.QXMarketPairs.length)return;
+    const host=$("tokenResults"),status=$("marketStatus");
+    if(status)status.textContent="Recovering Solana market feed…";
+    const queries=["SOL","BONK","WIF","JUP","USDC"];
+    const jobs=queries.map(async q=>{
+      const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),8500);
+      try{const r=await fetch("https://api.dexscreener.com/latest/dex/search?q="+encodeURIComponent(q),{headers:{accept:"application/json"},signal:controller.signal,cache:"no-store"});if(!r.ok)throw new Error("DexScreener HTTP "+r.status);const data=await r.json();return Array.isArray(data?.pairs)?data.pairs:[];}
+      finally{clearTimeout(timer);}
+    });
+    const settled=await Promise.allSettled(jobs),raw=settled.flatMap(x=>x.status==="fulfilled"?x.value:[]),byMint=new Map();
+    for(const p of raw){
+      const mint=String(p?.baseToken?.address||""),pool=String(p?.pairAddress||"");
+      if(String(p?.chainId||"").toLowerCase()!=="solana"||!/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(mint)||!/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(pool)||num(p?.priceUsd)<=0||num(p?.liquidity?.usd)<=0)continue;
+      if(mint==="So11111111111111111111111111111111111111112"||["SOL","WSOL","USDC","USDT"].includes(String(p?.baseToken?.symbol||"").toUpperCase()))continue;
+      const old=byMint.get(mint);if(!old||num(p?.liquidity?.usd)>num(old?.liquidity?.usd))byMint.set(mint,p);
+    }
+    const pairs=[...byMint.values()].sort((a,b)=>num(b?.volume?.h24)-num(a?.volume?.h24));
+    if(!pairs.length){
+      const failures=settled.filter(x=>x.status==="rejected").length;
+      if(status)status.textContent="Solana market feed unavailable · "+(qxRuntimeFailure||failures+" provider requests failed")+" · retrying";
+      if(host&&!Array.isArray(window.QXMarketPairs))host.innerHTML='<div class="market-empty">Live Solana market data could not be reached. QX is retrying the public feed.</div>';
+      qxFallbackStarted=false;setTimeout(()=>{if(!Array.isArray(window.QXMarketPairs)||!window.QXMarketPairs.length)void qxIndependentMarketBootstrap();},15000);
+      return;
+    }
+    window.QXMarketPairs=pairs;window.allPairs=pairs;window.QXPreviousMarketPairs=pairs;
+    window.QXMarketMainReady=true;window.QXMarketFallbackActive=true;
+    const count=$("coinCount");if(count)count.textContent=pairs.length.toLocaleString()+" tokens";
+    const hm=$("qxHeroMarketCount");if(hm)hm.textContent=pairs.length.toLocaleString();
+    const hv=$("qxHeroVolume");if(hv)hv.textContent=qxFallbackMoney(pairs.reduce((a,p)=>a+num(p?.volume?.h24),0));
+    const hn=$("qxHeroNewCount");if(hn)hn.textContent=pairs.filter(p=>{const t=num(p?.pairCreatedAt);return t>0&&Date.now()-t<30*86400000;}).length.toLocaleString();
+    if(status)status.textContent="Solana public discovery · "+pairs.length.toLocaleString()+" real markets · independent recovery feed";
+    if(host){
+      host.innerHTML=pairs.slice(0,80).map(p=>{
+        const mint=String(p.baseToken.address),symbol=esc(p.baseToken.symbol||mint.slice(0,6)),name=esc(p.baseToken.name||symbol),image=String(p.info?.imageUrl||""),change=num(p.priceChange?.h24),tx=num(p.txns?.h24?.buys)+num(p.txns?.h24?.sells),logo=image?'<img class="coin-logo" src="'+esc(image)+'" alt="" loading="lazy" >':'<span class="coin-fallback">'+esc(symbol.slice(0,2))+'</span>';
+        return '<article class="market-row market-row-rich qx-market-card"><button type="button" class="coin-button" data-mint="'+esc(mint)+'">'+logo+'<span class="coin-info"><span class="coin-title-line"><strong>'+name+'</strong></span><small>'+symbol+' · '+esc(mint.slice(0,6)+'…'+mint.slice(-4))+'</small></span></button><span class="qx-market-value">'+qxFallbackPrice(p.priceUsd)+'</span><span class="qx-market-value '+(change>0?'positive':change<0?'negative':'neutral')+'">'+(change>0?'+':'')+change.toFixed(2)+'%</span><span class="qx-market-value">'+qxFallbackMoney(p.volume?.h24)+'</span><span class="qx-market-value">'+qxFallbackMoney(p.marketCap||p.fdv)+'</span><span class="qx-market-value">'+qxFallbackMoney(p.liquidity?.usd)+'</span><span class="qx-market-value">'+(p.pairCreatedAt?new Date(Number(p.pairCreatedAt)).toLocaleDateString():"—")+'</span><span class="qx-market-value">'+(tx?tx.toLocaleString():"—")+'</span><div class="market-card-right"></div></article>';
+      }).join("");
+    }
+    window.dispatchEvent(new CustomEvent("QXMarketUpdated",{detail:{pairs,source:"Independent DexScreener recovery"}}));
+    window.QXRefreshTrendingSpotlight?.(true);
+  }
+  function qxScheduleIndependentBootstrap(){setTimeout(()=>{if(!Array.isArray(window.QXMarketPairs)||!window.QXMarketPairs.length)void qxIndependentMarketBootstrap();},12000);}
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",qxScheduleIndependentBootstrap,{once:true});else qxScheduleIndependentBootstrap();
+
   /* Live percentage buttons: read the actual current wallet/token balance. */
   async function applyTradePercent(pct){
     const range=$("percentRange"),input=$("tradeAmountInput"),value=$("percentValue");
