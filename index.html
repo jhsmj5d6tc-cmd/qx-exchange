@@ -2165,18 +2165,7 @@ async function qxLaunchToken(options={}){
   const poolAddress=poolState?.publicKey?.toBase58?.()||poolState?.address?.toBase58?.()||"";
   if(!poolState||!poolAddress)throw new Error("Meteora confirmed the pool transaction, but QX could not resolve the exact DBC pool account from that transaction. Launch was not recorded as verified.");
   confirmedLaunchTx.pool=poolAddress;
-  // The already-confirmed launch transaction authorizes these uploads. No extra
-  // message signature or transaction is requested from the creator.
-  if(qxPendingLaunchImage){
-   status.textContent="Launch confirmed. Publishing the token logo…";
-   await qxQxTokenMediaUpload({...qxPendingLaunchImage,kind:"image",poolSignature:poolSig});
-   qxPendingLaunchImage=null;
-  }
-  if(qxPendingLaunchMetadata){
-   status.textContent="Publishing token information…";
-   await qxQxTokenMediaUpload({...qxPendingLaunchMetadata,kind:"metadata",poolSignature:poolSig});
-   qxPendingLaunchMetadata=null;
-  }
+  // Media publishing is deferred until the on-chain launch recovery record is saved.
   // The separate Meteora pool-metadata PDA is optional display/index data.
   // The token name, symbol and metadata URI are already included in the DBC launch config.
   // Skip this ancillary transaction so token creation never asks for another wallet approval.
@@ -2207,12 +2196,49 @@ async function qxLaunchToken(options={}){
    launchEngine:"Meteora DBC Mainnet v2",migrationMarketCap:migrationMc,migrationQuoteThreshold:migrationThreshold,
    firstBuySol:firstBuy,firstBuySettled,firstBuyTokenBalanceRaw,image:image||"",feeSol:0,feeRecipient:"",feeSignature:"",feeStatus:"free QX token creation",qxSupplyShareBps:500,qxSupplyShareReceiver:"9C6bcBgeHnRwJfTYKqPjEGeP9egxKWQgR5GCXVSEeDXH"
   };
+  // Save a recovery copy before optional media publishing or global indexing.
+  let metadataPublished=true;
   const saved=JSON.parse(localStorage.getItem("qxRealLaunches")||"[]");
   saved.unshift(record);localStorage.setItem("qxRealLaunches",JSON.stringify(saved.slice(0,20)));
-  // Publish the already-verified on-chain launch to QX's global registry. The Edge Function
-  // re-checks the mint, pool and pool-creation transaction before accepting it.
-  const globallyRegistered=await qxRegisterVerifiedLaunchGlobally(record);
-  if(!globallyRegistered)console.warn("QX launch is verified locally/on-chain but global registry registration is pending; discovery will retry.");
+  try{localStorage.setItem("qxPendingLaunchRegistryRecord",JSON.stringify(record));}catch(storageError){console.warn("Could not persist QX global registry retry record",storageError);}
+  if(qxPendingLaunchImage){
+   status.textContent="Launch confirmed. Publishing the token logo…";
+   try{
+    await qxQxTokenMediaUpload({...qxPendingLaunchImage,kind:"image",poolSignature:poolSig});
+    qxPendingLaunchImage=null;
+   }catch(imageError){
+    console.warn("QX logo upload deferred; token launch will still be registered",imageError);
+    qxPendingLaunchImage=null;record.image="";
+    if(qxPendingLaunchMetadata){
+     try{
+      const raw=Uint8Array.from(atob(qxPendingLaunchMetadata.dataBase64),c=>c.charCodeAt(0));
+      const metadata=JSON.parse(new TextDecoder().decode(raw));delete metadata.image;
+      qxPendingLaunchMetadata.dataBase64=qxBytesToB64(new TextEncoder().encode(JSON.stringify(metadata)));
+     }catch(metadataEditError){console.warn("Could not remove unavailable logo URL from pending metadata",metadataEditError);}
+    }
+   }
+  }
+  if(qxPendingLaunchMetadata){
+   status.textContent="Publishing verified token information…";
+   try{
+    await qxQxTokenMediaUpload({...qxPendingLaunchMetadata,kind:"metadata",poolSignature:poolSig});
+    qxPendingLaunchMetadata=null;
+   }catch(metadataError){
+    metadataPublished=false;
+    console.warn("QX metadata upload deferred; launch recovery record retained",metadataError);
+    try{localStorage.setItem("qxPendingLaunchRegistryMedia",JSON.stringify({...qxPendingLaunchMetadata,kind:"metadata",poolSignature:poolSig}));}catch(storageError){console.warn("Could not persist pending QX metadata upload",storageError);}
+   }
+  }
+  try{
+   const currentRows=JSON.parse(localStorage.getItem("qxRealLaunches")||"[]");
+   localStorage.setItem("qxRealLaunches",JSON.stringify(currentRows.map(x=>String(x?.mint||"")===String(record.mint)?record:x).slice(0,20)));
+   localStorage.setItem("qxPendingLaunchRegistryRecord",JSON.stringify(record));
+  }catch(storageError){console.warn("Could not refresh QX launch recovery record",storageError);}
+  // The verified on-chain record is queued until metadata is public, then the
+  // server independently verifies the mint, pool, creator and exact config.
+  const globallyRegistered=metadataPublished?await qxRegisterVerifiedLaunchGlobally(record):false;
+  if(globallyRegistered){try{localStorage.removeItem("qxPendingLaunchRegistryRecord");localStorage.removeItem("qxPendingLaunchRegistryMedia");}catch(_){}}
+  else console.warn("QX launch is verified on Solana but global registry registration is pending; automatic retry is queued.");
   $("launchMint").textContent=record.mint;
   $("launchConfig").textContent=record.config;
   $("launchPool").textContent=record.pool||"Loading from chain…";
@@ -4218,9 +4244,40 @@ async function qxRegisterVerifiedLaunchGlobally(record){
   if(!r.ok||!data?.ok)throw new Error(data?.error||"Global QX launch registration failed");
   record.globalRegistry="verified";record.globalRegistryAt=Date.now();
   localStorage.setItem("qxRealLaunches",JSON.stringify((JSON.parse(localStorage.getItem("qxRealLaunches")||"[]")||[]).map(x=>String(x?.mint||"")===String(record.mint)?record:x).slice(0,20)));
+  try{localStorage.removeItem("qxPendingLaunchRegistryRecord");localStorage.removeItem("qxPendingLaunchRegistryMedia");}catch(_){ }
   return true;
  }catch(e){console.warn("QX global launch registry unavailable",e);return false;}
 }
+let qxLaunchRegistryRetryBusy=false;
+async function qxRetryPendingLaunchRegistry(){
+ if(qxLaunchRegistryRetryBusy||!connected||!walletAddress)return false;
+ let record=null,media=null;
+ try{record=JSON.parse(localStorage.getItem("qxPendingLaunchRegistryRecord")||"null");}catch(_){record=null;}
+ if(!record||String(record.creator||"")!==String(walletAddress))return false;
+ qxLaunchRegistryRetryBusy=true;
+ try{
+  try{media=JSON.parse(localStorage.getItem("qxPendingLaunchRegistryMedia")||"null");}catch(_){media=null;}
+  if(media){
+   if(String(media.owner||"")!==String(walletAddress)||String(media.mint||"")!==String(record.mint||""))throw new Error("Pending token metadata does not match the connected creator wallet and mint.");
+   await qxQxTokenMediaUpload(media);
+  }
+  const ok=await qxRegisterVerifiedLaunchGlobally(record);
+  if(!ok)return false;
+  try{
+   localStorage.removeItem("qxPendingLaunchRegistryRecord");
+   localStorage.removeItem("qxPendingLaunchRegistryMedia");
+   const rows=JSON.parse(localStorage.getItem("qxRealLaunches")||"[]");
+   if(Array.isArray(rows))localStorage.setItem("qxRealLaunches",JSON.stringify(rows.map(x=>String(x?.mint||"")===String(record.mint)?{...x,globalRegistry:"verified",globalRegistryAt:Date.now()}:x).slice(0,20)));
+  }catch(_){ }
+  return true;
+ }catch(e){console.warn("QX pending global launch registration retry deferred",e);return false;}
+ finally{qxLaunchRegistryRetryBusy=false;}
+}
+window.QXRetryPendingLaunchRegistry=qxRetryPendingLaunchRegistry;
+window.addEventListener("online",()=>{void qxRetryPendingLaunchRegistry();});
+setTimeout(()=>{void qxRetryPendingLaunchRegistry();},8000);
+setInterval(()=>{void qxRetryPendingLaunchRegistry();},60000);
+
 async function qxReadGlobalVerifiedLaunchMarkets(){
  const url=String(window.QX_ADS_SUPABASE_URL||QX_ADS_SUPABASE_URL||"").trim();
  const key=String(window.QX_ADS_SUPABASE_ANON_KEY||QX_ADS_SUPABASE_ANON_KEY||"").trim();
@@ -5233,7 +5290,3 @@ body.qx-token-open #detail .qx-full-dex-chart #detailChart{height:350px!importan
 </style>
 </body>
 </html>
-
-
-
-
