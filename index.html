@@ -3695,17 +3695,32 @@ function qxSetRealTokenInfo(token){
 }
 async function qxLoadMintCreationTime(mint,token,requestId,signal){
  try{
-  const endpoint=typeof qxPreferredRpcEndpoint!=="undefined"&&qxPreferredRpcEndpoint?qxPreferredRpcEndpoint:RPCS[0];
-  const body={jsonrpc:"2.0",id:Date.now(),method:"getSignaturesForAddress",params:[mint,{limit:1000,commitment:"confirmed"}]};
-  const r=await qxTimedFetch(endpoint,{method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(body),signal,cache:"no-store"},7000);
-  if(!r.ok)return;
-  const j=await r.json();const rows=Array.isArray(j?.result)?j.result:[];if(!rows.length)return;
-  const oldest=rows[rows.length-1];const slot=Number(oldest?.slot||0);if(!slot)return;
-  const block=await qxTimedFetch(endpoint,{method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({jsonrpc:"2.0",id:Date.now()+1,method:"getBlockTime",params:[slot]}),signal,cache:"no-store"},7000);
-  if(!block.ok)return;const bj=await block.json();const seconds=Number(bj?.result||0);if(!seconds)return;
-  if(requestId!==qxRealInfoRequestId||String(selectedToken?.baseToken?.address||"")!==mint)return;
+  if(signal?.aborted)return;
+  // Use QX's rotating RPC health layer instead of pinning age lookup to one
+  // endpoint. This lets a 403/429 on one public RPC fall through to the others.
+  const rows=await rpc("getSignaturesForAddress",[mint,{limit:1000,commitment:"confirmed"}]);
+  if(signal?.aborted||!Array.isArray(rows)||!rows.length)return;
+  // Mint accounts normally have few direct signatures. If the first page is
+  // full, walk backwards so the displayed timestamp is not just the oldest
+  // item in an arbitrary 1,000-signature window.
+  let oldest=rows[rows.length-1],cursor=String(oldest?.signature||"");
+  if(rows.length===1000&&cursor){
+   for(let page=0;page<8;page++){
+    if(signal?.aborted)return;
+    const older=await rpc("getSignaturesForAddress",[mint,{limit:1000,before:cursor,commitment:"confirmed"}]);
+    if(!Array.isArray(older)||!older.length)break;
+    oldest=older[older.length-1];cursor=String(oldest?.signature||cursor);
+    if(older.length<1000)break;
+    // If the scan is still capped after eight pages, do not publish a
+    // potentially incorrect token age as if it were exact.
+    if(page===7)return;
+   }
+  }
+  const slot=Number(oldest?.slot||0);if(!slot)return;
+  const seconds=Number(await rpc("getBlockTime",[slot])||0);if(!(seconds>0))return;
+  if(signal?.aborted||requestId!==qxRealInfoRequestId||String(selectedToken?.baseToken?.address||"")!==mint)return;
   token.tokenCreatedAt=seconds*1000;const age=$("qxTokenAge");if(age)age.textContent=qxAgeText(token.tokenCreatedAt);
- }catch(_){}
+ }catch(error){if(error?.name!=="AbortError")console.warn("QX mint creation time unavailable",error?.message||error);}
 }
 async function qxLoadRealTokenInfo(token){
  try{qxRealInfoAbortController?.abort();}catch(_){}
@@ -5636,11 +5651,11 @@ body.qx-token-open #detail .qx-full-dex-chart #detailChart{height:350px!importan
 <script id="qx-market-websocket-client">
 (function(){
  "use strict";
- const ENDPOINT="wss://qkazosqvnmknnzkukggj.supabase.co/functions/v1/qx-market-stream";
+ const ENDPOINT="wss://qkazosqvnmknnzkukggj.functions.supabase.co/qx-market-stream";
  let socket=null,retryTimer=null,pingTimer=null,tradeRefreshTimer=null,retryDelay=1500,generation=0,activeMint="",activePool="",activeToken=null,manuallyStopped=false;
  const priceByMint=window.__QXStreamPriceByMint||(window.__QXStreamPriceByMint=Object.create(null));
  const $=id=>document.getElementById(id);
- function setStatus(message){const el=$("qxOwnedChartStatus");if(el&&message)el.dataset.streamStatus=message;}
+ function setStatus(message){const el=$("qxOwnedChartStatus");if(el&&message){el.dataset.streamStatus=message;el.dataset.streamState=String(message).toLowerCase().includes("connected")?"connected":String(message).toLowerCase().includes("interrupted")||String(message).toLowerCase().includes("reconnect")?"reconnecting":"waiting";}}
  function clearTimers(){if(retryTimer){clearTimeout(retryTimer);retryTimer=null;}if(pingTimer){clearInterval(pingTimer);pingTimer=null;}if(tradeRefreshTimer){clearTimeout(tradeRefreshTimer);tradeRefreshTimer=null;}}
  function closeSocket(){clearTimers();if(socket){try{socket.onopen=socket.onmessage=socket.onerror=socket.onclose=null;socket.close(1000,"QX token changed");}catch(_){}socket=null;}}
  function subscribe(){if(!socket||socket.readyState!==WebSocket.OPEN||!activeMint)return;const payload={op:"subscribe",addresses:[activeMint],pairAddresses:activePool?[activePool]:[]};socket.send(JSON.stringify(payload));}
@@ -5662,8 +5677,9 @@ body.qx-token-open #detail .qx-full-dex-chart #detailChart{height:350px!importan
    else if(msg.status==="upstream_error")setStatus("Market stream interrupted · REST fallback active");
    return;
   }
-  if(msg?.type==="PRICE_DATA")applyPrice(msg.data||{});
+  if(msg?.type==="PRICE_DATA"){applyPrice(msg.data||{});const d=msg.data||{};if(Number(d.c)>0)setStatus("WebSocket connected · receiving verified price updates");}
   else if(msg?.type==="TXS_DATA"){
+   setStatus("WebSocket connected · receiving transaction events");
    // Birdeye's TXS event is the immediate signal; REST still supplies the fully
    // verified side, token amount, USD value and wallet row shown in the tape.
    if(tradeRefreshTimer)clearTimeout(tradeRefreshTimer);
@@ -5676,9 +5692,12 @@ body.qx-token-open #detail .qx-full-dex-chart #detailChart{height:350px!importan
  }
  async function connect(myGeneration){
   if(manuallyStopped||myGeneration!==generation||!activeMint)return;
+  // Use the dedicated Functions WebSocket hostname. The REST-style
+  // /functions/v1 route is not the supported browser WebSocket endpoint.
+  // echo-protocol is negotiated only by the Edge Function with Birdeye upstream.
   closeSocket();
   let ws;
-  try{ws=new WebSocket(ENDPOINT,"echo-protocol");}catch(error){console.warn("QX WebSocket unavailable",error);reconnect(myGeneration);return;}
+  try{ws=new WebSocket(ENDPOINT);}catch(error){console.warn("QX WebSocket unavailable",error);reconnect(myGeneration);return;}
   socket=ws;
   ws.onopen=()=>{
    if(myGeneration!==generation){try{ws.close();}catch(_){}return;}
@@ -5688,7 +5707,7 @@ body.qx-token-open #detail .qx-full-dex-chart #detailChart{height:350px!importan
   };
   ws.onmessage=e=>onMessage(e,myGeneration);
   ws.onerror=()=>setStatus("Market stream reconnecting · REST fallback active");
-  ws.onclose=()=>{if(socket===ws)socket=null;clearTimers();reconnect(myGeneration);};
+  ws.onclose=e=>{if(socket===ws)socket=null;clearTimers();setStatus("Market stream disconnected · code "+String(e?.code||0)+" · REST fallback active");reconnect(myGeneration);};
  }
  window.QXStartMarketStream=async function(token){
   const mint=String(token?.baseToken?.address||"");if(!mint)return;
