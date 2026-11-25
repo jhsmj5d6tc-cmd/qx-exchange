@@ -3470,10 +3470,10 @@ async function qxGetPoolTrades(pool){
   const response=await fetch("https://api.geckoterminal.com/api/v2/networks/solana/pools/"+encodeURIComponent(key)+"/trades?page=1",{headers:{accept:"application/json;version=20230203"},cache:"no-store"});
   if(!response.ok)throw new Error("Trade feed request failed ("+response.status+")");
   const data=await response.json();
-  qxPoolTradesCache.set(key,{data,expires:Date.now()+4500});
+  qxPoolTradesCache.set(key,{data,expires:Date.now()+7000});
   return data;
  })();
- qxPoolTradesCache.set(key,{promise,expires:Date.now()+3500});
+ qxPoolTradesCache.set(key,{promise,expires:Date.now()+6000});
  try{return await promise;}catch(error){qxPoolTradesCache.delete(key);throw error;}
 }
 async function qxResolveVerifiedPool(token,mint){
@@ -3481,6 +3481,16 @@ async function qxResolveVerifiedPool(token,mint){
  if(!qxIsValidSolanaMint(key))return null;
  const cached=qxVerifiedPoolCache.get(key);
  if(cached&&cached.expires>Date.now())return cached.value;
+ // The market list already contains a pool address sourced from a verified Solana pair.
+ // Use that known pair immediately for the first chart paint; refresh/verify it on
+ // the next polling cycle instead of making chart opening wait on another lookup.
+ const knownPool=String(token?.pairAddress||token?.poolAddress||token?.qxActivePool||"");
+ const knownSide=String(token?.qxChartTokenSide||"base");
+ if(knownPool&&qxIsValidSolanaMint(knownPool)&&(knownSide==="base"||knownSide==="quote")){
+  const fastValue={address:knownPool,side:knownSide,pair:null};
+  qxVerifiedPoolCache.set(key,{value:fastValue,expires:Date.now()+5000});
+  return fastValue;
+ }
  try{
   const response=await fetch("https://api.dexscreener.com/token-pairs/v1/solana/"+encodeURIComponent(key),{headers:{accept:"application/json"},cache:"no-store"});
   if(!response.ok)throw new Error("Token pool lookup HTTP "+response.status);
@@ -3697,19 +3707,30 @@ async function qxLoadRealTokenInfo(token){
   return token;
  }catch(e){if(e?.name!=="AbortError"&&requestId===qxRealInfoRequestId)qxSetRealTokenInfo(token);return token;}
 }
-let qxTradesRequestId=0, qxTradesAbortController=null, qxTradesRefreshTimer=null;
-function qxStartTradesRefresh(token){if(qxTradesRefreshTimer)clearInterval(qxTradesRefreshTimer);const mint=String(token?.baseToken?.address||"");if(!mint)return;qxTradesRefreshTimer=setInterval(()=>{if(document.visibilityState==="visible"&&document.body.classList.contains("qx-token-open")&&String(selectedToken?.baseToken?.address||"")===mint)void qxLoadTrades(selectedToken);},5000);}
+let qxTradesRequestId=0, qxTradesAbortController=null, qxTradesRefreshTimer=null, qxTradesInFlight=false;
+function qxStartTradesRefresh(token){
+ if(qxTradesRefreshTimer)clearInterval(qxTradesRefreshTimer);
+ const mint=String(token?.baseToken?.address||"");if(!mint)return;
+ qxTradesRefreshTimer=setInterval(()=>{
+  if(!qxTradesInFlight&&document.visibilityState==="visible"&&document.body.classList.contains("qx-token-open")&&String(selectedToken?.baseToken?.address||"")===mint)void qxLoadTrades(selectedToken);
+ },8000);
+}
 async function qxLoadTrades(token){
- try{qxTradesAbortController?.abort();}catch(_){}
- const tradesController=new AbortController();qxTradesAbortController=tradesController;
+ if(qxTradesInFlight)return;
+ qxTradesInFlight=true;
  const requestId=++qxTradesRequestId;
- const list=$("qxTradesList"),status=$("qxTradesStatus");if(!list)return;
- const mint=String(token?.baseToken?.address||"");
- const resolvedPool=await qxResolveVerifiedPool(token,mint);
- const pool=String(resolvedPool?.address||"");
- if(requestId!==qxTradesRequestId||String(selectedToken?.baseToken?.address||"")!==mint)return;
- if(!pool){status.textContent="No verified pool";list.innerHTML='<div class="qx-trades-empty">No verified trading pool was found for this token.</div>';return;}
+ const list=$("qxTradesList"),status=$("qxTradesStatus");
  try{
+  if(!list)return;
+  const mint=String(token?.baseToken?.address||"");
+  const resolvedPool=await qxResolveVerifiedPool(token,mint);
+  const pool=String(resolvedPool?.address||"");
+  if(requestId!==qxTradesRequestId||String(selectedToken?.baseToken?.address||"")!==mint)return;
+  if(!pool){
+   status.textContent="No verified pool";
+   if(!list.dataset.qxHasVerifiedTrades)list.innerHTML='<div class="qx-trades-empty">No verified trading pool was found for this token.</div>';
+   return;
+  }
   const d=await qxGetPoolTrades(pool);
   if(requestId!==qxTradesRequestId||String(selectedToken?.baseToken?.address||"")!==mint)return;
   const trades=Array.isArray(d?.data)?d.data.slice(0,100):[];
@@ -3728,14 +3749,22 @@ async function qxLoadTrades(token){
    const timeText=Number.isFinite(time)&&time>0?new Date(time<1e12?time*1000:time).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit",second:"2-digit"}):"—";
    const walletCell=qxIsValidSolanaMint(trader)?'<a class="qx-trade-wallet" href="https://solscan.io/account/'+encodeURIComponent(trader)+'" target="_blank" rel="noopener noreferrer">'+escapeHTML(short(trader))+'</a>':'<span class="qx-trade-wallet muted">—</span>';
    const timeCell=tx?'<a class="qx-trade-tx" href="https://solscan.io/tx/'+encodeURIComponent(tx)+'" target="_blank" rel="noopener noreferrer">'+timeText+'</a>':'<span>'+timeText+'</span>';
-   return '<div class="qx-trade-row">'+timeCell+'<span class="'+(isBuy?"qx-trade-buy":"qx-trade-sell")+'">'+(isBuy?"BUY":"SELL")+'</span><span>'+(tokenPrice>0?qxFormatTokenPrice(tokenPrice):"—")+'</span><span>'+(amount>0?usd(amount):"—")+'</span>'+walletCell+'</div>';
+   return '<div class="qx-trade-row" data-tx="'+escapeHTML(tx)+'">'+timeCell+'<span class="'+(isBuy?"qx-trade-buy":"qx-trade-sell")+'">'+(isBuy?"BUY":"SELL")+'</span><span>'+(tokenPrice>0?qxFormatTokenPrice(tokenPrice):"—")+'</span><span>'+(amount>0?usd(amount):"—")+'</span>'+walletCell+'</div>';
   }).filter(Boolean);
-  if(!verifiedTrades.length){list.innerHTML='<div class="qx-trades-empty">No verified trade data is available for this pool yet.</div>';status.textContent="No verified trades yet";return;}
-  const recentVerified=verifiedTrades.slice(0,20);
-  const fingerprint=recentVerified.join("");
-  if(list.dataset.qxFingerprint!==fingerprint){list.innerHTML=fingerprint;list.dataset.qxFingerprint=fingerprint;}
-  const lang=String(qxLanguage||window.qxLanguage||"en");status.textContent=lang==="ar"?"تداولات حقيقية · "+recentVerified.length+" عملية · فحص كل 15 ثانية":lang==="zh"?"真实交易 · 最近 "+recentVerified.length+" 笔 · 每 15 秒检查":"Real trades · "+recentVerified.length+" recent · checked every 15s";
- }catch(e){if(e?.name==="AbortError"||requestId!==qxTradesRequestId)return;status.textContent="Trade feed unavailable";list.innerHTML='<div class="qx-trades-empty">Real trade data is temporarily unavailable for this pool.</div>';}
+  if(!verifiedTrades.length){
+   if(!list.dataset.qxHasVerifiedTrades)list.innerHTML='<div class="qx-trades-empty">No verified trade data is available for this pool yet.</div>';
+   status.textContent="No verified trades yet";return;
+  }
+  const recentVerified=verifiedTrades.slice(0,20),fingerprint=recentVerified.join("");
+  if(list.dataset.qxFingerprint!==fingerprint){list.innerHTML=fingerprint;list.dataset.qxFingerprint=fingerprint;list.dataset.qxHasVerifiedTrades="1";}
+  const lang=String(qxLanguage||window.qxLanguage||"en");
+  status.textContent=lang==="ar"?"تداولات حقيقية · "+recentVerified.length+" عملية · تحديث تلقائي":lang==="zh"?"真实交易 · 最近 "+recentVerified.length+" 笔 · 自动更新":"Verified trades · "+recentVerified.length+" recent · auto-updating";
+ }catch(e){
+  if(requestId!==qxTradesRequestId)return;
+  // Keep the last verified rows visible during provider hiccups; never flash an empty feed.
+  status.textContent="Trade feed reconnecting · showing last verified trades";
+  if(!list?.dataset.qxHasVerifiedTrades)list.innerHTML='<div class="qx-trades-empty">Real trade data is temporarily unavailable for this pool.</div>';
+ }finally{qxTradesInFlight=false;}
 }
 
 let qxChartLiveTimer=null,qxChartRefreshInFlight=false,qxChartRefreshGeneration=0;
@@ -5557,6 +5586,14 @@ body.qx-token-open #detail .qx-trade-launch{display:grid!important;grid-template
 /* Keep the chart readable without forcing an oversized canvas on phones. */
 body.qx-token-open #detail .qx-full-dex-chart #detailChart{height:350px!important;min-height:280px!important}
 @media(max-width:760px){body.qx-token-open #detail .qx-full-dex-chart #detailChart{height:290px!important;min-height:250px!important}}
+/* Compact contract layout and stable trade-feed paint. */
+.qx-contract-line{display:grid!important;grid-template-columns:auto minmax(0,1fr) auto!important;align-items:center!important;gap:7px!important;width:100%!important;}
+.qx-contract-line .qx-contract-label{white-space:nowrap!important;letter-spacing:.55px!important;}
+.qx-contract-line code{display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;padding:5px 7px!important;}
+.qx-copy-contract{margin:0!important;justify-self:end!important;min-width:38px!important;padding:6px 8px!important;}
+#qxTradesList{contain:layout paint!important;}
+#qxTradesList .qx-trade-row{contain:layout paint!important;}
+@media(max-width:520px){.qx-contract-line{gap:5px!important}.qx-contract-line .qx-contract-label{font-size:8px!important}.qx-contract-line code{font-size:10px!important}.qx-copy-contract{min-width:34px!important;padding:5px 7px!important}}
 </style>
 </body>
 </html>
@@ -5570,4 +5607,14 @@ body.qx-token-open #detail .qx-full-dex-chart #detailChart{height:350px!importan
 .qx-trade-row{min-height:31px;transition:none!important;}
 .qx-trade-buy,.qx-trade-sell{font-variant-numeric:tabular-nums;}
 @media(max-width:520px){.qx-contract-line{gap:6px!important}.qx-contract-line code{font-size:10px!important;padding:6px!important}.qx-copy-contract{padding:6px 8px!important}.qx-trade-row{grid-template-columns:46px 44px minmax(58px,1fr) minmax(58px,1fr)!important;min-height:29px!important;}}
+</style>
+
+
+<style id="qx-v7-contract-controls-grouped">
+/* Keep contract text and its copy control together; never push Copy to the far edge. */
+.qx-contract-line{display:inline-flex!important;align-items:center!important;justify-content:flex-start!important;gap:7px!important;width:auto!important;max-width:100%!important;min-width:0!important;}
+.qx-contract-line .qx-contract-label{flex:0 0 auto!important;}
+.qx-contract-line code{flex:0 1 auto!important;width:auto!important;max-width:min(42vw,190px)!important;min-width:0!important;text-align:left!important;}
+.qx-contract-line .qx-copy-contract{flex:0 0 auto!important;margin:0!important;justify-self:auto!important;white-space:nowrap!important;}
+@media(max-width:520px){.qx-contract-line{gap:5px!important}.qx-contract-line code{max-width:min(38vw,145px)!important}.qx-contract-line .qx-copy-contract{min-width:0!important;padding:5px 7px!important}}
 </style>
