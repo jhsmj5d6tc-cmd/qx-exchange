@@ -3630,6 +3630,18 @@ async function qxLoadLiveChart(token,range="1H"){
   ctx.fillStyle="#dbe4f2";ctx.textAlign="left";ctx.fillText("O "+qxFormatTokenPrice(last.open)+"  H "+qxFormatTokenPrice(last.high)+"  L "+qxFormatTokenPrice(last.low)+"  C "+qxFormatTokenPrice(last.close),pad.l,pad.t-5);
  };
  draw();
+ host.__qxLivePriceUpdate=(data)=>{
+  if(!data||String(host.dataset.mint||"")!==mint)return;
+  const t=Number(data.unixTime||data.unix_time||0),o=Number(data.o),h=Number(data.h),l=Number(data.l),c=Number(data.c);
+  if(!(t>0&&o>0&&h>0&&l>0&&c>0))return;
+  const interval=({"1m":60,"now":60,"5m":300,"15m":900,"30m":1800,"1H":3600,"4H":14400,"1D":86400})[String(range)]||0;
+  if(!interval)return; // Sub-minute charts require actual tick-level trade prices, not 1m candles.
+  const bucket=Math.floor(t/interval)*interval;let bar=points.find(x=>Number(x.time)===bucket);
+  if(bar){bar.high=Math.max(Number(bar.high)||h,h);bar.low=Math.min(Number(bar.low)||l,l);bar.close=c;if(interval===60){bar.open=o;bar.volume=Number(data.v||bar.volume||0);}}
+  else if(points.length&&Number(points[points.length-1].time)<bucket){points.push({time:bucket,open:o,high:h,low:l,close:c,volume:0});if(points.length>90)points.shift();}
+  else return;
+  host.__qxLastCandle=points[points.length-1];host.__qxChartPulseUntil=Date.now()+5200;draw();
+ };
  host.__qxLastCandle=points[points.length-1];host.__qxTradeMarkers=tradeMarkers;host.__qxChartPulseUntil=Date.now()+5200;
  if(!host.__qxChartAnimRunning){
   host.__qxChartAnimRunning=true;
@@ -3660,7 +3672,7 @@ function qxStartAgeTicker(token){
  if(qxAgeTimer&&qxAgeMint===mint)return;
  if(qxAgeTimer)clearInterval(qxAgeTimer);
  qxAgeMint=mint;
- const tick=()=>{if(String(selectedToken?.baseToken?.address||"")!==mint||!document.body.classList.contains("qx-token-open"))return;const created=qxTimestampMs(token?.tokenCreatedAt);const el=$("qxTokenAge");if(el)el.textContent=created?qxAgeText(created):"Age —";};
+ const tick=()=>{if(String(selectedToken?.baseToken?.address||"")!==mint||!document.body.classList.contains("qx-token-open"))return;const activeToken=(selectedToken&&String(selectedToken?.baseToken?.address||"")===mint)?selectedToken:token;const created=qxTimestampMs(activeToken?.tokenCreatedAt);const el=$("qxTokenAge");if(el)el.textContent=created?qxAgeText(created):"Age —";};
  tick();qxAgeTimer=setInterval(tick,1000);
 }
 function qxSetRealTokenInfo(token){
@@ -3856,6 +3868,7 @@ function openToken(token){
  qxSetRealTokenInfo(token);
  qxLoadRealTokenInfo(token);
  qxLoadTrades(token);qxStartTradesRefresh(token);
+ try{window.QXStartMarketStream?.(token);}catch(streamStartError){console.warn("QX market stream start failed",streamStartError);}
  const detailTop=document.getElementById("detail");
  if(detailTop) setTimeout(()=>detailTop.scrollIntoView({behavior:"smooth",block:"start"}),80);
 }
@@ -4942,6 +4955,7 @@ void loadMarket().then(()=>qxRefreshPublicLiveSnapshots()).catch(e=>console.warn
   else ensureTerminalPlacement();
 
   function qxCloseTokenTerminal(){
+    try{window.QXStopMarketStream?.();}catch(_){}
     // Restore the button to its original DOM position after leaving the terminal.
     const qxBack=$("tokenBackBtn"),qxBackHome=window.__QXBackButtonHome;
     if(qxBack&&qxBackHome?.parentNode){qxBackHome.parentNode.insertBefore(qxBack,qxBackHome);qxBackHome.remove();window.__QXBackButtonHome=null;}
@@ -5619,6 +5633,82 @@ body.qx-token-open #detail .qx-full-dex-chart #detailChart{height:350px!importan
 #qxTradesList .qx-trade-row{contain:layout paint!important;}
 @media(max-width:520px){.qx-contract-line{gap:5px!important}.qx-contract-line .qx-contract-label{font-size:8px!important}.qx-contract-line code{font-size:10px!important}.qx-copy-contract{min-width:34px!important;padding:5px 7px!important}}
 </style>
+<script id="qx-market-websocket-client">
+(function(){
+ "use strict";
+ const ENDPOINT="wss://qkazosqvnmknnzkukggj.supabase.co/functions/v1/qx-market-stream";
+ let socket=null,retryTimer=null,pingTimer=null,tradeRefreshTimer=null,retryDelay=1500,generation=0,activeMint="",activePool="",activeToken=null,manuallyStopped=false;
+ const priceByMint=window.__QXStreamPriceByMint||(window.__QXStreamPriceByMint=Object.create(null));
+ const $=id=>document.getElementById(id);
+ function setStatus(message){const el=$("qxOwnedChartStatus");if(el&&message)el.dataset.streamStatus=message;}
+ function clearTimers(){if(retryTimer){clearTimeout(retryTimer);retryTimer=null;}if(pingTimer){clearInterval(pingTimer);pingTimer=null;}if(tradeRefreshTimer){clearTimeout(tradeRefreshTimer);tradeRefreshTimer=null;}}
+ function closeSocket(){clearTimers();if(socket){try{socket.onopen=socket.onmessage=socket.onerror=socket.onclose=null;socket.close(1000,"QX token changed");}catch(_){}socket=null;}}
+ function subscribe(){if(!socket||socket.readyState!==WebSocket.OPEN||!activeMint)return;const payload={op:"subscribe",addresses:[activeMint],pairAddresses:activePool?[activePool]:[]};socket.send(JSON.stringify(payload));}
+ function reconnect(myGeneration){if(manuallyStopped||myGeneration!==generation||!activeMint)return;clearTimeout(retryTimer);retryTimer=setTimeout(()=>connect(myGeneration),retryDelay);retryDelay=Math.min(30000,Math.round(retryDelay*1.8));}
+ function applyPrice(data){
+  if(!data||String(data.address||"")!==activeMint)return;
+  const t=Number(data.unixTime||data.unix_time||0),close=Number(data.c);if(!(t>0&&close>0))return;
+  priceByMint[activeMint]=data;
+  const token=window.__QXSelectedToken;
+  if(token&&String(token?.baseToken?.address||"")===activeMint){token.priceUsd=String(close);const price=$("detailPrice");if(price)price.textContent=typeof qxFormatTokenPrice==="function"?qxFormatTokenPrice(close):String(close);}
+  const host=$("detailChart");if(host&&typeof host.__qxLivePriceUpdate==="function")host.__qxLivePriceUpdate(data);
+  const detail=$("detailPrice");if(detail)detail.dataset.streamAt=String(t);
+ }
+ function onMessage(event,myGeneration){
+  if(myGeneration!==generation)return;
+  let msg;try{msg=JSON.parse(String(event.data||"{}"));}catch(_){return;}
+  if(msg?.type==="qx_stream_status"){
+   if(msg.status==="connected"||msg.status==="subscribed"){retryDelay=1500;setStatus("WebSocket connected · waiting for verified market updates");}
+   else if(msg.status==="upstream_error")setStatus("Market stream interrupted · REST fallback active");
+   return;
+  }
+  if(msg?.type==="PRICE_DATA")applyPrice(msg.data||{});
+  else if(msg?.type==="TXS_DATA"){
+   // Birdeye's TXS event is the immediate signal; REST still supplies the fully
+   // verified side, token amount, USD value and wallet row shown in the tape.
+   if(tradeRefreshTimer)clearTimeout(tradeRefreshTimer);
+   tradeRefreshTimer=setTimeout(()=>{
+    if(myGeneration!==generation||!document.body.classList.contains("qx-token-open"))return;
+    const current=window.__QXSelectedToken;
+    if(current&&String(current?.baseToken?.address||"")===activeMint&&typeof qxLoadTrades==="function")void qxLoadTrades(current);
+   },650);
+  }
+ }
+ async function connect(myGeneration){
+  if(manuallyStopped||myGeneration!==generation||!activeMint)return;
+  closeSocket();
+  let ws;
+  try{ws=new WebSocket(ENDPOINT,"echo-protocol");}catch(error){console.warn("QX WebSocket unavailable",error);reconnect(myGeneration);return;}
+  socket=ws;
+  ws.onopen=()=>{
+   if(myGeneration!==generation){try{ws.close();}catch(_){}return;}
+   retryDelay=1500;subscribe();
+   pingTimer=setInterval(()=>{if(ws.readyState===WebSocket.OPEN)try{ws.send(JSON.stringify({op:"ping"}));}catch(_){}},25000);
+   setStatus("WebSocket connected · subscriptions active");
+  };
+  ws.onmessage=e=>onMessage(e,myGeneration);
+  ws.onerror=()=>setStatus("Market stream reconnecting · REST fallback active");
+  ws.onclose=()=>{if(socket===ws)socket=null;clearTimers();reconnect(myGeneration);};
+ }
+ window.QXStartMarketStream=async function(token){
+  const mint=String(token?.baseToken?.address||"");if(!mint)return;
+  if(activeMint===mint&&socket&&[WebSocket.CONNECTING,WebSocket.OPEN].includes(socket.readyState))return;
+  manuallyStopped=false;generation++;const myGeneration=generation;closeSocket();activeMint=mint;activeToken=token;activePool="";retryDelay=1500;
+  try{
+   if(typeof qxResolveVerifiedPool==="function"){
+    const resolved=await qxResolveVerifiedPool(token,mint);
+    if(myGeneration!==generation)return;
+    activePool=String(resolved?.address||token?.pairAddress||token?.poolAddress||"");
+   }
+  }catch(error){console.warn("QX stream pool resolution deferred",error);}
+  if(myGeneration!==generation)return;
+  connect(myGeneration);
+ };
+ window.QXStopMarketStream=function(){manuallyStopped=true;generation++;activeMint="";activePool="";activeToken=null;closeSocket();};
+ window.addEventListener("online",()=>{if(!manuallyStopped&&activeMint&&(!socket||socket.readyState>=WebSocket.CLOSING)){generation++;connect(generation);}});
+ document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&!manuallyStopped&&activeMint&&(!socket||socket.readyState>=WebSocket.CLOSING)){generation++;connect(generation);}});
+})();
+</script>
 </body>
 </html>
 
