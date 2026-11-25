@@ -1330,6 +1330,7 @@ window.QXRPC=rpc;
 window.QXGetActiveWalletProvider=()=>getActiveWalletProvider();
 window.setConnectedWallet=setConnectedWallet;
 window.QXGetWalletSolBalance=()=>walletSolBalance;window.QXGetSelectedTokenBalance=()=>selectedTokenBalance;window.QXGetSelectedTokenDecimals=()=>selectedTokenDecimals;
+window.QXRefreshTradeBalances=()=>qxRefreshTradeBalancesBounded(1800);
 window.QXSetWalletSolBalance=value=>{const n=Number(value);if(Number.isFinite(n)&&n>=0)walletSolBalance=n;};
 window.QXGetTradeDirection=()=>tradeDirection;
 window.QXUpdateTradePercentUI=()=>updateTradePercentUI();
@@ -1966,16 +1967,20 @@ async function qxUploadTokenMetadataUri(name,symbol,description,image,socials={}
  qxPendingLaunchMetadata={owner,mint,mime:"application/json",dataBase64};
  return uri;
 }
-async function qxSendWalletTx(tx,signer,connection,extraSigners=[]){
+async function qxSendWalletTx(tx,signer,connection,extraSigners=[],onSubmitted=null){
  for(const kp of extraSigners)tx.partialSign(kp);
  const signed=await signer.signTransaction(tx);
  const sig=await connection.sendRawTransaction(signed.serialize(),{skipPreflight:false,preflightCommitment:"confirmed"});
- const bh=tx.recentBlockhash;
- // The transaction object has the blockhash used to build it; confirm with the same blockhash.
- const conf=await connection.confirmTransaction({signature:sig,blockhash:bh,lastValidBlockHeight:tx.lastValidBlockHeight},"confirmed");
- if(conf.value?.err)throw new Error("On-chain transaction failed: "+JSON.stringify(conf.value.err));
+ window.QXLastLaunchSubmittedSignature=sig;
+ // Save the signature before confirmation so an RPC timeout cannot lose the only recovery handle.
+ if(typeof onSubmitted==="function"){try{onSubmitted(sig);}catch(saveError){console.warn("QX immediate launch recovery write failed after submission:",saveError);}}
+ const bh=tx.recentBlockhash;let conf;
+ try{conf=await connection.confirmTransaction({signature:sig,blockhash:bh,lastValidBlockHeight:tx.lastValidBlockHeight},"confirmed");}
+ catch(confirmError){confirmError.qxLaunchSubmitted=true;confirmError.signature=sig;throw confirmError;}
+ if(conf.value?.err){const failed=new Error("On-chain transaction failed: "+JSON.stringify(conf.value.err));failed.qxLaunchTransactionFailed=true;failed.signature=sig;throw failed;}
  return sig;
 }
+let qxLaunchInProgress=false;
 async function qxLaunchToken(options={}){
  const fromCreator=!!options.fromCreator;
  const metadataSocials=options.metadataSocials||{};
@@ -1983,7 +1988,7 @@ async function qxLaunchToken(options={}){
  const status=fromCreator?(options.creatorStatus||$("launchStatus")):$("launchStatus");
  const result=fromCreator?(options.creatorResult||$("launchResult")):$("launchResult");
  if(!btn||(!fromCreator&&btn.disabled))return;
- let confirmedLaunchTx=null;
+ let confirmedLaunchTx=null,launchTransactionConfirmed=false;
  try{
   btn.disabled=true;
   // A launch already confirmed on Solana must never be repeated just because
@@ -1991,19 +1996,17 @@ async function qxLaunchToken(options={}){
   // recover the existing mint instead of submitting a second launch transaction.
   let pendingRecovery=null;
   try{pendingRecovery=JSON.parse(localStorage.getItem("qxPendingLaunchRegistryRecord")||"null");}catch(_){pendingRecovery=null;}
-  if(pendingRecovery?.partialLaunch&&String(pendingRecovery.creator||"")===String(walletAddress||"")){
+  if(pendingRecovery?.mint&&pendingRecovery?.creator){
+   if(String(pendingRecovery.creator)!==String(walletAddress||""))throw new Error("A previous QX launch is still awaiting confirmation or registry recovery for another wallet. Reconnect the original creator wallet first; QX will not overwrite its recovery record.");
+   if(!pendingRecovery.poolSignature)throw new Error("A previous QX launch has a saved recovery record but no transaction signature. QX blocked a second launch to protect the existing token record. Mint: "+String(pendingRecovery.mint));
    result.style.display="block";
-   status.textContent="Recovering the existing confirmed QX launch. QX will resolve its original pool and finish publishing; no new token will be created…";
+   status.textContent="Recovering the existing QX launch. QX will resolve its original pool and finish publishing; no new token will be created…";
    const recovered=await qxRetryPendingLaunchRegistry();
-   if(recovered){
-    status.textContent="The original QX launch has been recovered and registered. You can now create another token.";
-    btn.textContent="Create another token";
-   }else{
-    status.textContent="The original token already exists on Solana. QX could not finish publishing or registry recovery yet. Retry this same button later; do not create it again.";
-    btn.textContent="Retry existing QX launch";
-   }
+   if(recovered){status.textContent="The original QX launch has been recovered and registered. You can now create another token.";btn.textContent="Create another token";}
+   else{status.textContent="The original token may already exist on Solana. QX could not finish confirmation or registry recovery yet. Retry this same button later; do not create it again.";btn.textContent="Retry existing QX launch";}
    return;
   }
+  qxLaunchInProgress=true;
   qxPendingLaunchImage=null;qxPendingLaunchMetadata=null;
   result.style.display="none";
   status.textContent="Loading the QX real launch engine…";
@@ -2138,9 +2141,20 @@ async function qxLaunchToken(options={}){
   // QX token creation is free. The creator pays only Solana network fees and
   // the required on-chain account rent. The optional Meteora display metadata
   // PDA is deliberately not a second transaction; token metadata URI is in DBC config.
-  const poolSig=await qxSendWalletTx(combinedTx,signer,connection,[config,baseMint]);
+  const poolSig=await qxSendWalletTx(combinedTx,signer,connection,[config,baseMint],submittedSignature=>{
+   const submittedRecord={name,symbol,decimals,supply:supplyText,initialMarketCap:initialMc,migrationMarketCap:migrationMc,firstBuySol:firstBuy,mint:baseMint.publicKey.toBase58(),config:config.publicKey.toBase58(),pool:"",configSignature:submittedSignature,poolSignature:submittedSignature,creator:payer.toBase58(),metadataUri:uri||"",image:image||"",createdAt:Date.now(),feeSol:0,feeRecipient:"",feeStatus:"free QX token creation",qxSupplyShareBps:500,qxSupplyShareReceiver:"9C6bcBgeHnRwJfTYKqPjEGeP9egxKWQgR5GCXVSEeDXH",partialLaunch:true,transactionSubmitted:true,metadataPending:true};
+   confirmedLaunchTx=submittedRecord;
+   try{
+    localStorage.setItem("qxPendingLaunchRegistryRecord",JSON.stringify(submittedRecord));
+    const prior=JSON.parse(localStorage.getItem("qxRealLaunches")||"[]");
+    localStorage.setItem("qxRealLaunches",JSON.stringify([submittedRecord,...(Array.isArray(prior)?prior.filter(x=>String(x?.mint||"")!==submittedRecord.mint):[])].slice(0,20)));
+    if(qxPendingLaunchImage)localStorage.setItem("qxPendingLaunchRegistryImage",JSON.stringify({...qxPendingLaunchImage,kind:"image",poolSignature:submittedSignature}));
+    if(qxPendingLaunchMetadata)localStorage.setItem("qxPendingLaunchRegistryMedia",JSON.stringify({...qxPendingLaunchMetadata,kind:"metadata",poolSignature:submittedSignature}));
+   }catch(storageError){console.warn("QX could not persist immediate submitted-launch recovery",storageError);}
+  });
+  launchTransactionConfirmed=true;
   const configSig=poolSig;
-  confirmedLaunchTx={name,symbol,decimals,supply:supplyText,initialMarketCap:initialMc,migrationMarketCap:migrationMc,firstBuySol:firstBuy,mint:baseMint.publicKey.toBase58(),config:config.publicKey.toBase58(),configSignature:configSig,poolSignature:poolSig,creator:payer.toBase58(),metadataUri:uri||"",image:image||"",createdAt:Date.now(),feeSol:0,feeStatus:"free QX token creation",qxSupplyShareBps:500,qxSupplyShareReceiver:"9C6bcBgeHnRwJfTYKqPjEGeP9egxKWQgR5GCXVSEeDXH"};
+  confirmedLaunchTx={...confirmedLaunchTx,name,symbol,decimals,supply:supplyText,initialMarketCap:initialMc,migrationMarketCap:migrationMc,firstBuySol:firstBuy,mint:baseMint.publicKey.toBase58(),config:config.publicKey.toBase58(),configSignature:configSig,poolSignature:poolSig,creator:payer.toBase58(),metadataUri:uri||"",image:image||"",createdAt:confirmedLaunchTx?.createdAt||Date.now(),feeSol:0,feeStatus:"free QX token creation",qxSupplyShareBps:500,qxSupplyShareReceiver:"9C6bcBgeHnRwJfTYKqPjEGeP9egxKWQgR5GCXVSEeDXH",transactionSubmitted:true};
 
   // The DBC pool is created on-chain. Graduation is performed by Meteora's
   // mainnet migration keeper once the configured quote threshold is reached.
@@ -2231,15 +2245,11 @@ async function qxLaunchToken(options={}){
     await qxQxTokenMediaUpload({...qxPendingLaunchImage,kind:"image",poolSignature:poolSig});
     qxPendingLaunchImage=null;
    }catch(imageError){
-    console.warn("QX logo upload deferred; token launch will still be registered",imageError);
-    qxPendingLaunchImage=null;record.image="";
-    if(qxPendingLaunchMetadata){
-     try{
-      const raw=Uint8Array.from(atob(qxPendingLaunchMetadata.dataBase64),c=>c.charCodeAt(0));
-      const metadata=JSON.parse(new TextDecoder().decode(raw));delete metadata.image;
-      qxPendingLaunchMetadata.dataBase64=qxBytesToB64(new TextEncoder().encode(JSON.stringify(metadata)));
-     }catch(metadataEditError){console.warn("Could not remove unavailable logo URL from pending metadata",metadataEditError);}
-    }
+    console.warn("QX logo upload deferred; image and metadata will be retried before global registration",imageError);
+    metadataPublished=false;
+    try{localStorage.setItem("qxPendingLaunchRegistryImage",JSON.stringify({...qxPendingLaunchImage,kind:"image",poolSignature:poolSig}));}
+    catch(storageError){console.warn("QX could not persist pending token logo",storageError);}
+    qxPendingLaunchImage=null;
    }
   }
   if(qxPendingLaunchMetadata){
@@ -2285,8 +2295,11 @@ async function qxLaunchToken(options={}){
   if(!fromCreator)btn.textContent="Launch another token";
  }catch(e){
   console.error("QX real launch:",e);
-  if(confirmedLaunchTx){
-   const partial={...confirmedLaunchTx,partialLaunch:true,verifiedOnChain:true,metadataPending:true,createdAt:confirmedLaunchTx.createdAt||Date.now(),feeSol:0,feeRecipient:"",feeStatus:"free QX token creation",qxSupplyShareBps:500,qxSupplyShareReceiver:"9C6bcBgeHnRwJfTYKqPjEGeP9egxKWQgR5GCXVSEeDXH"};
+  if(e?.qxLaunchTransactionFailed){
+   try{localStorage.removeItem("qxPendingLaunchRegistryRecord");localStorage.removeItem("qxPendingLaunchRegistryMedia");localStorage.removeItem("qxPendingLaunchRegistryImage");const prior=JSON.parse(localStorage.getItem("qxRealLaunches")||"[]");if(Array.isArray(prior))localStorage.setItem("qxRealLaunches",JSON.stringify(prior.filter(x=>String(x?.mint||"")!==String(confirmedLaunchTx?.mint||""))));}catch(cleanupError){console.warn("QX failed-launch cleanup deferred",cleanupError);}
+   status.textContent="Solana confirmed that the launch transaction failed. No token launch was recorded. You may safely review the settings and try again. Transaction: "+String(e.signature||"");btn.textContent="Try token launch again";
+  }else if(confirmedLaunchTx){
+   const partial={...confirmedLaunchTx,partialLaunch:true,verifiedOnChain:launchTransactionConfirmed,metadataPending:true,createdAt:confirmedLaunchTx.createdAt||Date.now(),feeSol:0,feeRecipient:"",feeStatus:"free QX token creation",qxSupplyShareBps:500,qxSupplyShareReceiver:"9C6bcBgeHnRwJfTYKqPjEGeP9egxKWQgR5GCXVSEeDXH"};
    try{
     const prior=JSON.parse(localStorage.getItem("qxRealLaunches")||"[]");
     localStorage.setItem("qxRealLaunches",JSON.stringify([partial,...(Array.isArray(prior)?prior.filter(x=>String(x?.mint||"")!==partial.mint):[])].slice(0,20)));
@@ -2313,13 +2326,13 @@ async function qxLaunchToken(options={}){
      localStorage.setItem("qxPendingLaunchRegistryMedia",JSON.stringify({...qxPendingLaunchMetadata,kind:"metadata",poolSignature:String(partial.poolSignature||"")}));
     }
    }catch(recoveryStorageError){console.warn("QX could not persist the complete launch recovery envelope",recoveryStorageError);}
-   status.textContent="IMPORTANT: Solana already confirmed this launch. QX saved its mint and transaction; do not launch it again. Press this same button to retry publishing and registration. Details: "+(e?.message||String(e));
+   status.textContent=(launchTransactionConfirmed?"IMPORTANT: Solana confirmed this launch.":"IMPORTANT: QX submitted this launch, but confirmation is not yet available.")+" QX saved its mint and transaction signature; do not launch it again. Press this same button to check and recover the existing launch. Details: "+(e?.message||String(e));
    btn.textContent="Retry existing QX launch";
   }else{
    status.textContent=e?.message||"Real launch failed. No launch success is recorded.";
    btn.textContent="Connect wallet & launch on Solana";
   }
- }finally{btn.disabled=false;}
+ }finally{btn.disabled=false;qxLaunchInProgress=false;}
 }
 $("launchTokenBtn")?.addEventListener("click",qxLaunchToken);
 
@@ -2730,6 +2743,19 @@ async function qxVerifyConfirmedSwapOnChain(signature, tokenMint, direction, wal
  }
  throw new Error("Solana confirmed the transaction but its parsed balance effects are not readable yet.");
 }
+function qxAssertTradeOrderStillCurrent(q){
+ const currentAmount=Number($("tradeAmountInput")?.value||0);
+ if(!q||pendingSwapOrder!==q||q.walletAddress!==walletAddress||q.tokenMint!==selectedToken?.baseToken?.address||q.direction!==tradeDirection||!Number.isFinite(currentAmount)||currentAmount!==Number(q.amount)||Date.now()-Number(q.quotedAt||0)>=25000)throw new Error("The wallet, token, amount, direction or quote changed while wallet approval was open. The signed transaction was not submitted; request a fresh quote.");
+}
+function qxRememberPendingSwapSubmission(record){
+ try{
+  const rows=JSON.parse(localStorage.getItem("qxPendingSwapSubmissions")||"[]");
+  const list=Array.isArray(rows)?rows:[];
+  const signature=String(record?.signature||"");if(!signature)return;
+  const next=[{signature,walletAddress:String(record.walletAddress||""),tokenMint:String(record.tokenMint||""),direction:String(record.direction||""),lastValidBlockHeight:Number(record.lastValidBlockHeight||0),createdAt:Date.now()},...list.filter(x=>String(x?.signature||"")!==signature)].slice(0,12);
+  localStorage.setItem("qxPendingSwapSubmissions",JSON.stringify(next));
+ }catch(e){console.warn("QX could not persist an ambiguous submitted-swap signature",e);}
+}
 async function qxExecuteDammV2Swap(q){
  if(!q||q.route!=="DAMM_V2")throw new Error("No DAMM v2 order is available.");
  const provider=window.QXGetActiveWalletProvider?.()||null;if(typeof provider?.signTransaction!=="function")throw new Error("The connected wallet cannot sign this DAMM v2 trade. Reconnect your wallet and try again.");
@@ -2760,8 +2786,9 @@ async function qxExecuteDammV2Swap(q){
   }
  }
  const signed=await provider.signTransaction(tx);if(!signed?.serialize)throw new Error("The wallet did not return a signed DAMM v2 transaction.");
- const sig=await connection.sendRawTransaction(signed.serialize(),{skipPreflight:false,preflightCommitment:"confirmed"});
- const conf=await connection.confirmTransaction({signature:sig,blockhash:latest.blockhash,lastValidBlockHeight:latest.lastValidBlockHeight},"confirmed");
+ qxAssertTradeOrderStillCurrent(q);
+ const sig=await connection.sendRawTransaction(signed.serialize(),{skipPreflight:false,preflightCommitment:"confirmed"});window.QXLastSwapSubmittedSignature=sig;
+ let conf;try{conf=await connection.confirmTransaction({signature:sig,blockhash:latest.blockhash,lastValidBlockHeight:latest.lastValidBlockHeight},"confirmed");}catch(confirmError){confirmError.qxSubmitted=true;confirmError.signature=sig;confirmError.lastValidBlockHeight=latest.lastValidBlockHeight;qxRememberPendingSwapSubmission({signature:sig,walletAddress:q.walletAddress,tokenMint:q.tokenMint,direction:q.direction,lastValidBlockHeight:latest.lastValidBlockHeight});throw confirmError;}
  if(conf.value?.err)throw new Error("DAMM v2 swap failed on-chain: "+JSON.stringify(conf.value.err));
  window.QXLastConfirmedSwapSignature=sig;pendingSwapOrder=null;
  let chain,fee;
@@ -2933,8 +2960,9 @@ async function qxExecuteDirectDbcSwap(q){
   }
  }
  const signed=await provider.signTransaction(swapTx);if(!signed?.serialize)throw new Error("The wallet did not return a signed DBC transaction.");
- const sig=await connection.sendRawTransaction(signed.serialize(),{skipPreflight:false,preflightCommitment:"confirmed"});
- const conf=await connection.confirmTransaction({signature:sig,blockhash:latest.blockhash,lastValidBlockHeight:latest.lastValidBlockHeight},"confirmed");
+ qxAssertTradeOrderStillCurrent(q);
+ const sig=await connection.sendRawTransaction(signed.serialize(),{skipPreflight:false,preflightCommitment:"confirmed"});window.QXLastSwapSubmittedSignature=sig;
+ let conf;try{conf=await connection.confirmTransaction({signature:sig,blockhash:latest.blockhash,lastValidBlockHeight:latest.lastValidBlockHeight},"confirmed");}catch(confirmError){confirmError.qxSubmitted=true;confirmError.signature=sig;confirmError.lastValidBlockHeight=latest.lastValidBlockHeight;qxRememberPendingSwapSubmission({signature:sig,walletAddress:q.walletAddress,tokenMint:q.tokenMint,direction:q.direction,lastValidBlockHeight:latest.lastValidBlockHeight});throw confirmError;}
  if(conf.value?.err)throw new Error("Direct Meteora DBC swap failed on-chain: "+JSON.stringify(conf.value.err));
  window.QXLastConfirmedSwapSignature=sig;pendingSwapOrder=null;
  let chain,fee;
@@ -3198,15 +3226,42 @@ async function qxRequestLiveQuote(){
  }
  finally{if(qxQuoteAbortController===quoteController)qxQuoteAbortController=null;quoteBusy=false;if(btn){btn.disabled=!(Number($("tradeAmountInput")?.value)>0)||!connected||!selectedToken||swapBusy;qxUpdateSwapButtonLabel(pendingSwapOrder&&Date.now()-Number(pendingSwapOrder.quotedAt||0)<25000?"confirm":"quote");}}
 }
+async function qxCheckPendingSwapSubmissions(){
+ let rows=[];try{const saved=JSON.parse(localStorage.getItem("qxPendingSwapSubmissions")||"[]");rows=Array.isArray(saved)?saved:[];}catch(_){rows=[];}
+ const mine=rows.filter(x=>String(x?.walletAddress||"")===String(walletAddress||""));
+ if(!mine.length)return true;
+ let changed=false;
+ try{
+  const connection=await qxGetHealthyConnection();
+  for(const item of mine){
+   let status=null;
+   try{const result=await connection.getSignatureStatuses([String(item.signature)],{searchTransactionHistory:true});status=result?.value?.[0]||null;}catch(_){status=null;}
+   if(status&&(status.err||status.confirmationStatus==="confirmed"||status.confirmationStatus==="finalized")){rows=rows.filter(x=>String(x?.signature||"")!==String(item.signature));changed=true;continue;}
+   if(!status&&Number(item.lastValidBlockHeight)>0){
+    try{const height=await connection.getBlockHeight("confirmed");if(Number(height)>Number(item.lastValidBlockHeight)){rows=rows.filter(x=>String(x?.signature||"")!==String(item.signature));changed=true;continue;}}catch(_){ }
+   }
+   qxSetSwapStatus("A previous signed swap is still awaiting Solana confirmation. QX has blocked another swap to prevent a duplicate. Check its status first: https://solscan.io/tx/"+encodeURIComponent(item.signature));
+   return false;
+  }
+ }catch(error){
+  const item=mine[0];qxSetSwapStatus("QX cannot verify the previous submitted swap right now. Another swap is blocked to prevent duplication. Check Solscan: https://solscan.io/tx/"+encodeURIComponent(item.signature));
+  console.warn("QX pending swap status check unavailable",error);return false;
+ }
+ if(changed){try{localStorage.setItem("qxPendingSwapSubmissions",JSON.stringify(rows));}catch(_){ }qxSetSwapStatus("The previous submitted swap is now resolved on Solana. Review the result, then request a fresh quote before trading again.");return false;}
+ return true;
+}
+let qxSwapNowBusy=false;
 async function qxSwapNow(){
  const button=$("swapNowBtn"),amount=Number($("tradeAmountInput")?.value||0);
- if(swapBusy||quoteBusy)return;
+ if(swapBusy||quoteBusy||qxSwapNowBusy)return;
  if(!connected||!walletAddress){qxSetSwapStatus("Connect your Solana wallet before swapping.");return;}
  if(!selectedToken){qxSetSwapStatus("Select a Solana token from Markets first.");return;}
  if(!Number.isFinite(amount)||amount<=0){qxSetSwapStatus("Enter a valid amount first.");return;}
- const quoteIsFresh=!!pendingSwapOrder&&pendingSwapOrder.tokenMint===selectedToken.baseToken.address&&pendingSwapOrder.direction===tradeDirection&&pendingSwapOrder.walletAddress===walletAddress&&Number(pendingSwapOrder.amount)===amount&&Date.now()-Number(pendingSwapOrder.quotedAt||0)<25000;
- if(button){button.disabled=true;button.querySelector("span").textContent=quoteIsFresh?"APPROVING…":"GETTING ORDER…";}
+ qxSwapNowBusy=true;
  try{
+  if(!await qxCheckPendingSwapSubmissions())return;
+  const quoteIsFresh=!!pendingSwapOrder&&pendingSwapOrder.tokenMint===selectedToken.baseToken.address&&pendingSwapOrder.direction===tradeDirection&&pendingSwapOrder.walletAddress===walletAddress&&Number(pendingSwapOrder.amount)===amount&&Date.now()-Number(pendingSwapOrder.quotedAt||0)<25000;
+  if(button){button.disabled=true;button.querySelector("span").textContent=quoteIsFresh?"APPROVING…":"GETTING ORDER…";}
   if(!quoteIsFresh){
    await qxRequestLiveQuote();
    // qxRequestLiveQuote already reports the exact provider/pool failure. Do not
@@ -3218,7 +3273,10 @@ async function qxSwapNow(){
   }
   if(pendingSwapOrder?.route==="DBC"){
    const q=pendingSwapOrder,r=await qxExecuteDirectDbcSwap(q);pendingSwapOrder=null;
-   try{window.QXRecordTrade?.(q.direction.toUpperCase(),r.actualInput,r.sig,{symbol:q.tokenSymbol,name:q.tokenSymbol,mint:q.tokenMint},q.direction==="buy"?"SOL":q.tokenSymbol,{inputAmount:r.actualInput,outputAmount:r.actualOutput,inputSymbol:q.direction==="buy"?"SOL":q.tokenSymbol,outputSymbol:q.direction==="buy"?q.tokenSymbol:"SOL",inputUsd:0,outputUsd:0,tokenUsd:Number(selectedToken?.priceUsd||0),solUsd:Number(solPrice||0)});}catch(_){ }
+   const tokenUsd=Number(selectedToken?.priceUsd||0),solUsd=Number(solPrice||0);
+   const inputUsd=q.direction==="buy"?r.actualInput*solUsd:r.actualInput*tokenUsd;
+   const outputUsd=q.direction==="buy"?r.actualOutput*tokenUsd:r.actualOutput*solUsd;
+   try{window.QXRecordTrade?.(q.direction.toUpperCase(),r.actualInput,r.sig,{symbol:q.tokenSymbol,name:q.tokenSymbol,mint:q.tokenMint},q.direction==="buy"?"SOL":q.tokenSymbol,{inputAmount:r.actualInput,outputAmount:r.actualOutput,inputSymbol:q.direction==="buy"?"SOL":q.tokenSymbol,outputSymbol:q.direction==="buy"?q.tokenSymbol:"SOL",inputUsd,outputUsd,tokenUsd,solUsd});}catch(_){ }
    $("swapReceive").textContent=r.actualOutput.toLocaleString(undefined,{maximumFractionDigits:12})+" "+(q.direction==="buy"?q.tokenSymbol:"SOL");
    const lab=$("swapNowBtn")?.querySelector("span");if(lab)lab.textContent="SWAP CONFIRMED";
    qxSetSwapStatus("Meteora DBC swap confirmed on Solana. Transaction: "+r.sig);
@@ -3226,9 +3284,10 @@ async function qxSwapNow(){
   }else await qxExecuteSwap();
  }catch(e){
   if(e?.qxConfirmed){pendingSwapOrder=null;qxSetSwapStatus("IMPORTANT: Solana confirmed this swap, but QX could not finish verifying settlement or fees. DO NOT retry this trade. Check the transaction on Solscan: https://solscan.io/tx/"+encodeURIComponent(e.signature||window.QXLastConfirmedSwapSignature||""));}
+  else if(e?.qxSubmitted){pendingSwapOrder=null;qxSetSwapStatus("IMPORTANT: The signed swap was submitted to Solana, but confirmation is not yet available. DO NOT retry until you check Solscan: https://solscan.io/tx/"+encodeURIComponent(e.signature||window.QXLastSwapSubmittedSignature||""));}
   else qxSetSwapStatus(e?.message||"Trade failed before on-chain confirmation.");
  }
- finally{if(button){button.disabled=!(Number($("tradeAmountInput")?.value)>0)||!connected||!selectedToken||quoteBusy||swapBusy;qxUpdateSwapButtonLabel(pendingSwapOrder&&Date.now()-Number(pendingSwapOrder.quotedAt||0)<25000?"confirm":"quote");}}
+ finally{qxSwapNowBusy=false;if(button){button.disabled=!(Number($("tradeAmountInput")?.value)>0)||!connected||!selectedToken||quoteBusy||swapBusy;qxUpdateSwapButtonLabel(pendingSwapOrder&&Date.now()-Number(pendingSwapOrder.quotedAt||0)<25000?"confirm":"quote");}}
 }
 window.QXSwapNow=qxSwapNow;
 async function qxVerifyJupiterSettlement(signature,q){
@@ -3284,7 +3343,10 @@ async function qxExecuteSwap(){
    if(q.tokenMint!==selectedToken?.baseToken?.address||q.direction!==tradeDirection||q.walletAddress!==walletAddress||Number(q.amount)!==Number($("tradeAmountInput")?.value||0))throw new Error("The selected token, amount, direction or wallet changed. Request a fresh order.");
    qxSetSwapStatus(q.route==="DAMM_V2"?"Preparing the real Meteora DAMM v2 transaction. Approve it in your wallet…":"Preparing the real Meteora DBC transaction. Approve it in your wallet…");
    const result=q.route==='DAMM_V2'?await qxExecuteDammV2Swap(q):await qxExecuteDirectDbcSwap(q);pendingSwapOrder=null;
-   try{window.QXRecordTrade?.(q.direction.toUpperCase(),result.actualInput,result.sig,{symbol:q.tokenSymbol,name:q.tokenSymbol,mint:q.tokenMint},q.direction==="buy"?"SOL":q.tokenSymbol,{inputAmount:result.actualInput,outputAmount:result.actualOutput,inputSymbol:q.direction==="buy"?"SOL":q.tokenSymbol,outputSymbol:q.direction==="buy"?q.tokenSymbol:"SOL",tokenUsd:Number(selectedToken?.priceUsd||0),solUsd:Number(solPrice||0)});}catch(historyError){console.warn("On-chain Meteora swap confirmed, but local history could not be saved:",historyError);}
+   const tokenUsd=Number(selectedToken?.priceUsd||0),solUsd=Number(solPrice||0);
+   const inputUsd=q.direction==="buy"?result.actualInput*solUsd:result.actualInput*tokenUsd;
+   const outputUsd=q.direction==="buy"?result.actualOutput*tokenUsd:result.actualOutput*solUsd;
+   try{window.QXRecordTrade?.(q.direction.toUpperCase(),result.actualInput,result.sig,{symbol:q.tokenSymbol,name:q.tokenSymbol,mint:q.tokenMint},q.direction==="buy"?"SOL":q.tokenSymbol,{inputAmount:result.actualInput,outputAmount:result.actualOutput,inputSymbol:q.direction==="buy"?"SOL":q.tokenSymbol,outputSymbol:q.direction==="buy"?q.tokenSymbol:"SOL",inputUsd,outputUsd,tokenUsd,solUsd});}catch(historyError){console.warn("On-chain Meteora swap confirmed, but local history could not be saved:",historyError);}
    const receiveEl=$("swapReceive");if(receiveEl)receiveEl.textContent=result.actualOutput.toLocaleString(undefined,{maximumFractionDigits:12})+" "+(q.direction==="buy"?q.tokenSymbol:"SOL");
    const label=$("swapNowBtn")?.querySelector("span");if(label)label.textContent="SWAP CONFIRMED";
    qxSetFeeDisplay(q.route==="DAMM_V2"?"damm":"dbc");
@@ -3293,6 +3355,7 @@ async function qxExecuteSwap(){
    try{await refreshTradeBalances();}catch(_){} try{await loadPortfolio();}catch(_){}
   }catch(e){
    if(e?.qxConfirmed){pendingSwapOrder=null;qxSetSwapStatus("IMPORTANT: Solana confirmed this swap, but QX could not finish reading the confirmation details. DO NOT retry this trade. Check the transaction on Solscan: https://solscan.io/tx/"+encodeURIComponent(e.signature||window.QXLastConfirmedSwapSignature||""));}
+   else if(e?.qxSubmitted){pendingSwapOrder=null;qxSetSwapStatus("IMPORTANT: The signed Meteora swap was submitted, but confirmation is not yet available. DO NOT retry until you check Solscan: https://solscan.io/tx/"+encodeURIComponent(e.signature||window.QXLastSwapSubmittedSignature||""));}
    else qxSetSwapStatus(e?.message||"Meteora swap failed before confirmation.");
    throw e;
   }finally{swapBusy=false;if(btn)btn.disabled=!pendingSwapOrder;}
@@ -3373,6 +3436,7 @@ async function qxExecuteSwap(){
   try{await loadPortfolio();}catch(portfolioError){console.warn("Post-swap portfolio refresh failed:",portfolioError);}
  }catch(e){
   if(e?.qxConfirmed){pendingSwapOrder=null;qxSetSwapStatus("IMPORTANT: Jupiter reports this swap as executed on Solana, but QX could not finish reading the confirmed settlement. DO NOT retry this trade. Check the transaction on Solscan: https://solscan.io/tx/"+encodeURIComponent(e.signature||window.QXLastConfirmedSwapSignature||""));}
+  else if(e?.qxSubmitted){pendingSwapOrder=null;qxSetSwapStatus("IMPORTANT: The signed swap was submitted to Solana, but confirmation is not yet available. DO NOT retry until you check Solscan: https://solscan.io/tx/"+encodeURIComponent(e.signature||window.QXLastSwapSubmittedSignature||""));}
   else qxSetSwapStatus(e?.message||"Swap failed before confirmed execution.");
   if(btn)btn.disabled=!pendingSwapOrder;throw e;
  }finally{swapBusy=false;}
@@ -3513,7 +3577,7 @@ async function qxResolveVerifiedPool(token,mint){
   console.warn("QX verified pool lookup unavailable",error);
   const old=String(token?.pairAddress||token?.poolAddress||token?.qxActivePool||"");
   if(old&&String(token?.baseToken?.address||"")===key&&qxIsValidSolanaMint(old)){
-   const value={address:old,side:"base",pair:null};
+   const value={address:old,side:String(token?.qxChartTokenSide||"base")==="quote"?"quote":"base",pair:null};
    qxVerifiedPoolCache.set(key,{value,expires:Date.now()+10000});
    return value;
   }
@@ -3538,8 +3602,11 @@ async function qxLoadLiveChart(token,range="1H"){
  const seconds=({"1s":1,"5s":5,"15s":15,"30s":30})[String(range).toLowerCase()]||0;
  let points=[],sourceLabel="GeckoTerminal pool OHLCV";
  if(seconds){
-  // Sub-minute candles are built only from actual pool trades, never interpolated prices.
-  const td=await qxGetPoolTrades(pair);
+  // Sub-minute candles use actual pool trades. If the trade endpoint is unavailable,
+  // leave points empty and continue to the real 1-minute OHLCV fallback below.
+  let td=null;
+  try{td=await qxGetPoolTrades(pair);}
+  catch(tradeFeedError){if(tradeFeedError?.name==="AbortError"||requestId!==qxChartRequestId)throw tradeFeedError;console.warn("QX sub-minute trades unavailable; using real 1m OHLCV fallback",tradeFeedError);sourceLabel="GeckoTerminal 1m OHLCV · sub-minute trade feed unavailable";}
   const raw=Array.isArray(td?.data)?td.data:[];
   const ticks=raw.map(t=>{
    const a=t?.attributes||{},from=String(a.from_token_address||""),to=String(a.to_token_address||"");
@@ -3963,7 +4030,7 @@ async function qxRefreshPublicLiveSnapshots(){
     if(qxIsPlaceholderTokenLabel(item.baseToken.symbol,"symbol")&&!qxIsPlaceholderTokenLabel(snap?.baseToken?.symbol,"symbol"))item.baseToken.symbol=snap.baseToken.symbol;
     if(!item.info)item.info={};if(!item.info.imageUrl&&snap?.info?.imageUrl)item.info.imageUrl=snap.info.imageUrl;
     item.priceUsd=String(price);
-    item.priceChange=item.priceChange||{};if(snap?.priceChange?.h24!==undefined&&snap?.priceChange?.h24!==null&&Number.isFinite(Number(snap.priceChange.h24)))item.priceChange.h24=Number(snap.priceChange.h24);
+    item.priceChange=item.priceChange||{};if(snap?.priceChange?.h24!==undefined&&snap?.priceChange?.h24!==null&&Number.isFinite(Number(snap.priceChange.h24)))item.priceChange.h24=Number(snap.priceChange.h24);else delete item.priceChange.h24;
     item.volume=item.volume||{};item.volume.h24=qxNum(snap?.volume?.h24);
     item.liquidity=item.liquidity||{};item.liquidity.usd=qxNum(snap?.liquidity?.usd);
     item.txns=snap?.txns||item.txns||{h24:{buys:0,sells:0}};
@@ -4096,7 +4163,7 @@ function qxHasRealSolanaPool(p){
  return qxIsValidSolanaMint(pool)||p?.qxVerifiedLaunch===true;
 }
 function qxSortDefault(a,b){const v=qxNum(b?.volume?.h24)-qxNum(a?.volume?.h24);if(v)return v;const l=qxNum(b?.liquidity?.usd)-qxNum(a?.liquidity?.usd);if(l)return l;return qxNum(b?.marketCap||b?.fdv)-qxNum(a?.marketCap||a?.fdv);}
-function sortPairs(list){const arr=[...(list||[])],key=String(sortMetric||"default"),dir=sortDirection==="asc"?1:-1;if(key==="default"){if(["newest","oldest","hour","2h","5h","10h","day","gainers","losers","trending","new"].includes(currentCategory))return arr;return arr.sort(qxSortDefault);}const age=p=>qxTimestampMs(p?.tokenCreatedAt||p?.pairCreatedAt||p?.createdAt)||0;const value=p=>key==="price"?qxNum(p?.priceUsd):key==="change"?qxNum(p?.priceChange?.h24):key==="volume"?qxNum(p?.volume?.h24):key==="marketcap"?qxNum(p?.marketCap||p?.fdv):key==="liquidity"?qxNum(p?.liquidity?.usd):key==="txns"?(qxNum(p?.txns?.h24?.buys)+qxNum(p?.txns?.h24?.sells)):key==="age"?age(p):0;return arr.sort((a,b)=>(value(a)-value(b))*dir);}
+function sortPairs(list){const arr=[...(list||[])],key=String(sortMetric||"default"),dir=sortDirection==="asc"?1:-1;if(key==="default"){if(["newest","oldest","hour","2h","5h","10h","day","gainers","losers","trending","new"].includes(currentCategory))return arr;return arr.sort(qxSortDefault);}const age=p=>qxTimestampMs(p?.tokenCreatedAt||p?.pairCreatedAt||p?.createdAt)||0;const value=p=>key==="price"?qxNum(p?.priceUsd):key==="change"?(qxHasReliable24hChange(p)?qxNum(p?.priceChange?.h24):0):key==="volume"?qxNum(p?.volume?.h24):key==="marketcap"?qxNum(p?.marketCap||p?.fdv):key==="liquidity"?qxNum(p?.liquidity?.usd):key==="txns"?(qxNum(p?.txns?.h24?.buys)+qxNum(p?.txns?.h24?.sells)):key==="age"?age(p):0;return arr.sort((a,b)=>(value(a)-value(b))*dir);}
 function qxIsTokenDiscoveryReady(p){
  const mint=String(p?.baseToken?.address||"");
  return p?.chainId==="solana" && qxIsValidSolanaMint(mint) && !qxLooksLikeFakeNative(p) && qxHasRealSolanaPool(p);
@@ -4125,8 +4192,8 @@ function qxCategoryList(){
  if(currentCategory==="10h")return baseAll.filter(p=>{const t=ageOf(p);return t>0&&Date.now()-t<=36000000;}).sort(newest);
  if(currentCategory==="day")return baseAll.filter(p=>{const t=ageOf(p);return t>0&&Date.now()-t<=86400000;}).sort(newest);
  if(currentCategory==="all")return baseAll;
- if(currentCategory==="gainers")return baseAll.filter(p=>qxNum(p.priceChange?.h24)>0).sort((a,b)=>qxNum(b.priceChange?.h24)-qxNum(a.priceChange?.h24));
- if(currentCategory==="losers")return baseAll.filter(p=>qxNum(p.priceChange?.h24)<0).sort((a,b)=>qxNum(a.priceChange?.h24)-qxNum(b.priceChange?.h24));
+ if(currentCategory==="gainers")return baseAll.filter(p=>qxHasReliable24hChange(p)&&qxNum(p.priceChange?.h24)>0).sort((a,b)=>qxNum(b.priceChange?.h24)-qxNum(a.priceChange?.h24));
+ if(currentCategory==="losers")return baseAll.filter(p=>qxHasReliable24hChange(p)&&qxNum(p.priceChange?.h24)<0).sort((a,b)=>qxNum(a.priceChange?.h24)-qxNum(b.priceChange?.h24));
  if(currentCategory==="trending")return baseAll.slice().sort((a,b)=>(qxNum(b.volume?.h24)+qxNum(b.txns?.h24?.buys)+qxNum(b.txns?.h24?.sells))-(qxNum(a.volume?.h24)+qxNum(a.txns?.h24?.buys)+qxNum(a.txns?.h24?.sells)));
  if(currentCategory==="volume")return baseAll.slice().sort((a,b)=>qxNum(b.volume?.h24)-qxNum(a.volume?.h24));
  return baseAll;
@@ -4423,7 +4490,7 @@ async function qxResolvePendingLaunchPool(record){
     const client=new dbc.DynamicBondingCurveClient(connection,"confirmed");
     const tx=await connection.getTransaction(String(record.poolSignature),{commitment:"confirmed",maxSupportedTransactionVersion:0});
     if(!tx){lastError=new Error("Original launch transaction is not indexed yet at "+endpoint);continue;}
-    if(tx.meta?.err)throw new Error("Original launch transaction failed on Solana: "+JSON.stringify(tx.meta.err));
+    if(tx.meta?.err){const failed=new Error("Original launch transaction failed on Solana: "+JSON.stringify(tx.meta.err));failed.qxLaunchTransactionFailed=true;throw failed;}
     const keys=[];
     const addKey=value=>{
      const address=String(value?.pubkey?.toBase58?.()||value?.toBase58?.()||value||"");
@@ -4442,7 +4509,7 @@ async function qxResolvePendingLaunchPool(record){
      }catch(poolError){lastError=poolError;}
     }
     lastError=new Error("The original transaction was readable, but no DBC pool matched its exact mint and config.");
-   }catch(error){lastError=error;}
+   }catch(error){if(error?.qxLaunchTransactionFailed)throw error;lastError=error;}
   }
   if(attempt<3)await new Promise(resolve=>setTimeout(resolve,900));
  }
@@ -4451,7 +4518,7 @@ async function qxResolvePendingLaunchPool(record){
 }
 let qxLaunchRegistryRetryBusy=false;
 async function qxRetryPendingLaunchRegistry(){
- if(qxLaunchRegistryRetryBusy||!connected||!walletAddress)return false;
+ if(qxLaunchInProgress||qxLaunchRegistryRetryBusy||!connected||!walletAddress)return false;
  let record=null,media=null,image=null;
  try{record=JSON.parse(localStorage.getItem("qxPendingLaunchRegistryRecord")||"null");}catch(_){record=null;}
  if(!record||String(record.creator||"")!==String(walletAddress))return false;
@@ -4490,7 +4557,13 @@ async function qxRetryPendingLaunchRegistry(){
    if(Array.isArray(rows))localStorage.setItem("qxRealLaunches",JSON.stringify(rows.map(x=>String(x?.mint||"")===String(record.mint)?{...x,pool:record.pool,partialLaunch:false,metadataPending:false,globalRegistry:"verified",globalRegistryAt:Date.now()}:x).slice(0,20)));
   }catch(_){ }
   return true;
- }catch(e){console.warn("QX pending global launch registration retry deferred",e);return false;}
+ }catch(e){
+  if(e?.qxLaunchTransactionFailed){
+   try{localStorage.removeItem("qxPendingLaunchRegistryRecord");localStorage.removeItem("qxPendingLaunchRegistryMedia");localStorage.removeItem("qxPendingLaunchRegistryImage");const rows=JSON.parse(localStorage.getItem("qxRealLaunches")||"[]");if(Array.isArray(rows))localStorage.setItem("qxRealLaunches",JSON.stringify(rows.filter(x=>String(x?.mint||"")!==String(record?.mint||""))));}catch(cleanupError){console.warn("QX failed pending-launch cleanup deferred",cleanupError);}
+   console.warn("QX cleared a recovery lock only after Solana reported the original launch transaction failed",e);return false;
+  }
+  console.warn("QX pending global launch registration retry deferred",e);return false;
+ }
  finally{qxLaunchRegistryRetryBusy=false;}
 }
 window.QXRetryPendingLaunchRegistry=qxRetryPendingLaunchRegistry;
@@ -5104,11 +5177,11 @@ void loadMarket().then(()=>qxRefreshPublicLiveSnapshots()).catch(e=>console.warn
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",qxScheduleIndependentBootstrap,{once:true});else qxScheduleIndependentBootstrap();
 
   /* Live percentage buttons: read the actual current wallet/token balance. */
-  async function applyTradePercent(pct){
+  async function applyTradePercent(pct,refreshNow=false){
     const range=$("percentRange"),input=$("tradeAmountInput"),value=$("percentValue");
     if(!range||!input)return;
     const p=Math.max(0,Math.min(100,Number(pct)||0));
-    try{if(typeof window.refreshTradeBalances==="function")await window.refreshTradeBalances();}catch(e){console.warn("QX balance refresh:",e);}
+    if(refreshNow){try{await window.QXRefreshTradeBalances?.();}catch(e){console.warn("QX balance refresh:",e);}}
     const buy=!$("percentPanel")?.classList.contains("sell");
     const sol=num(window.QXGetWalletSolBalance?.()??window.walletSolBalance);
     const tok=num(window.QXGetSelectedTokenBalance?.()??window.selectedTokenBalance);
@@ -5119,7 +5192,7 @@ void loadMarket().then(()=>qxRefreshPublicLiveSnapshots()).catch(e=>console.warn
     input.value=amount>0?amount.toFixed(decimals).replace(/0+$/,'').replace(/\.$/,''):"";
     input.dispatchEvent(new Event("input",{bubbles:true}));
   }
-  document.addEventListener("click",e=>{const b=e.target?.closest?.(".percent-btn[data-percent]");if(!b)return;e.preventDefault();e.stopPropagation();applyTradePercent(b.dataset.percent);},true);
+  document.addEventListener("click",e=>{const b=e.target?.closest?.(".percent-btn[data-percent]");if(!b)return;e.preventDefault();e.stopPropagation();applyTradePercent(b.dataset.percent,true);},true);
   document.addEventListener("input",e=>{if(e.target?.id!=="percentRange")return;applyTradePercent(e.target.value);},true);
 
   /* One delegated token-click handler. No document-wide MutationObserver. */
