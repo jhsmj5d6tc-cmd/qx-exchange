@@ -1998,6 +1998,11 @@ async function qxLaunchToken(options={}){
   const decimals=Number($("launchDecimals").value);
   const supplyText=$("launchSupply").value.trim();
   const supply=qxLaunchUnits(supplyText,decimals);
+  // The global QX launch verifier requires an exact 5% allocation in raw token
+  // units. Reject indivisible supplies before the wallet signs an irreversible
+  // on-chain launch; otherwise creation could succeed while global registration
+  // is guaranteed to reject the record.
+  if(supply%20n!==0n)throw new Error("Total supply must divide evenly into 20 parts so QX can receive exactly 5% of the supply. Adjust the supply before launching.");
   const supplyHuman=Number(supplyText);
   const initialMc=Number($("launchInitialMc").value),migrationMc=Number($("launchMigrationMc").value),firstBuy=Number($("launchFirstBuy").value||0);
   if(!name||name.length>32)throw new Error("Enter a token name (1-32 characters).");
@@ -2563,8 +2568,8 @@ async function qxBuildDammV2Quote(token, direction, amountText){
  const {cpAmm,pool,poolState,preferredPoolAddress}=await qxFindDammV2Pool(String(token.baseToken.address),String(launchRecord?.pool||token?.poolAddress||""),knownSuccessor);
  const inputMint=direction==="buy"?new PublicKey(SOL):new PublicKey(token.baseToken.address);
  const outputMint=direction==="buy"?new PublicKey(token.baseToken.address):new PublicKey(SOL);
- const balanceReady=await refreshTradeBalances();
- if(!balanceReady)console.warn("QX balance verification unavailable; continuing to build the DAMM v2 order. On-chain preflight will enforce spendable funds.");
+ const balanceReady=await qxRefreshTradeBalancesBounded();
+ if(!balanceReady)console.warn("QX balance verification unavailable or slow; continuing to build the DAMM v2 order. On-chain preflight will enforce spendable funds.");
  const connection=await qxGetHealthyConnection();
  const currentSlot=await connection.getSlot("confirmed"),blockTime=await connection.getBlockTime(currentSlot);
  const tokenADecimal=String(poolState.tokenAMint||poolState.tokenAMint?.toBase58?.()||"")===String(token.baseToken.address)?decimals:9;
@@ -2759,8 +2764,8 @@ async function qxBuildDirectDbcQuote(){
  const mint=String(token.baseToken?.address||"");if(!qxIsValidSolanaMint(mint))throw new Error("The selected token mint is not a valid Solana address.");
  const amountText=String($("tradeAmountInput")?.value||"").trim(),amount=Number(amountText);
  if(!Number.isFinite(amount)||amount<=0)throw new Error("Enter a trade amount greater than zero.");
- const balanceReady=await refreshTradeBalances();
- if(!balanceReady)console.warn("QX balance verification unavailable; continuing to build the Meteora order. On-chain preflight will enforce spendable funds.");
+ const balanceReady=await qxRefreshTradeBalancesBounded();
+ if(!balanceReady)console.warn("QX balance verification unavailable or slow; continuing to build the Meteora order. On-chain preflight will enforce spendable funds.");
  await qxLibraryReady;const dbc=await qxDbcReady;
  let launchRecord=token?.qxLaunchRecord||{};
  if(!launchRecord?.pool&&!launchRecord?.dammV2Pool){
@@ -2795,8 +2800,15 @@ async function qxBuildDirectDbcQuote(){
    let candidatePool=null;
    if(knownPoolIsValid){
     const directResult=await candidateClient.state.getPool(new PublicKey(knownPool));
-    candidatePool=directResult?.poolState||directResult||null;
-    if(candidatePool&&!candidatePool.publicKey)candidatePool={...candidatePool,publicKey:new PublicKey(knownPool)};
+    // Keep the SDK result wrapper intact. state.getPool may return either
+    // { publicKey, poolState } or the raw pool state depending on SDK version.
+    // Unwrapping poolState here loses the wrapper, so the validation below
+    // incorrectly rejects a perfectly readable known pool.
+    candidatePool=directResult?{
+     ...directResult,
+     publicKey:directResult.publicKey||directResult.address||new PublicKey(knownPool),
+     poolState:directResult.poolState||directResult
+    }:null;
    }else{
     // A QX-verified launch without a propagated pool address is a data-integrity
     // failure, not permission to perform indexed discovery. The launch registry
@@ -2817,6 +2829,13 @@ async function qxBuildDirectDbcQuote(){
    if(!candidatePool)throw new Error(knownPoolIsValid?"The configured QX DBC pool account was not found.":"No DBC pool matched this token mint.");
    if(!candidatePool?.publicKey||!candidatePool?.poolState)throw new Error("Meteora returned a pool account, but QX could not decode its VirtualPool state.");
    if(!candidatePool.poolState.config)throw new Error("Meteora returned a VirtualPool without its config account. The DBC pool state is incomplete.");
+   // A locally cached pool address is not sufficient proof that it belongs to
+   // the selected mint. Verify the decoded on-chain base mint and, when known,
+   // the exact launch config before requesting or signing any swap.
+   const decodedBaseMint=String(candidatePool.poolState.baseMint?.toBase58?.()||candidatePool.poolState.baseMint||candidatePool.poolState.tokenBaseMint?.toBase58?.()||candidatePool.poolState.tokenBaseMint||candidatePool.poolState.baseTokenMint?.toBase58?.()||candidatePool.poolState.baseTokenMint||"");
+   const decodedConfig=String(candidatePool.poolState.config?.toBase58?.()||candidatePool.poolState.config||"");
+   if(decodedBaseMint!==mint)throw new Error("The configured Meteora DBC pool does not belong to the selected token mint. QX stopped before quoting.");
+   if(launchRecord?.config&&decodedConfig!==String(launchRecord.config))throw new Error("The Meteora DBC pool config does not match the verified QX launch record. QX stopped before quoting.");
    qxRpcMarkSuccess(endpoint);
    client=candidateClient;poolState=candidatePool;dbcConnection=candidate;
    break;
@@ -3017,7 +3036,11 @@ async function qxExecuteJupiterRouterSwap(q){
   lookup.push(result.value);
  }
  const latest=await connection.getLatestBlockhash("confirmed");
- const budget=(build.computeBudgetInstructions||[]).map(qxBuildApiInstruction);
+ // QX measures compute usage locally and supplies its own unit-limit instruction.
+ // Jupiter's build response may also include SetComputeUnitLimit; including both
+ // produces a duplicate Compute Budget variant and can fail simulation before
+ // the wallet is ever asked to sign. Preserve the other Jupiter budget settings.
+ const budget=(build.computeBudgetInstructions||[]).map(qxBuildApiInstruction).filter(ix=>!(ix.programId?.equals?.(ComputeBudgetProgram.programId)&&ix.data?.[0]===2));
  const compile=(units)=>new VersionedTransaction(new TransactionMessage({payerKey:owner,recentBlockhash:latest.blockhash,instructions:[ComputeBudgetProgram.setComputeUnitLimit({units}),...budget,...all]}).compileToV0Message(lookup));
  let tx=compile(1400000);
  const simulation=await connection.simulateTransaction(tx,{commitment:"confirmed",sigVerify:false});
@@ -3202,7 +3225,7 @@ async function qxExecuteSwap(){
   finally{swapBusy=false;if(routerButton)routerButton.disabled=!(Number($("tradeAmountInput")?.value)>0)||!connected||!selectedToken;}
   return;
  }
- const executionBalanceReady=await refreshTradeBalances();
+ const executionBalanceReady=await qxRefreshTradeBalancesBounded();
  const executionRoute=pendingSwapOrder?.route||"JUPITER";
  // A direct-route balance read is a convenience/safety check, not a network
  // availability gate. If the public browser RPC is temporarily unreadable,
@@ -3353,6 +3376,19 @@ async function refreshTradeBalances(){
  }catch(e){if(requestId===qxTradeBalanceRequestId&&selectedToken===token&&walletAddress===owner&&connected){if(availableEl)availableEl.textContent="Balance unavailable";console.warn("QX trade balance refresh",e);}return false;}
 }
 
+// Browser RPC balance reads are advisory, not an execution prerequisite.
+// Bound critical trade-path waits so a 403/429 provider cannot stall quotes or
+// signing for several sequential RPC timeouts. The balance refresh continues
+// in the background and its own request-id guard prevents stale UI updates.
+async function qxRefreshTradeBalancesBounded(timeoutMs=1200){
+ let timer=null;
+ try{
+  return await Promise.race([
+   refreshTradeBalances(),
+   new Promise(resolve=>{timer=setTimeout(()=>resolve(false),Math.max(250,Number(timeoutMs)||1200));})
+  ]);
+ }finally{if(timer)clearTimeout(timer);}
+}
 async function refreshTradeBalance(force=false){return refreshTradeBalances();}
 function updateTradePercentUI(){
  const input=$("tradeAmountInput"),range=$("percentRange"),value=$("percentValue");if(!input||!range)return;
@@ -3565,7 +3601,7 @@ async function qxLoadTrades(token){
   }).filter(Boolean);
   if(!verifiedTrades.length){list.innerHTML='<div class="qx-trades-empty">No verified trade data is available for this pool yet.</div>';status.textContent="No verified trades yet";return;}
   const recentVerified=verifiedTrades.slice(0,20);list.innerHTML=recentVerified.join("");
-  const lang=String(qxLanguage||window.qxLanguage||"en");status.textContent=lang==="ar"?"تداولات حقيقية · "+recentVerified.length+" عملية · تحديث كل 60 ثانية":lang==="zh"?"真实交易 · 最近 "+recentVerified.length+" 笔 · 每 60 秒刷新":"Real trades · "+recentVerified.length+" recent · refreshed every 60s";
+  const lang=String(qxLanguage||window.qxLanguage||"en");status.textContent=lang==="ar"?"تداولات حقيقية · "+recentVerified.length+" عملية · فحص كل 15 ثانية":lang==="zh"?"真实交易 · 最近 "+recentVerified.length+" 笔 · 每 15 秒检查":"Real trades · "+recentVerified.length+" recent · checked every 15s";
  }catch(e){if(e?.name==="AbortError"||requestId!==qxTradesRequestId)return;status.textContent="Trade feed unavailable";list.innerHTML='<div class="qx-trades-empty">Real trade data is temporarily unavailable for this pool.</div>';}
 }
 
@@ -3583,8 +3619,10 @@ function qxSetupChartRanges(token){
    Promise.resolve(qxLoadLiveChart(selectedToken||token,range)).catch(e=>console.warn("QX chart refresh failed",e)).finally(()=>{if(generation===qxChartRefreshGeneration)qxChartRefreshInFlight=false;});
   };
   run();
-  const fast=/^(1s|5s|15s|30s)$/i.test(String(range));
-  const delay=fast?15000:60000;
+  // Free public chart feed: check every 15s for every selected range.
+  // GeckoTerminal caches public endpoint responses, so polling faster would
+  // waste the free request budget without guaranteeing fresher market data.
+  const delay=15000;
   qxChartLiveTimer=setInterval(run,delay);
  };
  document.querySelectorAll("#chartRanges [data-chart-range]").forEach(b=>b.onclick=()=>{
@@ -3794,7 +3832,7 @@ async function qxRefreshPublicLiveSnapshots(){
  if(qxPublicSnapshotBusy||document.visibilityState==='hidden'||!allPairs.length)return;
  qxPublicSnapshotBusy=true;
  try{
-  const source=bestPairsByMint(allPairs.filter(qxIsDisplayReady)).slice(0,90);
+  const source=bestPairsByMint(allPairs.filter(qxIsDisplayReady)).slice(0,120);
   const mints=[...new Set(source.map(p=>String(p?.baseToken?.address||'')).filter(qxIsValidSolanaMint))];
   if(!mints.length)return;
   const batches=[];
@@ -3831,8 +3869,23 @@ async function qxRefreshPublicLiveSnapshots(){
    qxSetMarketDataStatus('PUBLIC SNAPSHOTS · '+updated+' Solana markets refreshed · '+new Date().toLocaleTimeString());
    const heroVolume=$('qxHeroVolume');if(heroVolume)heroVolume.textContent=money(allPairs.reduce((sum,p)=>sum+qxNum(p?.volume?.h24),0));
    const heroMarkets=$('qxHeroMarketCount');if(heroMarkets)heroMarkets.textContent=allPairs.length.toLocaleString();
-   if(['gainers','losers','trending','volume'].includes(currentCategory)||sortMetric)renderMarket();
-   if(selectedToken){const current=qxFindMarketObjects(String(selectedToken?.baseToken?.address||''))[0];if(current){selectedToken=current;const price=$('detailPrice');if(price)price.textContent=qxFormatTokenPrice(current.priceUsd);const vol=$('detailVolume');if(vol)vol.textContent=money(current.volume?.h24||0);}}
+   // Repaint the visible market rows so price, 24h change, volume and TXNS
+   // stay in sync with the same verified provider snapshot.
+   renderMarket();
+   if(selectedToken){
+    const current=qxFindMarketObjects(String(selectedToken?.baseToken?.address||''))[0];
+    if(current){
+     selectedToken=current;
+     const price=$('detailPrice');if(price)price.textContent=qxFormatTokenPrice(current.priceUsd);
+     const change=qxNum(current.priceChange?.h24),changeEl=$('detailChange');
+     if(changeEl){changeEl.textContent=(change>0?'+':'')+change.toFixed(2)+'%';changeEl.className='detail-change '+(change>0?'up':change<0?'down':'neutral');}
+     const vol=$('detailVolume');if(vol)vol.textContent=money(current.volume?.h24||0);
+     const cap=$('detailMarketCap');if(cap)cap.textContent=qxNum(current.marketCap)>0?money(current.marketCap):'—';
+     const liq=$('detailLiquidity');if(liq)liq.textContent=qxNum(current.liquidity?.usd)>0?money(current.liquidity.usd):'—';
+     const tx=$('detailTransactions'),txCount=qxNum(current.txns?.h24?.buys)+qxNum(current.txns?.h24?.sells);
+     if(tx)tx.textContent=txCount?txCount.toLocaleString():'—';
+    }
+   }
   }
  }catch(e){qxPublicSnapshotFailures++;console.warn('QX public live snapshot refresh failed',e);qxSetMarketDataStatus('PUBLIC SNAPSHOTS · temporarily unavailable · retrying');}
  finally{qxPublicSnapshotBusy=false;}
@@ -4451,12 +4504,12 @@ async function loadMarket(){
 /* QX v125: periodic public REST snapshots are the market price source. */
 function qxSetMarketDataStatus(text){const el=$("marketStatus");if(!el)return;const raw=String(text||""),lang=String(qxLanguage||window.qxLanguage||"en");if(raw.includes("provider refresh unavailable"))el.textContent=lang==="ar"?"لقطات الأسعار العامة · تعذر تحديث المصدر · إعادة المحاولة":lang==="zh"?"公共价格快照 · 数据源暂不可用 · 正在重试":"Public snapshots · provider refresh unavailable · retrying";else if(raw.includes("markets refreshed")){const count=(raw.match(/·\s*(\d+)\s+Solana markets refreshed/)||[])[1]||"0";const time=raw.split(" · ").pop()||"";el.textContent=lang==="ar"?"لقطات الأسعار العامة · تم تحديث "+count+" سوقاً · "+time:lang==="zh"?"公共价格快照 · 已更新 "+count+" 个 Solana 市场 · "+time:"Public snapshots · "+count+" Solana markets refreshed · "+time;}else if(raw.includes("temporarily unavailable"))el.textContent=lang==="ar"?"لقطات الأسعار العامة · غير متاحة مؤقتاً · إعادة المحاولة":lang==="zh"?"公共价格快照 · 暂时不可用 · 正在重试":"Public snapshots · temporarily unavailable · retrying";else el.textContent=lang==="ar"?"لقطات الأسعار العامة نشطة":lang==="zh"?"公共价格快照已启用":"Public price snapshots are active.";}
 function qxFindMarketObjects(mint){const out=[];for(const list of [allPairs,newPairs,trendingPairs])for(const p of list||[])if(String(p?.baseToken?.address||"")===mint&&!out.includes(p))out.push(p);if(selectedToken&&String(selectedToken?.baseToken?.address||"")===mint&&!out.includes(selectedToken))out.push(selectedToken);return out;}
-window.QXMarketDiagnostics=()=>({source:"DexScreener REST snapshots",snapshotIntervalMs:60000,lastSnapshotAt:qxPublicSnapshotLast,snapshotFailures:qxPublicSnapshotFailures,markets:allPairs.length,newCoins:newPairs.length});
+window.QXMarketDiagnostics=()=>({source:"DexScreener REST snapshots",snapshotIntervalMs:15000,lastSnapshotAt:qxPublicSnapshotLast,snapshotFailures:qxPublicSnapshotFailures,markets:allPairs.length,newCoins:newPairs.length});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){qxQuoteRequestId++;qxQuoteAbortController?.abort();}else{void qxRefreshPublicLiveSnapshots();if(connected)void refreshRealWalletBalance();}});
 
 setInterval(()=>{if(document.visibilityState!=="hidden"&&!marketBusy)loadMarket();},QX_SOLANA_REFRESH_MS);
-// Refresh public market snapshots every 60s; this matches the provider's documented cache freshness.
-setInterval(()=>{if(document.visibilityState!=="hidden")void qxRefreshPublicLiveSnapshots();},60000);
+// Refresh public market snapshots every 15s; provider responses may still be cached upstream.
+setInterval(()=>{if(document.visibilityState!=="hidden")void qxRefreshPublicLiveSnapshots();},15000);
 
 // New-pool discovery is included in the consolidated market refresh above; no paid stream is required.
 
@@ -5256,37 +5309,3 @@ void loadMarket().then(()=>qxRefreshPublicLiveSnapshots()).catch(e=>console.warn
   try{
    const verified=typeof window.QXReadVerifiedQXLaunchMarkets==="function"?await window.QXReadVerifiedQXLaunchMarkets():[];const records=new Map();
    for(const pair of verified||[]){const record=pair?.qxLaunchRecord||{};const mint=String(record.mint||pair?.baseToken?.address||"");if(!mint||String(record.creator||"")!==String(wallet.address))continue;records.set(mint,{...record,_poolVerified:!!pair.qxVerifiedLaunch,_globalVerified:!!pair.qxGlobalLaunch});}
-   for(const record of localLaunches()){const mint=String(record?.mint||"");if(!mint||String(record?.creator||"")!==String(wallet.address))continue;const prior=records.get(mint)||{};records.set(mint,{...record,...prior,mint,creator:wallet.address});}
-   const list=[...records.values()].sort((a,b)=>new Date(b.createdAt||b.created_at||0)-new Date(a.createdAt||a.created_at||0));
-   if(!list.length){host.innerHTML='<div class="empty-state">'+esc(t.none)+'</div>';return;}
-   host.innerHTML=list.map(record=>{
-    const status=record._globalVerified?t.verified:record._poolVerified?t.pool:record.partialLaunch?t.partial:t.local;
-    const date=new Date(record.createdAt||record.created_at||Date.now());const dateText=Number.isNaN(date.getTime())?t.date:date.toLocaleString();
-    const mint=String(record.mint||""),pool=String(record.pool||record.poolAddress||"");
-    return '<article class="creator-launch-card"><div class="creator-launch-head"><strong>'+esc(record.name||"Unnamed token")+' <span>('+esc(record.symbol||"—")+')</span></strong><span class="creator-launch-status">'+esc(status)+'</span></div><div class="creator-launch-meta">'+esc(dateText)+' · '+esc(t.free)+'</div><div class="creator-launch-address">'+esc(t.mint)+': <a href="https://solscan.io/token/'+encodeURIComponent(mint)+'" target="_blank" rel="noopener noreferrer">'+esc(short(mint))+'</a></div>'+(pool?'<div class="creator-launch-address">'+esc(t.poolLabel)+': <a href="https://solscan.io/account/'+encodeURIComponent(pool)+'" target="_blank" rel="noopener noreferrer">'+esc(short(pool))+'</a></div>':'')+'</article>';
-   }).join("");
-  }catch(error){console.error("QX creator dashboard refresh failed",error);host.innerHTML='<div class="empty-state">'+esc(t.error)+'</div>';}
-  finally{if(button){button.disabled=false;button.textContent=L().refresh;}}
- }
- const button=$("creatorRefreshBtn");if(button)button.addEventListener("click",refresh);
- window.addEventListener("QXWalletChanged",refresh);
- window.addEventListener("QXPageChanged",event=>{if(event.detail?.pageId==="creatorPage")void refresh();});
- window.addEventListener("QXLanguageChanged",refresh);
-})();
-</script>
-
-<style id="qx-final-trade-visibility-and-chart-performance">
-/* Final visibility override: trade history must remain available on token pages. */
-body.qx-token-open #detail .qx-trades-panel,
-body.qx-token-open #detail .qx-user-history,
-body.qx-token-open #detail #solscanLink{display:block!important;visibility:visible!important;opacity:1!important;max-height:none!important;overflow:visible!important;pointer-events:auto!important}
-body.qx-token-open #detail .qx-trades-panel{margin-top:14px!important}
-body.qx-token-open #detail .qx-user-history{margin-top:12px!important}
-body.qx-token-open #detail .qx-trades-panel #qxTradesList{max-height:260px!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch!important}
-body.qx-token-open #detail .qx-trade-launch{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px!important}
-/* Keep the chart readable without forcing an oversized canvas on phones. */
-body.qx-token-open #detail .qx-full-dex-chart #detailChart{height:350px!important;min-height:280px!important}
-@media(max-width:760px){body.qx-token-open #detail .qx-full-dex-chart #detailChart{height:290px!important;min-height:250px!important}}
-</style>
-</body>
-</html>
