@@ -1985,8 +1985,27 @@ async function qxLaunchToken(options={}){
  if(!btn||(!fromCreator&&btn.disabled))return;
  let confirmedLaunchTx=null;
  try{
+  btn.disabled=true;
+  // A launch already confirmed on Solana must never be repeated just because
+  // metadata publishing or QX registry indexing failed. Reuse this button to
+  // recover the existing mint instead of submitting a second launch transaction.
+  let pendingRecovery=null;
+  try{pendingRecovery=JSON.parse(localStorage.getItem("qxPendingLaunchRegistryRecord")||"null");}catch(_){pendingRecovery=null;}
+  if(pendingRecovery?.partialLaunch&&String(pendingRecovery.creator||"")===String(walletAddress||"")){
+   result.style.display="block";
+   status.textContent="Recovering the existing confirmed QX launch. QX will resolve its original pool and finish publishing; no new token will be created…";
+   const recovered=await qxRetryPendingLaunchRegistry();
+   if(recovered){
+    status.textContent="The original QX launch has been recovered and registered. You can now create another token.";
+    btn.textContent="Create another token";
+   }else{
+    status.textContent="The original token already exists on Solana. QX could not finish publishing or registry recovery yet. Retry this same button later; do not create it again.";
+    btn.textContent="Retry existing QX launch";
+   }
+   return;
+  }
   qxPendingLaunchImage=null;qxPendingLaunchMetadata=null;
-  btn.disabled=true;result.style.display="none";
+  result.style.display="none";
   status.textContent="Loading the QX real launch engine…";
   await qxLibraryReady;
   const dbc=await qxDbcReady;
@@ -2268,9 +2287,34 @@ async function qxLaunchToken(options={}){
   console.error("QX real launch:",e);
   if(confirmedLaunchTx){
    const partial={...confirmedLaunchTx,partialLaunch:true,verifiedOnChain:true,metadataPending:true,createdAt:confirmedLaunchTx.createdAt||Date.now(),feeSol:0,feeRecipient:"",feeStatus:"free QX token creation",qxSupplyShareBps:500,qxSupplyShareReceiver:"9C6bcBgeHnRwJfTYKqPjEGeP9egxKWQgR5GCXVSEeDXH"};
-   try{const prior=JSON.parse(localStorage.getItem("qxRealLaunches")||"[]");localStorage.setItem("qxRealLaunches",JSON.stringify([partial,...(Array.isArray(prior)?prior.filter(x=>String(x?.mint||"")!==partial.mint):[])].slice(0,20)));}catch(_){ }
-   status.textContent="IMPORTANT: Solana already confirmed this launch. QX saved its mint and transaction; do not launch it again. Remaining indexing or media work can be retried. Details: "+(e?.message||String(e));
-   btn.textContent="Launch already created · retry later";
+   try{
+    const prior=JSON.parse(localStorage.getItem("qxRealLaunches")||"[]");
+    localStorage.setItem("qxRealLaunches",JSON.stringify([partial,...(Array.isArray(prior)?prior.filter(x=>String(x?.mint||"")!==partial.mint):[])].slice(0,20)));
+    // Keep a complete retry envelope when the exact pool was resolved. If it
+    // was not, persist the confirmed mint/signature as a recovery lock so the
+    // UI cannot accidentally create a duplicate token.
+    const recoveryRecord={
+     ...partial,
+     initialMarketCap:Number(partial.initialMarketCap||0),
+     migrationMarketCap:Number(partial.migrationMarketCap||0),
+     firstBuySol:Number(partial.firstBuySol||0),
+     poolSignature:String(partial.poolSignature||""),
+     configSignature:String(partial.configSignature||""),
+     metadataUri:String(partial.metadataUri||""),
+     image:String(partial.image||""),
+     partialLaunch:true,
+     metadataPending:true
+    };
+    localStorage.setItem("qxPendingLaunchRegistryRecord",JSON.stringify(recoveryRecord));
+    if(qxPendingLaunchImage){
+     localStorage.setItem("qxPendingLaunchRegistryImage",JSON.stringify({...qxPendingLaunchImage,kind:"image",poolSignature:String(partial.poolSignature||"")}));
+    }
+    if(qxPendingLaunchMetadata){
+     localStorage.setItem("qxPendingLaunchRegistryMedia",JSON.stringify({...qxPendingLaunchMetadata,kind:"metadata",poolSignature:String(partial.poolSignature||"")}));
+    }
+   }catch(recoveryStorageError){console.warn("QX could not persist the complete launch recovery envelope",recoveryStorageError);}
+   status.textContent="IMPORTANT: Solana already confirmed this launch. QX saved its mint and transaction; do not launch it again. Press this same button to retry publishing and registration. Details: "+(e?.message||String(e));
+   btn.textContent="Retry existing QX launch";
   }else{
    status.textContent=e?.message||"Real launch failed. No launch success is recorded.";
    btn.textContent="Connect wallet & launch on Solana";
@@ -3414,6 +3458,68 @@ function setTradeDirection(dir){
 }
 let qxTokenDetailRequestId=0,qxTokenDetailAbortController=null;
 let qxChartRequestId=0, qxChartAbortController=null;
+const qxVerifiedPoolCache=new Map();
+const qxPoolTradesCache=new Map();
+async function qxGetPoolTrades(pool){
+ const key=String(pool||"");if(!key)throw new Error("Missing pool address");
+ const cached=qxPoolTradesCache.get(key);
+ if(cached?.data&&cached.expires>Date.now())return cached.data;
+ if(cached?.promise)return cached.promise;
+ const promise=(async()=>{
+  const response=await fetch("https://api.geckoterminal.com/api/v2/networks/solana/pools/"+encodeURIComponent(key)+"/trades?page=1",{headers:{accept:"application/json;version=20230203"},cache:"no-store"});
+  if(!response.ok)throw new Error("Trade feed request failed ("+response.status+")");
+  const data=await response.json();
+  qxPoolTradesCache.set(key,{data,expires:Date.now()+12000});
+  return data;
+ })();
+ qxPoolTradesCache.set(key,{promise,expires:Date.now()+10000});
+ try{return await promise;}catch(error){qxPoolTradesCache.delete(key);throw error;}
+}
+async function qxResolveVerifiedPool(token,mint){
+ const key=String(mint||"");
+ if(!qxIsValidSolanaMint(key))return null;
+ const cached=qxVerifiedPoolCache.get(key);
+ if(cached&&cached.expires>Date.now())return cached.value;
+ try{
+  const response=await fetch("https://api.dexscreener.com/token-pairs/v1/solana/"+encodeURIComponent(key),{headers:{accept:"application/json"},cache:"no-store"});
+  if(!response.ok)throw new Error("Token pool lookup HTTP "+response.status);
+  const rows=await response.json();
+  const matches=(Array.isArray(rows)?rows:[]).filter(p=>{
+   if(p?.chainId!=="solana"||!qxIsValidSolanaMint(p?.pairAddress))return false;
+   return String(p?.baseToken?.address||"")===key||String(p?.quoteToken?.address||"")===key;
+  });
+  const baseMatches=matches.filter(p=>String(p?.baseToken?.address||"")===key);
+  const candidates=baseMatches.length?baseMatches:matches;
+  candidates.sort((a,b)=>qxNum(b?.liquidity?.usd)-qxNum(a?.liquidity?.usd));
+  const best=candidates[0];
+  if(!best){qxVerifiedPoolCache.set(key,{value:null,expires:Date.now()+15000});return null;}
+  const value={address:String(best.pairAddress),side:String(best.baseToken?.address||"")===key?"base":"quote",pair:best};
+  qxVerifiedPoolCache.set(key,{value,expires:Date.now()+45000});
+  if(token){
+   token.pairAddress=value.address;token.poolAddress=value.address;token.qxActivePool=value.address;
+   token.qxChartTokenSide=value.side;
+   if(value.side==="base"){
+    token.priceUsd=String(best.priceUsd||token.priceUsd||"");
+    token.priceChange={...(token.priceChange||{}),...(best.priceChange||{})};
+    token.volume={...(token.volume||{}),...(best.volume||{})};
+    token.liquidity=best.liquidity||token.liquidity;
+    token.txns=best.txns||token.txns;
+    if(qxNum(best.marketCap)>0)token.marketCap=qxNum(best.marketCap);
+    if(qxNum(best.fdv)>0)token.fdv=qxNum(best.fdv);
+   }
+  }
+  return value;
+ }catch(error){
+  console.warn("QX verified pool lookup unavailable",error);
+  const old=String(token?.pairAddress||token?.poolAddress||token?.qxActivePool||"");
+  if(old&&String(token?.baseToken?.address||"")===key&&qxIsValidSolanaMint(old)){
+   const value={address:old,side:"base",pair:null};
+   qxVerifiedPoolCache.set(key,{value,expires:Date.now()+10000});
+   return value;
+  }
+  return null;
+ }
+}
 async function qxLoadLiveChart(token,range="1H"){
  try{qxChartAbortController?.abort();}catch(_){}
  const chartController=new AbortController();qxChartAbortController=chartController;
@@ -3425,21 +3531,16 @@ async function qxLoadLiveChart(token,range="1H"){
  const canvas=$("qxOwnedChartCanvas"),ctx=canvas?.getContext?.("2d");if(!canvas||!ctx)return;
  const statusBeforeLoad=$("qxOwnedChartStatus");if(statusBeforeLoad)statusBeforeLoad.textContent="Refreshing verified market data…";
  try{
- let pair=String(token?.cmcPairAddress||token?.pairAddress||token?.poolAddress||token?.qxActivePool||token?.pairId||"");
- if(!pair){const found=(allPairs||[]).find(p=>String(p?.baseToken?.address||"")===mint);pair=String(found?.cmcPairAddress||found?.pairAddress||found?.poolAddress||found?.qxActivePool||found?.pairId||"");}
- if(!pair){
-  const lookup=await fetch("https://api.dexscreener.com/tokens/v1/solana/"+encodeURIComponent(mint),{signal:chartController.signal,headers:{accept:"application/json"},cache:"no-store"});
-  if(lookup.ok){const rows=await lookup.json();const best=(Array.isArray(rows)?rows:[]).filter(x=>x?.chainId==="solana"&&String(x?.baseToken?.address||"")===mint&&Number(x?.liquidity?.usd)>0).sort((a,b)=>Number(b?.liquidity?.usd||0)-Number(a?.liquidity?.usd||0))[0];pair=String(best?.pairAddress||"");if(best){token.pairAddress=pair;token.poolAddress=pair;}}
- }
- if(!pair){const status=$("qxOwnedChartStatus");if(status)status.textContent="No verified liquidity pool is available yet. QX will retry automatically.";return;}
+ const resolvedPool=await qxResolveVerifiedPool(token,mint);
+ const pair=String(resolvedPool?.address||""),poolTokenSide=String(resolvedPool?.side||"base");
+ if(requestId!==qxChartRequestId||String(selectedToken?.baseToken?.address||"")!==mint)return;
+ if(!pair){const status=$("qxOwnedChartStatus");if(status)status.textContent="No verified liquidity pool is available for this token yet. QX will retry automatically.";return;}
  const seconds=({"1s":1,"5s":5,"15s":15,"30s":30})[String(range).toLowerCase()]||0;
  let points=[],sourceLabel="GeckoTerminal pool OHLCV";
  if(seconds){
   // Sub-minute candles are built only from actual pool trades, never interpolated prices.
-  const tradeUrl="https://api.geckoterminal.com/api/v2/networks/solana/pools/"+encodeURIComponent(pair)+"/trades?page=1";
-  const tr=await fetch(tradeUrl,{signal:chartController.signal,headers:{accept:"application/json"},cache:"no-store"});
-  if(!tr.ok)throw new Error("Live trade candles unavailable (HTTP "+tr.status+")");
-  const td=await tr.json(),raw=Array.isArray(td?.data)?td.data:[];
+  const td=await qxGetPoolTrades(pair);
+  const raw=Array.isArray(td?.data)?td.data:[];
   const ticks=raw.map(t=>{
    const a=t?.attributes||{},from=String(a.from_token_address||""),to=String(a.to_token_address||"");
    if(a.is_anomalous===true||(from!==mint&&to!==mint))return null;
@@ -3461,8 +3562,8 @@ async function qxLoadLiveChart(token,range="1H"){
   const rangeMap={"1m":["minute",1],"5m":["minute",5],"15m":["minute",15],"30m":["minute",30],"1H":["hour",1],"4H":["hour",4],"1D":["day",1]};
   const cfg=seconds?["minute",1]:(rangeMap[range]||rangeMap["1H"]),unit=cfg[0],aggregate=cfg[1];
   const endpoint=unit==="minute"?"minute":unit==="hour"?"hour":"day";
-  const url="https://api.geckoterminal.com/api/v2/networks/solana/pools/"+encodeURIComponent(pair)+"/ohlcv/"+endpoint+"?aggregate="+aggregate+"&limit=120&token=base";
-  const r=await fetch(url,{signal:chartController.signal,headers:{accept:"application/json"},cache:"no-store"});if(!r.ok)throw new Error("Historical OHLCV request failed ("+r.status+")");
+  const url="https://api.geckoterminal.com/api/v2/networks/solana/pools/"+encodeURIComponent(pair)+"/ohlcv/"+endpoint+"?aggregate="+aggregate+"&limit=120&token="+poolTokenSide;
+  const r=await fetch(url,{signal:chartController.signal,headers:{accept:"application/json;version=20230203"},cache:"no-store"});if(!r.ok)throw new Error("Historical OHLCV request failed ("+r.status+")");
   const j=await r.json(),rows=Array.isArray(j?.data?.attributes?.ohlcv_list)?j.data.attributes.ohlcv_list:[];
   points=rows.map(x=>({time:Number(x?.[0]),open:Number(x?.[1]),high:Number(x?.[2]),low:Number(x?.[3]),close:Number(x?.[4]),volume:Number(x?.[5]||0)})).filter(x=>Number.isFinite(x.time)&&x.open>0&&x.high>0&&x.low>0&&x.close>0).sort((a,b)=>a.time-b.time);
   if(points.length)sourceLabel=seconds?"Real 1m pool OHLCV · no recent sub-minute trades":"GeckoTerminal pool OHLCV";
@@ -3540,7 +3641,7 @@ async function qxLoadRealTokenInfo(token){
   if(!r.ok)throw new Error("Token info request failed ("+r.status+")");
   const pairs=await r.json();
   if(requestId!==qxRealInfoRequestId||String(selectedToken?.baseToken?.address||"")!==mint)return;
-  const best=(Array.isArray(pairs)?pairs:[]).filter(p=>p?.chainId==="solana").sort((a,b)=>Number(b?.liquidity?.usd||0)-Number(a?.liquidity?.usd||0))[0];
+  const best=(Array.isArray(pairs)?pairs:[]).filter(p=>p?.chainId==="solana"&&String(p?.baseToken?.address||"")===mint&&Number(p?.priceUsd)>0).sort((a,b)=>Number(b?.liquidity?.usd||0)-Number(a?.liquidity?.usd||0))[0];
   if(best){
    token.info={...(token.info||{}),...(best.info||{})};
    if(best.baseToken?.name)token.baseToken.name=best.baseToken.name;
@@ -3556,7 +3657,7 @@ async function qxLoadRealTokenInfo(token){
    token.pairAddress=token.pairAddress||best.pairAddress;token.poolAddress=token.poolAddress||best.pairAddress;
    $("detailName").textContent=cleanTokenText(token.baseToken?.name,"Unknown Token");$("detailSymbol").textContent=cleanTokenText(token.baseToken?.symbol,"TOKEN");
    $("detailPrice").textContent=qxNum(token.priceUsd)>0?qxFormatTokenPrice(token.priceUsd):"—";
-   const ch=qxNum(token.priceChange?.h24);$("detailChange").textContent=ch?(ch>0?"+":"")+ch.toFixed(2)+"%":"—";
+   const hasChange=qxHasReliable24hChange(token),ch=hasChange?Number(token.priceChange.h24):0;$("detailChange").textContent=hasChange?(ch>0?"+":"")+ch.toFixed(2)+"%":"—";
    $("detailChange").className="detail-change "+(ch>0?"up":ch<0?"down":"neutral");
    const cap=qxNum(token.marketCap||token.fdv),liq=qxNum(token.liquidity?.usd),vol=qxNum(token.volume?.h24),tx=qxNum(token.txns?.h24?.buys)+qxNum(token.txns?.h24?.sells);
    $("detailMarketCap").textContent=cap>0?money(cap):"—";$("detailLiquidity").textContent=liq>0?money(liq):"—";$("detailVolume").textContent=vol>0?money(vol):"—";$("detailTransactions").textContent=tx?tx.toLocaleString():"—";
@@ -3573,13 +3674,13 @@ async function qxLoadTrades(token){
  const tradesController=new AbortController();qxTradesAbortController=tradesController;
  const requestId=++qxTradesRequestId;
  const list=$("qxTradesList"),status=$("qxTradesStatus");if(!list)return;
- const mint=String(token?.baseToken?.address||"");let pool=String(token?.cmcPairAddress||token?.pairAddress||token?.poolAddress||token?.qxActivePool||"");
- if(!pool){const found=(allPairs||[]).find(p=>String(p?.baseToken?.address||"")===mint);pool=String(found?.cmcPairAddress||found?.pairAddress||found?.poolAddress||found?.qxActivePool||"");}
+ const mint=String(token?.baseToken?.address||"");
+ const resolvedPool=await qxResolveVerifiedPool(token,mint);
+ const pool=String(resolvedPool?.address||"");
+ if(requestId!==qxTradesRequestId||String(selectedToken?.baseToken?.address||"")!==mint)return;
  if(!pool){status.textContent="No verified pool";list.innerHTML='<div class="qx-trades-empty">No verified trading pool was found for this token.</div>';return;}
  try{
-  const r=await fetch("https://api.geckoterminal.com/api/v2/networks/solana/pools/"+encodeURIComponent(pool)+"/trades?page=1",{signal:tradesController.signal,headers:{accept:"application/json"},cache:"no-store"});
-  if(!r.ok)throw new Error("Trade feed request failed ("+r.status+")");
-  const d=await r.json();
+  const d=await qxGetPoolTrades(pool);
   if(requestId!==qxTradesRequestId||String(selectedToken?.baseToken?.address||"")!==mint)return;
   const trades=Array.isArray(d?.data)?d.data.slice(0,100):[];
   const verifiedTrades=trades.map(t=>{
@@ -3741,6 +3842,13 @@ async function qxGetJSONWithHeaders(url,headers={},timeoutMs=25000,retries=1){
  throw lastError||new Error("Request failed");
 }
 function qxNum(v){const n=Number(v);return Number.isFinite(n)?n:0;}
+function qxHasReliable24hChange(pair){
+ const raw=pair?.priceChange?.h24,change=Number(raw);
+ const price=Number(pair?.priceUsd),liquidity=Number(pair?.liquidity?.usd),volume=Number(pair?.volume?.h24);
+ const tx=Number(pair?.txns?.h24?.buys||0)+Number(pair?.txns?.h24?.sells||0);
+ return raw!==undefined&&raw!==null&&String(raw).trim()!==""&&Number.isFinite(change)&&Number.isFinite(price)&&price>0&&Number.isFinite(liquidity)&&liquidity>0&&Number.isFinite(volume)&&volume>0&&Number.isFinite(tx)&&tx>0;
+}
+window.qxHasReliable24hChange=qxHasReliable24hChange;
 function qxTimestampMs(v){const n=Number(v);if(!Number.isFinite(n)||n<=0)return 0;return n<1e12?n*1000:n;}
 // Expose the timestamp normalizer for classic-script widgets outside this ES module.
 window.qxTimestampMs=qxTimestampMs;
@@ -3855,7 +3963,7 @@ async function qxRefreshPublicLiveSnapshots(){
     if(qxIsPlaceholderTokenLabel(item.baseToken.symbol,"symbol")&&!qxIsPlaceholderTokenLabel(snap?.baseToken?.symbol,"symbol"))item.baseToken.symbol=snap.baseToken.symbol;
     if(!item.info)item.info={};if(!item.info.imageUrl&&snap?.info?.imageUrl)item.info.imageUrl=snap.info.imageUrl;
     item.priceUsd=String(price);
-    item.priceChange=item.priceChange||{};item.priceChange.h24=qxNum(snap?.priceChange?.h24);
+    item.priceChange=item.priceChange||{};if(snap?.priceChange?.h24!==undefined&&snap?.priceChange?.h24!==null&&Number.isFinite(Number(snap.priceChange.h24)))item.priceChange.h24=Number(snap.priceChange.h24);
     item.volume=item.volume||{};item.volume.h24=qxNum(snap?.volume?.h24);
     item.liquidity=item.liquidity||{};item.liquidity.usd=qxNum(snap?.liquidity?.usd);
     item.txns=snap?.txns||item.txns||{h24:{buys:0,sells:0}};
@@ -3877,8 +3985,8 @@ async function qxRefreshPublicLiveSnapshots(){
     if(current){
      selectedToken=current;
      const price=$('detailPrice');if(price)price.textContent=qxFormatTokenPrice(current.priceUsd);
-     const change=qxNum(current.priceChange?.h24),changeEl=$('detailChange');
-     if(changeEl){changeEl.textContent=(change>0?'+':'')+change.toFixed(2)+'%';changeEl.className='detail-change '+(change>0?'up':change<0?'down':'neutral');}
+     const hasChange=qxHasReliable24hChange(current),change=hasChange?Number(current.priceChange.h24):0,changeEl=$('detailChange');
+     if(changeEl){changeEl.textContent=hasChange?(change>0?'+':'')+change.toFixed(2)+'%':'—';changeEl.className='detail-change '+(change>0?'up':change<0?'down':'neutral');}
      const vol=$('detailVolume');if(vol)vol.textContent=money(current.volume?.h24||0);
      const cap=$('detailMarketCap');if(cap)cap.textContent=qxNum(current.marketCap)>0?money(current.marketCap):'—';
      const liq=$('detailLiquidity');if(liq)liq.textContent=qxNum(current.liquidity?.usd)>0?money(current.liquidity.usd):'—';
@@ -4114,8 +4222,8 @@ function renderMarket(){
  const moreMarkup=remaining>0?'<div class="qx-market-more"><button id="qxMarketLoadMore" type="button">'+moreLabel+' · '+Math.min(80,remaining)+' ('+remaining.toLocaleString()+' remaining)</button></div>':'';
  box.innerHTML=sortHead+shown.map((p,i)=>{
   const name=escapeHTML(qxTokenDisplayName(p)),symbol=escapeHTML(qxIsPlaceholderTokenLabel(p.baseToken.symbol,"symbol")?String(p.baseToken.address||"").slice(0,6).toUpperCase():p.baseToken.symbol),image=qxTokenImageUrl(p);
-  const hasPrice=qxNum(p.priceUsd)>0,change=qxNum(p.priceChange?.h24),cls=change>0?"positive":change<0?"negative":"neutral";
-  const changeText=hasPrice?((change>0?"+":"")+change.toFixed(2)+"% "):"—";
+  const hasPrice=qxNum(p.priceUsd)>0,hasChange=qxHasReliable24hChange(p),change=hasChange?Number(p.priceChange.h24):0,cls=change>0?"positive":change<0?"negative":"neutral";
+  const changeText=hasPrice&&hasChange?((change>0?"+":"")+change.toFixed(2)+"% "):"—";
   const img=image?'<img class="coin-logo" src="'+escapeHTML(image)+'" alt="" loading="lazy" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\';">':"";
   const fallback='<span class="coin-fallback" style="display:'+(image?'none':'flex')+'">'+escapeHTML(symbol.replace(/[^A-Za-z0-9]/g,'').slice(0,2)||'?')+'</span>';
   const mint=escapeHTML(p.baseToken.address),spark=qxRealSparkline(p),marketState="";
@@ -4301,15 +4409,73 @@ async function qxRegisterVerifiedLaunchGlobally(record){
   return true;
  }catch(e){console.warn("QX global launch registry unavailable",e);return false;}
 }
+async function qxResolvePendingLaunchPool(record){
+ if(!record?.poolSignature||!record?.mint||!record?.config)return "";
+ await qxLibraryReady;
+ const dbc=await qxDbcReady;
+ const baseConnection=await qxGetHealthyConnection();
+ const endpoints=[baseConnection.rpcEndpoint,...RPCS].filter((v,i,a)=>v&&a.indexOf(v)===i);
+ let lastError=null;
+ for(let attempt=0;attempt<4;attempt++){
+  for(const endpoint of endpoints){
+   try{
+    const connection=endpoint===baseConnection.rpcEndpoint?baseConnection:new Connection(endpoint,"confirmed");
+    const client=new dbc.DynamicBondingCurveClient(connection,"confirmed");
+    const tx=await connection.getTransaction(String(record.poolSignature),{commitment:"confirmed",maxSupportedTransactionVersion:0});
+    if(!tx){lastError=new Error("Original launch transaction is not indexed yet at "+endpoint);continue;}
+    if(tx.meta?.err)throw new Error("Original launch transaction failed on Solana: "+JSON.stringify(tx.meta.err));
+    const keys=[];
+    const addKey=value=>{
+     const address=String(value?.pubkey?.toBase58?.()||value?.toBase58?.()||value||"");
+     if(qxIsValidSolanaMint(address)&&!keys.includes(address))keys.push(address);
+    };
+    for(const key of (tx.transaction?.message?.staticAccountKeys||tx.transaction?.message?.accountKeys||[]))addKey(key);
+    for(const key of (tx.meta?.loadedAddresses?.writable||[]))addKey(key);
+    for(const key of (tx.meta?.loadedAddresses?.readonly||[]))addKey(key);
+    for(const address of keys){
+     try{
+      const candidate=await client.state.getPool(new PublicKey(address));
+      const state=candidate?.poolState||candidate;
+      const mint=String(state?.baseMint?.toBase58?.()||state?.baseMint||state?.tokenBaseMint?.toBase58?.()||state?.tokenBaseMint||state?.baseTokenMint?.toBase58?.()||state?.baseTokenMint||"");
+      const config=String(state?.config?.toBase58?.()||state?.config||"");
+      if(mint===String(record.mint)&&config===String(record.config))return address;
+     }catch(poolError){lastError=poolError;}
+    }
+    lastError=new Error("The original transaction was readable, but no DBC pool matched its exact mint and config.");
+   }catch(error){lastError=error;}
+  }
+  if(attempt<3)await new Promise(resolve=>setTimeout(resolve,900));
+ }
+ console.warn("QX pending launch pool recovery deferred",lastError);
+ return "";
+}
 let qxLaunchRegistryRetryBusy=false;
 async function qxRetryPendingLaunchRegistry(){
  if(qxLaunchRegistryRetryBusy||!connected||!walletAddress)return false;
- let record=null,media=null;
+ let record=null,media=null,image=null;
  try{record=JSON.parse(localStorage.getItem("qxPendingLaunchRegistryRecord")||"null");}catch(_){record=null;}
  if(!record||String(record.creator||"")!==String(walletAddress))return false;
  qxLaunchRegistryRetryBusy=true;
  try{
+  if(!record.pool){
+   if(!record.poolSignature||!record.config||!record.mint)return false;
+   const recoveredPool=await qxResolvePendingLaunchPool(record);
+   if(!recoveredPool)return false;
+   record.pool=recoveredPool;
+   try{
+    localStorage.setItem("qxPendingLaunchRegistryRecord",JSON.stringify(record));
+    const rows=JSON.parse(localStorage.getItem("qxRealLaunches")||"[]");
+    if(Array.isArray(rows))localStorage.setItem("qxRealLaunches",JSON.stringify(rows.map(x=>String(x?.mint||"")===String(record.mint)?{...x,pool:recoveredPool}:x).slice(0,20)));
+   }catch(_){}
+  }
+  if(!record.poolSignature||!record.config||!record.supply)return false;
+  try{image=JSON.parse(localStorage.getItem("qxPendingLaunchRegistryImage")||"null");}catch(_){image=null;}
   try{media=JSON.parse(localStorage.getItem("qxPendingLaunchRegistryMedia")||"null");}catch(_){media=null;}
+  if(image){
+   if(String(image.owner||"")!==String(walletAddress)||String(image.mint||"")!==String(record.mint||""))throw new Error("Pending token image does not match the connected creator wallet and mint.");
+   await qxQxTokenMediaUpload(image);
+   localStorage.removeItem("qxPendingLaunchRegistryImage");
+  }
   if(media){
    if(String(media.owner||"")!==String(walletAddress)||String(media.mint||"")!==String(record.mint||""))throw new Error("Pending token metadata does not match the connected creator wallet and mint.");
    await qxQxTokenMediaUpload(media);
@@ -4319,8 +4485,9 @@ async function qxRetryPendingLaunchRegistry(){
   try{
    localStorage.removeItem("qxPendingLaunchRegistryRecord");
    localStorage.removeItem("qxPendingLaunchRegistryMedia");
+   localStorage.removeItem("qxPendingLaunchRegistryImage");
    const rows=JSON.parse(localStorage.getItem("qxRealLaunches")||"[]");
-   if(Array.isArray(rows))localStorage.setItem("qxRealLaunches",JSON.stringify(rows.map(x=>String(x?.mint||"")===String(record.mint)?{...x,globalRegistry:"verified",globalRegistryAt:Date.now()}:x).slice(0,20)));
+   if(Array.isArray(rows))localStorage.setItem("qxRealLaunches",JSON.stringify(rows.map(x=>String(x?.mint||"")===String(record.mint)?{...x,pool:record.pool,partialLaunch:false,metadataPending:false,globalRegistry:"verified",globalRegistryAt:Date.now()}:x).slice(0,20)));
   }catch(_){ }
   return true;
  }catch(e){console.warn("QX pending global launch registration retry deferred",e);return false;}
@@ -5309,3 +5476,37 @@ void loadMarket().then(()=>qxRefreshPublicLiveSnapshots()).catch(e=>console.warn
   try{
    const verified=typeof window.QXReadVerifiedQXLaunchMarkets==="function"?await window.QXReadVerifiedQXLaunchMarkets():[];const records=new Map();
    for(const pair of verified||[]){const record=pair?.qxLaunchRecord||{};const mint=String(record.mint||pair?.baseToken?.address||"");if(!mint||String(record.creator||"")!==String(wallet.address))continue;records.set(mint,{...record,_poolVerified:!!pair.qxVerifiedLaunch,_globalVerified:!!pair.qxGlobalLaunch});}
+   for(const record of localLaunches()){const mint=String(record?.mint||"");if(!mint||String(record?.creator||"")!==String(wallet.address))continue;const prior=records.get(mint)||{};records.set(mint,{...record,...prior,mint,creator:wallet.address});}
+   const list=[...records.values()].sort((a,b)=>new Date(b.createdAt||b.created_at||0)-new Date(a.createdAt||a.created_at||0));
+   if(!list.length){host.innerHTML='<div class="empty-state">'+esc(t.none)+'</div>';return;}
+   host.innerHTML=list.map(record=>{
+    const status=record._globalVerified?t.verified:record._poolVerified?t.pool:record.partialLaunch?t.partial:t.local;
+    const date=new Date(record.createdAt||record.created_at||Date.now());const dateText=Number.isNaN(date.getTime())?t.date:date.toLocaleString();
+    const mint=String(record.mint||""),pool=String(record.pool||record.poolAddress||"");
+    return '<article class="creator-launch-card"><div class="creator-launch-head"><strong>'+esc(record.name||"Unnamed token")+' <span>('+esc(record.symbol||"—")+')</span></strong><span class="creator-launch-status">'+esc(status)+'</span></div><div class="creator-launch-meta">'+esc(dateText)+' · '+esc(t.free)+'</div><div class="creator-launch-address">'+esc(t.mint)+': <a href="https://solscan.io/token/'+encodeURIComponent(mint)+'" target="_blank" rel="noopener noreferrer">'+esc(short(mint))+'</a></div>'+(pool?'<div class="creator-launch-address">'+esc(t.poolLabel)+': <a href="https://solscan.io/account/'+encodeURIComponent(pool)+'" target="_blank" rel="noopener noreferrer">'+esc(short(pool))+'</a></div>':'')+'</article>';
+   }).join("");
+  }catch(error){console.error("QX creator dashboard refresh failed",error);host.innerHTML='<div class="empty-state">'+esc(t.error)+'</div>';}
+  finally{if(button){button.disabled=false;button.textContent=L().refresh;}}
+ }
+ const button=$("creatorRefreshBtn");if(button)button.addEventListener("click",refresh);
+ window.addEventListener("QXWalletChanged",refresh);
+ window.addEventListener("QXPageChanged",event=>{if(event.detail?.pageId==="creatorPage")void refresh();});
+ window.addEventListener("QXLanguageChanged",refresh);
+})();
+</script>
+
+<style id="qx-final-trade-visibility-and-chart-performance">
+/* Final visibility override: trade history must remain available on token pages. */
+body.qx-token-open #detail .qx-trades-panel,
+body.qx-token-open #detail .qx-user-history,
+body.qx-token-open #detail #solscanLink{display:block!important;visibility:visible!important;opacity:1!important;max-height:none!important;overflow:visible!important;pointer-events:auto!important}
+body.qx-token-open #detail .qx-trades-panel{margin-top:14px!important}
+body.qx-token-open #detail .qx-user-history{margin-top:12px!important}
+body.qx-token-open #detail .qx-trades-panel #qxTradesList{max-height:260px!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch!important}
+body.qx-token-open #detail .qx-trade-launch{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px!important}
+/* Keep the chart readable without forcing an oversized canvas on phones. */
+body.qx-token-open #detail .qx-full-dex-chart #detailChart{height:350px!important;min-height:280px!important}
+@media(max-width:760px){body.qx-token-open #detail .qx-full-dex-chart #detailChart{height:290px!important;min-height:250px!important}}
+</style>
+</body>
+</html>
