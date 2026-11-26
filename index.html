@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#080711">
 <meta name="google-site-verification" content="A5ntuJ6pvvK-Uo8HHA96o5bUPFGOg_70p-Nh_rsZ8NM">
 <title>QX Exchange — Solana Token Discovery</title>
-<meta name="qx-build" content="QX-MOBILE-COMFORT-CURRENCY-V122">
+<meta name="qx-build" content="QX-PHANTOM-IOS-VIEWPORT-FIX-V140">
 
 
 
@@ -225,6 +225,40 @@ button,select,input,textarea{touch-action:manipulation}button,.btn,.market-tab,.
 @keyframes qxTrendingMarquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 @media(max-width:620px){#publicAdsList .qx-trending-track{gap:8px;animation-duration:28s;}#publicAdsList .qx-trending-card{flex-basis:210px;width:210px;}}
 @media(prefers-reduced-motion:reduce){#publicAdsList .qx-trending-track{animation:none;overflow-x:auto;}}
+</style>
+
+<style id="qx-phantom-ios-viewport-fix-v140">
+/* Wallet in-app browsers can expose a wider layout viewport than the physical phone. */
+html,body{width:100%;max-width:100%;-webkit-text-size-adjust:100%!important;text-size-adjust:100%!important;}
+@media (pointer:coarse) and (hover:none) and (max-width:1024px), (max-device-width:760px) and (pointer:coarse){
+  html,body{width:100%!important;max-width:100%!important;overflow-x:hidden!important;}
+  .wrap{width:calc(100% - 24px)!important;max-width:100%!important;margin-left:auto!important;margin-right:auto!important;}
+  header{display:flex!important;align-items:center!important;justify-content:space-between!important;flex-wrap:nowrap!important;gap:8px!important;padding:10px 0 16px!important;}
+  .brand-lockup{flex:1 1 auto!important;min-width:0!important;}
+  .brand-name{max-width:52vw!important;white-space:normal!important;line-height:1.12!important;font-size:clamp(13px,3.8vw,17px)!important;}
+  .qx-header-controls,.qx-nav-area,.qx-menu-area{flex:0 0 auto!important;min-width:0!important;}
+  .qx-header-controls{gap:6px!important;}
+  .qx-nav-toggle,.qx-preferences-toggle{min-width:42px!important;min-height:42px!important;width:auto!important;padding:0 10px!important;}
+  .qx-main-menu{width:min(330px,calc(100vw - 24px))!important;max-width:calc(100vw - 24px)!important;}
+  .panel,.hero{padding:14px!important;border-radius:14px!important;margin-bottom:12px!important;}
+  .hero{padding:17px!important;}
+  .value{font-size:clamp(25px,7vw,34px)!important;}
+  h1{font-size:clamp(20px,5.5vw,28px)!important;}
+  h2{font-size:17px!important;}
+  .market-heading{align-items:flex-start!important;flex-wrap:wrap!important;}
+  .qx-terminal-grid,.qx-portfolio-grid,.qx-exchange-hero,.qx-exchange-page .qx-terminal-grid{grid-template-columns:minmax(0,1fr)!important;display:grid!important;}
+  .qx-exchange-hero{display:flex!important;flex-direction:column!important;padding:14px!important;}
+  .qx-stats,.qx-pnl-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+  #detail{position:relative!important;top:auto!important;}
+  #detailChart{height:clamp(300px,88vw,430px)!important;min-height:280px!important;}
+  .qx-swap-purchase,.qx-launch-grid{grid-template-columns:minmax(0,1fr)!important;}
+  input,select,textarea{font-size:16px!important;min-height:44px!important;}
+  button,.btn,.primary,.market-tab{min-height:42px!important;}
+  .bottom-nav{display:none!important;}
+}
+@media (pointer:coarse) and (hover:none){
+  input,select,textarea{-webkit-text-size-adjust:100%!important;text-size-adjust:100%!important;font-size:16px!important;}
+}
 </style>
 </head>
 <body>
@@ -1986,6 +2020,40 @@ async function qxSendWalletTx(tx,signer,connection,extraSigners=[]){
  if(conf.value?.err)throw new Error("On-chain transaction failed: "+JSON.stringify(conf.value.err));
  return sig;
 }
+async function qxPreflightLegacyTransaction(tx,connection,label="Solana"){
+ if(!tx||!connection?.rpcEndpoint)throw new Error(label+" preflight has no transaction or RPC endpoint. No signature was requested.");
+ let encoded;
+ try{
+  const bytes=tx.serialize({requireAllSignatures:false,verifySignatures:false});
+  if(bytes.length>1232)throw new Error("The serialized transaction exceeds Solana's 1,232-byte limit ("+bytes.length+" bytes).");
+  let binary="";for(let i=0;i<bytes.length;i+=0x8000)binary+=String.fromCharCode(...bytes.subarray(i,Math.min(i+0x8000,bytes.length)));
+  encoded=btoa(binary);
+ }catch(error){throw new Error(label+" could not serialize the transaction for preflight. No signature was requested. "+(error?.message||String(error)));}
+ const endpoints=[connection.rpcEndpoint,...(Array.isArray(RPCS)?RPCS:[])].filter((v,i,a)=>typeof v==="string"&&v&&a.indexOf(v)===i);
+ const rpcFailures=[];
+ for(const endpoint of endpoints){
+  let response,data;
+  try{
+   response=await fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({jsonrpc:"2.0",id:"qx-legacy-preflight",method:"simulateTransaction",params:[encoded,{encoding:"base64",commitment:"confirmed",sigVerify:false,replaceRecentBlockhash:false}]}),cache:"no-store",signal:AbortSignal.timeout(10000)});
+   const raw=await response.text();try{data=raw?JSON.parse(raw):{};}catch{data={};}
+  }catch(error){rpcFailures.push(endpoint+": "+(error?.message||String(error)));continue;}
+  if(!response.ok){rpcFailures.push(endpoint+": HTTP "+response.status);continue;}
+  if(data?.error){rpcFailures.push(endpoint+": RPC "+String(data.error.code??"error")+" "+String(data.error.message||"Invalid RPC response"));continue;}
+  const value=data?.result?.value;
+  if(!value){rpcFailures.push(endpoint+": no simulation result");continue;}
+  if(value.err){
+   const logs=Array.isArray(value.logs)?value.logs:[];
+   window.QXLastLegacySimulationDiagnostics={label,endpoint,error:value.err,logs,unitsConsumed:value.unitsConsumed||null,slot:data?.result?.context?.slot||null,at:new Date().toISOString()};
+   throw new Error(label+" simulation failed before wallet approval: "+JSON.stringify(value.err)+". Full logs were saved for diagnosis. No signature was requested.");
+  }
+  window.QXLastLegacySimulationDiagnostics={label,endpoint,error:null,logs:Array.isArray(value.logs)?value.logs:[],unitsConsumed:value.unitsConsumed||null,slot:data?.result?.context?.slot||null,at:new Date().toISOString()};
+  return value;
+ }
+ throw new Error(label+" preflight could not be completed on any configured Solana RPC. No signature was requested. "+rpcFailures.join(" | "));
+}
+async function qxSimulateLegacyLaunchTransaction(tx,connection){
+ return await qxPreflightLegacyTransaction(tx,connection,"QX launch");
+}
 async function qxLaunchToken(options={}){
  const fromCreator=!!options.fromCreator;
  const metadataSocials=options.metadataSocials||{};
@@ -2149,15 +2217,9 @@ async function qxLaunchToken(options={}){
   // sign an irreversible transaction, instead of surfacing a generic wallet
   // rejection such as “request blocked”.
   try{
-   const simulation=await connection.simulateTransaction(combinedTx,{sigVerify:false,replaceRecentBlockhash:true,commitment:"processed"});
-   if(simulation?.value?.err){
-    const logs=Array.isArray(simulation.value.logs)?simulation.value.logs:[];
-    const detail=logs.slice(-4).join(" | ");
-    throw new Error("QX launch preflight failed before wallet approval."+(detail?" "+detail:""));
-   }
+   await qxSimulateLegacyLaunchTransaction(combinedTx,connection);
   }catch(preflightError){
-   if(String(preflightError?.message||"").startsWith("QX launch preflight failed before wallet approval."))throw preflightError;
-   throw new Error("QX could not preflight the launch transaction before wallet approval. No signature was requested. "+(preflightError?.message||String(preflightError)));
+   throw new Error("QX launch preflight stopped before wallet approval. No signature was requested. "+(preflightError?.message||String(preflightError)));
   }
   status.textContent="Review and approve the complete QX launch once in your wallet…";
   // QX token creation is free. The creator pays only Solana network fees and
@@ -2501,45 +2563,55 @@ function qxToRawAmount(value,decimals){
  return (BigInt(whole)*10n**BigInt(decimals)+BigInt((frac+"0".repeat(decimals)).slice(0,decimals)||"0")).toString();
 }
 function qxFromRaw(raw,decimals){return Number(raw)/10**decimals;}
-async function qxEnsureFeeAccount(mint){
- const connection=await qxGetHealthyConnection();
- const owner=new PublicKey(QX_TOKEN_FEE_RECIPIENT),mintPk=new PublicKey(mint);
- const mintInfo=await connection.getAccountInfo(mintPk,"confirmed");
- const tokenProgramId=mintInfo?.owner;
- const supportedProgram=tokenProgramId&&(tokenProgramId.equals(TOKEN_PROGRAM_ID)||(TOKEN_2022_PROGRAM_ID&&tokenProgramId.equals(TOKEN_2022_PROGRAM_ID)));
- if(!supportedProgram)throw new Error("The token's on-chain program could not be verified for the QX fee account.");
- const ata=await getAssociatedTokenAddress(mintPk,owner,false,tokenProgramId);
- const info=await connection.getAccountInfo(ata,"confirmed");
- if(info){if(!info.owner.equals(tokenProgramId))throw new Error("The QX fee ATA exists but is owned by an unexpected token program.");return ata;}
- if(!connected||!walletAddress)throw new Error("Connect your wallet before preparing the QX fee account.");
- const payer=new PublicKey(walletAddress),block=await connection.getLatestBlockhash("confirmed");
- const tx=new Transaction({feePayer:payer,recentBlockhash:block.blockhash});
- tx.add(createAssociatedTokenAccountInstruction(payer,ata,owner,mintPk,tokenProgramId));
- const provider=window.QXGetActiveWalletProvider?.()||null;
- if(typeof provider?.signTransaction!=="function")throw new Error("The connected wallet cannot sign the fee-account setup transaction. Reconnect and try again.");
- const signed=await provider.signTransaction(tx);
- const sig=await connection.sendRawTransaction(signed.serialize(),{skipPreflight:false,preflightCommitment:"confirmed"});
- const conf=await connection.confirmTransaction({signature:sig,blockhash:block.blockhash,lastValidBlockHeight:block.lastValidBlockHeight},"confirmed");
- if(conf.value?.err)throw new Error("QX fee account setup failed on-chain: "+JSON.stringify(conf.value.err));
- return ata;
+// A first buy may need a recipient ATA. Detect the minimum rent shortfall
+// before requesting/signing a Jupiter order; 165 bytes is the SPL baseline.
+// Token-2022 extensions can require more rent, which final RPC preflight checks.
+async function qxCheckBuyAtaFunding(mint,wallet,amountSol){
+ const connection=await qxGetHealthyConnection(),mintPk=new PublicKey(mint),owner=new PublicKey(wallet);
+ const mintInfo=await connection.getAccountInfo(mintPk,"confirmed"),programId=mintInfo?.owner;
+ if(!programId||!(programId.equals(TOKEN_PROGRAM_ID)||(TOKEN_2022_PROGRAM_ID&&programId.equals(TOKEN_2022_PROGRAM_ID))))return;
+ const ata=await getAssociatedTokenAddress(mintPk,owner,false,programId);
+ if(await connection.getAccountInfo(ata,"confirmed"))return;
+ const rent=await connection.getMinimumBalanceForRentExemption(165,"confirmed");
+ const reserve=Math.ceil(SOL_RESERVE*1e9),trade=Math.ceil(Number(amountSol)*1e9);
+ const required=Number(rent)+reserve+trade,available=Math.floor(Number(walletSolBalance)*1e9);
+ if(available<required){
+  const shortfall=Math.max(0,required-available),requiredSol=(required/1e9).toFixed(9),availableSol=(available/1e9).toFixed(9),shortfallSol=(shortfall/1e9).toFixed(9);
+  const message=String(qxLanguage||"en").toLowerCase().startsWith("ar")
+   ?"لا يكفي رصيد SOL لأول شراء؛ محفظتك لا تملك حساب العملة بعد. المطلوب على الأقل "+requiredSol+" SOL (يشمل مبلغ الشراء وإيجار الحساب والاحتياطي)، والمتاح "+availableSol+" SOL، والنقص "+shortfallSol+" SOL. أضف SOL ثم اطلب سعراً جديداً."
+   :"Not enough SOL for this first buy: the wallet does not have the token account yet. At least "+requiredSol+" SOL is needed for the trade, minimum ATA rent and reserve; available "+availableSol+" SOL; short by "+shortfallSol+" SOL. Add SOL and request a fresh quote.";
+  const error=new Error(message);error.qxInsufficientAtaRent=true;throw error;
+ }
 }
-// Build a token-fee transfer that respects Token-2022 transfer-fee extensions.
-// The user's Route fee amount is the gross amount debited; any Token-2022
-// transfer fee is withheld by the mint extension and is not counted as QX revenue.
+// Build the QX token-fee transfer without a separate wallet approval.
+// If the treasury ATA is missing, create it atomically inside the same swap
+// transaction; a failed swap therefore cannot leave a paid-but-unused setup.
 async function qxBuildQxTokenFeeInstruction(connection,mint,owner,amountRaw,decimals){
  const mintInfo=await connection.getAccountInfo(mint,"confirmed"),programId=mintInfo?.owner;
  if(!programId||!(programId.equals(TOKEN_PROGRAM_ID)||(TOKEN_2022_PROGRAM_ID&&programId.equals(TOKEN_2022_PROGRAM_ID))))throw new Error("QX could not verify the token program for the commission transfer.");
  const ownerAta=await getAssociatedTokenAddress(mint,owner,false,programId);
- const feeAta=await qxEnsureFeeAccount(mint.toBase58());
- if(typeof getAccount==="function"){
-  const destinationAccount=await getAccount(connection,feeAta,"confirmed",programId);
-  if(destinationAccount.isFrozen)throw new Error("The Route fee token account is frozen. No transaction was signed.");
-  if(typeof getMemoTransfer==="function"){
-   const memoConfig=getMemoTransfer(destinationAccount);
-   if(memoConfig?.requireIncomingTransferMemos)throw new Error("The Route fee token account requires an incoming memo. QX cannot safely collect this token yet.");
+ const feeOwner=new PublicKey(QX_TOKEN_FEE_RECIPIENT),feeAta=await getAssociatedTokenAddress(mint,feeOwner,false,programId);
+ const feeAccountInfo=await connection.getAccountInfo(feeAta,"confirmed"),setupInstructions=[];
+ if(feeAccountInfo){
+  if(!feeAccountInfo.owner.equals(programId))throw new Error("The QX fee ATA exists but is owned by an unexpected token program.");
+  if(typeof getAccount==="function"){
+   const destinationAccount=await getAccount(connection,feeAta,"confirmed",programId);
+   if(destinationAccount.isFrozen)throw new Error("The QX fee token account is frozen. No transaction was signed.");
+   if(typeof getMemoTransfer==="function"){
+    const memoConfig=getMemoTransfer(destinationAccount);
+    if(memoConfig?.requireIncomingTransferMemos)throw new Error("The QX fee token account requires an incoming memo. QX cannot safely collect this token yet.");
+   }
   }
+ }else{
+  const [payerBalance,minimumRent]=await Promise.all([connection.getBalance(owner,"confirmed"),connection.getMinimumBalanceForRentExemption(165,"confirmed")]);
+  const minimumRequired=Number(minimumRent)+Math.ceil(SOL_RESERVE*1e9);
+  if(payerBalance<minimumRequired){
+   const available=(payerBalance/1e9).toFixed(9),required=(minimumRequired/1e9).toFixed(9),shortfall=((minimumRequired-payerBalance)/1e9).toFixed(9);
+   throw new Error("The QX fee token account for this mint is not initialized. Creating it atomically with this sell needs at least "+required+" SOL for minimum rent and network reserve; your wallet has "+available+" SOL and is short "+shortfall+" SOL. Add SOL and retry. No transaction was signed.");
+  }
+  setupInstructions.push(createAssociatedTokenAccountInstruction(owner,feeAta,feeOwner,mint,programId));
  }
- if(programId.equals(TOKEN_PROGRAM_ID))return {instruction:createTransferInstruction(ownerAta,feeAta,owner,BigInt(amountRaw),[],programId),program:"spl-token",transferFeeRaw:"0"};
+ if(programId.equals(TOKEN_PROGRAM_ID))return {setupInstructions,instruction:createTransferInstruction(ownerAta,feeAta,owner,BigInt(amountRaw),[],programId),program:"spl-token",transferFeeRaw:"0"};
  if(typeof getMint!=="function"||typeof createTransferCheckedInstruction!=="function"||typeof createTransferCheckedWithFeeInstruction!=="function")throw new Error("The Token-2022 fee-transfer tools are unavailable. No transaction was signed.");
  const mintState=await getMint(connection,mint,"confirmed",programId);
  // Transfer-hook mints require extra account metas supplied by the hook program.
@@ -2556,9 +2628,9 @@ async function qxBuildQxTokenFeeInstruction(connection,mint,owner,amountRaw,deci
   if(typeof calculateEpochFee!=="function")throw new Error("Token-2022 transfer-fee calculation is unavailable. No transaction was signed.");
   const epochInfo=await connection.getEpochInfo("confirmed");
   const expectedTransferFee=calculateEpochFee(transferFeeConfig,BigInt(epochInfo.epoch),BigInt(amountRaw));
-  return {instruction:createTransferCheckedWithFeeInstruction(ownerAta,mint,feeAta,owner,BigInt(amountRaw),Number(decimals),expectedTransferFee,[],programId),program:"spl-token-2022",transferFeeRaw:expectedTransferFee.toString()};
+  return {setupInstructions,instruction:createTransferCheckedWithFeeInstruction(ownerAta,mint,feeAta,owner,BigInt(amountRaw),Number(decimals),expectedTransferFee,[],programId),program:"spl-token-2022",transferFeeRaw:expectedTransferFee.toString()};
  }
- return {instruction:createTransferCheckedInstruction(ownerAta,mint,feeAta,owner,BigInt(amountRaw),Number(decimals),[],programId),program:"spl-token-2022",transferFeeRaw:"0"};
+ return {setupInstructions,instruction:createTransferCheckedInstruction(ownerAta,mint,feeAta,owner,BigInt(amountRaw),Number(decimals),[],programId),program:"spl-token-2022",transferFeeRaw:"0"};
 }
 function qxB64ToBytes(b64){const bin=atob(b64);const out=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)out[i]=bin.charCodeAt(i);return out;}
 function qxBytesToB64(bytes){let s="";const a=bytes instanceof Uint8Array?bytes:new Uint8Array(bytes);for(let i=0;i<a.length;i+=0x8000)s+=String.fromCharCode(...a.subarray(i,i+0x8000));return btoa(s);}
@@ -2781,9 +2853,10 @@ async function qxExecuteDammV2Swap(q){
   if(q.direction==="buy")tx.add(SystemProgram.transfer({fromPubkey:owner,toPubkey:new PublicKey(QX_TOKEN_FEE_RECIPIENT),lamports:Number(q.qxFeeRaw)}));
   else{
    const feeTransfer=await qxBuildQxTokenFeeInstruction(connection,tokenMint,owner,q.qxFeeRaw,q.verifiedTokenDecimals);
-   tx.add(feeTransfer.instruction);
+   tx.add(...feeTransfer.setupInstructions,feeTransfer.instruction);
   }
  }
+ await qxPreflightLegacyTransaction(tx,connection,"Meteora DAMM v2 swap");
  const signed=await provider.signTransaction(tx);if(!signed?.serialize)throw new Error("The wallet did not return a signed DAMM v2 transaction.");
  const sig=await connection.sendRawTransaction(signed.serialize(),{skipPreflight:false,preflightCommitment:"confirmed"});
  const conf=await connection.confirmTransaction({signature:sig,blockhash:latest.blockhash,lastValidBlockHeight:latest.lastValidBlockHeight},"confirmed");
@@ -2954,9 +3027,10 @@ async function qxExecuteDirectDbcSwap(q){
   if(q.direction==="buy")swapTx.add(SystemProgram.transfer({fromPubkey:owner,toPubkey:new PublicKey(QX_TOKEN_FEE_RECIPIENT),lamports:Number(q.qxFeeRaw)}));
   else{
    const feeTransfer=await qxBuildQxTokenFeeInstruction(connection,mint,owner,q.qxFeeRaw,q.verifiedTokenDecimals);
-   swapTx.add(feeTransfer.instruction);
+   swapTx.add(...feeTransfer.setupInstructions,feeTransfer.instruction);
   }
  }
+ await qxPreflightLegacyTransaction(swapTx,connection,"Meteora DBC swap");
  const signed=await provider.signTransaction(swapTx);if(!signed?.serialize)throw new Error("The wallet did not return a signed DBC transaction.");
  const sig=await connection.sendRawTransaction(signed.serialize(),{skipPreflight:false,preflightCommitment:"confirmed"});
  const conf=await connection.confirmTransaction({signature:sig,blockhash:latest.blockhash,lastValidBlockHeight:latest.lastValidBlockHeight},"confirmed");
@@ -3002,6 +3076,10 @@ async function qxBuildJupiterQuote(){
  const inputDecimals=direction==="buy"?9:verifiedTokenDecimals;
  const raw=qxToRawAmount(amountText,inputDecimals);
  if(direction==="buy"&&balanceReady&&amount>Math.max(0,walletSolBalance-SOL_RESERVE))throw new Error("The amount exceeds your available SOL after the QX reserve.");
+ if(direction==="buy"&&balanceReady){
+  try{await qxCheckBuyAtaFunding(mint,owner,amount);}
+  catch(ataFundingError){if(ataFundingError?.qxInsufficientAtaRent)throw ataFundingError;console.warn("QX first-buy ATA rent check deferred to transaction preflight:",ataFundingError?.message||ataFundingError);}
+ }
  if(direction==="sell"&&balanceReady&&amount>selectedTokenBalance)throw new Error("The amount exceeds your available token balance.");
  // Current Jupiter Swap V2 Meta-Aggregator: request an executable order and
  // route QX's 100 bps integrator fee through the referral account. For /order,
@@ -3090,6 +3168,58 @@ function qxBuildApiInstruction(ix){
  if(!ix?.programId||!Array.isArray(ix.accounts)||typeof ix.data!=="string")throw new Error("Jupiter returned a malformed swap instruction.");
  return new TransactionInstruction({programId:new PublicKey(ix.programId),keys:ix.accounts.map(a=>({pubkey:new PublicKey(a.pubkey),isSigner:!!a.isSigner,isWritable:!!a.isWritable})),data:qxB64ToBytes(ix.data)});
 }
+function qxGetAtaFundingShortfall(logs,failedProgram){
+ const ataProgram="ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL";
+ if(String(failedProgram||"")!==ataProgram)return null;
+ const line=(Array.isArray(logs)?logs:[]).join("\n").match(/Transfer:\s*insufficient lamports\s+(\d+),\s*need\s+(\d+)/i);
+ if(!line)return null;
+ try{
+  const available=BigInt(line[1]),required=BigInt(line[2]),shortfall=required>available?required-available:0n;
+  if(shortfall<=0n)return null;
+  return {availableLamports:available.toString(),requiredLamports:required.toString(),shortfallLamports:shortfall.toString(),availableSol:(Number(available)/1e9).toFixed(9),requiredSol:(Number(required)/1e9).toFixed(9),shortfallSol:(Number(shortfall)/1e9).toFixed(9)};
+ }catch(_){return null;}
+}
+function qxAtaFundingMessage(funding){
+ if(!funding)return "";
+ if(String(qxLanguage||"en").toLowerCase().startsWith("ar"))return " نقص SOL لإنشاء حساب التوكن (ATA): المتاح "+funding.availableSol+" SOL، والمطلوب للحساب "+funding.requiredSol+" SOL، والنقص "+funding.shortfallSol+" SOL. هذا المبلغ للحساب فقط؛ تحتاج أيضاً مبلغ المبادلة ورسوم الشبكة. أضف SOL ثم اطلب سعراً جديداً.";
+ return " Insufficient SOL to create the token account (ATA): available "+funding.availableSol+" SOL; ATA setup requires "+funding.requiredSol+" SOL; short by "+funding.shortfallSol+" SOL. This is ATA funding only; the swap input and network fee are additional. Add SOL, then request a fresh quote.";
+}
+async function qxPreflightJupiterTransaction(tx,connection,label="Jupiter",lookupTables=[]){
+ if(!tx||!connection)throw new Error(label+" preflight could not start. No transaction was signed.");
+ let simulation;
+ try{simulation=await connection.simulateTransaction(tx,{commitment:"confirmed",sigVerify:false});}
+ catch(e){throw new Error(label+" preflight could not be completed. No transaction was signed. "+(e?.message||String(e)));}
+ if(!simulation?.value?.err)return simulation.value;
+ const err=simulation.value.err,logs=Array.isArray(simulation.value.logs)?simulation.value.logs:[];
+ const failedIndex=Array.isArray(err?.InstructionError)?Number(err.InstructionError[0]):-1;
+ let failedProgram="unknown";
+ try{
+  const compiled=tx.message?.compiledInstructions?.[failedIndex];
+  const keys=tx.message?.getAccountKeys?.(lookupTables.length?{addressLookupTableAccounts:lookupTables}:undefined);
+  if(compiled&&keys)failedProgram=keys.get(compiled.programIdIndex)?.toBase58?.()||failedProgram;
+ }catch(_){ }
+ const ataFunding=qxGetAtaFundingShortfall(logs,failedProgram);
+ window.QXLastSwapSimulationDiagnostics={error:err,failedInstructionIndex:failedIndex,failedProgram,logs,ataFunding,unitsConsumed:simulation.value.unitsConsumed||null,slot:simulation.context?.slot||null,at:new Date().toISOString(),stage:"pre_signature"};
+ if(ataFunding){
+  const msg=String(qxLanguage||"en").toLowerCase().startsWith("ar")?"رصيد SOL غير كافٍ لإنشاء حساب التوكن. المتاح "+ataFunding.availableSol+" SOL، والمطلوب "+ataFunding.requiredSol+" SOL، والنقص "+ataFunding.shortfallSol+" SOL. أضف SOL ثم اطلب سعراً جديداً.":"Insufficient SOL to create the token account. Available "+ataFunding.availableSol+" SOL; required "+ataFunding.requiredSol+" SOL; short by "+ataFunding.shortfallSol+" SOL. Add SOL and request a fresh quote.";
+  throw new Error(msg+" No transaction was signed.");
+ }
+ const compact=String(err?.InstructionError||err?.message||err);
+ throw new Error(label+" preflight failed at instruction "+failedIndex+" ("+failedProgram+"): "+compact+". Full logs were saved for diagnosis. No transaction was signed.");
+}
+async function qxLoadTransactionLookupTables(tx,connection){
+ const lookups=tx?.message?.addressTableLookups||[];
+ if(!lookups.length)return [];
+ const tables=[];
+ for(const lookup of lookups){
+  const key=lookup.accountKey||lookup.accountKey?.toBase58?.();
+  if(!key)throw new Error("A Jupiter lookup-table address is invalid. No transaction was signed.");
+  const result=await connection.getAddressLookupTable(key);
+  if(!result?.value)throw new Error("A Jupiter address lookup table could not be loaded. No transaction was signed.");
+  tables.push(result.value);
+ }
+ return tables;
+}
 async function qxExecuteJupiterRouterSwap(q){
  if(!q||q.route!=="JUPITER_BUILD"||!q.build)throw new Error("No Jupiter Router transaction is ready.");
  if(Date.now()-Number(q.quotedAt||0)>=25000)throw new Error("The Router quote expired. Request a fresh quote.");
@@ -3112,10 +3242,12 @@ async function qxExecuteJupiterRouterSwap(q){
  const budget=(build.computeBudgetInstructions||[]).map(qxBuildApiInstruction).filter(ix=>!(ix.programId?.equals?.(ComputeBudgetProgram.programId)&&ix.data?.[0]===2));
  const compile=(units)=>new VersionedTransaction(new TransactionMessage({payerKey:owner,recentBlockhash:latest.blockhash,instructions:[ComputeBudgetProgram.setComputeUnitLimit({units}),...budget,...all]}).compileToV0Message(lookup));
  let tx=compile(1400000);
- const simulation=await connection.simulateTransaction(tx,{commitment:"confirmed",sigVerify:false});
- if(simulation.value?.err)throw new Error("Jupiter Router transaction simulation failed: "+JSON.stringify(simulation.value.err)+". No transaction was signed.");
- const used=Number(simulation.value?.unitsConsumed||0),units=used>0?Math.min(1400000,Math.ceil(used*1.2)):1400000;
+ const simulation=await qxPreflightJupiterTransaction(tx,connection,"Jupiter Router",lookup);
+ const used=Number(simulation?.unitsConsumed||0),units=used>0?Math.min(1400000,Math.ceil(used*1.2)):1400000;
  tx=compile(units);
+ // Changing the compute-unit limit changes the message. Simulate the exact
+ // final bytes that Phantom will sign; never sign a rebuilt, untested message.
+ await qxPreflightJupiterTransaction(tx,connection,"Final Jupiter Router",lookup);
  qxSetSwapStatus("Router route simulated successfully. Approve the real transaction in your wallet…");
  const signed=await provider.signTransaction(tx);if(!signed?.serialize)throw new Error("The wallet did not return a signed Router transaction.");
  if(q.tokenMint!==selectedToken?.baseToken?.address||q.walletAddress!==walletAddress||Number(q.amount)!==Number($("tradeAmountInput")?.value||0))throw new Error("Trade details changed during wallet approval. The signed transaction was not submitted.");
@@ -3349,6 +3481,9 @@ async function qxExecuteSwap(){
   qxSetSwapStatus("Preparing the real Jupiter V2 transaction. Approve it in your connected wallet…");
   const tx=VersionedTransaction.deserialize(qxB64ToBytes(order.transaction));
   if(!tx.message?.staticAccountKeys?.some?.(k=>String(k?.toBase58?.()||k||"")===String(walletAddress)))throw new Error("The Jupiter transaction does not target the connected wallet. No transaction was signed.");
+  const connection=await qxGetHealthyConnection();
+  const v2LookupTables=await qxLoadTransactionLookupTables(tx,connection);
+  await qxPreflightJupiterTransaction(tx,connection,"Jupiter V2",v2LookupTables);
   const signed=await provider.signTransaction(tx);
   if(!signed||typeof signed.serialize!=="function")throw new Error("The wallet did not return a signed Solana transaction.");
   if(q.tokenMint!==selectedToken?.baseToken?.address||q.walletAddress!==walletAddress||Number(q.amount)!==Number($("tradeAmountInput")?.value||0))throw new Error("The selected token, amount or wallet changed during wallet approval. The signed transaction was not submitted.");
@@ -3483,6 +3618,7 @@ function setTradeDirection(dir){
 }
 let qxTokenDetailRequestId=0,qxTokenDetailAbortController=null;
 let qxChartRequestId=0, qxChartAbortController=null;
+const qxChartDataCache=new Map();
 const qxVerifiedPoolCache=new Map();
 const qxPoolTradesCache=new Map();
 async function qxTimedFetch(url,options={},timeoutMs=9000){
@@ -3585,6 +3721,13 @@ async function qxLoadLiveChart(token,range="1H"){
  if(!pair){const status=$("qxOwnedChartStatus");if(status)status.textContent="No verified liquidity pool is available for this token yet. QX will retry automatically.";return;}
  const seconds=({"1s":1,"5s":5,"15s":15,"30s":30})[String(range).toLowerCase()]||0;
  let points=[],tradeMarkers=[],sourceLabel="GeckoTerminal pool OHLCV";
+ const chartCacheKey=mint+"|"+pair+"|"+String(range);
+ const cachedChart=qxChartDataCache.get(chartCacheKey);
+ if(cachedChart&&cachedChart.expires>Date.now()){
+  points=cachedChart.points.map(p=>({...p}));
+  tradeMarkers=cachedChart.tradeMarkers.map(m=>({...m}));
+  sourceLabel=cachedChart.sourceLabel;
+ }else{
  if(seconds){
   // Sub-minute candles are built only from actual pool trades, never interpolated prices.
   const td=await qxGetPoolTrades(pair);
@@ -3617,8 +3760,13 @@ async function qxLoadLiveChart(token,range="1H"){
   points=rows.map(x=>({time:Number(x?.[0]),open:Number(x?.[1]),high:Number(x?.[2]),low:Number(x?.[3]),close:Number(x?.[4]),volume:Number(x?.[5]||0)})).filter(x=>Number.isFinite(x.time)&&x.open>0&&x.high>0&&x.low>0&&x.close>0).sort((a,b)=>a.time-b.time).slice(-90);
   if(points.length)sourceLabel=seconds?"Real 1m pool OHLCV · no recent sub-minute trades":"GeckoTerminal pool OHLCV";
  }
+ }
  if(requestId!==qxChartRequestId||String(selectedToken?.baseToken?.address||"")!==mint)return;
  if(!points.length){const status=$("qxOwnedChartStatus");if(status)status.textContent='No verified price candles are available from the selected pool yet. QX will retry automatically.';return;}
+ if(!(cachedChart&&cachedChart.expires>Date.now())){
+  qxChartDataCache.set(chartCacheKey,{points:points.map(p=>({...p})),tradeMarkers:tradeMarkers.map(m=>({...m})),sourceLabel,expires:Date.now()+(seconds?3500:8500)});
+  if(qxChartDataCache.size>80){const oldest=qxChartDataCache.keys().next().value;qxChartDataCache.delete(oldest);}
+ }
  const draw=()=>{
   const rect=host.getBoundingClientRect(),dpr=Math.max(1,window.devicePixelRatio||1),w=Math.max(280,Math.floor(rect.width||700)),h=Math.max(220,Math.floor(rect.height||340));
   canvas.width=w*dpr;canvas.height=h*dpr;canvas.style.width=w+"px";canvas.style.height=h+"px";ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
@@ -3654,24 +3802,37 @@ async function qxLoadLiveChart(token,range="1H"){
   ctx.fillStyle="#dbe4f2";ctx.textAlign="left";ctx.fillText("O "+qxFormatTokenPrice(last.open)+"  H "+qxFormatTokenPrice(last.high)+"  L "+qxFormatTokenPrice(last.low)+"  C "+qxFormatTokenPrice(last.close),pad.l,pad.t-5);
  };
  draw();
- host.__qxLivePriceUpdate=(data)=>{
-  if(!data||String(host.dataset.mint||"")!==mint)return;
-  const t=Number(data.unixTime||data.unix_time||0),o=Number(data.o),h=Number(data.h),l=Number(data.l),c=Number(data.c);
-  if(!(t>0&&o>0&&h>0&&l>0&&c>0))return;
-  const interval=({"1m":60,"now":60,"5m":300,"15m":900,"30m":1800,"1H":3600,"4H":14400,"1D":86400})[String(range)]||0;
-  if(!interval)return; // Sub-minute charts require actual tick-level trade prices, not 1m candles.
-  const bucket=Math.floor(t/interval)*interval;let bar=points.find(x=>Number(x.time)===bucket);
-  if(bar){bar.high=Math.max(Number(bar.high)||h,h);bar.low=Math.min(Number(bar.low)||l,l);bar.close=c;if(interval===60){bar.open=o;bar.volume=Number(data.v||bar.volume||0);}}
-  else if(points.length&&Number(points[points.length-1].time)<bucket){points.push({time:bucket,open:o,high:h,low:l,close:c,volume:0});if(points.length>90)points.shift();}
-  else return;
-  host.__qxLastCandle=points[points.length-1];host.__qxChartPulseUntil=Date.now()+5200;draw();
- };
- host.__qxLastCandle=points[points.length-1];host.__qxTradeMarkers=tradeMarkers;host.__qxChartPulseUntil=Date.now()+5200;
- if(!host.__qxChartAnimRunning){
+ const startLiveAnimation=()=>{
+  host.__qxChartPulseUntil=Date.now()+1800;
+  if(host.__qxChartAnimRunning)return;
   host.__qxChartAnimRunning=true;
   const animate=()=>{if(Date.now()>Number(host.__qxChartPulseUntil||0)){host.__qxChartAnimRunning=false;return;}draw();requestAnimationFrame(animate);};
   requestAnimationFrame(animate);
- }
+ };
+ host.__qxLivePriceUpdate=(data)=>{
+  if(!data||String(host.dataset.mint||"")!==mint)return;
+  const t=Number(data.unixTime||data.unix_time||0),c=Number(data.c);
+  if(!(t>0&&c>0))return;
+  const shortInterval=({"1s":1,"5s":5,"15s":15,"30s":30})[String(range).toLowerCase()]||0;
+  // Birdeye PRICE_DATA is OHLC data, not an individual trade tick. Never
+  // turn a minute candle update into a fabricated 1s/5s candle; short ranges
+  // are rebuilt from verified pool trades by the fast trade refresh below.
+  if(shortInterval)return;
+  const interval=({"1m":60,"now":60,"5m":300,"15m":900,"30m":1800,"1H":3600,"4H":14400,"1D":86400})[String(range)]||0;
+  if(!interval)return;
+  const bucket=Math.floor(t/interval)*interval;let bar=points.find(x=>Number(x.time)===bucket);
+  if(bar){bar.high=Math.max(Number(bar.high)||c,c);bar.low=Math.min(Number(bar.low)||c,c);bar.close=c;if(!shortInterval&&interval===60&&Number(data.o)>0)bar.open=Number(data.o);bar.volume=Number(data.v||bar.volume||0);}
+  else if(points.length&&Number(points[points.length-1].time)<bucket){
+   const previous=points[points.length-1],open=shortInterval?Number(previous.close):Number(data.o||c);
+   points.push({time:bucket,open,high:Math.max(open,c),low:Math.min(open,c),close:c,volume:Number(data.v||0)});
+   if(points.length>90)points.shift();
+  }else return;
+  host.__qxLastCandle=points[points.length-1];
+  const cache=qxChartDataCache.get(chartCacheKey);if(cache){cache.points=points.map(p=>({...p}));cache.expires=Date.now()+2500;}
+  startLiveAnimation();
+ };
+ host.__qxLastCandle=points[points.length-1];host.__qxTradeMarkers=tradeMarkers;
+ draw();startLiveAnimation();
  host.dataset.mint=mint;host.dataset.pair=pair;host.dataset.range=range;
  try{host.__qxResizeObserver?.disconnect();}catch(_){}
  const ro=new ResizeObserver(()=>draw());ro.observe(host);host.__qxResizeObserver=ro;
@@ -3858,14 +4019,25 @@ function qxSetupChartRanges(token){
   // Free public chart feed: check every 15s for every selected range.
   // GeckoTerminal caches public endpoint responses, so polling faster would
   // waste the free request budget without guaranteeing fresher market data.
-  const delay=(['1s','5s','15s','30s','now'].includes(String(range).toLowerCase()))?5000:15000;
+  const delay=(['1s','5s','15s','30s','now'].includes(String(range).toLowerCase()))?3500:10000;
   qxChartLiveTimer=setInterval(run,delay);
  };
  document.querySelectorAll("#chartRanges [data-chart-range]").forEach(b=>b.onclick=()=>{
+  if(b.classList.contains("active"))return;
   document.querySelectorAll("#chartRanges [data-chart-range]").forEach(x=>{const active=x===b;x.classList.toggle("active",active);x.setAttribute("aria-pressed",String(active));});
+  const status=$("qxOwnedChartStatus");if(status)status.textContent="Switching to "+b.textContent.trim()+" · keeping the last chart visible";
+  try{qxChartAbortController?.abort();}catch(_){}
   refresh(b.dataset.chartRange);
  });
  const active=document.querySelector("#chartRanges [data-chart-range].active")?.dataset.chartRange||"1m";
+ window.__QXRefreshChartOnTrade=()=>{
+  const current=selectedToken||token,rangeNow=document.querySelector("#chartRanges [data-chart-range].active")?.dataset.chartRange||"1m";
+  if(!["1s","5s","15s","30s"].includes(String(rangeNow).toLowerCase()))return;
+  if(String(current?.baseToken?.address||"")!==mint||!document.body.classList.contains("qx-token-open"))return;
+  void qxLoadLiveChart(current,rangeNow);
+ };
+ const wrap=$("detailChartWrap"),host=$("detailChart");if(wrap)wrap.style.display="block";
+ if(host&&!$("qxOwnedChartCanvas"))host.innerHTML='<canvas id="qxOwnedChartCanvas" aria-label="Live Solana token candlestick chart"></canvas><div class="qx-chart-status" id="qxOwnedChartStatus">Opening live chart…</div>';
  refresh(active);
 }
 function openToken(token){
@@ -4194,11 +4366,10 @@ function qxIsDisplayReady(p){
  if(!qxIsTokenDiscoveryReady(p))return false;
  const name=String(p?.baseToken?.name||"").trim(),symbol=String(p?.baseToken?.symbol||"").trim();
  if(qxIsPlaceholderTokenLabel(name,"name")||qxIsPlaceholderTokenLabel(symbol,"symbol"))return false;
- // A verified QX launch is a real on-chain market even before an external
- // indexer has published its first price/liquidity snapshot. Keep it visible
- // so the launch can be opened immediately; the trading route still performs
- // its own on-chain executable-pool checks before signing.
- if(p?.qxVerifiedLaunch===true)return true;
+ // A verified QX launch or a just-detected on-chain pool may appear before
+ // external price/liquidity indexing. Such rows are explicitly marked pending;
+ // the swap path independently verifies an executable route before signing.
+ if(p?.qxVerifiedLaunch===true||p?.qxLiveDetected===true)return true;
  return qxNum(p?.priceUsd)>0&&qxNum(p?.liquidity?.usd)>0;
 }
 function qxPairScore(p){return qxNum(p?.liquidity?.usd)*1000+qxNum(p?.volume?.h24)+qxNum(p?.txns?.h24?.buys)+qxNum(p?.txns?.h24?.sells);}
@@ -4370,13 +4541,15 @@ function renderMarket(){
   const changeText=hasPrice&&hasChange?((change>0?"+":"")+change.toFixed(2)+"% "):"—";
   const img=image?'<img class="coin-logo" src="'+escapeHTML(image)+'" alt="" loading="lazy" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\';">':"";
   const fallback='<span class="coin-fallback" style="display:'+(image?'none':'flex')+'">'+escapeHTML(symbol.replace(/[^A-Za-z0-9]/g,'').slice(0,2)||'?')+'</span>';
-  const mint=escapeHTML(p.baseToken.address),spark=qxRealSparkline(p),marketState="";
+  const mint=escapeHTML(p.baseToken.address),spark=qxRealSparkline(p);
   const createdRaw=Number(p.tokenCreatedAt||p.pairCreatedAt||0),createdMs=qxTimestampMs(createdRaw),isFresh=createdMs>0&&(Date.now()-createdMs)<86400000;
   const freshness=isFresh?'<span class="coin-fresh-tag">NEW</span>':'';
   const qxLaunchBadge=p?.qxVerifiedLaunch?'<span class="coin-fresh-tag" style="border-color:rgba(139,92,246,.45);color:#c4b5fd;background:rgba(139,92,246,.12)">QX LAUNCH</span>':'';
+  const qxLiveBadge=p?.qxLiveDetected?'<span class="coin-fresh-tag" style="border-color:rgba(56,210,156,.45);color:#71e6b7;background:rgba(56,210,156,.10)">LIVE · VERIFYING</span>':'';
+  const marketState=p?.qxLiveDetected&&!(qxNum(p.priceUsd)>0&&qxNum(p.liquidity?.usd)>0)?(qxLanguage==="ar"?"تم الرصد · جارٍ جلب بيانات التداول":qxLanguage==="zh"?"已检测 · 正在获取交易数据":"Detected · market data pending"):"";
   const txns=qxNum(p.txns?.h24?.buys)+qxNum(p.txns?.h24?.sells);
   const ageValue=qxMarketAgeLabel(p);
-  return '<article class="market-row market-row-rich qx-market-card"><button type="button" class="coin-button" data-mint="'+mint+'">'+img+fallback+'<span class="coin-info"><span class="coin-title-line"><strong>'+name+'</strong>'+freshness+qxLaunchBadge+'</span><small>'+symbol+' · '+mint.slice(0,6)+'…'+mint.slice(-4)+'</small><span class="coin-inline-meta">'+marketState+'</span></span></button><span class="qx-market-value">'+(hasPrice?qxFormatTokenPrice(p.priceUsd):"—")+'</span><span class="qx-market-value '+cls+'">'+changeText.trim()+'</span><span class="qx-market-value">'+qxMarketMetric(p.volume?.h24)+'</span><span class="qx-market-value">'+qxMarketMetric(p.marketCap||p.fdv)+'</span><span class="qx-market-value">'+qxMarketMetric(p.liquidity?.usd)+'</span><span class="qx-market-value">'+ageValue+'</span><span class="qx-market-value">'+(txns>0?txns.toLocaleString():"—")+'</span><div class="market-card-right">'+spark+'</div></article>';
+  return '<article class="market-row market-row-rich qx-market-card"><button type="button" class="coin-button" data-mint="'+mint+'">'+img+fallback+'<span class="coin-info"><span class="coin-title-line"><strong>'+name+'</strong>'+freshness+qxLaunchBadge+qxLiveBadge+'</span><small>'+symbol+' · '+mint.slice(0,6)+'…'+mint.slice(-4)+'</small><span class="coin-inline-meta">'+marketState+'</span></span></button><span class="qx-market-value">'+(hasPrice?qxFormatTokenPrice(p.priceUsd):"—")+'</span><span class="qx-market-value '+cls+'">'+changeText.trim()+'</span><span class="qx-market-value">'+qxMarketMetric(p.volume?.h24)+'</span><span class="qx-market-value">'+qxMarketMetric(p.marketCap||p.fdv)+'</span><span class="qx-market-value">'+qxMarketMetric(p.liquidity?.usd)+'</span><span class="qx-market-value">'+ageValue+'</span><span class="qx-market-value">'+(txns>0?txns.toLocaleString():"—")+'</span><div class="market-card-right">'+spark+'</div></article>';
  }).join("")+moreMarkup;
  window.QXApplyLanguage?.(false);
  window.dispatchEvent(new CustomEvent("QXMarketUpdated",{detail:{pairs:Array.isArray(window.QXPreviousMarketPairs)?window.QXPreviousMarketPairs:window.QXMarketPairs,source:"QX market render"}}));
@@ -4995,6 +5168,7 @@ void loadMarket().then(()=>qxRefreshPublicLiveSnapshots()).catch(e=>console.warn
 
   function qxCloseTokenTerminal(){
     try{window.QXStopMarketStream?.();}catch(_){}
+    window.__QXRefreshChartOnTrade=null;
     // Restore the button to its original DOM position after leaving the terminal.
     const qxBack=$("tokenBackBtn"),qxBackHome=window.__QXBackButtonHome;
     if(qxBack&&qxBackHome?.parentNode){qxBackHome.parentNode.insertBefore(qxBack,qxBackHome);qxBackHome.remove();window.__QXBackButtonHome=null;}
@@ -5671,6 +5845,7 @@ body.qx-token-open #detail .qx-full-dex-chart #detailChart{height:350px!importan
 #qxTradesList{contain:layout paint!important;}
 #qxTradesList .qx-trade-row{contain:layout paint!important;}
 @media(max-width:520px){.qx-contract-line{gap:5px!important}.qx-contract-line .qx-contract-label{font-size:8px!important}.qx-contract-line code{font-size:10px!important}.qx-copy-contract{min-width:34px!important;padding:5px 7px!important}}
+#detailChart .qx-chart-status{transition:color .18s ease,opacity .18s ease;}#detailChart .qx-chart-status:before{content:"";display:inline-block;width:6px;height:6px;margin-right:7px;border-radius:50%;background:#35d6a0;box-shadow:0 0 0 0 rgba(53,214,160,.45);animation:qxChartStatusPulse 1.8s ease-out infinite;vertical-align:1px;}@keyframes qxChartStatusPulse{0%{box-shadow:0 0 0 0 rgba(53,214,160,.42)}70%{box-shadow:0 0 0 6px rgba(53,214,160,0)}100%{box-shadow:0 0 0 0 rgba(53,214,160,0)}}@media(prefers-reduced-motion:reduce){#detailChart .qx-chart-status:before{animation:none;}}
 </style>
 <script id="qx-market-websocket-client">
 (function(){
@@ -5711,6 +5886,7 @@ body.qx-token-open #detail .qx-full-dex-chart #detailChart{height:350px!importan
     if(myGeneration!==generation||!document.body.classList.contains("qx-token-open"))return;
     const current=window.__QXSelectedToken;
     if(current&&String(current?.baseToken?.address||"")===activeMint&&typeof qxLoadTrades==="function")void qxLoadTrades(current);
+    try{window.__QXRefreshChartOnTrade?.();}catch(_){}
    },650);
   }
  }
@@ -5750,6 +5926,107 @@ body.qx-token-open #detail .qx-full-dex-chart #detailChart{height:350px!importan
  window.QXStopMarketStream=function(){manuallyStopped=true;generation++;activeMint="";activePool="";activeToken=null;closeSocket();};
  window.addEventListener("online",()=>{if(!manuallyStopped&&activeMint&&(!socket||socket.readyState>=WebSocket.CLOSING)){generation++;connect(generation);}});
  document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&!manuallyStopped&&activeMint&&(!socket||socket.readyState>=WebSocket.CLOSING)){generation++;connect(generation);}});
+})();
+</script>
+<script id="qx-global-new-token-discovery-v1">
+(()=>{
+ "use strict";
+ const ENDPOINT="wss://qkazosqvnmknnzkukggj.functions.supabase.co/qx-market-stream";
+ const HTTP_ENDPOINT="https://qkazosqvnmknnzkukggj.supabase.co/functions/v1/qx-market-stream";
+ const seen=new Map();
+ let ws=null,retry=null,ping=null,delay=1200,stopped=false,connecting=false;
+ const validMint=value=>typeof qxIsValidSolanaMint==="function"&&qxIsValidSolanaMint(String(value||""));
+ const nowMs=value=>{const n=Number(value||0);if(!Number.isFinite(n)||n<=0)return Date.now();return n<1e12?n*1000:n;};
+ function mergePair(pair){
+  const mint=String(pair?.baseToken?.address||"");if(!validMint(mint))return;
+  pair.chainId="solana";pair.qxLiveDetected=true;
+  pair.qxDiscoverySource=String(pair.qxDiscoverySource||pair.dexId||"Solana on-chain");
+  pair.qxDiscoverySeenAt=Number(pair.qxDiscoverySeenAt)||Date.now();
+  pair.pairCreatedAt=Number(pair.pairCreatedAt)||pair.qxDiscoverySeenAt;
+  const prior=seen.get(mint);seen.set(mint,{...prior,...pair,baseToken:{...(prior?.baseToken||{}),...(pair.baseToken||{})},info:{...(prior?.info||{}),...(pair.info||{})}});
+  try{
+   const discovered=seen.get(mint);
+   const merged=bestPairsByMint([...(allPairs||[]),...(newPairs||[]),discovered]);
+   allPairs=merged.filter(qxIsDisplayReady);
+   newPairs=qxFreshNewPairs(allPairs);
+   window.QXNewPairs=newPairs;window.QXMarketPairs=allPairs;
+   trendingPairs=qxBuildTrending(allPairs);
+   if(typeof qxWriteMarketCache==="function")qxWriteMarketCache(allPairs);
+   if(typeof renderMarket==="function")renderMarket();
+   const status=document.getElementById("marketStatus");
+   if(status){const lang=String(window.qxLanguage||"en");status.textContent=lang.startsWith("ar")?"اكتشاف مباشر · تم رصد مجمع جديد على سولانا":lang.startsWith("zh")?"实时发现 · 已检测到新的 Solana 池":"Live discovery · new Solana pool detected";}
+  }catch(error){console.warn("QX live discovery merge deferred",error);}
+ }
+ async function enrichMint(mint,event){
+  try{
+   if(typeof QX_DEX_TOKENS!=="string")return;
+   const rows=await qxGetJSONWithHeaders(QX_DEX_TOKENS+encodeURIComponent(mint),{},9000,0);
+   const pairs=Array.isArray(rows)?rows.filter(x=>x?.chainId==="solana"&&String(x?.baseToken?.address||"")===mint):[];
+   if(!pairs.length)return;
+   const stamp=nowMs(event?.blockTime||event?.block_unix_time||event?.timestamp);
+   const enriched=pairs.map(pair=>({...pair,qxLiveDetected:true,qxDiscoverySeenAt:Date.now(),qxDiscoverySource:String(event?.source||pair.dexId||"Solana"),pairCreatedAt:Number(pair.pairCreatedAt)||stamp}));
+   for(const pair of enriched)mergePair(pair);
+  }catch(error){console.debug("QX immediate token enrichment pending",mint,error?.message||error);}
+ }
+ function handleEvent(message){
+  const type=String(message?.type||"").toUpperCase();
+  const data=message?.data||{};
+  if(type==="TOKEN_NEW_LISTING_DATA"){
+   const mint=String(data.address||data.tokenAddress||"");
+   if(validMint(mint)){window.__QXRecentlyDetectedMints=window.__QXRecentlyDetectedMints||new Map();window.__QXRecentlyDetectedMints.set(mint,{...data,detectedAt:Date.now()});void enrichMint(mint,data);}
+   return;
+  }
+  if(type!=="NEW_PAIR_DATA")return;
+  const base=data.base||{},quote=data.quote||{};
+  const mint=String(base.address||data.baseToken?.address||"");
+  const pool=String(data.address||data.pairAddress||"");
+  if(!validMint(mint)||!validMint(pool))return;
+  const stamp=nowMs(data.blockTime||data.block_unix_time||data.timestamp);
+  const candidate={
+   chainId:"solana",dexId:String(data.source||"solana"),pairAddress:pool,
+   baseToken:{address:mint,name:String(base.name||data.name||""),symbol:String(base.symbol||data.symbol||"")},
+   quoteToken:{address:String(quote.address||""),name:String(quote.name||""),symbol:String(quote.symbol||"")},
+   priceUsd:0,liquidity:{usd:0},volume:{h24:0},txns:{h24:{buys:0,sells:0}},
+   pairCreatedAt:stamp,qxLiveDetected:true,qxDiscoverySource:String(data.source||"Solana"),
+   qxDiscoverySeenAt:Date.now(),qxDiscoveryTx:String(data.txHash||"")
+  };
+  mergePair(candidate);
+  void enrichMint(mint,data);
+ }
+ function close(){if(retry){clearTimeout(retry);retry=null;}if(ping){clearInterval(ping);ping=null;}if(ws){try{ws.onopen=ws.onmessage=ws.onerror=ws.onclose=null;ws.close(1000,"QX discovery reconnect");}catch(_){}ws=null;}connecting=false;}
+ function schedule(){if(stopped||retry)return;retry=setTimeout(()=>{retry=null;connect();},delay);delay=Math.min(20000,Math.round(delay*1.7));}
+ function connect(){if(stopped||connecting||document.visibilityState==="hidden")return;close();connecting=true;let current;try{current=new WebSocket(ENDPOINT);}catch(error){connecting=false;schedule();return;}ws=current;
+  current.onopen=()=>{connecting=false;delay=1200;const status=document.getElementById("marketStatus");if(status)status.dataset.discoveryStream="connected";ping=setInterval(()=>{if(current.readyState===WebSocket.OPEN)try{current.send(JSON.stringify({op:"ping"}));}catch(_){}},25000);};
+  current.onmessage=event=>{let message;try{message=JSON.parse(String(event.data||"{}"));}catch(_){return;}if(message?.type==="qx_stream_status"){if(message.status==="upstream_error")schedule();return;}handleEvent(message);};
+  current.onerror=()=>{const status=document.getElementById("marketStatus");if(status)status.dataset.discoveryStream="reconnecting";};
+  current.onclose=()=>{if(ws===current)ws=null;connecting=false;if(ping){clearInterval(ping);ping=null;}schedule();};
+ }
+ let backfillBusy=false,lastBackfillAt=0,backfillTimer=null;
+ async function backfill(){
+  if(backfillBusy||Date.now()-lastBackfillAt<55000)return;
+  backfillBusy=true;lastBackfillAt=Date.now();
+  try{
+   const response=await fetch(HTTP_ENDPOINT+"?backfill=1",{method:"GET",headers:{accept:"application/json"},cache:"no-store"});
+   if(!response.ok)throw new Error("Discovery backfill HTTP "+response.status);
+   const body=await response.json();const root=body?.data?.data??body?.data??{};
+   const rows=Array.isArray(root)?root:Array.isArray(root?.items)?root.items:Array.isArray(root?.tokens)?root.tokens:Array.isArray(root?.list)?root.list:[];
+   for(const row of rows){
+    const mint=String(row?.address||row?.tokenAddress||row?.mint||"");
+    if(!validMint(mint))continue;
+    window.__QXRecentlyDetectedMints=window.__QXRecentlyDetectedMints||new Map();
+    window.__QXRecentlyDetectedMints.set(mint,{...row,detectedAt:nowMs(row?.block_unix_time||row?.listed_at||row?.created_at)});
+    void enrichMint(mint,row);
+   }
+  }catch(error){console.debug("QX listing backfill unavailable; live stream will retry",error?.message||error);}
+  finally{backfillBusy=false;}
+ }
+ function start(){stopped=false;if(!ws||ws.readyState>=WebSocket.CLOSING)connect();void backfill();if(!backfillTimer)backfillTimer=setInterval(()=>{if(document.visibilityState==="visible")void backfill();},60000);}
+ function stop(){stopped=true;close();if(backfillTimer){clearInterval(backfillTimer);backfillTimer=null;}}
+ window.QXStartGlobalDiscoveryStream=start;window.QXStopGlobalDiscoveryStream=stop;
+ window.addEventListener("online",start);
+ document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")start();});
+ window.addEventListener("QXPageChanged",event=>{if(!event.detail?.pageId||event.detail.pageId==="marketsPage")start();});
+ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",start,{once:true});else start();
 })();
 </script>
 </body>
