@@ -10,8 +10,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#080711">
 <meta name="google-site-verification" content="A5ntuJ6pvvK-Uo8HHA96o5bUPFGOg_70p-Nh_rsZ8NM">
-<title>QX Exchange — Solana Token Discovery</title>
-<meta name="qx-build" content="QX-ROOT-LAUNCH-FUNDING-PREFLIGHT-V157">
+<title>QX GLOBAL SOLANA EXCHANGE — Solana Token Discovery</title>
+<meta name="qx-build" content="QX-FULL-RESPONSIVE-MARKET-PHANTOM-MATCH-V163">
 
 
 
@@ -336,6 +336,66 @@ html[data-qx-physical-mobile="1"] #marketsPage #tokenResults{overflow-x:hidden!i
 </style>
 
 <style id="qx-v153-language-currency-sort-final">#marketsPage #tokenResults .qx-col-sort:not(.active) span{display:none!important}#marketsPage #tokenResults .qx-col-sort.active span{display:inline-block!important;font-size:8px!important;line-height:1!important;margin-inline-start:2px!important;color:#b79cff!important}</style>
+\n<style id="qx-v163-unified-browser-wallet-layout">
+/* QX V163: unify regular mobile browser and wallet in-app browser presentation.
+   No CSS zoom, transform scaling, fixed narrow canvas, or disabled pinch zoom. */
+:root{--qx-content-max:1600px;}
+html,body{width:100%;max-width:100%;min-width:0;}
+.wrap{width:min(100% - 32px,var(--qx-content-max))!important;max-width:var(--qx-content-max)!important;margin-inline:auto!important;}
+#marketsPage,.page,.market-layout,.market-list-column{min-width:0!important;max-width:100%!important;}
+#marketsPage .market-layout{grid-template-columns:minmax(0,1fr) minmax(320px,390px)!important;gap:18px!important;align-items:start!important;}
+#marketsPage .market-list-column{width:100%!important;}
+#marketsPage .market-list-column>.list{width:100%!important;max-width:100%!important;}
+#marketsPage #tokenResults{width:100%!important;max-width:100%!important;min-width:0!important;}
+#marketsPage #tokenResults .qx-market-card{min-width:0!important;}
+#marketsPage #tokenResults .qx-market-columns{flex-wrap:wrap!important;overflow:visible!important;white-space:normal!important;}
+#marketsPage #tokenResults .qx-col-sort{flex:0 1 auto!important;min-width:0!important;}
+/* Physical phone detection is shared by Safari and wallet webviews. */
+@media (max-width:760px){.wrap{width:100%!important;max-width:100%!important;margin:0!important;padding-inline:12px!important;}}
+html[data-qx-physical-mobile="1"] .wrap{width:100%!important;max-width:100%!important;margin:0!important;padding:10px 12px calc(24px + env(safe-area-inset-bottom))!important;}
+@media(max-width:760px){
+  #marketsPage .market-layout{display:flex!important;flex-direction:column!important;gap:14px!important;width:100%!important;}
+  #marketsPage .market-list-column,#marketsPage #detail{width:100%!important;max-width:100%!important;min-width:0!important;}
+  #marketsPage #detail{position:relative!important;top:auto!important;max-height:none!important;overflow:visible!important;}
+  #marketsPage .market-list-column>.list{padding:8px!important;border-radius:16px!important;}
+  #marketsPage #tokenResults{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:10px!important;overflow:visible!important;border:0!important;background:transparent!important;}
+  #marketsPage #tokenResults .qx-market-columns{display:flex!important;flex-wrap:wrap!important;gap:6px!important;padding:9px!important;border:1px solid rgba(145,160,190,.16)!important;border-radius:12px!important;background:#0b1018!important;}
+  #marketsPage #tokenResults .qx-sort-caption{flex:0 0 100%!important;}
+  #marketsPage #tokenResults .qx-col-sort{min-height:34px!important;padding:6px 9px!important;font-size:9px!important;}
+  #marketsPage #tokenResults .qx-market-card{display:grid!important;grid-template-columns:minmax(0,1fr) 92px!important;grid-template-areas:"token spark" "metrics metrics"!important;gap:11px 8px!important;width:100%!important;min-width:0!important;padding:13px!important;border:1px solid rgba(177,139,225,.18)!important;border-radius:15px!important;background:linear-gradient(145deg,rgba(20,16,34,.98),rgba(10,12,22,.98))!important;overflow:hidden!important;}
+  #marketsPage #tokenResults .qx-market-card>.coin-button{grid-area:token!important;width:100%!important;min-width:0!important;display:flex!important;align-items:center!important;gap:10px!important;}
+  #marketsPage #tokenResults .qx-market-card .coin-logo,#marketsPage #tokenResults .qx-market-card .coin-fallback{width:44px!important;height:44px!important;flex:0 0 44px!important;}
+  #marketsPage #tokenResults .qx-market-card .coin-info{min-width:0!important;max-width:100%!important;}
+  #marketsPage #tokenResults .qx-market-card .coin-info strong{display:block!important;max-width:100%!important;white-space:normal!important;overflow-wrap:anywhere!important;font-size:13px!important;line-height:1.25!important;}
+  #marketsPage #tokenResults .qx-market-card .coin-info small{display:block!important;max-width:100%!important;white-space:normal!important;overflow-wrap:anywhere!important;font-size:10px!important;}
+  #marketsPage #tokenResults .qx-market-card .coin-inline-meta{display:block!important;white-space:normal!important;font-size:9px!important;}
+  #marketsPage #tokenResults .qx-market-card .qx-row-metrics{grid-area:metrics!important;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;width:100%!important;min-width:0!important;margin:0!important;}
+  #marketsPage #tokenResults .qx-market-card .qx-row-metrics>span{display:flex!important;flex-direction:column!important;align-items:flex-start!important;justify-content:center!important;gap:3px!important;min-width:0!important;padding:8px 9px!important;border:1px solid rgba(145,160,190,.12)!important;border-radius:9px!important;background:rgba(255,255,255,.025)!important;text-align:start!important;white-space:normal!important;overflow-wrap:anywhere!important;font-size:11px!important;line-height:1.25!important;}
+  #marketsPage #tokenResults .qx-market-card .qx-row-metrics>span:before{content:attr(data-label)!important;display:block!important;color:#8994b2!important;font-size:8px!important;font-weight:850!important;letter-spacing:.55px!important;line-height:1.2!important;}
+  #marketsPage #tokenResults .qx-market-card .market-card-right{grid-area:spark!important;display:flex!important;align-items:center!important;justify-content:flex-end!important;min-width:0!important;width:100%!important;}
+  #marketsPage #tokenResults .qx-market-card .qx-mini-chart{width:88px!important;max-width:100%!important;height:34px!important;}
+  #marketsPage .market-heading{width:100%!important;max-width:100%!important;}
+  #marketsPage .market-tabs{max-width:100%!important;flex-wrap:wrap!important;}
+  #marketsPage .market-tab{flex:0 0 auto!important;}
+  .qx-global-settings{max-width:100%!important;min-width:0!important;flex-wrap:wrap!important;}
+  .qx-global-settings select{min-width:0!important;max-width:100%!important;}
+  input,select,textarea{font-size:16px!important;}
+}
+@media(max-width:420px){
+  .wrap{padding-inline:9px!important;}
+  #marketsPage #tokenResults .qx-market-card{padding:10px!important;grid-template-columns:minmax(0,1fr) 72px!important;}
+  #marketsPage #tokenResults .qx-market-card .qx-mini-chart{width:70px!important;}
+  #marketsPage #tokenResults .qx-market-card .qx-row-metrics{gap:6px!important;}
+  #marketsPage #tokenResults .qx-market-card .qx-row-metrics>span{padding:7px!important;font-size:10px!important;}
+}
+@media(min-width:761px){
+  #marketsPage #tokenResults .qx-market-card{grid-template-columns:minmax(180px,1.4fr) minmax(0,4fr) 100px!important;align-items:center!important;gap:10px!important;}
+  #marketsPage #tokenResults .qx-market-card .qx-row-metrics{display:grid!important;grid-template-columns:repeat(7,minmax(0,1fr))!important;gap:8px!important;min-width:0!important;}
+  #marketsPage #tokenResults .qx-market-card .qx-row-metrics>span{min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;}
+}
+@media(prefers-reduced-motion:reduce){#marketsPage #tokenResults .qx-market-card:after{animation:none!important;}}
+</style>
+
 </head>
 <body>
 <div class="wrap">
@@ -426,7 +486,7 @@ html[data-qx-physical-mobile="1"] #marketsPage #tokenResults{overflow-x:hidden!i
   <h2 style="margin-top:10px">Launch an SPL token</h2>
   <p class="small" id="tokenCreateDescription">Create and launch an SPL token directly from your connected Solana wallet. QX creates the mint and a real Meteora Dynamic Bonding Curve market on Solana Mainnet in the same launch flow. Your wallet will ask you to approve the on-chain transactions.</p><p id="tokenCreatePresetNote" class="muted qx-preset-note">Quick preset: 1 SOL initial market cap · 10 SOL graduation target · no initial buy. Use Launch Market for custom settings.</p>
   <div class="small" style="margin:12px 0;padding:12px;border:1px solid var(--line);border-radius:11px;background:rgba(139,92,246,.08)"><strong>REAL LAUNCH:</strong> This flow does not add a token to a fake local market list. After the on-chain launch transaction is confirmed, QX verifies the DBC pool from Solana and records the real mint + pool for discovery and trading.</div>
-  <p class="small" id="tokenCreationFee" style="margin-top:10px;padding:12px;border:1px solid var(--line);border-radius:10px">QX creation fee: 0 SOL. You only pay the required Solana network fees and mint-account rent.</p>
+  <p class="small" id="tokenCreationFee" style="margin-top:10px;padding:12px;border:1px solid var(--line);border-radius:10px">QX creation fee: 0 SOL. You pay only Solana network fees and the required on-chain account rent.</p>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px">
    <label class="small">Token name<input id="tokenName" maxlength="32" placeholder="e.g. QX Token" style="display:block;width:100%;margin-top:6px;padding:13px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--text)"></label>
    <label class="small">Symbol<input id="tokenSymbol" maxlength="10" placeholder="e.g. QXT" style="display:block;width:100%;margin-top:6px;padding:13px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--text);text-transform:uppercase"></label>
@@ -448,11 +508,11 @@ html[data-qx-physical-mobile="1"] #marketsPage #tokenResults{overflow-x:hidden!i
    <p class="small" style="margin:12px 0 0">These optional details are saved in this browser with the token record. Publishing the logo and links on-chain or to public token directories requires a metadata upload and indexing service; this page does not pretend that local saving is public publishing.</p>
   </div>
   <button type="button" class="btn primary" id="createTokenBtn" style="width:100%;margin-top:18px">Connect wallet &amp; create token</button>
-  <p class="small" id="createTokenStatus" style="margin-top:14px">Connect your wallet first. Network fees and mint-account rent are paid in SOL.</p>
+  <p class="small" id="createTokenStatus" style="margin-top:14px">Connect your wallet first. QX charges 0 SOL; required Solana network fees and account rent are paid from your wallet.</p>
   <div id="createdTokenResult" style="display:none;margin-top:16px;padding:14px;border:1px solid var(--line);border-radius:12px;overflow-wrap:anywhere">
    <strong>Token created</strong><p class="small" id="createdTokenMint"></p><a id="createdTokenSolscan" class="detail-link" target="_blank" rel="noopener">View transaction on Solscan</a>
   </div>
-  <p class="small" style="margin-top:16px">The successful result is verified from Solana: mint + Meteora DBC pool + launch configuration. QX creation fee is 0 SOL; the creator must still fund the on-chain Meteora config/pool account rent and Solana network costs. QX checks funding before wallet approval. A token is not marked as launched merely because it was saved in browser storage.</p>
+  <p class="small" style="margin-top:16px">The successful result is verified from Solana: mint + Meteora DBC pool + launch configuration. QX creation fee is 0 SOL. The creator pays the required Solana network fees and on-chain account rent. QX checks the exact transaction before the single wallet approval. QX receives 5% of the fixed token supply through the configured leftover receiver when the pool migrates.</p>
  </section>
 </main>
 
@@ -1101,7 +1161,7 @@ function qxApplyLanguage(){
  t("#createPage .panel > .tag","QX TOKEN CREATOR","\u0645\u0646\u0634\u0626 \u0639\u0645\u0644\u0627\u062A QX");
  t("#createPage .panel h2","Launch an SPL token",L.launch);
  t("#tokenCreateDescription","Create a Solana token and launch its Meteora DBC market with one wallet approval.",L.createDesc);
- t("#tokenCreationFee","QX creation fee: 0 SOL. You only pay the required Solana network fees and mint-account rent.",L.tokenFee);
+ t("#tokenCreationFee","QX creation fee: 0 SOL. You pay only Solana network fees and the required on-chain account rent.",L.tokenFee);
  const createLabels=[L.tokenName,L.symbol,L.supply,L.decimals];document.querySelectorAll("#createPage .panel label").forEach((el,i)=>{if(createLabels[i])el.childNodes[0].textContent=createLabels[i];});
  const createBtn=$("createTokenBtn");if(createBtn)createBtn.textContent=L.createButton;
  const createStatus=$("createTokenStatus");if(createStatus&&(!createStatus.dataset.runtime||createStatus.dataset.runtime!=="1"))createStatus.textContent=L.createHint;
@@ -2157,8 +2217,8 @@ async function qxPreflightLegacyTransaction(tx,connection,label="Solana"){
    if(launchFunding){
     const arabic=String(qxLanguage||"en").toLowerCase().startsWith("ar");
     const friendly=arabic
-     ?"رصيد SOL غير كافٍ لإعداد سوق Meteora. الرصيد المتاح وقت المحاكاة "+launchFunding.availableSol+" SOL، والمطلوب لهذه الخطوة "+launchFunding.requiredSol+" SOL، والنقص "+launchFunding.shortfallSol+" SOL. أضف مبلغ النقص على الأقل مع احتياطي رسوم الشبكة وإيجار بقية الحسابات، ثم أعد المحاولة. لم يُطلب توقيع ولم تُنشأ العملة."
-     :"Not enough SOL to initialize the Meteora launch config. Available at this step: "+launchFunding.availableSol+" SOL; required for this step: "+launchFunding.requiredSol+" SOL; short by "+launchFunding.shortfallSol+" SOL. Add at least the shortfall plus network fees and any remaining account rent, then retry. No signature was requested and no token was created.";
+     ?"رصيد SOL غير كافٍ لإنشاء إعداد العملة ومجمعها على Meteora. الرصيد المتاح وقت المحاكاة "+launchFunding.availableSol+" SOL، والمطلوب لهذه الخطوة "+launchFunding.requiredSol+" SOL، والنقص "+launchFunding.shortfallSol+" SOL. أضف مبلغ النقص على الأقل مع احتياطي رسوم الشبكة وإيجار بقية الحسابات، ثم أعد المحاولة. لم يُطلب توقيع ولم تُنشأ العملة."
+     :"Not enough SOL to create the Meteora launch config and pool. Available at this step: "+launchFunding.availableSol+" SOL; required for this step: "+launchFunding.requiredSol+" SOL; short by "+launchFunding.shortfallSol+" SOL. Add at least the shortfall plus network fees and any remaining account rent, then retry. No signature was requested and no token was created.";
     const fundingError=new Error(friendly);fundingError.qxInsufficientLaunchFunds=true;fundingError.launchFunding=launchFunding;throw fundingError;
    }
    throw new Error(label+" simulation failed before wallet approval at instruction "+failedIndex+" (program "+failedProgram+"): "+JSON.stringify(value.err)+(logTail?"\nSimulation logs:\n"+logTail:"")+"\nNo signature was requested.");
@@ -2335,11 +2395,6 @@ async function qxLaunchToken(options={}){
   let preApprovalBalanceLamports=0n;
   try{preApprovalBalanceLamports=BigInt(await connection.getBalance(payer,"confirmed"));}
   catch(balanceError){throw new Error("QX could not read the creator SOL balance before launch. No signature was requested. "+(balanceError?.message||String(balanceError)));}
-  const launchMinReserveLamports=1000000n; // 0.001 SOL safety reserve; actual transaction simulation remains authoritative.
-  if(preApprovalBalanceLamports<=launchMinReserveLamports){
-   const available=(Number(preApprovalBalanceLamports)/1e9).toFixed(9);
-   throw new Error("QX launch stopped before wallet approval. Creator SOL balance is "+available+" SOL, which is below the minimum launch reserve. Add SOL and retry; no signature was requested and no token was created.");
-  }
   // Simulate the exact launch transaction before opening the wallet approval.
   // This is authoritative for Meteora's current CreateConfig2/account-rent cost;
   // do not hard-code that cost because it can change with the SDK/program.
@@ -2885,7 +2940,7 @@ async function qxBuildDammV2Quote(token, direction, amountText){
  const tokenADecimal=String(poolState.tokenAMint||poolState.tokenAMint?.toBase58?.()||"")===String(token.baseToken.address)?decimals:9;
  const tokenBDecimal=String(poolState.tokenBMint||poolState.tokenBMint?.toBase58?.()||"")===String(token.baseToken.address)?decimals:9;
  const [inputTokenInfo,outputTokenInfo]=await Promise.all([qxGetDammTokenInfo(connection,inputMint),qxGetDammTokenInfo(connection,outputMint)]);
- const quote=cpAmm.getQuote({inAmount:new qxDbc.BN(raw),inputTokenMint:inputMint,slippageBps:50,poolState,currentTime:blockTime||Math.floor(Date.now()/1000),currentSlot,inputTokenInfo,outputTokenInfo,tokenADecimal,tokenBDecimal});
+ const quote=cpAmm.getQuote({inAmount:new qxDbc.BN(raw),inputTokenMint:inputMint,slippageBps:qxGetConfiguredSlippageBps(50),poolState,currentTime:blockTime||Math.floor(Date.now()/1000),currentSlot,inputTokenInfo,outputTokenInfo,tokenADecimal,tokenBDecimal});
  if(!quote?.minSwapOutAmount)throw new Error("DAMM v2 returned no executable quote for this market.");
  if(balanceReady&&direction==="buy"&&amount>walletSolBalance-SOL_RESERVE)throw new Error("Your SOL balance does not cover the entered amount and network reserve.");
  if(balanceReady&&direction==="sell"&&amount>selectedTokenBalance)throw new Error("The entered sell amount exceeds your available token balance.");
@@ -3177,7 +3232,7 @@ async function qxBuildDirectDbcQuote(){
  const feeRaw=grossRaw.sub(swapRaw);
  if(swapRaw.isZero()||feeRaw.isZero())throw new Error("This amount is too small to split between the swap and the 1.00% QX fee. Increase the amount.");
  const currentSlot=await connection.getSlot("confirmed"),blockTime=await connection.getBlockTime(currentSlot),currentPoint=new dbc.BN(Number(config.activationType)===1?(blockTime||Math.floor(Date.now()/1000)):currentSlot);
- const quote=await client.pool.swapQuote2({virtualPool:poolState,config,swapBaseForQuote:direction==="sell",swapMode:dbc.SwapMode.ExactIn,amountIn:swapRaw,slippageBps:100,hasReferral:false,currentPoint,eligibleForFirstSwapWithMinFee:false});
+ const quote=await client.pool.swapQuote2({virtualPool:poolState,config,swapBaseForQuote:direction==="sell",swapMode:dbc.SwapMode.ExactIn,amountIn:swapRaw,slippageBps:qxGetConfiguredSlippageBps(100),hasReferral:false,currentPoint,eligibleForFirstSwapWithMinFee:false});
  if(!quote?.minimumAmountOut||!quote?.actualInputAmount)throw new Error("Meteora returned no executable DBC quote for this token.");
  if(balanceReady&&direction==="buy"&&amount>walletSolBalance-SOL_RESERVE)throw new Error("Your SOL balance does not cover the entered amount and network reserve.");
  if(balanceReady&&direction==="sell"&&amount>selectedTokenBalance)throw new Error("The entered sell amount exceeds your available token balance.");
@@ -3215,6 +3270,12 @@ async function qxExecuteDirectDbcSwap(q){
  const actualOutput=q.direction==="buy"?Math.abs(chain.tokenDelta):Math.max(0,(Number(BigInt(chain.nativeDeltaLamports||"0"))+Number(BigInt(chain.networkFeeLamports||"0")))/1e9);
  if(!(actualInput>0&&actualOutput>0)){const e=new Error("The confirmed transaction did not produce verifiable positive fill amounts. Do not retry; inspect the confirmed signature.");e.qxConfirmed=true;e.signature=sig;throw e;}
  return {sig,actualInput,actualOutput,chain,fee};
+}
+function qxGetConfiguredSlippageBps(fallback){
+ const v=String(window.QXSwapSettings?.slippage||"auto");
+ if(v==="auto")return fallback;
+ const n=Number(v);
+ return Number.isFinite(n)&&n>=10&&n<=500?Math.round(n):fallback;
 }
 async function qxBuildJupiterQuote(){
  const token=selectedToken,direction=tradeDirection,owner=walletAddress;
@@ -3255,6 +3316,7 @@ async function qxBuildJupiterQuote(){
  // referral fees are reported in top-level feeBps; platformFee.feeBps is a
  // separate Jupiter platform fee and must not be used to validate our fee.
  const params=new URLSearchParams({inputMint,outputMint,amount:raw,taker:owner,referralAccount:QX_JUP_REFERRAL_ACCOUNT,referralFee:"100",maxSupportedTransactionVersion:"0"});
+ const qxSlip=String(window.QXSwapSettings?.slippage||"auto");if(qxSlip!=="auto"){const qxBps=Number(qxSlip);if(Number.isFinite(qxBps)&&qxBps>=10&&qxBps<=500)params.set("slippageBps",String(Math.round(qxBps)));}
  // ROOT TRADING FIX: Jupiter documents that an uninitialized referral token
  // account does not block the swap; the order executes without the integrator
  // fee. Never create that account during BUY/SELL and never require a second
@@ -3268,6 +3330,7 @@ async function qxBuildJupiterQuote(){
   // If the optional referral parameters themselves are rejected, immediately
   // retry with Jupiter's normal Ultra order. This restores the full router set.
   const fallbackParams=new URLSearchParams({inputMint,outputMint,amount:raw,taker:owner,maxSupportedTransactionVersion:"0"});
+  const fallbackSlip=String(window.QXSwapSettings?.slippage||"auto");if(fallbackSlip!=="auto"){const fallbackBps=Number(fallbackSlip);if(Number.isFinite(fallbackBps)&&fallbackBps>=10&&fallbackBps<=500)fallbackParams.set("slippageBps",String(Math.round(fallbackBps)));}
   response=await fetch("https://api.jup.ag/swap/v2/order?"+fallbackParams.toString(),{signal:qxQuoteAbortController?.signal,headers:{accept:"application/json","x-api-key":QX_JUP_API_KEY}});
   order=await response.json().catch(()=>({}));
   if(!response.ok||!isExecutable()){
@@ -3308,7 +3371,7 @@ async function qxBuildJupiterRouterQuote(){
  const decimals=await qxEnsureTokenDecimals(token);
  const inputMint=direction==="buy"?SOL:mint,outputMint=direction==="buy"?mint:SOL;
  const inputDecimals=direction==="buy"?9:decimals,raw=qxToRawAmount(amountText,inputDecimals);
- const params=new URLSearchParams({inputMint,outputMint,amount:raw,taker:owner,slippageBps:"rtse",transactionVersion:"0"});
+ const qxSlip=String(window.QXSwapSettings?.slippage||"auto");const qxSlipBps=Number(qxSlip);const params=new URLSearchParams({inputMint,outputMint,amount:raw,taker:owner,slippageBps:(qxSlip!=="auto"&&Number.isFinite(qxSlipBps)&&qxSlipBps>=10&&qxSlipBps<=500)?String(Math.round(qxSlipBps)):"rtse",transactionVersion:"0"});
  // Collect the QX fee through Jupiter's native platform-fee mechanism only
  // when the QX recipient ATA already exists. Never interrupt a small trade
  // with a surprise ATA-creation transaction or an extra wallet approval.
@@ -4230,6 +4293,7 @@ function qxSetupChartRanges(token){
  if(host&&!$("qxOwnedChartCanvas"))host.innerHTML='<canvas id="qxOwnedChartCanvas" aria-label="Live Solana token candlestick chart"></canvas><div class="qx-chart-status" id="qxOwnedChartStatus">Opening live chart…</div>';
  refresh(active);
 }
+function qxIsValidPickerPair(token){const mint=String(token?.baseToken?.address||'');return token?.chainId==='solana'&&qxIsValidSolanaMint(mint)&&mint!==SOL&&!qxLooksLikeFakeNative(token);}
 function openToken(token){
  window.__QXTokenUserOpen=true;
  try{const mint=String(token?.baseToken?.address||token?.address||"");if(mint&&history.pushState){history.pushState({qxTokenMint:mint},"",location.pathname+location.search+"#token="+encodeURIComponent(mint));}}catch(_){}
@@ -5543,17 +5607,39 @@ void loadMarket().then(()=>qxRefreshPublicLiveSnapshots()).catch(e=>console.warn
    else detail.insertBefore(launch,swapHead);
    const modal=document.createElement('div');modal.className='qx-trade-modal';modal.id='qxTradeModal';modal.setAttribute('role','dialog');modal.setAttribute('aria-modal','true');modal.setAttribute('aria-label','QX trade ticket');
    const card=document.createElement('div');card.className='qx-trade-modal-card';
-   const head=document.createElement('div');head.className='qx-trade-modal-head';head.innerHTML='<strong>BUY OR SELL TOKEN</strong><button type="button" class="qx-trade-modal-close" id="qxCloseTradeModal" aria-label="Close">×</button>';
+   const head=document.createElement('div');head.className='qx-trade-modal-head';head.innerHTML='<strong>BUY OR SELL TOKEN</strong><div class="qx-trade-head-actions"><button type="button" class="qx-settings-open" id="qxSwapSettingsOpen" aria-expanded="false" aria-controls="qxSwapSettingsPanel" title="Swap settings">⚙</button><button type="button" class="qx-trade-modal-close" id="qxCloseTradeModal" aria-label="Close">×</button></div>';
    const content=document.createElement('div');content.id='qxTradeModalContent';
-   card.append(head,content);modal.appendChild(card);document.body.appendChild(modal);
-   content.append(swapHead,swapBox);
+   const picker=document.createElement('section');picker.id='qxSwapTokenPicker';picker.className='qx-swap-token-picker';picker.hidden=true;picker.innerHTML='<div class="qx-token-picker-head"><strong>SELECT SOLANA TOKEN</strong><button type="button" id="qxSwapTokenPickerClose" aria-label="Close token selector">×</button></div><div class="qx-token-picker-search"><input id="qxSwapTokenSearchInput" type="search" autocomplete="off" spellcheck="false" placeholder="Search name, symbol or paste mint address" aria-label="Search Solana tokens"><button type="button" id="qxSwapTokenSearchGo">SEARCH</button></div><div class="qx-token-picker-hint">Choose a market token or search any Solana token by name, symbol or contract address</div><div id="qxSwapTokenResults" class="qx-token-picker-results" role="listbox" aria-live="polite"></div>';
+   const settings=document.createElement('section');settings.id='qxSwapSettingsPanel';settings.className='qx-swap-settings-panel';settings.hidden=true;settings.innerHTML='<div class="qx-settings-title">SWAP SETTINGS</div><label class="qx-settings-field"><span>Slippage tolerance</span><select id="qxSwapSlippage"><option value="auto">Auto · Jupiter RTSE</option><option value="50">0.5%</option><option value="100">1.0%</option><option value="200">2.0%</option></select></label><div class="qx-settings-info"><span>Priority fee</span><strong>Automatic · Jupiter managed</strong><small>Jupiter selects the landing priority fee for this route.</small></div><div class="qx-settings-info"><span>Route selection</span><strong>Automatic · Best executable route</strong><small>QX requests the available executable route; no fake/manual route override.</small></div><label class="qx-settings-check"><input type="checkbox" id="qxSwapShowFees" checked><span>Show fee and route details</span></label><div class="qx-settings-info"><span>Wallet confirmation</span><strong>Always required</strong><small>You review the quote before Phantom or your connected wallet asks you to sign.</small></div><div class="qx-settings-info qx-settings-note"><span>MEV protection</span><small>Protection depends on the route and Jupiter landing method. QX will not claim protection when the selected route does not provide it.</small></div><button type="button" id="qxSwapSettingsDone" class="qx-settings-done">DONE</button>';
+   card.append(head,settings,picker,content);modal.appendChild(card);document.body.appendChild(modal);
+   const tokenPickBar=document.createElement('div');tokenPickBar.className='qx-swap-token-current';tokenPickBar.innerHTML='<span>SWAP TOKEN</span><button type="button" id="qxSwapTokenPickOpen" aria-haspopup="dialog"><span id="qxSwapTokenPickName">Choose token</span><small>CHANGE ▾</small></button>';
+   content.append(tokenPickBar,swapHead,swapBox);
    // The public token trade tape is the final section of the token detail page.
    if(marketTrades&&marketTrades.parentElement===detail)detail.appendChild(marketTrades);
    const close=()=>{modal.classList.remove('open');document.body.classList.remove('qx-trade-modal-open');};
-   const open=(direction)=>{window.QXSetTradeDirection?.(direction);const title=head.querySelector('strong');if(title)title.textContent=direction==='buy'?'BUY '+(document.getElementById('detailSymbol')?.textContent||'TOKEN'):'SELL '+(document.getElementById('detailSymbol')?.textContent||'TOKEN');const kicker=content.querySelector('.qx-swap-kicker');if(kicker)kicker.textContent=direction==='buy'?'BUY TOKEN':'SELL TOKEN';const amount=document.getElementById('tradeAmountInput');if(amount)amount.value='';const go=document.getElementById('swapNowBtn');if(go){go.disabled=true;const label=go.querySelector('span');if(label)label.textContent='GET QUOTE';}modal.classList.add('open');document.body.classList.add('qx-trade-modal-open');};
+   const open=(direction)=>{window.QXSetTradeDirection?.(direction);const pickLabel=document.getElementById('qxSwapTokenPickName');if(pickLabel)pickLabel.textContent=(selectedToken?.baseToken?.name||'Choose token')+' · '+(selectedToken?.baseToken?.symbol||'');const title=head.querySelector('strong');if(title)title.textContent=direction==='buy'?'BUY '+(document.getElementById('detailSymbol')?.textContent||'TOKEN'):'SELL '+(document.getElementById('detailSymbol')?.textContent||'TOKEN');const kicker=content.querySelector('.qx-swap-kicker');if(kicker)kicker.textContent=direction==='buy'?'BUY TOKEN':'SELL TOKEN';const amount=document.getElementById('tradeAmountInput');if(amount)amount.value='';const go=document.getElementById('swapNowBtn');if(go){go.disabled=true;const label=go.querySelector('span');if(label)label.textContent='GET QUOTE';}modal.classList.add('open');document.body.classList.add('qx-trade-modal-open');};
+   document.getElementById('qxOpenBuy')?.addEventListener('click',()=>open('buy'));
+   document.getElementById('qxOpenSell')?.addEventListener('click',()=>open('sell'));
+   const pickOpen=document.getElementById('qxSwapTokenPickOpen'),pickClose=document.getElementById('qxSwapTokenPickerClose'),pickSearch=document.getElementById('qxSwapTokenSearchInput'),pickGo=document.getElementById('qxSwapTokenSearchGo'),pickResults=document.getElementById('qxSwapTokenResults');
+   const paintPickerToken=()=>{const label=document.getElementById('qxSwapTokenPickName');if(label)label.textContent=(selectedToken?.baseToken?.name||'Choose token')+' · '+(selectedToken?.baseToken?.symbol||'');};
+   const drawPickerRows=(rows,empty='No matching Solana tokens found.')=>{if(!pickResults)return;pickResults.replaceChildren();if(!rows.length){const msg=document.createElement('div');msg.className='qx-token-picker-empty';msg.textContent=empty;pickResults.appendChild(msg);return;}for(const token of rows){const mint=String(token?.baseToken?.address||'');if(!mint)continue;const b=document.createElement('button');b.type='button';b.className='qx-token-picker-row';b.setAttribute('role','option');const img=document.createElement('img');img.alt='';img.loading='lazy';img.src=qxTokenImageUrl(token)||'';img.onerror=()=>{img.style.visibility='hidden';};const info=document.createElement('span');info.className='qx-token-picker-meta';const name=document.createElement('strong');name.textContent=cleanTokenText(token.baseToken?.name,'Unknown Token');const symbol=document.createElement('small');symbol.textContent=cleanTokenText(token.baseToken?.symbol,'TOKEN')+' · '+mint.slice(0,5)+'…'+mint.slice(-5);info.append(name,symbol);const price=document.createElement('em');price.textContent=qxNum(token.priceUsd)>0?qxFormatTokenPrice(token.priceUsd):'Price unavailable';b.append(img,info,price);b.addEventListener('click',()=>{const keepDirection=tradeDirection;picker.hidden=true;openToken(token);window.QXSetTradeDirection?.(keepDirection);paintPickerToken();const title=head.querySelector('strong');if(title)title.textContent=(keepDirection==='buy'?'BUY ':'SELL ')+(token.baseToken?.symbol||'TOKEN');const kicker=content.querySelector('.qx-swap-kicker');if(kicker)kicker.textContent=keepDirection==='buy'?'BUY TOKEN':'SELL TOKEN';const modal=document.getElementById('qxTradeModal');modal?.classList.add('open');document.body.classList.add('qx-trade-modal-open');});pickResults.appendChild(b);}};
+   const showMarketTokens=()=>{const rows=bestPairsByMint([...(allPairs||[]),...(newPairs||[]),...(trendingPairs||[])]).filter(qxIsValidPickerPair).slice(0,80);drawPickerRows(rows,'No market tokens are available yet. Search by name, symbol or mint address.');};
+   const runTokenSearch=async()=>{const q=String(pickSearch?.value||'').trim();if(!q){showMarketTokens();return;}if(pickResults)pickResults.textContent='Searching Solana tokens…';try{let rows=[];const mintLike=qxIsValidSolanaMint(q);if(mintLike){const pairs=await getJSON('https://api.dexscreener.com/token-pairs/v1/solana/'+encodeURIComponent(q),12000,0);if(Array.isArray(pairs))rows=pairs.filter(x=>String(x?.baseToken?.address||'')===q);if(!rows.length){const headers=QX_JUP_API_KEY?{'x-api-key':QX_JUP_API_KEY}:{};const meta=await qxGetJSONWithHeaders('https://api.jup.ag/tokens/v2/search?query='+encodeURIComponent(q),headers,10000,0);const m=Array.isArray(meta)?meta[0]:(Array.isArray(meta?.tokens)?meta.tokens[0]:null);if(m&&String(m.id||m.address||m.mint||'')===q)rows=[{chainId:'solana',pairAddress:'',baseToken:{address:q,name:cleanTokenText(m.name,'Unknown Token'),symbol:cleanTokenText(m.symbol,'TOKEN')},priceUsd:'0',priceChange:{},volume:{},liquidity:{usd:0},txns:{h24:{buys:0,sells:0}},info:{imageUrl:qxSafeUrl(m.icon||'')},tokenDecimals:Number(m.decimals)||undefined,qxPendingDiscovery:true}];}}else{const headers=QX_JUP_API_KEY?{'x-api-key':QX_JUP_API_KEY}:{};const data=await qxGetJSONWithHeaders('https://api.jup.ag/tokens/v2/search?query='+encodeURIComponent(q),headers,12000,0);const metaRows=Array.isArray(data)?data:(Array.isArray(data?.tokens)?data.tokens:[]);const localByMint=new Map(bestPairsByMint([...(allPairs||[]),...(newPairs||[]),...(trendingPairs||[])]).map(x=>[String(x?.baseToken?.address||''),x]));for(const meta of metaRows.slice(0,12)){const m=String(meta?.id||meta?.address||meta?.mint||'');if(!qxIsValidSolanaMint(m))continue;let pair=localByMint.get(m);if(!pair){try{const found=await getJSON('https://api.dexscreener.com/token-pairs/v1/solana/'+encodeURIComponent(m),10000,0);if(Array.isArray(found))pair=bestPairsByMint(found.filter(x=>String(x?.baseToken?.address||'')===m))[0];}catch(_){}}if(pair){if(!pair.info)pair.info={};if(!pair.info.imageUrl&&meta.icon)pair.info.imageUrl=qxSafeUrl(meta.icon);rows.push(pair);}else{rows.push({chainId:'solana',pairAddress:'',baseToken:{address:m,name:cleanTokenText(meta.name,'Unknown Token'),symbol:cleanTokenText(meta.symbol,'TOKEN')},priceUsd:'0',priceChange:{},volume:{},liquidity:{usd:0},txns:{h24:{buys:0,sells:0}},info:{imageUrl:qxSafeUrl(meta.icon||'')},tokenDecimals:Number(meta.decimals)||undefined,qxPendingDiscovery:true});}}}if(!rows.length&&!mintLike){try{const ds=await getJSON('https://api.dexscreener.com/latest/dex/search/?q='+encodeURIComponent(q),12000,0);rows=Array.isArray(ds?.pairs)?ds.pairs.filter(x=>x?.chainId==='solana'):[];}catch(_){}}rows=bestPairsByMint(rows.filter(qxIsValidPickerPair));drawPickerRows(rows,'Token found, but no usable Solana market metadata was returned. Check the contract address or try another token.');}catch(error){drawPickerRows([],'Search temporarily unavailable. Try again or paste the token mint address.');console.warn('QX swap token search failed',error);}};
+   pickOpen?.addEventListener('click',()=>{picker.hidden=false;pickSearch.value='';showMarketTokens();setTimeout(()=>pickSearch.focus(),30);});pickClose?.addEventListener('click',()=>picker.hidden=true);pickGo?.addEventListener('click',runTokenSearch);pickSearch?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();runTokenSearch();}});pickSearch?.addEventListener('input',()=>{clearTimeout(window.__qxSwapTokenSearchTimer);window.__qxSwapTokenSearchTimer=setTimeout(runTokenSearch,350);});
+   paintPickerToken();
    document.getElementById('qxOpenBuy')?.addEventListener('click',()=>open('buy'));
    document.getElementById('qxOpenSell')?.addEventListener('click',()=>open('sell'));
    document.getElementById('qxCloseTradeModal')?.addEventListener('click',close);
+   const settingsBtn=document.getElementById('qxSwapSettingsOpen'),settingsPanel=document.getElementById('qxSwapSettingsPanel'),slippageSelect=document.getElementById('qxSwapSlippage'),feeToggle=document.getElementById('qxSwapShowFees');
+   try{const saved=JSON.parse(localStorage.getItem('qxSwapSettings')||'{}');window.QXSwapSettings={slippage:['auto','50','100','200'].includes(String(saved.slippage))?String(saved.slippage):'auto',showFees:saved.showFees!==false};}catch(_){window.QXSwapSettings={slippage:'auto',showFees:true};}
+   if(slippageSelect)slippageSelect.value=window.QXSwapSettings.slippage;
+   if(feeToggle)feeToggle.checked=window.QXSwapSettings.showFees;
+   const applyFeeVisibility=()=>{const show=!!feeToggle?.checked;document.querySelectorAll('#qxTradeModal .swap-quote').forEach(el=>{el.hidden=!show;});if(window.QXSwapSettings)window.QXSwapSettings.showFees=show;};
+   applyFeeVisibility();
+   settingsBtn?.addEventListener('click',()=>{const isOpen=!settingsPanel.hidden;settingsPanel.hidden=isOpen;settingsBtn.setAttribute('aria-expanded',String(!isOpen));});
+   document.getElementById('qxSwapSettingsDone')?.addEventListener('click',()=>{settingsPanel.hidden=true;settingsBtn?.setAttribute('aria-expanded','false');});
+   slippageSelect?.addEventListener('change',()=>{window.QXSwapSettings.slippage=slippageSelect.value;try{localStorage.setItem('qxSwapSettings',JSON.stringify(window.QXSwapSettings));}catch(_){};const go=document.getElementById('swapNowBtn');if(go){go.disabled=true;const label=go.querySelector('span');if(label)label.textContent='GET FRESH QUOTE';}const status=document.getElementById('swapStatus');if(status)status.textContent='Slippage changed. Request a fresh quote before swapping.';});
+   feeToggle?.addEventListener('change',()=>{applyFeeVisibility();try{localStorage.setItem('qxSwapSettings',JSON.stringify(window.QXSwapSettings));}catch(_){}});
    modal.addEventListener('click',e=>{if(e.target===modal)close();});
    document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modal.classList.contains('open'))close();});
    window.QXCloseTradeModal=close;
@@ -6357,6 +6443,65 @@ body.qx-token-open #detail .qx-full-dex-chart #detailChart{height:350px!importan
 .qx-contract-line code{flex:0 1 auto!important;width:auto!important;max-width:min(42vw,190px)!important;min-width:0!important;text-align:left!important;}
 .qx-contract-line .qx-copy-contract{flex:0 0 auto!important;margin:0!important;justify-self:auto!important;white-space:nowrap!important;}
 @media(max-width:520px){.qx-contract-line{gap:5px!important}.qx-contract-line code{max-width:min(38vw,145px)!important}.qx-contract-line .qx-copy-contract{min-width:0!important;padding:5px 7px!important}}
+</style>
+
+<style id="qx-v160-swap-ticket-redesign">
+/* QX SWAP TICKET: compact exchange layout; all existing quote/execute controls remain wired. */
+#qxTradeModal .qx-trade-modal-card{width:min(100%,410px)!important;max-height:min(90dvh,720px)!important;padding:15px!important;border-radius:20px!important;background:linear-gradient(160deg,#14101f 0%,#0b0b13 100%)!important;border:1px solid rgba(160,125,255,.28)!important;box-shadow:0 26px 90px rgba(0,0,0,.62),inset 0 1px rgba(255,255,255,.035)!important;}
+#qxTradeModal .qx-trade-modal-head{display:flex!important;align-items:center!important;justify-content:space-between!important;margin:0 0 13px!important;padding:0 0 11px!important;border-bottom:1px solid rgba(160,125,255,.15)!important;}
+#qxTradeModal .qx-trade-modal-head strong{font-size:13px!important;letter-spacing:.8px!important;font-weight:900!important;color:#f6f1ff!important;}
+#qxTradeModal .qx-trade-modal-close{width:32px!important;height:32px!important;border-radius:10px!important;background:#211a30!important;border:1px solid rgba(183,140,255,.2)!important;color:#ddd0f5!important;font-size:21px!important;}
+#qxTradeModal .qx-swap-head{display:none!important;}
+#qxTradeModal .swap-box{display:block!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;}
+#qxTradeModal .qx-trade-side{display:none!important;}
+#qxTradeModal .qx-swap-purchase{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:8px!important;}
+#qxTradeModal .qx-swap-purchase .qx-pay-card,#qxTradeModal .qx-swap-purchase .qx-receive-card{display:block!important;min-width:0!important;padding:13px 14px!important;border-radius:15px!important;border:1px solid rgba(160,125,255,.18)!important;background:linear-gradient(145deg,rgba(25,19,39,.98),rgba(13,11,21,.98))!important;}
+#qxTradeModal .qx-swap-purchase .qx-receive-card{border-color:rgba(74,225,166,.24)!important;background:linear-gradient(145deg,rgba(17,35,31,.72),rgba(12,16,21,.98))!important;}
+#qxTradeModal .qx-swap-label{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:8px!important;margin:0 0 8px!important;color:#a99dbb!important;font-size:9px!important;letter-spacing:.8px!important;font-weight:900!important;}
+#qxTradeModal #qxSolUsd,#qxTradeModal #qxReceiveSymbol{color:#c9b8f0!important;font-size:9px!important;white-space:nowrap!important;}
+#qxTradeModal .qx-wallet-balance-line{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:8px!important;margin:0 0 8px!important;padding:0!important;border:0!important;background:transparent!important;color:#8f879f!important;font-size:10px!important;}
+#qxTradeModal .qx-wallet-balance-line strong{color:#d9d2e5!important;font-size:10px!important;font-variant-numeric:tabular-nums!important;}
+#qxTradeModal .qx-swap-value{display:flex!important;align-items:center!important;gap:10px!important;min-height:42px!important;}
+#qxTradeModal .qx-swap-value input{width:100%!important;min-width:0!important;padding:2px 0!important;border:0!important;outline:0!important;background:transparent!important;color:#fff!important;font-size:27px!important;font-weight:850!important;font-variant-numeric:tabular-nums!important;box-shadow:none!important;}
+#qxTradeModal .qx-swap-coin{flex:0 0 auto!important;padding:7px 10px!important;border:1px solid rgba(183,140,255,.2)!important;border-radius:9px!important;background:#211a30!important;color:#eee6ff!important;font-size:11px!important;font-weight:900!important;}
+#qxTradeModal .percent-available,#qxTradeModal .percent-range,#qxTradeModal .percent-foot{display:none!important;}
+#qxTradeModal .percent-buttons{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:6px!important;margin:10px 0 0!important;}
+#qxTradeModal .percent-btn{min-width:0!important;min-height:30px!important;padding:5px 4px!important;border:1px solid rgba(160,125,255,.18)!important;border-radius:8px!important;background:#191426!important;color:#c8bbdc!important;font-size:10px!important;font-weight:850!important;}
+#qxTradeModal .percent-btn:active,#qxTradeModal .percent-btn:focus-visible{border-color:#9b7bff!important;background:rgba(139,92,246,.18)!important;color:#fff!important;}
+#qxTradeModal .qx-swap-direction{display:grid!important;place-items:center!important;position:relative!important;z-index:2!important;width:34px!important;height:34px!important;min-height:34px!important;margin:-2px auto!important;border:1px solid rgba(183,140,255,.32)!important;border-radius:50%!important;background:#251b37!important;color:#e1d2ff!important;font-size:20px!important;box-shadow:0 5px 18px rgba(0,0,0,.25)!important;}
+#qxTradeModal .qx-swap-output{min-height:35px!important;color:#75e8b5!important;font-size:23px!important;font-weight:850!important;line-height:1.3!important;overflow-wrap:anywhere!important;}
+#qxTradeModal .qx-swap-sub{margin-top:5px!important;color:#8f879f!important;font-size:9px!important;}
+#qxTradeModal .swap-quote{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:10px!important;padding:8px 2px!important;border-bottom:1px solid rgba(160,125,255,.10)!important;font-size:10px!important;}
+#qxTradeModal .swap-quote:nth-of-type(2),#qxTradeModal .swap-quote:nth-of-type(3),#qxTradeModal .swap-quote:nth-of-type(4),#qxTradeModal .swap-quote:nth-of-type(5){display:flex!important;}
+#qxTradeModal .swap-quote span:first-child{color:#8f879f!important;}
+#qxTradeModal .swap-quote strong{max-width:68%!important;color:#e4dced!important;font-size:10px!important;font-weight:800!important;text-align:right!important;overflow-wrap:anywhere!important;}
+#qxTradeModal .swap-action#swapNowBtn{display:block!important;width:100%!important;min-height:46px!important;margin:12px 0 0!important;padding:12px!important;border:0!important;border-radius:12px!important;background:linear-gradient(110deg,#8b5cf6,#6f45d5)!important;color:#fff!important;font-size:12px!important;font-weight:900!important;letter-spacing:.5px!important;box-shadow:0 8px 24px rgba(111,69,213,.22)!important;}
+#qxTradeModal .swap-action#swapNowBtn:disabled{opacity:.48!important;box-shadow:none!important;}
+#qxTradeModal .swap-action#swapNowBtn small{display:none!important;}
+#qxTradeModal .swap-status{max-height:96px!important;overflow:auto!important;margin:8px 2px 0!important;padding:0!important;color:#a69bb5!important;font-size:10px!important;line-height:1.45!important;}
+#qxTradeModal .swap-status:empty{display:none!important;}
+@media(max-width:520px){#qxTradeModal{align-items:center!important;padding:9px 8px calc(9px + env(safe-area-inset-bottom))!important;}#qxTradeModal .qx-trade-modal-card{width:min(100%,410px)!important;max-height:calc(100dvh - 18px - env(safe-area-inset-bottom))!important;padding:13px!important;border-radius:17px!important;}#qxTradeModal .qx-swap-purchase .qx-pay-card,#qxTradeModal .qx-swap-purchase .qx-receive-card{padding:11px 12px!important;}#qxTradeModal .qx-swap-value input{font-size:25px!important;}#qxTradeModal .qx-swap-output{font-size:21px!important;}}
+@media(prefers-reduced-motion:no-preference){#qxTradeModal .qx-trade-modal-card{animation:qxSwapEnter .16s ease-out both}@keyframes qxSwapEnter{from{opacity:.65;transform:translateY(7px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}}
+</style>
+
+
+<style id="qx-v161-working-swap-settings">
+#qxTradeModal .qx-trade-head-actions{display:flex;align-items:center;gap:7px}
+#qxTradeModal .qx-settings-open{width:32px;height:32px;border:1px solid rgba(183,140,255,.25);border-radius:10px;background:#211a30;color:#d9c8f7;font-size:17px;cursor:pointer}
+#qxTradeModal .qx-swap-settings-panel{margin:0 0 11px;padding:12px;border:1px solid rgba(160,125,255,.2);border-radius:13px;background:linear-gradient(145deg,#171226,#0d0b15);color:#eee6ff}
+#qxTradeModal .qx-swap-settings-panel[hidden]{display:none!important}
+#qxTradeModal .qx-settings-title{margin:0 0 10px;color:#cbb8f2;font-size:10px;font-weight:900;letter-spacing:1px}
+#qxTradeModal .qx-settings-field{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 9px;color:#b8aec9;font-size:10px}
+#qxTradeModal .qx-settings-field select{width:auto;max-width:58%;padding:8px 9px;border:1px solid #4b386a;border-radius:8px;background:#100c1c;color:#fff;font-size:11px}
+#qxTradeModal .qx-settings-info{display:flex;flex-direction:column;gap:3px;padding:8px 0;border-top:1px solid rgba(160,125,255,.1);font-size:10px}
+#qxTradeModal .qx-settings-info>span{color:#8f879f}
+#qxTradeModal .qx-settings-info strong{color:#e8def7;font-size:10px}
+#qxTradeModal .qx-settings-info small{color:#8f879f;font-size:9px;line-height:1.4}
+#qxTradeModal .qx-settings-check{display:flex;align-items:center;gap:8px;padding:9px 0;border-top:1px solid rgba(160,125,255,.1);color:#d9d2e5;font-size:10px}
+#qxTradeModal .qx-settings-check input{width:15px;height:15px;accent-color:#9b6cff}
+#qxTradeModal .qx-settings-done{width:100%;margin-top:8px;padding:9px;border:0;border-radius:9px;background:#704bd0;color:white;font-size:10px;font-weight:900}
+
+.qx-swap-token-current{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 11px;margin:0 0 10px;border:1px solid rgba(153,103,231,.32);border-radius:11px;background:linear-gradient(110deg,rgba(95,51,151,.19),rgba(20,16,32,.9));}.qx-swap-token-current>span{font-size:9px;font-weight:900;letter-spacing:.8px;color:#a99abf;}.qx-swap-token-current button{display:flex;align-items:center;gap:10px;max-width:75%;border:1px solid #62428c;background:#211633;color:#f5edff;border-radius:8px;padding:8px 10px;font-size:11px;font-weight:900;cursor:pointer;}.qx-swap-token-current button span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}.qx-swap-token-current button small{font-size:8px;color:#c6a6ff;white-space:nowrap;}.qx-swap-token-picker{padding:12px;margin:0 0 12px;border:1px solid #49336b;border-radius:12px;background:#100c1b;}.qx-swap-token-picker[hidden]{display:none!important;}.qx-token-picker-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;color:#f0e7ff;font-size:11px;letter-spacing:.6px;}.qx-token-picker-head button{border:0;background:transparent;color:#c9b6e8;font-size:23px;cursor:pointer;}.qx-token-picker-search{display:flex;gap:7px;}.qx-token-picker-search input{min-width:0;flex:1;border:1px solid #49336b;background:#090712;color:#fff;border-radius:8px;padding:10px;font-size:11px;}.qx-token-picker-search button{border:0;border-radius:8px;background:#8c52e8;color:#fff;padding:0 12px;font-size:9px;font-weight:900;}.qx-token-picker-hint{font-size:9px;line-height:1.4;color:#998eaa;margin:8px 1px;}.qx-token-picker-results{display:grid;gap:5px;max-height:245px;overflow:auto;overscroll-behavior:contain;}.qx-token-picker-row{display:flex;align-items:center;gap:9px;width:100%;min-width:0;text-align:left;padding:8px;border:1px solid #30243f;border-radius:8px;background:#171122;color:#f2eaff;cursor:pointer;}.qx-token-picker-row:active{background:#2b1b42;}.qx-token-picker-row img{width:29px;height:29px;flex:0 0 29px;border-radius:50%;object-fit:cover;background:#292035;}.qx-token-picker-meta{display:flex;flex:1;min-width:0;flex-direction:column;gap:2px;}.qx-token-picker-meta strong{font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}.qx-token-picker-meta small{font-size:8px;color:#a89bb9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}.qx-token-picker-row em{font-style:normal;font-size:9px;color:#bba7d8;white-space:nowrap;}.qx-token-picker-empty{padding:16px 8px;text-align:center;color:#a99ab9;font-size:10px;}
 </style>
 </body>
 </html>
