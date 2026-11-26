@@ -233,6 +233,13 @@ button,select,input,textarea{touch-action:manipulation}button,.btn,.market-tab,.
 .qx-trade-volume small{font-size:8px;color:#8290a3;white-space:nowrap;}
 @media(max-width:520px){.qx-trade-volume strong{font-size:8px}.qx-trade-volume small{font-size:7px}}
 </style>
+
+<style id="qx-phantom-ios-zoom-fix">
+/* Prevent iOS Safari/Phantom WebView from auto-zooming when a form field receives focus. */
+@media (max-width: 768px) {
+  input, select, textarea { font-size: max(16px, 1em) !important; }
+}
+</style>
 </head>
 <body>
 <div class="wrap">
@@ -1975,12 +1982,18 @@ async function qxUploadTokenMetadataUri(name,symbol,description,image,socials={}
  return uri;
 }
 async function qxSendWalletTx(tx,signer,connection,extraSigners=[]){
- for(const kp of extraSigners)tx.partialSign(kp);
+ // Phantom's transaction simulator may reject a transaction that arrives with
+ // additional signatures already attached. Ask the connected wallet to sign
+ // first, then collect the required local Meteora keypair signatures.
  const signed=await signer.signTransaction(tx);
+ if(!signed||typeof signed.partialSign!=="function")throw new Error("The wallet returned an unsupported transaction object. No transaction was submitted.");
+ for(const kp of extraSigners)signed.partialSign(kp);
+ const payerSignature=signed.signatures?.find(x=>x.publicKey?.equals?.(signed.feePayer));
+ if(!payerSignature?.signature)throw new Error("The connected wallet signature is missing. No transaction was submitted.");
  const sig=await connection.sendRawTransaction(signed.serialize(),{skipPreflight:false,preflightCommitment:"confirmed"});
- const bh=tx.recentBlockhash;
+ const bh=signed.recentBlockhash;
  // The transaction object has the blockhash used to build it; confirm with the same blockhash.
- const conf=await connection.confirmTransaction({signature:sig,blockhash:bh,lastValidBlockHeight:tx.lastValidBlockHeight},"confirmed");
+ const conf=await connection.confirmTransaction({signature:sig,blockhash:bh,lastValidBlockHeight:signed.lastValidBlockHeight},"confirmed");
  if(conf.value?.err)throw new Error("On-chain transaction failed: "+JSON.stringify(conf.value.err));
  return sig;
 }
@@ -3080,7 +3093,9 @@ async function qxExecuteJupiterRouterSwap(q){
  const provider=window.QXGetActiveWalletProvider?.();if(typeof provider?.signTransaction!=="function")throw new Error("The connected wallet cannot sign this transaction. Reconnect and try again.");
  await qxLibraryReady;
  const connection=await qxGetHealthyConnection(),build=q.build,owner=new PublicKey(q.walletAddress);
- const all=[...(build.setupInstructions||[]).map(qxBuildApiInstruction),qxBuildApiInstruction(build.swapInstruction),...(build.cleanupInstruction?[qxBuildApiInstruction(build.cleanupInstruction)]:[]),...(build.otherInstructions||[]).map(qxBuildApiInstruction),...(build.tipInstruction?[qxBuildApiInstruction(build.tipInstruction)]:[])];
+ const setup=(build.setupInstructions||[]).map(qxBuildApiInstruction),swap=qxBuildApiInstruction(build.swapInstruction),cleanup=build.cleanupInstruction?[qxBuildApiInstruction(build.cleanupInstruction)]:[],other=(build.otherInstructions||[]).map(qxBuildApiInstruction),tip=build.tipInstruction?[qxBuildApiInstruction(build.tipInstruction)]:[];
+ const all=[...setup,swap,...cleanup,...other,...tip];
+ const allLabels=[...setup.map((_,i)=>`Jupiter setup instruction ${i+1}`),"Jupiter swap instruction",...cleanup.map((_,i)=>`Jupiter cleanup instruction ${i+1}`),...other.map((_,i)=>`Jupiter additional instruction ${i+1}`),...tip.map(() => "Jupiter tip instruction")];
  const lookup=[];
  for(const address of Object.keys(build.addressesByLookupTableAddress||{})){
   const result=await connection.getAddressLookupTable(new PublicKey(address));
@@ -3093,12 +3108,38 @@ async function qxExecuteJupiterRouterSwap(q){
  // produces a duplicate Compute Budget variant and can fail simulation before
  // the wallet is ever asked to sign. Preserve the other Jupiter budget settings.
  const budget=(build.computeBudgetInstructions||[]).map(qxBuildApiInstruction).filter(ix=>!(ix.programId?.equals?.(ComputeBudgetProgram.programId)&&ix.data?.[0]===2));
- const compile=(units)=>new VersionedTransaction(new TransactionMessage({payerKey:owner,recentBlockhash:latest.blockhash,instructions:[ComputeBudgetProgram.setComputeUnitLimit({units}),...budget,...all]}).compileToV0Message(lookup));
+ const instructionLabels=["QX compute unit limit",...budget.map((_,i)=>`Jupiter compute budget instruction ${i+1}`),...allLabels];
+ const makeInstructions=(units)=>[ComputeBudgetProgram.setComputeUnitLimit({units}),...budget,...all];
+ const compile=(units)=>new VersionedTransaction(new TransactionMessage({payerKey:owner,recentBlockhash:latest.blockhash,instructions:makeInstructions(units)}).compileToV0Message(lookup));
  let tx=compile(1400000);
  const simulation=await connection.simulateTransaction(tx,{commitment:"confirmed",sigVerify:false});
- if(simulation.value?.err)throw new Error("Jupiter Router transaction simulation failed: "+JSON.stringify(simulation.value.err)+". No transaction was signed.");
+ if(simulation.value?.err){
+  const failedIndex=Array.isArray(simulation.value.err?.InstructionError)?Number(simulation.value.err.InstructionError[0]):-1;
+  let failedProgram="unknown";
+  try{const compiled=tx.message.compiledInstructions?.[failedIndex];const keys=tx.message.getAccountKeys({addressLookupTableAccounts:lookup});if(compiled)failedProgram=keys.get(compiled.programIdIndex)?.toBase58()||failedProgram;}catch(mapError){console.warn("QX could not map failed Jupiter instruction:",mapError);}
+  const logs=Array.isArray(simulation.value.logs)?simulation.value.logs:[];
+  const diagnostic={error:simulation.value.err,failedInstructionIndex:failedIndex,failedInstructionLabel:instructionLabels[failedIndex]||"Unmapped instruction",failedProgram,logs,unitsConsumed:simulation.value.unitsConsumed||null,slot:simulation.context?.slot||null,at:new Date().toISOString()};
+  window.QXLastSwapSimulationDiagnostics=diagnostic;
+  const relevantLogs=logs.slice(-12).join("\n");
+  const details=` Failed instruction: ${failedIndex} (${diagnostic.failedInstructionLabel}). Program: ${failedProgram}.${relevantLogs?" Simulation logs:\n"+relevantLogs:" No simulation logs were returned."}`;
+  throw new Error("Jupiter Router transaction simulation failed: "+JSON.stringify(simulation.value.err)+"."+details+" No transaction was signed.");
+ }
  const used=Number(simulation.value?.unitsConsumed||0),units=used>0?Math.min(1400000,Math.ceil(used*1.2)):1400000;
  tx=compile(units);
+ // The compute-unit limit changes the compiled message. Simulate this exact
+ // final transaction again before asking the wallet to sign it.
+ const finalSimulation=await connection.simulateTransaction(tx,{commitment:"confirmed",sigVerify:false});
+ if(finalSimulation.value?.err){
+  const failedIndex=Array.isArray(finalSimulation.value.err?.InstructionError)?Number(finalSimulation.value.err.InstructionError[0]):-1;
+  let failedProgram="unknown";
+  try{const compiled=tx.message.compiledInstructions?.[failedIndex];const keys=tx.message.getAccountKeys({addressLookupTableAccounts:lookup});if(compiled)failedProgram=keys.get(compiled.programIdIndex)?.toBase58()||failedProgram;}catch(mapError){console.warn("QX could not map final Jupiter instruction:",mapError);}
+  const logs=Array.isArray(finalSimulation.value.logs)?finalSimulation.value.logs:[];
+  const diagnostic={error:finalSimulation.value.err,failedInstructionIndex:failedIndex,failedInstructionLabel:instructionLabels[failedIndex]||"Unmapped instruction",failedProgram,logs,unitsConsumed:finalSimulation.value.unitsConsumed||null,slot:finalSimulation.context?.slot||null,at:new Date().toISOString(),stage:"final_transaction_before_wallet_signature"};
+  window.QXLastSwapSimulationDiagnostics=diagnostic;
+  const relevantLogs=logs.slice(-12).join("\n");
+  const details=` Failed instruction: ${failedIndex} (${diagnostic.failedInstructionLabel}). Program: ${failedProgram}.${relevantLogs?" Simulation logs:\n"+relevantLogs:" No simulation logs were returned."}`;
+  throw new Error("Final Jupiter transaction simulation failed: "+JSON.stringify(finalSimulation.value.err)+"."+details+" No transaction was signed.");
+ }
  qxSetSwapStatus("Router route simulated successfully. Approve the real transaction in your wallet…");
  const signed=await provider.signTransaction(tx);if(!signed?.serialize)throw new Error("The wallet did not return a signed Router transaction.");
  if(q.tokenMint!==selectedToken?.baseToken?.address||q.walletAddress!==walletAddress||Number(q.amount)!==Number($("tradeAmountInput")?.value||0))throw new Error("Trade details changed during wallet approval. The signed transaction was not submitted.");
