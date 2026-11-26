@@ -3086,6 +3086,22 @@ function qxBuildApiInstruction(ix){
  if(!ix?.programId||!Array.isArray(ix.accounts)||typeof ix.data!=="string")throw new Error("Jupiter returned a malformed swap instruction.");
  return new TransactionInstruction({programId:new PublicKey(ix.programId),keys:ix.accounts.map(a=>({pubkey:new PublicKey(a.pubkey),isSigner:!!a.isSigner,isWritable:!!a.isWritable})),data:qxB64ToBytes(ix.data)});
 }
+function qxGetAtaFundingShortfall(logs,failedProgram){
+ const ataProgram="ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL";
+ if(String(failedProgram||"")!==ataProgram)return null;
+ const line=(Array.isArray(logs)?logs:[]).join("\n").match(/Transfer:\s*insufficient lamports\s+(\d+),\s*need\s+(\d+)/i);
+ if(!line)return null;
+ try{
+  const available=BigInt(line[1]),required=BigInt(line[2]),shortfall=required>available?required-available:0n;
+  if(shortfall<=0n)return null;
+  return {availableLamports:available.toString(),requiredLamports:required.toString(),shortfallLamports:shortfall.toString(),availableSol:(Number(available)/1e9).toFixed(9),requiredSol:(Number(required)/1e9).toFixed(9),shortfallSol:(Number(shortfall)/1e9).toFixed(9)};
+ }catch(_){return null;}
+}
+function qxAtaFundingMessage(funding){
+ if(!funding)return "";
+ if(String(qxLanguage||"en").toLowerCase().startsWith("ar"))return " نقص SOL لإنشاء حساب التوكن (ATA): المتاح "+funding.availableSol+" SOL، والمطلوب للحساب "+funding.requiredSol+" SOL، والنقص "+funding.shortfallSol+" SOL. هذا المبلغ للحساب فقط؛ تحتاج أيضاً مبلغ المبادلة ورسوم الشبكة. أضف SOL ثم اطلب سعراً جديداً.";
+ return " Insufficient SOL to create the token account (ATA): available "+funding.availableSol+" SOL; ATA setup requires "+funding.requiredSol+" SOL; short by "+funding.shortfallSol+" SOL. This is ATA funding only; the swap input and network fee are additional. Add SOL, then request a fresh quote.";
+}
 async function qxExecuteJupiterRouterSwap(q){
  if(!q||q.route!=="JUPITER_BUILD"||!q.build)throw new Error("No Jupiter Router transaction is ready.");
  if(Date.now()-Number(q.quotedAt||0)>=25000)throw new Error("The Router quote expired. Request a fresh quote.");
@@ -3118,10 +3134,11 @@ async function qxExecuteJupiterRouterSwap(q){
   let failedProgram="unknown";
   try{const compiled=tx.message.compiledInstructions?.[failedIndex];const keys=tx.message.getAccountKeys({addressLookupTableAccounts:lookup});if(compiled)failedProgram=keys.get(compiled.programIdIndex)?.toBase58()||failedProgram;}catch(mapError){console.warn("QX could not map failed Jupiter instruction:",mapError);}
   const logs=Array.isArray(simulation.value.logs)?simulation.value.logs:[];
-  const diagnostic={error:simulation.value.err,failedInstructionIndex:failedIndex,failedInstructionLabel:instructionLabels[failedIndex]||"Unmapped instruction",failedProgram,logs,unitsConsumed:simulation.value.unitsConsumed||null,slot:simulation.context?.slot||null,at:new Date().toISOString()};
+  const ataFunding=qxGetAtaFundingShortfall(logs,failedProgram);
+  const diagnostic={error:simulation.value.err,failedInstructionIndex:failedIndex,failedInstructionLabel:instructionLabels[failedIndex]||"Unmapped instruction",failedProgram,logs,ataFunding,unitsConsumed:simulation.value.unitsConsumed||null,slot:simulation.context?.slot||null,at:new Date().toISOString()};
   window.QXLastSwapSimulationDiagnostics=diagnostic;
   const relevantLogs=logs.slice(-12).join("\n");
-  const details=` Failed instruction: ${failedIndex} (${diagnostic.failedInstructionLabel}). Program: ${failedProgram}.${relevantLogs?" Simulation logs:\n"+relevantLogs:" No simulation logs were returned."}`;
+  const details=` Failed instruction: ${failedIndex} (${diagnostic.failedInstructionLabel}). Program: ${failedProgram}.${relevantLogs?" Simulation logs:\n"+relevantLogs:" No simulation logs were returned."}`+qxAtaFundingMessage(ataFunding);
   throw new Error("Jupiter Router transaction simulation failed: "+JSON.stringify(simulation.value.err)+"."+details+" No transaction was signed.");
  }
  const used=Number(simulation.value?.unitsConsumed||0),units=used>0?Math.min(1400000,Math.ceil(used*1.2)):1400000;
@@ -3134,10 +3151,11 @@ async function qxExecuteJupiterRouterSwap(q){
   let failedProgram="unknown";
   try{const compiled=tx.message.compiledInstructions?.[failedIndex];const keys=tx.message.getAccountKeys({addressLookupTableAccounts:lookup});if(compiled)failedProgram=keys.get(compiled.programIdIndex)?.toBase58()||failedProgram;}catch(mapError){console.warn("QX could not map final Jupiter instruction:",mapError);}
   const logs=Array.isArray(finalSimulation.value.logs)?finalSimulation.value.logs:[];
-  const diagnostic={error:finalSimulation.value.err,failedInstructionIndex:failedIndex,failedInstructionLabel:instructionLabels[failedIndex]||"Unmapped instruction",failedProgram,logs,unitsConsumed:finalSimulation.value.unitsConsumed||null,slot:finalSimulation.context?.slot||null,at:new Date().toISOString(),stage:"final_transaction_before_wallet_signature"};
+  const ataFunding=qxGetAtaFundingShortfall(logs,failedProgram);
+  const diagnostic={error:finalSimulation.value.err,failedInstructionIndex:failedIndex,failedInstructionLabel:instructionLabels[failedIndex]||"Unmapped instruction",failedProgram,logs,ataFunding,unitsConsumed:finalSimulation.value.unitsConsumed||null,slot:finalSimulation.context?.slot||null,at:new Date().toISOString(),stage:"final_transaction_before_wallet_signature"};
   window.QXLastSwapSimulationDiagnostics=diagnostic;
   const relevantLogs=logs.slice(-12).join("\n");
-  const details=` Failed instruction: ${failedIndex} (${diagnostic.failedInstructionLabel}). Program: ${failedProgram}.${relevantLogs?" Simulation logs:\n"+relevantLogs:" No simulation logs were returned."}`;
+  const details=` Failed instruction: ${failedIndex} (${diagnostic.failedInstructionLabel}). Program: ${failedProgram}.${relevantLogs?" Simulation logs:\n"+relevantLogs:" No simulation logs were returned."}`+qxAtaFundingMessage(ataFunding);
   throw new Error("Final Jupiter transaction simulation failed: "+JSON.stringify(finalSimulation.value.err)+"."+details+" No transaction was signed.");
  }
  qxSetSwapStatus("Router route simulated successfully. Approve the real transaction in your wallet…");
