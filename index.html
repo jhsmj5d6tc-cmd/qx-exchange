@@ -420,6 +420,17 @@ body{padding-bottom:calc(76px + env(safe-area-inset-bottom))!important}
 }
 @media(prefers-reduced-motion:reduce){.qx-bottom-item{transition:none!important}}
 </style>
+<style id="qx-v166-independent-pages-nav">
+#tradePage{min-height:55vh}
+#tradePage #detail{position:relative;top:auto;align-self:stretch;width:100%;margin-top:12px}
+#tradePage .qx-trade-empty{max-width:720px;margin:24px auto;text-align:center;padding:28px 18px}
+#tradePage .qx-trade-empty h3{margin:0 0 8px}
+#tradePage .qx-trade-empty p{margin:0 0 16px}
+.qx-bottom-nav{display:grid!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important}
+.qx-bottom-item{cursor:pointer!important;touch-action:manipulation!important}
+body{padding-bottom:calc(78px + env(safe-area-inset-bottom))!important}
+@media(max-width:560px){.qx-bottom-nav{min-height:64px!important}}
+</style>
 </head>
 <body>
 <div class="wrap">
@@ -571,6 +582,15 @@ body{padding-bottom:calc(76px + env(safe-area-inset-bottom))!important}
  </section>
 </main>
 
+<main id="tradePage" class="page qx-trade-page" aria-label="Trade">
+ <div class="market-heading"><h2>Trade Solana Tokens</h2><span class="tag">QX TRADE</span></div>
+ <section class="panel qx-trade-empty" id="qxTradeEmptyState">
+  <h3>Choose a token to trade</h3>
+  <p class="small">Open any token from Discover. Its chart, global trades, and buy/sell controls will appear here.</p>
+  <button class="btn primary" type="button" id="qxTradeDiscoverBtn">Discover tokens</button>
+ </section>
+</main>
+
 <main id="marketsPage" class="page active qx-v2-markets">
   <section class="qx-discovery-hero">
     <div class="qx-hero-copy">
@@ -578,7 +598,7 @@ body{padding-bottom:calc(76px + env(safe-area-inset-bottom))!important}
       <h1>Discover what launches next.</h1>
       <p>Find new Solana tokens early, watch live market movement, create your own token and trade without leaving QX.</p>
       <div class="qx-hero-actions">
-        <button class="btn primary" type="button" onclick="showPage('createPage')">＋ CREATE TOKEN</button>
+        <button class="btn primary" type="button" >＋ CREATE TOKEN</button>
         <button class="btn qx-ghost-btn" type="button" onclick="showPage('launchPage')">↗ LAUNCH A MARKET</button>
         <button class="btn qx-ghost-btn" type="button" onclick="document.querySelector('#marketTabs [data-category=newest]')?.click(); document.querySelector('#marketTabs')?.scrollIntoView({behavior:'smooth',block:'center'})" aria-label="Discover newest markets">→</button>
       </div>
@@ -601,11 +621,11 @@ body{padding-bottom:calc(76px + env(safe-area-inset-bottom))!important}
   <section class="qx-market-shell">
     <div class="qx-market-head">
       <div><span class="qx-section-kicker">MARKETS</span><h2>Solana market terminal</h2></div>
-      <div class="qx-market-head-actions"><button class="qx-icon-btn" type="button" title="Refresh markets" onclick="window.QXRefreshMarkets?.()">↻</button><button class="btn primary" type="button" onclick="showPage('createPage')">＋ CREATE</button></div>
+      <div class="qx-market-head-actions"><button class="qx-icon-btn" type="button" title="Refresh markets" onclick="window.QXRefreshMarkets?.()">↻</button><button class="btn primary" type="button" >＋ CREATE</button></div>
     </div>
     <div class="qx-market-toolbar">
       <div class="qx-search-wrap"><span>⌕</span><input id="search" type="search" aria-label="Search Solana tokens by name, symbol, or contract address" placeholder="Search token, symbol or contract" autocomplete="off" enterkeyhint="search"><button id="searchBtn" type="button">SEARCH</button></div>
-      <div class="qx-quick-links"><button type="button" onclick="showPage('walletPage')">PORTFOLIO</button><button type="button" onclick="showPage('launchPage')">LAUNCH</button></div>
+      <div class="qx-quick-links"><button type="button" >PORTFOLIO</button><button type="button" onclick="showPage('launchPage')">LAUNCH</button></div>
     </div>
     <div class="qx-filter-row">
       <div class="market-tabs" id="marketTabs">
@@ -754,16 +774,16 @@ body{padding-bottom:calc(76px + env(safe-area-inset-bottom))!important}
 </main>
 
 <nav class="qx-bottom-nav" id="qxBottomNav" aria-label="Main navigation" dir="ltr">
- <button class="qx-bottom-item" type="button" data-qx-tab="wallet" aria-label="Wallet" title="Wallet" onclick="showPage('walletPage')">
+ <button class="qx-bottom-item" type="button" data-qx-tab="wallet" aria-label="Wallet" title="Wallet" >
   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 7.5A2.5 2.5 0 0 1 6 5h13a1.5 1.5 0 0 1 1.5 1.5V19H6a2.5 2.5 0 0 1-2.5-2.5z"/><path d="M3.5 8H18a2 2 0 0 1 2 2v2h-5a2 2 0 0 0 0 4h5"/><path d="M15 14h.01"/></svg>
  </button>
- <button class="qx-bottom-item active" type="button" data-qx-tab="discover" aria-label="Discover" title="Discover" onclick="showPage('marketsPage')">
+ <button class="qx-bottom-item active" type="button" data-qx-tab="discover" aria-label="Discover" title="Discover" >
   <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7.5"/><path d="m16.5 16.5 4 4M13.8 8.2l-1.6 4-4 1.6 1.6-4z"/></svg>
  </button>
  <button class="qx-bottom-item" type="button" data-qx-tab="trade" aria-label="Trade" title="Trade" id="qxBottomTrade">
   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5M4 19h17"/><path d="m7 15 4-4 3 2 5-7"/><path d="M15.5 6H19v3.5"/></svg>
  </button>
- <button class="qx-bottom-item" type="button" data-qx-tab="create" aria-label="Create Token" title="Create Token" onclick="showPage('createPage')">
+ <button class="qx-bottom-item" type="button" data-qx-tab="create" aria-label="Create Token" title="Create Token" >
   <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 8v8M8 12h8"/></svg>
  </button>
 </nav>
@@ -859,6 +879,11 @@ function showPage(id){
   b.classList.toggle("active",active);
   if(active)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current");
  });
+ document.querySelectorAll(".qx-bottom-item").forEach(b=>{
+  const active=(id==="walletPage"&&b.dataset.qxTab==="wallet")||(id==="marketsPage"&&b.dataset.qxTab==="discover")||(id==="tradePage"&&b.dataset.qxTab==="trade")||(id==="createPage"&&b.dataset.qxTab==="create");
+  b.classList.toggle("active",active);
+  if(active)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current");
+ });
  qxCloseMainMenu();
  window.dispatchEvent(new CustomEvent("QXPageChanged",{detail:{pageId:id}}));
  window.scrollTo({top:0,behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"});
@@ -894,14 +919,28 @@ document.addEventListener("click",e=>{
 });
 document.body.classList.remove("qx-wallet-active");
 
-document.getElementById("qxBottomTrade")?.addEventListener("click",()=>{
- if(selectedToken&&typeof window.QXOpenToken==="function"){window.QXOpenToken(selectedToken);return;}
- showPage("marketsPage");
- const list=document.getElementById("tokenResults");if(list)list.scrollIntoView({behavior:"smooth",block:"start"});
+document.getElementById("qxBottomNav")?.addEventListener("click",event=>{
+ const button=event.target.closest("button[data-qx-tab]");if(!button)return;
+ const tab=button.dataset.qxTab;
+ const pages={wallet:"walletPage",discover:"marketsPage",trade:"tradePage",create:"createPage"};
+ const page=pages[tab];if(!page)return;
+ if(tab!=="trade"&&document.body.classList.contains("qx-token-open"))window.QXCloseTokenTerminal?.();
+ if(tab==="trade"){
+  const detail=document.getElementById("detail"),empty=document.getElementById("qxTradeEmptyState");
+  const hasToken=!!window.__QXSelectedToken&&document.body.classList.contains("qx-token-open");
+  if(detail){detail.hidden=!hasToken;detail.style.display=hasToken?"block":"none";}
+  if(empty)empty.hidden=hasToken;
+ }
+ showPage(page);
 });
+document.getElementById("qxTradeDiscoverBtn")?.addEventListener("click",()=>showPage("marketsPage"));
 window.addEventListener("QXPageChanged",e=>{
  const id=e.detail?.pageId;
- document.querySelectorAll(".qx-bottom-item").forEach(b=>b.classList.toggle("active",(id==="walletPage"&&b.dataset.qxTab==="wallet")||(id==="marketsPage"&&b.dataset.qxTab==="discover")||(id==="createPage"&&b.dataset.qxTab==="create")));
+ document.querySelectorAll(".qx-bottom-item").forEach(b=>{
+  const active=(id==="walletPage"&&b.dataset.qxTab==="wallet")||(id==="marketsPage"&&b.dataset.qxTab==="discover")||(id==="tradePage"&&b.dataset.qxTab==="trade")||(id==="createPage"&&b.dataset.qxTab==="create");
+  b.classList.toggle("active",active);
+  if(active)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current");
+ });
 });
 
 const qxWpModal=document.getElementById("qxWhitePaperModal");
@@ -4348,9 +4387,11 @@ function openToken(token){
  const percentRange=$("percentRange");if(percentRange)percentRange.value="25";
  const detail=$("detail");if(!detail)return;detail.style.display="block";
  pendingSwapOrder=null;$("swapNowBtn").disabled=true;
- /* The token detail terminal remains inside Markets; opening it does not switch to a separate exchange page. */
- const marketsPage=$("marketsPage");
- if(marketsPage){marketsPage.classList.add("active");marketsPage.setAttribute("aria-hidden","false");marketsPage.style.display="block";if("inert" in marketsPage)marketsPage.inert=false;}
+ /* Token selection opens the dedicated Trade page; Discover remains a separate screen. */
+ const emptyTrade=$("qxTradeEmptyState");if(emptyTrade)emptyTrade.hidden=true;
+ if(typeof showPage==="function")showPage("tradePage");
+ const tradePage=$("tradePage");
+ if(tradePage){tradePage.classList.add("active");tradePage.setAttribute("aria-hidden","false");tradePage.style.display="block";if("inert" in tradePage)tradePage.inert=false;}
 
  $("detailName").textContent=cleanTokenText(token.baseToken?.name,"Unknown Token");$("detailSymbol").textContent=cleanTokenText(token.baseToken?.symbol,"TOKEN"); const qxBadge=$("detailQxLaunchBadge");if(qxBadge)qxBadge.style.display=token?.qxVerifiedLaunch?"inline-block":"none";$("detailPrice").textContent=qxNum(token.priceUsd)>0?qxFormatTokenPrice(token.priceUsd):"Awaiting live price";
  const ch=qxNum(token.priceChange?.h24);$("detailChange").textContent=ch?(ch>0?"+":"")+ch.toFixed(2)+"%":"—";$("detailChange").className="detail-change "+(ch>0?"up":ch<0?"down":"neutral");
@@ -4390,9 +4431,7 @@ $("tokenBackBtn")?.addEventListener("click",function(e){
  try{chartHost?.__qxResizeObserver?.disconnect();}catch(_){}
  if(qxTradesRefreshTimer){clearInterval(qxTradesRefreshTimer);qxTradesRefreshTimer=null;}
  const detail=document.getElementById("detail");if(detail){detail.style.display="none";detail.hidden=true;}
- const markets=document.getElementById("marketsPage");if(markets){markets.classList.add("active");markets.setAttribute("aria-hidden","false");markets.style.display="block";if("inert" in markets)markets.inert=false;}
- document.querySelectorAll(".page").forEach(p=>{if(p!==markets){p.classList.remove("active");p.setAttribute("aria-hidden","true");if("inert" in p)p.inert=true;}});
- document.querySelectorAll(".qx-nav-item").forEach(b=>b.classList.toggle("active",b.dataset.page==="marketsPage"));
+ if(typeof showPage==="function")showPage("marketsPage");
  try{history.replaceState({},"",location.pathname+location.search);}catch(_){ }
  window.scrollTo(0,0);
  const market=document.getElementById("tokenResults");if(market)setTimeout(()=>market.scrollIntoView({behavior:"smooth",block:"start"}),60);
@@ -5475,15 +5514,11 @@ void loadMarket().then(()=>qxRefreshPublicLiveSnapshots()).catch(e=>console.warn
     const tx=$('qxTxBtn');if(tx)tx.onclick=()=>loadTransactions(String(window.QXTerminalTokenMint||mint));
   }
   function ensureTerminalPlacement(){
-    const detail=$("detail"),markets=$("marketsPage");
-    if(!detail||!markets)return false;
-    // Keep the detail terminal inside Markets. Moving it outside the market page breaks the
-    // market/detail lifecycle and can leave an empty terminal after navigation.
-    if(detail.parentElement!==markets){
-      const anchor=markets.querySelector(".qx-market-shell");
-      if(anchor&&anchor.parentElement===markets)anchor.insertAdjacentElement("afterend",detail);
-      else markets.appendChild(detail);
-    }
+    const detail=$("detail"),trade=$("tradePage");
+    if(!detail||!trade)return false;
+    // The token terminal has one stable home: the independent Trade page.
+    // Market discovery remains mounted separately and only opens this terminal on selection.
+    if(detail.parentElement!==trade)trade.appendChild(detail);
     return true;
   }
   window.QXEnsureTerminalPlacement=ensureTerminalPlacement;
@@ -5535,8 +5570,7 @@ void loadMarket().then(()=>qxRefreshPublicLiveSnapshots()).catch(e=>console.warn
     try{qxCloseTokenTerminal();}catch(_){ }
     document.body.classList.remove('qx-token-open','qx-trade-modal-open');
     const detail=$('detail');if(detail){detail.style.display='none';detail.hidden=true;}
-    const markets=$('marketsPage');if(markets){markets.classList.add('active');markets.setAttribute('aria-hidden','false');markets.style.display='block';if('inert' in markets)markets.inert=false;}
-    document.querySelectorAll('.page').forEach(p=>{if(p!==markets){p.classList.remove('active');p.setAttribute('aria-hidden','true');if('inert' in p)p.inert=true;}});
+    if(typeof showPage==='function')showPage('marketsPage');
     window.scrollTo(0,0);
     return false;
   };
@@ -5548,14 +5582,16 @@ void loadMarket().then(()=>qxRefreshPublicLiveSnapshots()).catch(e=>console.warn
     window.__QXSelectedToken=token;
     window.QXTerminalTokenMint=String(token.baseToken.address);
     if(!ensureTerminalPlacement())return;
-    const detail=$('detail'),markets=$('marketsPage');
-    if(markets){markets.classList.add('active');markets.setAttribute('aria-hidden','false');markets.style.display='block';if('inert' in markets)markets.inert=false;}
+    const detail=$('detail'),trade=$('tradePage');
+    if(trade){trade.classList.add('active');trade.setAttribute('aria-hidden','false');trade.style.display='block';if('inert' in trade)trade.inert=false;}
+    const empty=$('qxTradeEmptyState');if(empty)empty.hidden=true;
     detail.hidden=false;
     detail.removeAttribute('hidden');
     detail.style.display='block';
     document.body.classList.add('qx-token-open');
     setWatchButton(token);
     setupOnchain(token);
+    if(typeof showPage==='function')showPage('tradePage');
     detail.scrollIntoView({behavior:'smooth',block:'start'});
   };
   // One authoritative entry point: preserve the existing live data loader, then enforce one visible terminal.
@@ -5865,148 +5901,129 @@ void loadMarket().then(()=>qxRefreshPublicLiveSnapshots()).catch(e=>console.warn
 <script id="qx-i18n-controller">
 (()=>{
  const langSelect=document.getElementById('qxLanguage');if(!langSelect)return;
- const originalApply=window.qxApplyLanguage;
+ const originalApply=window.QXApplyBaseLanguage||window.qxApplyLanguage;
  const dictionaries={
  en:{'连接钱包':'Connect Wallet','钱包':'Wallet','创建代币':'Create Token','市场':'Markets','广告':'Advertisements','我的资产':'My Assets','导航':'NAVIGATION','偏好设置':'PREFERENCES','语言':'Language','货币':'Currency','Solana 市场':'Solana Markets','全部代币':'All Coins','新代币':'New Coins','涨幅榜':'Top Gainers','跌幅榜':'Top Losers','热门':'Trending','成交量':'Top Volume','搜索':'Search','搜索名称、代码或合约地址':'Search name, symbol or contract','返回市场':'BACK TO MARKETS','QX 实时图表':'QX CHART','交易':'TRADES','买入':'BUY','卖出':'SELL','支付':'YOU PAY','收到':'YOU RECEIVE','路径':'Route','确认兑换':'CONFIRM SWAP','更新报价':'UPDATE QUOTE','连接钱包查看资产':'Connect your wallet to view assets','刷新':'Refresh','实时余额':'Balance','链上':'ON-CHAIN','资产':'Asset','余额':'Balance','价值':'Value','市值 / FDV':'Market Cap / FDV','流动性':'Liquidity','24小时成交量':'24h Volume','24小时交易笔数':'24h Transactions','持有人':'Holders','网络':'NETWORK','返回市场':'BACK TO MARKETS','广告标题':'Advertisement title','项目或代币名称':'Project or token name','写下广告内容':'Write your advertisement here...'},
  ar:{'Connect Wallet':'ربط المحفظة','Wallet':'المحفظة','Create Token':'إنشاء عملة','Markets':'الأسواق','Advertisements':'الإعلانات','My Assets':'أصولي','NAVIGATION':'التنقل','PREFERENCES':'التفضيلات','Language':'اللغة','Currency':'العملة','Solana Markets':'أسواق سولانا','All Coins':'كل العملات','New Coins':'عملات جديدة','Top Gainers':'الأعلى ارتفاعاً','Top Losers':'الأعلى انخفاضاً','Trending':'الرائجة','Top Volume':'الأعلى تداولاً','Search':'بحث','Search name, symbol or contract':'ابحث بالاسم أو الرمز أو عنوان العقد','BACK TO MARKETS':'العودة إلى الأسواق','QX CHART':'الرسم البياني من QX','TRADES':'التداولات','BUY':'شراء','SELL':'بيع','YOU PAY':'أنت تدفع','YOU RECEIVE':'أنت تستلم','Route':'مسار التداول','CONFIRM SWAP':'تأكيد المبادلة','UPDATE QUOTE':'تحديث السعر','Connect your wallet to view assets.':'اربط محفظتك لعرض الأصول','Refresh':'تحديث','Balance':'الرصيد المباشر','ON-CHAIN':'على الشبكة','Asset':'الأصل','Balance':'الرصيد','Value':'القيمة','Market Cap / FDV':'القيمة السوقية / FDV','Liquidity':'السيولة','24h Volume':'حجم التداول خلال 24 ساعة','24h Transactions':'معاملات 24 ساعة','Holders':'المالكون','NETWORK':'الشبكة','Creator Dashboard':'لوحة المنشئ','Add advertisement':'إضافة إعلان','No sponsored advertisements yet.':'لا توجد إعلانات ممولة حالياً.','Featured projects':'مشاريع مميزة','Sponsored':'إعلانات ممولة','Total price':'السعر الإجمالي','Estimated SOL payment':'الدفع التقديري بعملة SOL','PAY WITH CONNECTED WALLET':'ادفع بالمحفظة المتصلة','Close':'إغلاق','My orders & executions':'أوامري والتنفيذات','Refresh history':'تحديث السجل','Private to the connected wallet. Open limit orders can be cancelled before they are filled.':'السجل خاص بالمحفظة المتصلة. يمكنك إلغاء أوامر الحد المفتوحة قبل تنفيذها.','Connect and authenticate your wallet to load your private order history.':'اربط محفظتك وسجّل الدخول لعرض سجل أوامرك الخاص.','My executions':'تنفيذاتي','No orders recorded for this wallet yet.':'لا توجد أوامر مسجلة لهذه المحفظة بعد.','No executions for this wallet yet.':'لا توجد تنفيذات لهذه المحفظة بعد.','Cancel':'إلغاء','Fee:':'الرسوم:','maker':'صانع السوق','taker':'آخذ السيولة','open':'مفتوح','partially_filled':'منفذ جزئياً','filled':'مكتمل','cancelled':'ملغي','buy':'شراء','sell':'بيع','Estimated total / proceeds (1% fee)':'الإجمالي / صافي العائد التقديري (رسوم 1%)','Completed spot trades charge a 1% fee to each side; the estimate above includes that fee.':'تُخصم رسوم 1% من كل طرف عند تنفيذ صفقة فورية، والتقدير أعلاه يشمل الرسوم.','this is a spot limit-order interface backed by QX\'s internal ledger and matching function.':'هذه واجهة أوامر تداول فوري لدى QX، وتعتمد على دفتر QX الداخلي ومحرك المطابقة.',"Launch Market":"إطلاق السوق","View All":"عرض الكل","GLOBAL BUYS & SELLS":"عمليات الشراء والبيع العامة","VOLUME":"الحجم","WALLET":"المحفظة","REFRESH CREATOR DATA":"تحديث بيانات المنشئ","Quick preset: 1 SOL initial market cap · 10 SOL graduation target · no initial buy. Use Launch Market for custom settings.":"إعداد سريع: قيمة سوقية أولية 1 SOL · هدف التخرج 10 SOL · دون شراء أولي. استخدم إطلاق السوق للإعدادات المخصصة.","Create a Solana token and launch its Meteora DBC market with one wallet approval.":"أنشئ عملة سولانا وأطلق سوقها عبر Meteora DBC بموافقة واحدة من المحفظة.","QX token creation fee: 0 SOL. You pay Solana network fees and the required token and Meteora account rent only.":"رسوم إنشاء عملة QX: 0 SOL. تدفع رسوم شبكة سولانا وإيجار حسابات العملة وMeteora المطلوبة فقط.","Direct QX Meteora swaps: 1.00% to QX. Jupiter routes: 1.00% total referral fee; QX receives 0.80% after Jupiter’s 20% share. No fee is charged on failed swaps.":"مبادلات Meteora المباشرة: 1.00% إلى QX. مسارات Jupiter: رسوم إحالة إجمالية 1.00%، وتحصل QX على 0.80% بعد حصة Jupiter البالغة 20%. لا تُفرض رسوم على المبادلات الفاشلة.","Fee confirmed in quote":"تُؤكد الرسوم في عرض السعر","No Solana markets with a verified price, liquidity and token image are ready in this category. QX will retry the feeds automatically.":"لا توجد أسواق سولانا جاهزة في هذا التصنيف بسعر وسيولة وصورة موثوقة. ستعيد QX محاولة جلب البيانات تلقائياً.","No recently created Solana markets were found in the rolling 30-day discovery window. QX is continuing to refresh new-pool feeds.":"لم يتم العثور على أسواق سولانا أُنشئت حديثاً ضمن نافذة الاكتشاف المتحركة لمدة 30 يوماً. تواصل QX تحديث بيانات المجمعات الجديدة.","No new markets with verified price, liquidity and token image yet.":"لا توجد أسواق جديدة بسعر وسيولة وصورة عملة موثوقة حتى الآن.","Create a token mint and launch a real Meteora DBC market on Solana mainnet. Your wallet approves the on-chain launch transactions.":"أنشئ عملة سولانا وأطلق سوقها عبر Meteora DBC. ستوافق محفظتك على معاملات الإطلاق على الشبكة.","Connect your wallet to load your launches.":"اربط محفظتك لعرض العملات التي أنشأتها.","Open main menu":"فتح القائمة الرئيسية","Language and currency settings":"إعدادات اللغة والعملة","Connect your wallet first. QX token creation is free. You pay Solana network fees and the required token and Meteora account rent only.":"اربط محفظتك أولاً. إنشاء عملة QX مجاني. تدفع رسوم شبكة سولانا وإيجار حسابات العملة وMeteora المطلوبة فقط.","Your QX launches are checked against the global launch registry and Solana mainnet pool records. Local-only records are marked as pending until verified.":"يتم التحقق من عملات QX التي أطلقتها عبر السجل العالمي وبيانات مجمعات شبكة سولانا. تُعرض السجلات المحلية كقيد التحقق حتى يتم تأكيدها.","Create price alert":"إنشاء تنبيه سعر","Target price (USD)":"السعر المستهدف (دولار أمريكي)","Trigger":"شرط التفعيل","Price reaches or goes above":"عندما يصل السعر إلى الهدف أو يتجاوزه","Price reaches or goes below":"عندما يصل السعر إلى الهدف أو ينخفض دونه","Open a token first to create an alert.":"افتح صفحة العملة أولاً لإنشاء تنبيه.","Cancel":"إلغاء","Save alert":"حفظ التنبيه","Target price in USD":"السعر المستهدف بالدولار الأمريكي"},
  hi:{'Connect Wallet':'वॉलेट कनेक्ट करें','Wallet':'वॉलेट','Create Token':'टोकन बनाएं','Markets':'मार्केट','My Assets':'मेरी संपत्तियां','NAVIGATION':'नेविगेशन','PREFERENCES':'प्राथमिकताएं','Language':'भाषा','Currency':'मुद्रा','Solana Markets':'Solana मार्केट','All Coins':'सभी कॉइन','New Coins':'नए कॉइन','Top Gainers':'सबसे अधिक बढ़ने वाले','Top Losers':'सबसे अधिक गिरने वाले','Trending':'ट्रेंडिंग','Top Volume':'सबसे अधिक वॉल्यूम','Search':'खोजें','Search name, symbol or contract':'नाम, सिंबल या कॉन्ट्रैक्ट खोजें','BACK TO MARKETS':'मार्केट पर वापस','QX CHART':'QX चार्ट','TRADES':'ट्रेड्स','BUY':'खरीदें','SELL':'बेचें','YOU PAY':'आप भुगतान करते हैं','YOU RECEIVE':'आपको प्राप्त होगा','Route':'रूट','CONFIRM SWAP':'स्वैप की पुष्टि करें','UPDATE QUOTE':'कोट अपडेट करें','Refresh':'रिफ्रेश','Balance':'बैलेंस','Value':'मूल्य','Market Cap / FDV':'मार्केट कैप / FDV','Liquidity':'लिक्विडिटी','24h Volume':'24 घंटे का वॉल्यूम','24h Transactions':'24 घंटे के लेनदेन','Holders':'होल्डर्स','NETWORK':'नेटवर्क','Creator Dashboard':'क्रिएटर डैशबोर्ड','Featured projects':'फीचर्ड प्रोजेक्ट्स','Sponsored':'प्रायोजित','Close':'बंद करें','Cancel':'रद्द करें','Discover Solana':'Solana खोजें','Loading...':'लोड हो रहा है...','Loading market...':'मार्केट लोड हो रहा है...','TOKEN':'टोकन','PRICE':'कीमत','24H %':'24 घंटे %','VOLUME':'वॉल्यूम','MKT CAP':'मार्केट कैप','LIQUIDITY':'लिक्विडिटी','AGE':'उम्र','TXNS':'लेनदेन','UNDER 1H':'पिछला 1 घंटा','UNDER 2H':'पिछले 2 घंटे','UNDER 5H':'पिछले 5 घंटे','UNDER 10H':'पिछले 10 घंटे','UNDER 24H':'पिछले 24 घंटे','NEW':'नया','QX LAUNCH':'QX लॉन्च','Sort by':'इसके अनुसार क्रमबद्ध करें','Create Your Token':'अपना टोकन बनाएं','Token name':'टोकन नाम','Symbol':'सिंबल','Initial supply':'प्रारंभिक सप्लाई','Total supply':'कुल सप्लाई','Decimals':'दशमलव','Your first buy (SOL)':'आपकी पहली खरीद (SOL)','Create token':'टोकन बनाएं','Create and launch':'बनाएं और लॉन्च करें','Connect wallet & create token':'वॉलेट कनेक्ट करें और टोकन बनाएं','Exchange':'एक्सचेंज','Creator':'क्रिएटर','Launch Token':'टोकन लॉन्च करें','Launch Market':'मार्केट लॉन्च करें','Discover New':'नए कॉइन खोजें','View All':'सभी देखें','All':'सभी','New':'नया','DEFAULT':'डिफ़ॉल्ट','DEFAULT ORDER':'डिफ़ॉल्ट क्रम','PRICE LOW TO HIGH':'कम से अधिक कीमत','PRICE HIGH TO LOW':'अधिक से कम कीमत','Connect wallet':'वॉलेट कनेक्ट करें','Open main menu':'मुख्य मेनू खोलें','Back to markets':'मार्केट पर वापस','View contract on Solscan ->':'Solscan पर कॉन्ट्रैक्ट देखें ->','Estimated receive':'अनुमानित प्राप्ति','Route fee':'रूट शुल्क','GET QUOTE & APPROVE':'कोट प्राप्त करें और मंजूरी दें','Available balance: -':'उपलब्ध बैलेंस: -','Enter amount to estimate':'अनुमान के लिए राशि दर्ज करें','No matching Solana market found.':'कोई मेल खाता Solana मार्केट नहीं मिला।','JUST NOW':'अभी','1 hour':'1 घंटा','3 hours':'3 घंटे','9 hours':'9 घंटे','24 hours':'24 घंटे','3 days':'3 दिन','QX EXCHANGE / INSTANT TRADE':'QX एक्सचेंज / तुरंत ट्रेड','Trade directly inside QX. No external swap page.':'QX के अंदर सीधे ट्रेड करें। किसी बाहरी स्वैप पेज की जरूरत नहीं।','Portfolio value':'पोर्टफोलियो मूल्य','Market status':'मार्केट स्थिति','Live market':'लाइव मार्केट','Price':'कीमत','Volume':'वॉल्यूम','Market Cap':'मार्केट कैप','Age':'उम्र','Transactions':'लेनदेन','Getting quote…':'लाइव कोट प्राप्त हो रहा है…','Fetching executable quote…':'एक्जीक्यूटेबल कोट प्राप्त हो रहा है…','Failed to get quotes':'कोट प्राप्त नहीं हुआ','Wallet balance':'वॉलेट बैलेंस','No executable route':'कोई एक्जीक्यूटेबल रूट नहीं','Token metadata upload failed':'टोकन मेटाडेटा अपलोड विफल','Connect your wallet first.':'पहले अपना वॉलेट कनेक्ट करें।','Waiting for wallet approval':'वॉलेट की मंजूरी का इंतजार','Transaction submitted':'लेनदेन भेज दिया गया','Transaction confirmed':'लेनदेन की पुष्टि हो गई','Swap failed':'स्वैप विफल','Quote expired':'कोट समाप्त हो गया','Last updated':'अंतिम अपडेट','Market data unavailable':'मार्केट डेटा उपलब्ध नहीं है','Retry':'फिर प्रयास करें','Refresh markets':'मार्केट रिफ्रेश करें','No token image available':'टोकन की छवि उपलब्ध नहीं है','GLOBAL BUYS & SELLS':'सभी की खरीद और बिक्री','WALLET':'वॉलेट','REFRESH CREATOR DATA':'क्रिएटर डेटा रिफ्रेश करें','Language and currency settings':'भाषा और मुद्रा सेटिंग्स','Create price alert':'मूल्य अलर्ट बनाएं','Target price (USD)':'लक्षित कीमत (USD)','Trigger':'ट्रिगर','Price reaches or goes above':'कीमत लक्ष्य तक पहुंचे या ऊपर जाए','Price reaches or goes below':'कीमत लक्ष्य तक पहुंचे या नीचे जाए','Save alert':'अलर्ट सेव करें','Target price in USD':'USD में लक्षित कीमत'},
  zh:{'Connect Wallet':'连接钱包','Wallet':'钱包','Create Token':'创建代币','Markets':'市场','Advertisements':'广告','My Assets':'我的资产','NAVIGATION':'导航','PREFERENCES':'偏好设置','Language':'语言','Currency':'货币','Solana Markets':'Solana 市场','All Coins':'全部代币','New Coins':'新代币','Top Gainers':'涨幅榜','Top Losers':'跌幅榜','Trending':'热门','Top Volume':'成交量排行','Search':'搜索','Search name, symbol or contract':'搜索名称、代币代码或合约地址','BACK TO MARKETS':'返回市场','QX CHART':'QX 实时图表','TRADES':'交易记录','BUY':'买入','SELL':'卖出','YOU PAY':'支付','YOU RECEIVE':'收到','Route':'交易路径','CONFIRM SWAP':'确认兑换','UPDATE QUOTE':'更新报价','Connect your wallet to view assets.':'连接钱包以查看资产','Refresh':'刷新','Balance':'实时余额','ON-CHAIN':'链上','Asset':'资产','Balance':'余额','Value':'价值','Market Cap / FDV':'市值 / 完全稀释估值','Liquidity':'流动性','24h Volume':'24小时交易量','24h Transactions':'24小时交易笔数','Holders':'持有者','NETWORK':'网络','Creator Dashboard':'创建者中心','Add advertisement':'添加广告','No sponsored advertisements yet.':'暂无赞助广告','Featured projects':'精选项目','Sponsored':'赞助内容','Total price':'总价','Estimated SOL payment':'预计 SOL 付款','PAY WITH CONNECTED WALLET':'使用已连接的钱包付款','Close':'关闭','My orders & executions':'我的订单与成交','Refresh history':'刷新记录','Private to the connected wallet. Open limit orders can be cancelled before they are filled.':'仅连接的钱包可见。限价单完全成交前可取消。','Connect and authenticate your wallet to load your private order history.':'连接并验证钱包以加载私人订单记录。','My executions':'我的成交','No orders recorded for this wallet yet.':'此钱包暂无订单记录。','No executions for this wallet yet.':'此钱包暂无成交记录。','Cancel':'取消','Fee:':'手续费：','maker':'挂单方','taker':'吃单方','open':'未成交','partially_filled':'部分成交','filled':'已成交','cancelled':'已取消','buy':'买入','sell':'卖出','Discover Solana':'探索 Solana','Loading...':'加载中...','Loading market...':'正在加载市场...','TOKEN':'代币','PRICE':'价格','24H %':'24小时涨跌','VOLUME':'成交量','MKT CAP':'市值','LIQUIDITY':'流动性','AGE':'创建时间','TXNS':'交易笔数','UNDER 1H':'最近1小时','UNDER 2H':'最近2小时','UNDER 5H':'最近5小时','UNDER 10H':'最近10小时','UNDER 24H':'最近24小时','NEW':'新','QX LAUNCH':'QX发行','Sort by':'排序方式','Create Your Token':'创建你的代币','Token name':'代币名称','Symbol':'代币代码','Initial supply':'初始供应量','Total supply':'总供应量','Decimals':'小数位','Your first buy (SOL)':'创建者首次买入 (SOL)','Create token':'创建代币','Create and launch':'创建并发行','Connect wallet & create token':'连接钱包并创建代币','No verified trade feed returned':'暂无已验证的交易数据','No real price history is available for this pool yet.':'此流动性池暂无真实价格历史','No new markets with verified price, liquidity and token image yet.':'暂无同时具备实时价格和流动性的已验证新市场','Estimated total / proceeds (1% fee)':'预计总额 / 净收入（1% 手续费）','Completed spot trades charge a 1% fee to each side; the estimate above includes that fee.':'现货成交时买卖双方各收取 1% 手续费；上方估算已包含该费用。','this is a spot limit-order interface backed by QX\'s internal ledger and matching function.':'这是由 QX 内部账本和撮合引擎支持的现货交易界面。','Exchange':'兑换','Creator':'创建者','Launch Token':'发行代币','Launch Market':'启动市场','Discover New':'发现新币','View All':'查看全部','All':'全部','New':'新币','DEFAULT':'默认','DEFAULT ORDER':'默认排序','PRICE LOW TO HIGH':'价格从低到高','PRICE HIGH TO LOW':'价格从高到低','Loading Solana markets…':'正在加载 Solana 市场…','Searching Solana tokens…':'正在搜索 Solana 代币…','No Solana markets matched your search.':'没有找到符合条件的 Solana 市场。','No matching Solana market found. Try the token name, symbol, or full contract address.':'没有找到匹配的 Solana 市场。请尝试代币名称、代码或完整合约地址。','Solana token search is temporarily unavailable. Try again shortly.':'Solana 代币搜索暂时不可用，请稍后重试。','Featured projects will appear here.':'精选项目将在此处显示。','Connect wallet':'连接钱包','Open main menu':'打开主菜单','Back to markets':'返回市场','View contract on Solscan ->':'在 Solscan 查看合约 ->','You pay':'支付','Estimated receive':'预计收到','Route fee':'QX 手续费','GET QUOTE & APPROVE':'获取报价并授权','Available balance: -':'可用余额：-','Enter amount to estimate':'输入金额以估算','Route will be selected after executable quote':'获得可执行报价后将选择交易路径','No matching Solana market found.':'没有找到匹配的 Solana 市场。','JUST NOW':'刚刚','1 hour':'1小时','3 hours':'3小时','9 hours':'9小时','24 hours':'24小时','3 days':'3天','QX EXCHANGE / INSTANT TRADE':'QX 交易所 / 即时交易','Trade directly inside QX. No external swap page.':'直接在 QX 内交易，无需跳转到外部兑换页面。','Chart rendered inside QX | Solana market data':'图表由 QX 提供 | Solana 市场数据','Portfolio value':'投资组合价值','Market status':'市场状态','Live market':'实时市场','Price':'价格','Volume':'成交量','Market Cap':'市值','Age':'创建时间','Transactions':'交易笔数','No market data is available in this category right now. QX will retry the market feeds automatically.':'此类别目前没有可用的市场数据。QX 将自动重试市场数据源。','Getting quote…':'正在获取实时报价…','Fetching executable quote…':'正在获取可执行报价…','Failed to get quotes':'获取报价失败','Wallet balance':'钱包余额','SOL/USD':'SOL/USD','No executable route':'没有可执行的交易路径','Token metadata upload failed':'代币元数据上传失败','Connect your wallet first.':'请先连接钱包。','Waiting for wallet approval':'等待钱包确认','Transaction submitted':'交易已提交','Transaction confirmed':'交易已确认','Swap failed':'兑换失败','Quote expired':'报价已过期','Last updated':'最后更新','Market data unavailable':'市场数据暂不可用','Retry':'重试','Refresh markets':'刷新市场','No token image available':'暂无代币图片',"Launch Market":"启动市场","GLOBAL BUYS & SELLS":"全网买入与卖出","VOLUME":"成交量","WALLET":"钱包","REFRESH CREATOR DATA":"刷新创建者数据","Quick preset: 1 SOL initial market cap · 10 SOL graduation target · no initial buy. Use Launch Market for custom settings.":"快速预设：初始市值 1 SOL · 毕业目标 10 SOL · 不进行首次买入。自定义设置请使用“启动市场”。","Create a Solana token and launch its Meteora DBC market with one wallet approval.":"创建 Solana 代币并启动 Meteora DBC 市场，只需钱包确认一次。","QX token creation fee: 0 SOL. You pay Solana network fees and the required token and Meteora account rent only.":"QX 代币创建费：0 SOL。你只需支付 Solana 网络费以及代币和 Meteora 所需账户租金。","Direct QX Meteora swaps: 1.00% to QX. Jupiter routes: 1.00% total referral fee; QX receives 0.80% after Jupiter’s 20% share. No fee is charged on failed swaps.":"QX Meteora 直连兑换：1.00% 归 QX。Jupiter 路由：推荐费总计 1.00%，Jupiter 分成 20% 后 QX 获得 0.80%。兑换失败不收费。","Fee confirmed in quote":"费用将在报价中确认","No Solana markets with a verified price, liquidity and token image are ready in this category. QX will retry the feeds automatically.":"此分类暂无同时具备可信价格、流动性和代币图片的 Solana 市场。QX 将自动重试数据源。","No recently created Solana markets were found in the rolling 30-day discovery window. QX is continuing to refresh new-pool feeds.":"最近 30 天的滚动发现窗口中暂无新创建的 Solana 市场。QX 将继续刷新新池数据。","No new markets with verified price, liquidity and token image yet.":"暂无同时具备可信价格、流动性和代币图片的新市场。","Connect your wallet to load your launches.":"连接钱包以查看你创建的代币。","Open main menu":"打开主菜单","Language and currency settings":"语言和货币设置","Connect your wallet first. QX token creation is free. You pay Solana network fees and the required token and Meteora account rent only.":"请先连接钱包。QX 代币创建免费。你只需支付 Solana 网络费以及代币和 Meteora 所需账户租金。","Your QX launches are checked against the global launch registry and Solana mainnet pool records. Local-only records are marked as pending until verified.":"你的 QX 发行记录会通过全球登记和 Solana 链上池记录进行核验。本地记录在验证完成前会标记为待验证。","Create price alert":"创建价格提醒","Target price (USD)":"目标价格（美元）","Trigger":"触发条件","Price reaches or goes above":"价格达到或高于目标","Price reaches or goes below":"价格达到或低于目标","Open a token first to create an alert.":"请先打开代币详情页以创建提醒。","Cancel":"取消","Save alert":"保存提醒","Target price in USD":"美元目标价格"}
  };
- const reverse={};for(const [l,map] of Object.entries(dictionaries))for(const [a,b] of Object.entries(map)){(reverse[a]??=[]).push(a);(reverse[b]??=[]).push(a)}
- // Keep a canonical source string for every text node. This prevents Chinese
- // text from remaining behind when the user switches back to English or Arabic.
- const qxTextNodeState=new WeakMap();
- function qxCanonicalText(value){
-  const v=String(value??"");
+ Object.assign(dictionaries.ar,{
+  'Discover':'اكتشاف','Trade':'تداول','Create Token':'إنشاء عملة','Trade Solana Tokens':'تداول عملات سولانا','Choose a token to trade':'اختر عملة للتداول','Open any token from Discover. Its chart, global trades, and buy/sell controls will appear here.':'افتح أي عملة من صفحة الاكتشاف لعرض الرسم البياني وعمليات الشراء والبيع وأدوات التداول هنا.','Discover tokens':'اكتشف العملات'
+ });
+ Object.assign(dictionaries.zh,{
+  'Discover':'发现','Trade':'交易','Create Token':'创建代币','Trade Solana Tokens':'交易 Solana 代币','Choose a token to trade':'选择要交易的代币','Open any token from Discover. Its chart, global trades, and buy/sell controls will appear here.':'从发现页面打开任意代币，即可在此查看图表、全网交易记录和买卖功能。','Discover tokens':'发现代币'
+ });
+ Object.assign(dictionaries.hi,{
+  'Discover':'खोजें','Trade':'ट्रेड','Create Token':'टोकन बनाएं','Trade Solana Tokens':'Solana टोकन ट्रेड करें','Choose a token to trade':'ट्रेड करने के लिए टोकन चुनें','Open any token from Discover. Its chart, global trades, and buy/sell controls will appear here.':'Discover से कोई भी टोकन खोलें। उसका चार्ट, वैश्विक ट्रेड और खरीद/बिक्री नियंत्रण यहां दिखाई देंगे।','Discover tokens':'टोकन खोजें'
+ });
+ const reverseLookup=(value)=>{
+  const v=String(value??'');
   for(const [language,map] of Object.entries(dictionaries)){
-   if(language==="en")continue;
-   if(Object.prototype.hasOwnProperty.call(map,v))return v;
+   if(language==='en')continue;
    for(const [source,translated] of Object.entries(map))if(v===translated)return source;
   }
   return v;
+ };
+ const state=window.__QXLanguageState||(window.__QXLanguageState={nodes:new WeakMap(),attrs:new WeakMap(),ready:false,lastLanguage:'en'});
+ let applying=false,queued=false,observer=null;
+ function activeLanguage(){return ['en','ar','zh','hi'].includes(langSelect.value)?langSelect.value:'en';}
+ function collectTextNodes(){
+  const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,{acceptNode(node){
+   const el=node.parentElement;
+   if(!el||['SCRIPT','STYLE','NOSCRIPT'].includes(el.tagName)||el.closest('[data-no-translate],.token-symbol,.token-address,.mint-address,.coin-address,.price,.amount,.numeric'))return NodeFilter.FILTER_REJECT;
+   return NodeFilter.FILTER_ACCEPT;
+  }});
+  const out=[];while(walker.nextNode())out.push(walker.currentNode);return out;
  }
- function tr(value,language){const map=dictionaries[language]||{};if(map[value])return map[value];for(const [from,to] of Object.entries(map))if(value===to)return language==='en'?from:to;return value;}
- function apply(runBase=true){
-  const language=langSelect.value||localStorage.getItem('qxLanguage')||'en';
-  const state=window.__QXLanguageState||(window.__QXLanguageState={nodes:new WeakMap(),attrs:new WeakMap(),ready:false,lastLanguage:'en'});
-  const sourceMap=dictionaries;
-  const canonical=(value)=>{
-    const v=String(value??'');
-    if(!v.trim())return v;
-    for(const map of Object.values(sourceMap)){
-      if(Object.prototype.hasOwnProperty.call(map,v))return v;
-      for(const [source,translated] of Object.entries(map))if(v===translated)return source;
-    }
-    return v;
-  };
-  const collect=()=>{
-    const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,{acceptNode(node){
-      const el=node.parentElement;
-      if(!el||['SCRIPT','STYLE','NOSCRIPT'].includes(el.tagName)||el.closest('[data-no-translate],.token-symbol,.token-address,.mint-address,.coin-address,.price,.amount,.numeric'))return NodeFilter.FILTER_REJECT;
-      return NodeFilter.FILTER_ACCEPT;
-    }});
-    const nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);return nodes;
-  };
-  const nodes=collect();
-  // Freeze the original English DOM text exactly once. Never use the currently
-  // translated text as the next source. This prevents Arabic -> Chinese ->
-  // English mixing when switching languages repeatedly.
-  for(const node of nodes){
+ function translateAttribute(el,attr,language,map){
+  const key='data-qx-i18n-'+attr+'-source';
+  const current=el.getAttribute(attr);if(current===null)return;
+  let source=el.getAttribute(key);
+  if(source===null){source=reverseLookup(current);el.setAttribute(key,source);}
+  else if(current!==el.getAttribute('data-qx-i18n-'+attr+'-last')){
+   const recovered=reverseLookup(current);
+   if(recovered!==current)source=recovered;
+   else if(!(language==='ar'&&/[\u0600-\u06FF]/.test(current))&&!(language==='zh'&&/[\u4E00-\u9FFF]/.test(current))&&!(language==='hi'&&/[\u0900-\u097F]/.test(current)))source=current;
+   el.setAttribute(key,source);
+  }
+  const next=map[source]||(language==='ar'&&/[\u0600-\u06FF]/.test(current)?current:source);
+  if(current!==next)el.setAttribute(attr,next);
+  el.setAttribute('data-qx-i18n-'+attr+'-last',next);
+ }
+ function apply(){
+  if(applying)return;
+  applying=true;
+  try{
+   const language=activeLanguage(),map=dictionaries[language]||{};
+   window.qxLanguage=language;qxLanguage=language;
+   document.documentElement.lang=language==='zh'?'zh-CN':language;
+   document.documentElement.dir=language==='ar'?'rtl':'ltr';
+   // The legacy renderer supplies its fuller Arabic/English labels. The dictionary
+   // pass below then handles every page, every visible text node and later updates.
+   if((language==='en'||language==='ar')&&typeof originalApply==='function'){
+    try{originalApply();}catch(error){console.warn('QX base language pass failed:',error);}
+   }
+   for(const node of collectTextNodes()){
+    const current=String(node.nodeValue??'');
     let rec=state.nodes.get(node);
-    if(!rec){
-      rec={source:node.nodeValue,last:node.nodeValue};
-      state.nodes.set(node,rec);
-    }else if(node.nodeValue!==rec.last){
-      const recovered=canonical(node.nodeValue);
-      if(recovered!==node.nodeValue && recovered!==rec.source)rec.source=recovered;
+    if(!rec){rec={source:reverseLookup(current),last:current};state.nodes.set(node,rec);}
+    else if(current!==rec.last){
+     const recovered=reverseLookup(current);
+     if(recovered!==current)rec.source=recovered;
+     else if(!(language==='ar'&&/[\u0600-\u06FF]/.test(current))&&!(language==='zh'&&/[\u4E00-\u9FFF]/.test(current))&&!(language==='hi'&&/[\u0900-\u097F]/.test(current)))rec.source=current;
     }
-    if(rec.source!==node.nodeValue)node.nodeValue=rec.source;
-    rec.last=node.nodeValue;
-  }
-
-  window.qxLanguage=language;qxLanguage=language;
-  document.documentElement.lang=language==='zh'?'zh-CN':language==='hi'?'hi':language==='ar'?'ar':'en';
-  document.documentElement.dir=language==='ar'?'rtl':'ltr';
-
-  // The original QX language engine is authoritative for English/Arabic.
-  // For Chinese/Hindi it is skipped entirely so its Arabic/English pass cannot
-  // overwrite the canonical source before the dedicated dictionary pass.
-  if(runBase&&typeof originalApply==='function'&&(language==='en'||language==='ar')){
-    try{originalApply();}catch(e){console.warn('QX base language pass:',e)}
-    state.lastLanguage=language;state.ready=true;
-    return;
-  }
-
-  const map=dictionaries[language]||{};
-  for(const node of collect()){
-    let rec=state.nodes.get(node);
-    if(!rec){rec={source:node.nodeValue,last:node.nodeValue};state.nodes.set(node,rec);}
-    const source=String(rec.source||'');
-    const trimmed=source.trim();
-    let next=map[trimmed];
-    if(!next&&language==='zh'){
-      let mm=trimmed.match(/^(\d[\d,]*)\s+tokens?$/i);if(mm)next=mm[1]+' 个代币';
-      if(!next){mm=trimmed.match(/^(\d[\d,]*)\s+markets?$/i);if(mm)next=mm[1]+' 个市场';}
-      if(!next){mm=trimmed.match(/^No Solana markets matched [“"](.+?)[”"]\.?$/i);if(mm)next='没有找到与“'+mm[1]+'”匹配的 Solana 市场。';}
-    }
-    const value=next||source;
-    if(node.nodeValue!==value)node.nodeValue=value;
-    rec.last=node.nodeValue;
-  }
-
-  // Keep placeholders and ARIA labels anchored to their first English value.
-  document.querySelectorAll('[placeholder]').forEach(el=>{
-    const key=el.getAttribute('data-qx-placeholder-en')||el.placeholder;
-    if(!el.dataset.qxPlaceholderEn)el.dataset.qxPlaceholderEn=key;
-    const source=el.dataset.qxPlaceholderEn||key;
-    el.placeholder=map[source]||source;
-  });
-  document.querySelectorAll('[aria-label]').forEach(el=>{
-    const key=el.getAttribute('data-qx-aria-en')||el.getAttribute('aria-label');
-    if(!el.dataset.qxAriaEn)el.dataset.qxAriaEn=key;
-    const source=el.dataset.qxAriaEn||key;
-    el.setAttribute('aria-label',map[source]||source);
-  });
-
-  const opts=langSelect.options;
-  if(opts.length>=3){
-    const optionLabels=language==='hi'?['अंग्रेज़ी (EN)','अरबी (AR)','सरलीकृत चीनी (ZH)','हिन्दी (HI)']:
-      language==='ar'?['الإنجليزية (EN)','العربية (AR)','الصينية المبسطة (ZH)','الهندية (HI)']:
-      language==='zh'?['英语 (EN)','阿拉伯语 (AR)','简体中文 (ZH)','印地语 (HI)']:
-      ['English (EN)','العربية (AR)','简体中文 (ZH)','हिन्दी (HI)'];
-    [...opts].slice(0,4).forEach((o,i)=>{if(o.textContent!==optionLabels[i])o.textContent=optionLabels[i]});
-  }
-  const currency=document.getElementById('qxCurrency');
-  if(currency){
+    const source=String(rec.source??'');
+    const next=map[source]||(language==='ar'&&/[\u0600-\u06FF]/.test(current)?current:source);
+    if(node.nodeValue!==next)node.nodeValue=next;
+    rec.last=next;
+   }
+   document.querySelectorAll('[placeholder]').forEach(el=>translateAttribute(el,'placeholder',language,map));
+   document.querySelectorAll('[aria-label]').forEach(el=>translateAttribute(el,'aria-label',language,map));
+   // Titles/tooltips and input values are also part of the page language.
+   document.querySelectorAll('[title]').forEach(el=>translateAttribute(el,'title',language,map));
+   const options=langSelect.options;
+   const optionLabels=language==='ar'?['الإنجليزية (EN)','العربية (AR)','الصينية المبسطة (ZH)','الهندية (HI)']:
+    language==='zh'?['英语 (EN)','阿拉伯语 (AR)','简体中文 (ZH)','印地语 (HI)']:
+    language==='hi'?['अंग्रेज़ी (EN)','अरबी (AR)','सरलीकृत चीनी (ZH)','हिन्दी (HI)']:
+    ['English (EN)','العربية (AR)','简体中文 (ZH)','हिन्दी (HI)'];
+   [...options].slice(0,4).forEach((o,i)=>{if(optionLabels[i])o.textContent=optionLabels[i];});
+   const currency=document.getElementById('qxCurrency');
+   if(currency){
     const labels=language==='ar'?['دولار أمريكي','سولانا','درهم إماراتي','روبية هندية','يوان صيني']:
-      language==='zh'?['美元','Solana','阿联酋迪拉姆','印度卢比','人民币']:
-      language==='hi'?['अमेरिकी डॉलर','Solana','यूएई दिरहम','भारतीय रुपया','चीनी युआन']:
-      ['US Dollar','Solana','UAE Dirham','Indian Rupee','Chinese Yuan'];
-    [...currency.options].forEach((o,i)=>{const code=o.value;const label=code+' — '+(labels[i]||code);if(o.textContent!==label)o.textContent=label});
+     language==='zh'?['美元','Solana','阿联酋迪拉姆','印度卢比','人民币']:
+     language==='hi'?['अमेरिकी डॉलर','Solana','यूएई दिरहम','भारतीय रुपया','चीनी युआन']:
+     ['US Dollar','Solana','UAE Dirham','Indian Rupee','Chinese Yuan'];
+    [...currency.options].forEach((o,i)=>{const label=o.value+' — '+(labels[i]||o.value);if(o.textContent!==label)o.textContent=label;});
+   }
+   state.lastLanguage=language;state.ready=true;
+   window.qxApplyLanguage=apply;window.QXApplyLanguage=apply;
+  }finally{
+   applying=false;
+   if(observer)observer.takeRecords();
   }
-  state.lastLanguage=language;state.ready=true;
- } window.qxApplyLanguage=apply;window.QXApplyLanguage=apply;
+ }
+ window.qxApplyLanguage=apply;window.QXApplyLanguage=apply;
  langSelect.addEventListener('change',()=>{
-  const selected=['en','ar','zh','hi'].includes(langSelect.value)?langSelect.value:'en';
-  langSelect.value=selected;localStorage.setItem('qxLanguage',selected);
-  /* Let legacy listeners finish their data refresh first, then make this controller
-     the final writer so one language engine cannot overwrite another. */
-  setTimeout(()=>{
-   apply(selected==='en'||selected==='ar');
-   window.dispatchEvent(new CustomEvent('QXLanguageChanged',{detail:{language:selected}}));
-   if(typeof window.renderMarket==='function')window.renderMarket();
-   setTimeout(()=>apply(selected==='en'||selected==='ar'),0);
-  },0);
+  const selected=activeLanguage();langSelect.value=selected;
+  try{localStorage.setItem('qxLanguage',selected);}catch(_){}
+  apply();
+  window.dispatchEvent(new CustomEvent('QXLanguageChanged',{detail:{language:selected}}));
+  // Repaint only after the page language is established; dynamic market text is
+  // observed and translated again without changing page navigation or data.
+  if(typeof window.renderMarket==='function')window.renderMarket();
+  apply();
  });
- const saved=localStorage.getItem('qxLanguage');if(saved&&['en','ar','zh','hi'].includes(saved))langSelect.value=saved;apply();
- /* Translate newly rendered UI as well as the initial page. Observe inserted nodes,
-    not character data, so applying translations cannot create an observer loop. */
- let translateQueued=false;
- const qxTranslationObserver=new MutationObserver(records=>{
-  if(translateQueued||!records.some(r=>r.addedNodes&&r.addedNodes.length))return;
-  translateQueued=true;setTimeout(()=>{translateQueued=false;apply(false);},30);
+ try{const saved=localStorage.getItem('qxLanguage');if(saved&&['en','ar','zh','hi'].includes(saved))langSelect.value=saved;}catch(_){}
+ apply();
+ observer=new MutationObserver(records=>{
+  if(applying||queued)return;
+  if(!records.some(r=>(r.addedNodes&&r.addedNodes.length)||r.type==='characterData'||r.type==='attributes'))return;
+  queued=true;queueMicrotask(()=>{queued=false;apply();});
  });
- qxTranslationObserver.observe(document.body,{childList:true,subtree:true});
+ observer.observe(document.body,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['placeholder','aria-label','title']});
+ window.addEventListener('QXPageChanged',()=>apply());
+ window.addEventListener('QXLanguageChanged',()=>apply());
 
 })();
 </script>
