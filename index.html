@@ -1,3 +1,4 @@
+<!-- QX V164: icon-only fixed bottom navigation in agreed left-to-right order; remove hamburger; restore metric label/value alignment without changing market data or trade execution. Based on V163. -->
 
 <!-- QX V157 ROOT LAUNCH FUNDING PREFLIGHT: exact payer balance gate before Phantom approval, dynamic simulation funding diagnostics, no duplicate approval/error text. Built from V156. -->
 <!-- QX V154 root new-discovery/age audit: V149 storage/lifecycle safeguards plus consistent real token/pool creation timestamp fallback for market and token-detail age. -->
@@ -11,7 +12,7 @@
 <meta name="theme-color" content="#080711">
 <meta name="google-site-verification" content="A5ntuJ6pvvK-Uo8HHA96o5bUPFGOg_70p-Nh_rsZ8NM">
 <title>QX GLOBAL SOLANA EXCHANGE — Solana Token Discovery</title>
-<meta name="qx-build" content="QX-FULL-RESPONSIVE-MARKET-PHANTOM-MATCH-V163">
+<meta name="qx-build" content="QX-ICON-NAV-MARKET-ALIGNMENT-V164">
 
 
 
@@ -396,6 +397,29 @@ html[data-qx-physical-mobile="1"] .wrap{width:100%!important;max-width:100%!impo
 @media(prefers-reduced-motion:reduce){#marketsPage #tokenResults .qx-market-card:after{animation:none!important;}}
 </style>
 
+
+<style id="qx-v164-bottom-navigation-and-market-alignment">
+/* Four icon-only destinations. The visual order is fixed left-to-right in every language. */
+.qx-bottom-nav{position:fixed!important;left:0!important;right:0!important;bottom:0!important;z-index:12000!important;display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;align-items:center!important;gap:0!important;min-height:62px!important;padding:6px 10px calc(6px + env(safe-area-inset-bottom))!important;background:rgba(8,7,17,.97)!important;border-top:1px solid rgba(139,92,246,.28)!important;backdrop-filter:blur(16px)!important;-webkit-backdrop-filter:blur(16px)!important;direction:ltr!important}
+.qx-bottom-item{display:grid!important;place-items:center!important;width:100%!important;height:48px!important;min-height:48px!important;padding:0!important;border:0!important;border-radius:12px!important;background:transparent!important;color:#aaa2b9!important;-webkit-tap-highlight-color:transparent!important;cursor:pointer!important}
+.qx-bottom-item svg{width:23px!important;height:23px!important;fill:none!important;stroke:currentColor!important;stroke-width:1.8!important;stroke-linecap:round!important;stroke-linejoin:round!important}
+.qx-bottom-item.active{color:#a879ff!important;background:rgba(139,92,246,.10)!important}
+.qx-bottom-item:focus-visible{outline:2px solid #8b5cf6!important;outline-offset:2px!important}
+.qx-nav-area,.qx-nav-toggle,.qx-nav-menu{display:none!important}
+body{padding-bottom:calc(76px + env(safe-area-inset-bottom))!important}
+/* Keep each market metric label directly above its own value; never reorder metrics. */
+#marketsPage #tokenResults .qx-market-card .qx-row-metrics{display:grid!important;grid-template-columns:repeat(7,minmax(0,1fr))!important;align-items:stretch!important;gap:8px!important;min-width:0!important}
+#marketsPage #tokenResults .qx-market-card .qx-row-metrics>span{display:flex!important;flex-direction:column!important;align-items:flex-start!important;justify-content:center!important;gap:4px!important;min-width:0!important;white-space:normal!important;text-align:start!important;overflow-wrap:anywhere!important}
+#marketsPage #tokenResults .qx-market-card .qx-row-metrics>span:before{content:attr(data-label)!important;display:block!important;order:0!important;color:#8994b2!important;font-size:9px!important;font-weight:850!important;letter-spacing:.45px!important;line-height:1.2!important}
+#marketsPage #tokenResults .qx-market-card .qx-row-metrics>span{order:initial!important}
+@media(max-width:760px){
+ body{padding-bottom:calc(76px + env(safe-area-inset-bottom))!important}
+ #marketsPage #tokenResults .qx-market-card .qx-row-metrics{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important}
+ #marketsPage #tokenResults .qx-market-card .qx-row-metrics>span{min-height:43px!important;padding:7px 8px!important;border:1px solid rgba(145,160,190,.12)!important;border-radius:9px!important;background:rgba(255,255,255,.025)!important;font-size:11px!important;line-height:1.25!important}
+ #marketsPage #tokenResults .qx-market-card .qx-row-metrics>span:before{font-size:8px!important}
+}
+@media(prefers-reduced-motion:reduce){.qx-bottom-item{transition:none!important}}
+</style>
 </head>
 <body>
 <div class="wrap">
@@ -412,16 +436,6 @@ html[data-qx-physical-mobile="1"] .wrap{width:100%!important;max-width:100%!impo
   <span class="brand-copy"><span class="brand-name">QX <b>EXCHANGE</b></span><span class="brand-tagline">GLOBAL SOLANA EXCHANGE</span></span>
  </a>
  <div class="qx-header-controls">
-<div class="qx-nav-area">
-<button id="qxNavToggle" class="qx-nav-toggle" type="button" aria-label="Open main menu" aria-expanded="false" aria-controls="qxNavMenu"><svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
-<div id="qxNavMenu" class="qx-nav-menu" aria-hidden="true" hidden>
-<button type="button" class="qx-nav-item" data-page="marketsPage">Markets</button>
-<button type="button" class="qx-nav-item" data-page="walletPage">Wallet</button>
-<button type="button" class="qx-nav-item" data-page="createPage">Create Token</button>
-<button type="button" class="qx-nav-item" data-page="launchPage">Launch Market</button>
-<button type="button" class="qx-nav-item" data-page="creatorPage">Creator Dashboard</button>
-</div>
-</div>
 <div class="qx-menu-area qx-preferences-area">
   <button class="qx-menu-toggle qx-preferences-toggle" id="qxMenuToggle" type="button" aria-label="Language and currency settings" aria-expanded="false" aria-controls="qxMainMenu"><span id="qxPreferencesButtonText">EN · USD</span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m3 6 5 5 5-5"/></svg></button>
   <div class="qx-main-menu qx-preferences-popover" id="qxMainMenu" aria-hidden="true">
@@ -739,7 +753,20 @@ html[data-qx-physical-mobile="1"] .wrap{width:100%!important;max-width:100%!impo
  </section>
 </main>
 
-
+<nav class="qx-bottom-nav" id="qxBottomNav" aria-label="Main navigation" dir="ltr">
+ <button class="qx-bottom-item" type="button" data-qx-tab="wallet" aria-label="Wallet" title="Wallet" onclick="showPage('walletPage')">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 7.5A2.5 2.5 0 0 1 6 5h13a1.5 1.5 0 0 1 1.5 1.5V19H6a2.5 2.5 0 0 1-2.5-2.5z"/><path d="M3.5 8H18a2 2 0 0 1 2 2v2h-5a2 2 0 0 0 0 4h5"/><path d="M15 14h.01"/></svg>
+ </button>
+ <button class="qx-bottom-item active" type="button" data-qx-tab="discover" aria-label="Discover" title="Discover" onclick="showPage('marketsPage')">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7.5"/><path d="m16.5 16.5 4 4M13.8 8.2l-1.6 4-4 1.6 1.6-4z"/></svg>
+ </button>
+ <button class="qx-bottom-item" type="button" data-qx-tab="trade" aria-label="Trade" title="Trade" id="qxBottomTrade">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5M4 19h17"/><path d="m7 15 4-4 3 2 5-7"/><path d="M15.5 6H19v3.5"/></svg>
+ </button>
+ <button class="qx-bottom-item" type="button" data-qx-tab="create" aria-label="Create Token" title="Create Token" onclick="showPage('createPage')">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 8v8M8 12h8"/></svg>
+ </button>
+</nav>
 
 <div class="ad-modal-backdrop" id="qxAlertModal" role="dialog" aria-modal="true" aria-labelledby="qxAlertTitle" style="display:none">
   <div class="ad-modal">
@@ -860,14 +887,22 @@ if(qxMenuToggle&&qxMainMenu){
  document.addEventListener("click",e=>{if(!e.target.closest(".qx-menu-area"))qxCloseMainMenu();});
  document.addEventListener("keydown",e=>{if(e.key==="Escape")qxCloseMainMenu();});
 }
-const qxNavToggle=document.getElementById("qxNavToggle"),qxNavMenu=document.getElementById("qxNavMenu");
-function qxCloseNavMenu(){if(!qxNavToggle||!qxNavMenu)return;qxNavMenu.hidden=true;qxNavMenu.setAttribute("aria-hidden","true");qxNavToggle.setAttribute("aria-expanded","false");}
-if(qxNavToggle&&qxNavMenu){qxNavToggle.addEventListener("click",()=>{qxCloseMainMenu();const open=qxNavMenu.hidden;qxNavMenu.hidden=!open;qxNavMenu.setAttribute("aria-hidden",String(!open));qxNavToggle.setAttribute("aria-expanded",String(open));});document.addEventListener("click",e=>{if(!e.target.closest(".qx-nav-area"))qxCloseNavMenu();});document.addEventListener("keydown",e=>{if(e.key==="Escape"){qxCloseNavMenu();qxCloseMainMenu();}});}
+function qxCloseNavMenu(){}
 document.addEventListener("click",e=>{
  const button=e.target.closest("[data-page]");
  if(button&&!button.closest("#qxMainMenu"))showPage(button.dataset.page);
 });
 document.body.classList.remove("qx-wallet-active");
+
+document.getElementById("qxBottomTrade")?.addEventListener("click",()=>{
+ if(selectedToken&&typeof window.QXOpenToken==="function"){window.QXOpenToken(selectedToken);return;}
+ showPage("marketsPage");
+ const list=document.getElementById("tokenResults");if(list)list.scrollIntoView({behavior:"smooth",block:"start"});
+});
+window.addEventListener("QXPageChanged",e=>{
+ const id=e.detail?.pageId;
+ document.querySelectorAll(".qx-bottom-item").forEach(b=>b.classList.toggle("active",(id==="walletPage"&&b.dataset.qxTab==="wallet")||(id==="marketsPage"&&b.dataset.qxTab==="discover")||(id==="createPage"&&b.dataset.qxTab==="create")));
+});
 
 const qxWpModal=document.getElementById("qxWhitePaperModal");
 const qxWpOpen=document.getElementById("qxOpenWhitePaper");
@@ -1217,7 +1252,7 @@ function qxRefreshDisplayedPrices(){
 }
 document.addEventListener("DOMContentLoaded",()=>{
  const language=document.getElementById("qxLanguage"),currency=document.getElementById("qxCurrency");
- if(language){language.value=localStorage.getItem("qxLanguage")||"en";qxLanguage=language.value;language.addEventListener("change",()=>{qxLanguage=language.value;localStorage.setItem("qxLanguage",qxLanguage);qxApplyLanguage();qxRefreshDisplayedPrices();window.QXApplyLanguage?.(false);qxUpdateMarketStatus(qxLastMarketSource,allPairs.length);if(window.QXFeeDisplayState)qxSetFeeDisplay(window.QXFeeDisplayState.kind,window.QXFeeDisplayState.totalBps,window.QXFeeDisplayState.shareBps,window.QXFeeDisplayState.mint);if(selectedToken){void qxLoadRealTokenInfo(selectedToken);void qxLoadTrades(selectedToken);}qxSyncPreferencesButton();});}
+ if(language){language.value=localStorage.getItem("qxLanguage")||"en";qxLanguage=language.value;language.addEventListener("change",()=>{qxLanguage=language.value;localStorage.setItem("qxLanguage",qxLanguage);/* The dedicated multilingual controller owns zh/hi. Running the legacy en/ar-only renderer here overwrites its translations. */if(qxLanguage==="en"||qxLanguage==="ar")qxApplyLanguage();qxRefreshDisplayedPrices();window.QXApplyLanguage?.(false);qxUpdateMarketStatus(qxLastMarketSource,allPairs.length);if(window.QXFeeDisplayState)qxSetFeeDisplay(window.QXFeeDisplayState.kind,window.QXFeeDisplayState.totalBps,window.QXFeeDisplayState.shareBps,window.QXFeeDisplayState.mint);if(selectedToken){void qxLoadRealTokenInfo(selectedToken);void qxLoadTrades(selectedToken);}qxSyncPreferencesButton();});}
  if(currency){const savedCurrency=localStorage.getItem("qxCurrency")||"USD";currency.value=["USD","SOL","AED","INR","CNY"].includes(savedCurrency)?savedCurrency:"USD";qxCurrency=currency.value;currency.addEventListener("change",async()=>{qxCurrency=["USD","SOL","AED","INR","CNY"].includes(currency.value)?currency.value:"USD";currency.value=qxCurrency;localStorage.setItem("qxCurrency",qxCurrency);await qxLoadCurrencyRates();qxRefreshDisplayedPrices();window.QXRefreshTrendingSpotlight?.(true);qxSyncPreferencesButton();});}
  qxSyncPreferencesButton();qxApplyLanguage();window.QXApplyLanguage?.(false);qxUpdateMarketStatus(qxLastMarketSource,allPairs.length);qxLoadCurrencyRates().then(()=>{qxRefreshDisplayedPrices();window.QXApplyLanguage?.(false);});
 });
@@ -4308,6 +4343,7 @@ function openToken(token){
   if(oldParent){const marker=document.createComment("QX_BACK_BUTTON_HOME");oldParent.insertBefore(marker,qxBack);window.__QXBackButtonHome=marker;document.body.appendChild(qxBack);}
  }
  document.body.classList.add("qx-token-open");
+ document.querySelectorAll(".qx-bottom-item").forEach(b=>b.classList.toggle("active",b.dataset.qxTab==="trade"));
  const amountInput=$("tradeAmountInput");if(amountInput)amountInput.value="";
  const percentRange=$("percentRange");if(percentRange)percentRange.value="25";
  const detail=$("detail");if(!detail)return;detail.style.display="block";
@@ -4344,6 +4380,7 @@ $("tokenBackBtn")?.addEventListener("click",function(e){
  e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
  try{window.QXCloseTokenTerminal?.();}catch(_){ }
  document.body.classList.remove("qx-token-open","qx-trade-modal-open");
+ document.querySelectorAll(".qx-bottom-item").forEach(b=>b.classList.toggle("active",b.dataset.qxTab==="discover"));
  // Release token-only timers, pending chart work, and resize observation on close.
  if(qxAgeTimer){clearInterval(qxAgeTimer);qxAgeTimer=null;qxAgeMint="";}
  if(qxChartLiveTimer){clearInterval(qxChartLiveTimer);qxChartLiveTimer=null;}
@@ -5949,10 +5986,27 @@ void loadMarket().then(()=>qxRefreshPublicLiveSnapshots()).catch(e=>console.warn
   }
   state.lastLanguage=language;state.ready=true;
  } window.qxApplyLanguage=apply;window.QXApplyLanguage=apply;
- langSelect.addEventListener('change',()=>{localStorage.setItem('qxLanguage',langSelect.value);apply();window.dispatchEvent(new CustomEvent('QXLanguageChanged',{detail:{language:langSelect.value}}));if(typeof window.renderMarket==='function')window.renderMarket()});
+ langSelect.addEventListener('change',()=>{
+  const selected=['en','ar','zh','hi'].includes(langSelect.value)?langSelect.value:'en';
+  langSelect.value=selected;localStorage.setItem('qxLanguage',selected);
+  /* Let legacy listeners finish their data refresh first, then make this controller
+     the final writer so one language engine cannot overwrite another. */
+  setTimeout(()=>{
+   apply(selected==='en'||selected==='ar');
+   window.dispatchEvent(new CustomEvent('QXLanguageChanged',{detail:{language:selected}}));
+   if(typeof window.renderMarket==='function')window.renderMarket();
+   setTimeout(()=>apply(selected==='en'||selected==='ar'),0);
+  },0);
+ });
  const saved=localStorage.getItem('qxLanguage');if(saved&&['en','ar','zh','hi'].includes(saved))langSelect.value=saved;apply();
- // Intentionally no document-wide MutationObserver: market updates can replace large DOM trees.
- // Dynamic sections call qxApplyLanguage explicitly when they render.
+ /* Translate newly rendered UI as well as the initial page. Observe inserted nodes,
+    not character data, so applying translations cannot create an observer loop. */
+ let translateQueued=false;
+ const qxTranslationObserver=new MutationObserver(records=>{
+  if(translateQueued||!records.some(r=>r.addedNodes&&r.addedNodes.length))return;
+  translateQueued=true;setTimeout(()=>{translateQueued=false;apply(false);},30);
+ });
+ qxTranslationObserver.observe(document.body,{childList:true,subtree:true});
 
 })();
 </script>
