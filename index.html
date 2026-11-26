@@ -9,7 +9,21 @@
 <meta name="theme-color" content="#080711">
 <meta name="google-site-verification" content="A5ntuJ6pvvK-Uo8HHA96o5bUPFGOg_70p-Nh_rsZ8NM">
 <title>QX Exchange — Solana Token Discovery</title>
-<meta name="qx-build" content="QX-PHANTOM-IOS-VIEWPORT-FIX-V140">
+<meta name="qx-build" content="QX-FULL-AUDIT-STORAGE-CHART-MOBILE-V148">
+<script id="qx-safe-storage-v148">
+/* Defensive storage adapter: local persistence is optional and must never stop
+   wallet, market, chart, swap, or confirmed on-chain launch flows. */
+(function(){
+ const jsonKeys=new Set(["qxRealLaunches","qxPendingLaunchRegistryRecord","qxPendingLaunchRegistryImage","qxPendingLaunchRegistryMedia","qx_pending_ad_payment_v1","qxMarketUniverseV2","qxWatchlistV2","qxTradeHistoryV2"]);
+ const memory=new Map();
+ const getStore=()=>{try{return window.localStorage||null;}catch(_){return null;}};
+ window.qxSafeStorage={
+  getItem(key){const k=String(key);if(memory.has(k))return memory.get(k);try{const value=getStore()?.getItem(k)??null;if(value!==null&&jsonKeys.has(k)){try{JSON.parse(value);}catch(_){return null;}}return value;}catch(_){return null;}},
+  setItem(key,value){const k=String(key),v=String(value);memory.set(k,v);try{const store=getStore();if(!store)return false;store.setItem(k,v);return true;}catch(_){return false;}},
+  removeItem(key){const k=String(key);memory.delete(k);try{const store=getStore();if(!store)return false;store.removeItem(k);return true;}catch(_){return false;}}
+ };
+})();
+</script>
 
 
 
@@ -260,6 +274,29 @@ html,body{width:100%;max-width:100%;-webkit-text-size-adjust:100%!important;text
   input,select,textarea{-webkit-text-size-adjust:100%!important;text-size-adjust:100%!important;font-size:16px!important;}
 }
 </style>
+
+<style id="qx-phantom-return-layout-v142">
+/* Apply the phone layout from the physical screen class, not Phantom's transient layout viewport. */
+html[data-qx-physical-mobile="1"],html[data-qx-physical-mobile="1"] body{width:100%!important;max-width:100%!important;min-width:0!important;overflow-x:hidden!important;-webkit-text-size-adjust:100%!important;text-size-adjust:100%!important;}
+html[data-qx-physical-mobile="1"] .wrap{width:100%!important;max-width:100%!important;min-width:0!important;margin:0 auto!important;padding:8px 9px 78px!important;}
+html[data-qx-physical-mobile="1"] header{width:100%!important;min-width:0!important;display:flex!important;align-items:center!important;justify-content:space-between!important;flex-wrap:wrap!important;gap:8px!important;padding:6px 0 10px!important;}
+html[data-qx-physical-mobile="1"] .brand-lockup{flex:1 1 140px!important;min-width:0!important;}
+html[data-qx-physical-mobile="1"] .brand-name{font-size:clamp(14px,4.2vw,17px)!important;max-width:100%!important;line-height:1.1!important;}
+html[data-qx-physical-mobile="1"] .qx-header-controls{width:auto!important;max-width:100%!important;min-width:0!important;flex:0 1 auto!important;}
+html[data-qx-physical-mobile="1"] .qx-global-settings{width:100%!important;max-width:100%!important;min-width:0!important;gap:6px!important;flex-wrap:wrap!important;}
+html[data-qx-physical-mobile="1"] .qx-global-settings select{min-width:0!important;max-width:100%!important;font-size:16px!important;}
+html[data-qx-physical-mobile="1"] .market-layout{display:flex!important;flex-direction:column!important;gap:9px!important;width:100%!important;min-width:0!important;}
+html[data-qx-physical-mobile="1"] .market-list-column,html[data-qx-physical-mobile="1"] #detail,html[data-qx-physical-mobile="1"] .page{width:100%!important;max-width:100%!important;min-width:0!important;}
+html[data-qx-physical-mobile="1"] #detail{position:relative!important;top:auto!important;}
+html[data-qx-physical-mobile="1"] .panel,html[data-qx-physical-mobile="1"] .hero{padding:13px!important;margin-bottom:11px!important;border-radius:13px!important;}
+html[data-qx-physical-mobile="1"] h1{font-size:clamp(20px,5.5vw,28px)!important;}
+html[data-qx-physical-mobile="1"] h2{font-size:17px!important;}
+html[data-qx-physical-mobile="1"] input,html[data-qx-physical-mobile="1"] select,html[data-qx-physical-mobile="1"] textarea{font-size:16px!important;max-width:100%!important;}
+html[data-qx-physical-mobile="1"] .qx-v2-markets{width:100%!important;max-width:100%!important;padding:10px 0 82px!important;}
+html[data-qx-physical-mobile="1"] .qx-discovery-hero{grid-template-columns:minmax(0,1fr)!important;padding:20px 16px!important;border-radius:18px!important;}
+html[data-qx-physical-mobile="1"] .qx-market-shell{padding:12px!important;border-radius:16px!important;}
+html[data-qx-physical-mobile="1"] .bottom-nav{display:none!important;}
+</style>
 </head>
 <body>
 <div class="wrap">
@@ -291,7 +328,7 @@ html,body{width:100%;max-width:100%;-webkit-text-size-adjust:100%!important;text
   <div class="qx-main-menu qx-preferences-popover" id="qxMainMenu" aria-hidden="true">
    <div class="qx-menu-settings qx-global-settings">
     <div class="qx-menu-setting"><label for="qxLanguage">Language</label><select id="qxLanguage" aria-label="Language"><option value="en">English (EN)</option><option value="ar">العربية (AR)</option><option value="zh">简体中文 (ZH)</option></select></div>
-    <div class="qx-menu-setting"><label for="qxCurrency">Currency</label><select id="qxCurrency" aria-label="Display currency"><option value="USD">USD — US Dollar ($)</option><option value="AED">AED — UAE Dirham (د.إ)</option><option value="EUR">EUR — Euro (€)</option><option value="GBP">GBP — British Pound (£)</option><option value="CNY">CNY — Chinese Yuan (¥)</option><option value="SOL">SOL — Solana</option></select></div>
+    <div class="qx-menu-setting"><label for="qxCurrency">Currency</label><select id="qxCurrency" aria-label="Display currency"><option value="USD">USD — US Dollar ($)</option><option value="SOL">SOL — Solana</option></select></div>
    </div>
   </div>
  </div>
@@ -683,6 +720,10 @@ function showPage(id){
  qxCloseMainMenu();qxCloseNavMenu();
  const target=document.getElementById(id);
  if(!target||!target.classList.contains("page"))return false;
+ // Leaving the market terminal through the main navigation must run the same
+ // cleanup as its Back control, otherwise chart/trade timers and terminal state
+ // can remain active behind another page.
+ if(id!=="marketsPage"&&document.body.classList.contains("qx-token-open")){try{window.QXCloseTokenTerminal?.();}catch(_){}}
  document.body.classList.toggle("qx-wallet-active",id==="walletPage");
  
  document.querySelectorAll(".page").forEach(p=>{
@@ -953,7 +994,7 @@ function qxSetFeeDisplay(kind,totalBps=100,shareBps=80,mint=""){
 
 
 let qxCurrency="USD",qxCurrencyRates={USD:1},qxLanguage="en";
-const qxCurrencySymbols={USD:"$",AED:"د.إ",EUR:"€",GBP:"£",CNY:"¥",SOL:"SOL"};
+const qxCurrencySymbols={USD:"$",SOL:"SOL"};
 function qxFormatMoney(value,compact=false){
  const n=Number(value);if(!Number.isFinite(n))return "-";
  const rate=Number(qxCurrencyRates[qxCurrency]);
@@ -970,9 +1011,9 @@ function qxFormatMoney(value,compact=false){
  }catch(_){return (qxCurrencySymbols[qxCurrency]||"$")+compactValue.toLocaleString(locale,{maximumFractionDigits:2})+suffix;}
 }
 async function qxLoadCurrencyRates(){
- try{const cached=JSON.parse(localStorage.getItem("qxCurrencyRates")||"null");if(cached&&Date.now()-Number(cached.savedAt)<86400000&&cached.rates)qxCurrencyRates={...qxCurrencyRates,...cached.rates};}catch(_){}
- try{const response=await fetch("https://open.er-api.com/v6/latest/USD");if(!response.ok)throw Error("rate unavailable");const data=await response.json();if(data.result==="success"&&data.rates){qxCurrencyRates={...qxCurrencyRates,...data.rates};qxCurrencyRates.USD=1;localStorage.setItem("qxCurrencyRates",JSON.stringify({savedAt:Date.now(),rates:qxCurrencyRates}));}}
- catch(error){console.warn("QX currency rates unavailable; showing USD-equivalent values with selected currency rate fallback.",error);}
+ // QX displays values only in USD or SOL; no FX conversion service is needed.
+ qxCurrencyRates={USD:1};
+ return qxCurrencyRates;
 }
 function qxApplyLanguage(){
  const ar=qxLanguage==="ar";
@@ -1061,8 +1102,8 @@ function qxRefreshDisplayedPrices(){
 }
 document.addEventListener("DOMContentLoaded",()=>{
  const language=document.getElementById("qxLanguage"),currency=document.getElementById("qxCurrency");
- if(language){language.value=localStorage.getItem("qxLanguage")||"en";qxLanguage=language.value;language.addEventListener("change",()=>{qxLanguage=language.value;localStorage.setItem("qxLanguage",qxLanguage);qxApplyLanguage();qxRefreshDisplayedPrices();window.QXApplyLanguage?.(false);qxUpdateMarketStatus(qxLastMarketSource,allPairs.length);if(window.QXFeeDisplayState)qxSetFeeDisplay(window.QXFeeDisplayState.kind,window.QXFeeDisplayState.totalBps,window.QXFeeDisplayState.shareBps,window.QXFeeDisplayState.mint);if(selectedToken){void qxLoadRealTokenInfo(selectedToken);void qxLoadTrades(selectedToken);}qxSyncPreferencesButton();});}
- if(currency){currency.value=localStorage.getItem("qxCurrency")||"USD";qxCurrency=currency.value;currency.addEventListener("change",async()=>{qxCurrency=currency.value;localStorage.setItem("qxCurrency",qxCurrency);await qxLoadCurrencyRates();qxRefreshDisplayedPrices();window.QXRefreshTrendingSpotlight?.(true);qxSyncPreferencesButton();});}
+ if(language){language.value=window.qxSafeStorage.getItem("qxLanguage")||"en";qxLanguage=language.value;language.addEventListener("change",()=>{qxLanguage=language.value;window.qxSafeStorage.setItem("qxLanguage",qxLanguage);qxApplyLanguage();qxRefreshDisplayedPrices();window.QXApplyLanguage?.(false);qxUpdateMarketStatus(qxLastMarketSource,allPairs.length);if(window.QXFeeDisplayState)qxSetFeeDisplay(window.QXFeeDisplayState.kind,window.QXFeeDisplayState.totalBps,window.QXFeeDisplayState.shareBps,window.QXFeeDisplayState.mint);if(selectedToken){void qxLoadRealTokenInfo(selectedToken);void qxLoadTrades(selectedToken);}qxSyncPreferencesButton();});}
+ if(currency){const savedCurrency=window.qxSafeStorage.getItem("qxCurrency")||"USD";currency.value=["USD","SOL"].includes(savedCurrency)?savedCurrency:"USD";qxCurrency=currency.value;currency.addEventListener("change",async()=>{qxCurrency=["USD","SOL"].includes(currency.value)?currency.value:"USD";currency.value=qxCurrency;window.qxSafeStorage.setItem("qxCurrency",qxCurrency);await qxLoadCurrencyRates();qxRefreshDisplayedPrices();window.QXRefreshTrendingSpotlight?.(true);qxSyncPreferencesButton();});}
  qxSyncPreferencesButton();qxApplyLanguage();window.QXApplyLanguage?.(false);qxUpdateMarketStatus(qxLastMarketSource,allPairs.length);qxLoadCurrencyRates().then(()=>{qxRefreshDisplayedPrices();window.QXApplyLanguage?.(false);});
 });
 
@@ -1626,8 +1667,8 @@ function qxReferralSetStatus(en,ar){if(qxReferralStatus)qxReferralStatus.textCon
 function qxReferralPendingCode(){
  try{
   const params=new URLSearchParams(location.search),fromUrl=(params.get("ref")||"").trim().toUpperCase();
-  if(/^[A-Z0-9]{8,16}$/.test(fromUrl)){localStorage.setItem(qxReferralPendingKey,fromUrl);return fromUrl;}
-  const saved=(localStorage.getItem(qxReferralPendingKey)||"").trim().toUpperCase();
+  if(/^[A-Z0-9]{8,16}$/.test(fromUrl)){window.qxSafeStorage.setItem(qxReferralPendingKey,fromUrl);return fromUrl;}
+  const saved=(window.qxSafeStorage.getItem(qxReferralPendingKey)||"").trim().toUpperCase();
   return /^[A-Z0-9]{8,16}$/.test(saved)?saved:"";
  }catch(_){return "";}
 }
@@ -1662,7 +1703,7 @@ async function qxReferralVerify(preferredProvider,referralCode=""){
   const count=document.getElementById("qxReferralCount");if(count)count.textContent=String(result.referralCount??0);
   if(qxReferralPanel)qxReferralPanel.hidden=false;qxReferralLoadedWallet=walletAddress;
   if(referralCode){
-   try{localStorage.removeItem(qxReferralPendingKey);}catch(_){}
+   try{window.qxSafeStorage.removeItem(qxReferralPendingKey);}catch(_){}
    try{const cleanUrl=new URL(location.href);cleanUrl.searchParams.delete("ref");history.replaceState({},"",cleanUrl.toString());}catch(_){}
   }
   qxReferralSetStatus("Your referral link is ready. The count includes unique wallets attributed to your link only.","رابط الإحالة جاهز. العدد يعرض المحافظ الفريدة المسجلة عن طريق رابطك فقط.");return result;
@@ -1750,7 +1791,7 @@ const QX_AD_PENDING_PAYMENT_KEY="qx_pending_ad_payment_v1";
 let qxPendingAdPayment=null;
 function qxReadPendingAdPayment(){
  if(qxPendingAdPayment)return qxPendingAdPayment;
- try{const value=JSON.parse(localStorage.getItem(QX_AD_PENDING_PAYMENT_KEY)||"null");if(value&&value.signature&&value.wallet)qxPendingAdPayment=value;}catch(_){}
+ try{const value=JSON.parse(window.qxSafeStorage.getItem(QX_AD_PENDING_PAYMENT_KEY)||"null");if(value&&value.signature&&value.wallet)qxPendingAdPayment=value;}catch(_){}
  return qxPendingAdPayment;
 }
 function qxBase58Encode(bytes){
@@ -1762,9 +1803,9 @@ function qxBase58Encode(bytes){
 }
 function qxSavePendingAdPayment(value){
  qxPendingAdPayment=value;
- try{localStorage.setItem(QX_AD_PENDING_PAYMENT_KEY,JSON.stringify(value));return true;}catch(e){console.error("QX could not persist pending ad payment",e);return false;}
+ try{return window.qxSafeStorage.setItem(QX_AD_PENDING_PAYMENT_KEY,JSON.stringify(value));}catch(e){console.error("QX could not persist pending ad payment",e);return false;}
 }
-function qxClearPendingAdPayment(){qxPendingAdPayment=null;try{localStorage.removeItem(QX_AD_PENDING_PAYMENT_KEY);}catch(_){}}
+function qxClearPendingAdPayment(){qxPendingAdPayment=null;try{window.qxSafeStorage.removeItem(QX_AD_PENDING_PAYMENT_KEY);}catch(_){}}
 async function payForAdvertisement(){
  if(adBusy)return;
  try{
@@ -2043,8 +2084,14 @@ async function qxPreflightLegacyTransaction(tx,connection,label="Solana"){
   if(!value){rpcFailures.push(endpoint+": no simulation result");continue;}
   if(value.err){
    const logs=Array.isArray(value.logs)?value.logs:[];
-   window.QXLastLegacySimulationDiagnostics={label,endpoint,error:value.err,logs,unitsConsumed:value.unitsConsumed||null,slot:data?.result?.context?.slot||null,at:new Date().toISOString()};
-   throw new Error(label+" simulation failed before wallet approval: "+JSON.stringify(value.err)+". Full logs were saved for diagnosis. No signature was requested.");
+   const failedIndex=Array.isArray(value.err?.InstructionError)?Number(value.err.InstructionError[0]):-1;
+   const failedIx=Number.isInteger(failedIndex)&&failedIndex>=0?tx.instructions?.[failedIndex]:null;
+   const failedProgram=failedIx?.programId?.toBase58?.()||"unknown";
+   const failedAccounts=(failedIx?.keys||[]).map(k=>({pubkey:k.pubkey?.toBase58?.()||String(k.pubkey||""),signer:!!k.isSigner,writable:!!k.isWritable}));
+   const diagnostics={label,endpoint,error:value.err,failedInstructionIndex:failedIndex,failedProgram,failedAccounts,instructions:(tx.instructions||[]).map((ix,index)=>({index,programId:ix.programId?.toBase58?.()||"unknown",accountCount:ix.keys?.length||0,dataLength:ix.data?.length||0})),logs,unitsConsumed:value.unitsConsumed||null,slot:data?.result?.context?.slot||null,at:new Date().toISOString()};
+   window.QXLastLegacySimulationDiagnostics=diagnostics;
+   const logTail=logs.slice(-18).join("\n");
+   throw new Error(label+" simulation failed before wallet approval at instruction "+failedIndex+" (program "+failedProgram+"): "+JSON.stringify(value.err)+(logTail?"\nSimulation logs:\n"+logTail:"")+"\nNo signature was requested.");
   }
   window.QXLastLegacySimulationDiagnostics={label,endpoint,error:null,logs:Array.isArray(value.logs)?value.logs:[],unitsConsumed:value.unitsConsumed||null,slot:data?.result?.context?.slot||null,at:new Date().toISOString()};
   return value;
@@ -2068,7 +2115,7 @@ async function qxLaunchToken(options={}){
   // metadata publishing or QX registry indexing failed. Reuse this button to
   // recover the existing mint instead of submitting a second launch transaction.
   let pendingRecovery=null;
-  try{pendingRecovery=JSON.parse(localStorage.getItem("qxPendingLaunchRegistryRecord")||"null");}catch(_){pendingRecovery=null;}
+  try{pendingRecovery=JSON.parse(window.qxSafeStorage.getItem("qxPendingLaunchRegistryRecord")||"null");}catch(_){pendingRecovery=null;}
   if(pendingRecovery?.partialLaunch&&String(pendingRecovery.creator||"")===String(walletAddress||"")){
    result.style.display="block";
    status.textContent="Recovering the existing confirmed QX launch. QX will resolve its original pool and finish publishing; no new token will be created…";
@@ -2309,9 +2356,9 @@ async function qxLaunchToken(options={}){
   };
   // Save a recovery copy before optional media publishing or global indexing.
   let metadataPublished=true;
-  const saved=JSON.parse(localStorage.getItem("qxRealLaunches")||"[]");
-  saved.unshift(record);localStorage.setItem("qxRealLaunches",JSON.stringify(saved.slice(0,20)));
-  try{localStorage.setItem("qxPendingLaunchRegistryRecord",JSON.stringify(record));}catch(storageError){console.warn("Could not persist QX global registry retry record",storageError);}
+  const saved=JSON.parse(window.qxSafeStorage.getItem("qxRealLaunches")||"[]");
+  saved.unshift(record);window.qxSafeStorage.setItem("qxRealLaunches",JSON.stringify(saved.slice(0,20)));
+  try{window.qxSafeStorage.setItem("qxPendingLaunchRegistryRecord",JSON.stringify(record));}catch(storageError){console.warn("Could not persist QX global registry retry record",storageError);}
   if(qxPendingLaunchImage){
    status.textContent="Launch confirmed. Publishing the token logo…";
    try{
@@ -2337,18 +2384,18 @@ async function qxLaunchToken(options={}){
    }catch(metadataError){
     metadataPublished=false;
     console.warn("QX metadata upload deferred; launch recovery record retained",metadataError);
-    try{localStorage.setItem("qxPendingLaunchRegistryMedia",JSON.stringify({...qxPendingLaunchMetadata,kind:"metadata",poolSignature:poolSig}));}catch(storageError){console.warn("Could not persist pending QX metadata upload",storageError);}
+    try{window.qxSafeStorage.setItem("qxPendingLaunchRegistryMedia",JSON.stringify({...qxPendingLaunchMetadata,kind:"metadata",poolSignature:poolSig}));}catch(storageError){console.warn("Could not persist pending QX metadata upload",storageError);}
    }
   }
   try{
-   const currentRows=JSON.parse(localStorage.getItem("qxRealLaunches")||"[]");
-   localStorage.setItem("qxRealLaunches",JSON.stringify(currentRows.map(x=>String(x?.mint||"")===String(record.mint)?record:x).slice(0,20)));
-   localStorage.setItem("qxPendingLaunchRegistryRecord",JSON.stringify(record));
+   const currentRows=JSON.parse(window.qxSafeStorage.getItem("qxRealLaunches")||"[]");
+   window.qxSafeStorage.setItem("qxRealLaunches",JSON.stringify(currentRows.map(x=>String(x?.mint||"")===String(record.mint)?record:x).slice(0,20)));
+   window.qxSafeStorage.setItem("qxPendingLaunchRegistryRecord",JSON.stringify(record));
   }catch(storageError){console.warn("Could not refresh QX launch recovery record",storageError);}
   // The verified on-chain record is queued until metadata is public, then the
   // server independently verifies the mint, pool, creator and exact config.
   const globallyRegistered=metadataPublished?await qxRegisterVerifiedLaunchGlobally(record):false;
-  if(globallyRegistered){try{localStorage.removeItem("qxPendingLaunchRegistryRecord");localStorage.removeItem("qxPendingLaunchRegistryMedia");}catch(_){}}
+  if(globallyRegistered){try{window.qxSafeStorage.removeItem("qxPendingLaunchRegistryRecord");window.qxSafeStorage.removeItem("qxPendingLaunchRegistryMedia");}catch(_){}}
   else console.warn("QX launch is verified on Solana but global registry registration is pending; automatic retry is queued.");
   $("launchMint").textContent=record.mint;
   $("launchConfig").textContent=record.config;
@@ -2375,8 +2422,8 @@ async function qxLaunchToken(options={}){
   if(confirmedLaunchTx){
    const partial={...confirmedLaunchTx,partialLaunch:true,verifiedOnChain:true,metadataPending:true,createdAt:confirmedLaunchTx.createdAt||Date.now(),feeSol:0,feeRecipient:"",feeStatus:"free QX token creation",qxSupplyShareBps:500,qxSupplyShareReceiver:"9C6bcBgeHnRwJfTYKqPjEGeP9egxKWQgR5GCXVSEeDXH"};
    try{
-    const prior=JSON.parse(localStorage.getItem("qxRealLaunches")||"[]");
-    localStorage.setItem("qxRealLaunches",JSON.stringify([partial,...(Array.isArray(prior)?prior.filter(x=>String(x?.mint||"")!==partial.mint):[])].slice(0,20)));
+    const prior=JSON.parse(window.qxSafeStorage.getItem("qxRealLaunches")||"[]");
+    window.qxSafeStorage.setItem("qxRealLaunches",JSON.stringify([partial,...(Array.isArray(prior)?prior.filter(x=>String(x?.mint||"")!==partial.mint):[])].slice(0,20)));
     // Keep a complete retry envelope when the exact pool was resolved. If it
     // was not, persist the confirmed mint/signature as a recovery lock so the
     // UI cannot accidentally create a duplicate token.
@@ -2392,12 +2439,12 @@ async function qxLaunchToken(options={}){
      partialLaunch:true,
      metadataPending:true
     };
-    localStorage.setItem("qxPendingLaunchRegistryRecord",JSON.stringify(recoveryRecord));
+    window.qxSafeStorage.setItem("qxPendingLaunchRegistryRecord",JSON.stringify(recoveryRecord));
     if(qxPendingLaunchImage){
-     localStorage.setItem("qxPendingLaunchRegistryImage",JSON.stringify({...qxPendingLaunchImage,kind:"image",poolSignature:String(partial.poolSignature||"")}));
+     window.qxSafeStorage.setItem("qxPendingLaunchRegistryImage",JSON.stringify({...qxPendingLaunchImage,kind:"image",poolSignature:String(partial.poolSignature||"")}));
     }
     if(qxPendingLaunchMetadata){
-     localStorage.setItem("qxPendingLaunchRegistryMedia",JSON.stringify({...qxPendingLaunchMetadata,kind:"metadata",poolSignature:String(partial.poolSignature||"")}));
+     window.qxSafeStorage.setItem("qxPendingLaunchRegistryMedia",JSON.stringify({...qxPendingLaunchMetadata,kind:"metadata",poolSignature:String(partial.poolSignature||"")}));
     }
    }catch(recoveryStorageError){console.warn("QX could not persist the complete launch recovery envelope",recoveryStorageError);}
    status.textContent="IMPORTANT: Solana already confirmed this launch. QX saved its mint and transaction; do not launch it again. Press this same button to retry publishing and registration. Details: "+(e?.message||String(e));
@@ -2405,6 +2452,20 @@ async function qxLaunchToken(options={}){
   }else{
    status.textContent=e?.message||"Real launch failed. No launch success is recorded.";
    btn.textContent="Connect wallet & launch on Solana";
+   const diag=window.QXLastLegacySimulationDiagnostics;
+   if(diag?.label==="QX launch"&&status?.parentElement){
+    let copyBtn=status.parentElement.querySelector("#qxCopyLaunchDiagnostics");
+    if(!copyBtn){
+     copyBtn=document.createElement("button");copyBtn.id="qxCopyLaunchDiagnostics";copyBtn.type="button";copyBtn.className="btn";copyBtn.style.cssText="margin-top:8px;width:100%;";copyBtn.textContent="Copy full launch diagnostics";
+     status.insertAdjacentElement("afterend",copyBtn);
+    }
+    copyBtn.hidden=false;
+    copyBtn.onclick=async()=>{
+     const payload=JSON.stringify(window.QXLastLegacySimulationDiagnostics||{},null,2);
+     try{await navigator.clipboard.writeText(payload);copyBtn.textContent="Diagnostics copied — paste them into this chat";}
+     catch(_){const area=document.createElement("textarea");area.value=payload;area.style.position="fixed";area.style.opacity="0";document.body.appendChild(area);area.select();try{document.execCommand("copy");copyBtn.textContent="Diagnostics copied — paste them into this chat";}catch(e){copyBtn.textContent="Copy failed — use browser console: window.QXLastLegacySimulationDiagnostics";}area.remove();}
+    };
+   }
   }
  }finally{btn.disabled=false;}
 }
@@ -2449,10 +2510,10 @@ async function qxRefreshLaunchChainStatus(record){
     record.qxLiveVenue="DAMM v2";
    }catch(e){record.dammV2Pool="";console.warn("QX DAMM v2 successor status lookup skipped",e);}
   }else{record.qxLiveVenue="DBC";}
-  const saved=JSON.parse(localStorage.getItem("qxRealLaunches")||"[]");
+  const saved=JSON.parse(window.qxSafeStorage.getItem("qxRealLaunches")||"[]");
   const idx=saved.findIndex(x=>String(x?.pool||"")===String(record.pool));
   if(idx>=0)saved[idx]=record;
-  localStorage.setItem("qxRealLaunches",JSON.stringify(saved.slice(0,20)));
+  window.qxSafeStorage.setItem("qxRealLaunches",JSON.stringify(saved.slice(0,20)));
   // Mirror the verified lifecycle into the global QX registry. The Edge Function
   // re-checks the DBC pool and requires a real DAMM v2 account before accepting
   // a migrated state, so localStorage cannot silently promote a launch.
@@ -2503,14 +2564,14 @@ async function qxSyncGlobalLaunchStatus(record){
  const data=await r.json().catch(()=>({}));
  if(!r.ok||!data?.ok)throw new Error(data?.error||"Global lifecycle sync failed");
  record.globalRegistry=status;record.globalRegistryAt=Date.now();
- const saved=JSON.parse(localStorage.getItem("qxRealLaunches")||"[]")||[];
- localStorage.setItem("qxRealLaunches",JSON.stringify(saved.map(x=>String(x?.mint||"")===String(record.mint)?record:x).slice(0,20)));
+ const saved=JSON.parse(window.qxSafeStorage.getItem("qxRealLaunches")||"[]")||[];
+ window.qxSafeStorage.setItem("qxRealLaunches",JSON.stringify(saved.map(x=>String(x?.mint||"")===String(record.mint)?record:x).slice(0,20)));
  return true;
 }
 window.QXSyncGlobalLaunchStatus=qxSyncGlobalLaunchStatus;
 window.QXRefreshLaunchChainStatus=qxRefreshLaunchChainStatus;
 $("refreshLaunchStatusBtn")?.addEventListener("click",async()=>{
- const saved=JSON.parse(localStorage.getItem("qxRealLaunches")||"[]");
+ const saved=JSON.parse(window.qxSafeStorage.getItem("qxRealLaunches")||"[]");
  const record=saved[0];
  if(!record){const out=$("launchChainStatus");if(out)out.textContent="No locally recorded QX launch is available to refresh.";return;}
  const btn=$("refreshLaunchStatusBtn");if(btn){btn.disabled=true;btn.textContent="READING SOLANA…";}
@@ -2879,7 +2940,7 @@ async function qxExecuteDammV2Swap(q){
 async function qxRecoverVerifiedQXLaunchRecord(mint){
  const target=String(mint||"");if(!qxIsValidSolanaMint(target))return null;
  try{
-  const saved=JSON.parse(localStorage.getItem("qxRealLaunches")||"[]");
+  const saved=JSON.parse(window.qxSafeStorage.getItem("qxRealLaunches")||"[]");
   const local=Array.isArray(saved)?saved.find(x=>String(x?.mint||"")===target):null;
   if(local?.pool)return local;
  }catch(_){}
@@ -2912,7 +2973,7 @@ async function qxBuildDirectDbcQuote(){
  let launchRecord=token?.qxLaunchRecord||{};
  if(!launchRecord?.pool&&!launchRecord?.dammV2Pool){
   try{
-   const saved=JSON.parse(localStorage.getItem("qxRealLaunches")||"[]");
+   const saved=JSON.parse(window.qxSafeStorage.getItem("qxRealLaunches")||"[]");
    const recovered=saved.find(x=>String(x?.mint||"")===mint);
    if(recovered)launchRecord=recovered;
   }catch(_){}
@@ -3614,7 +3675,6 @@ function setTradeDirection(dir){
  const range=$("percentRange");if(range)range.value="25";
  pendingSwapOrder=null;qxUpdateSwapButtonLabel("quote");$("confirmSwapBtn").disabled=true;$("confirmSwapBtn").textContent="GET QUOTE FIRST";$("swapReceive").textContent="Enter amount to estimate";
  qxSetSwapStatus(tradeDirection==="buy"?"Enter the SOL amount you want to swap, or choose 25%, 50%, 75% or MAX.":"Enter the "+(selectedToken?.baseToken?.symbol||"TOKEN")+" amount you want to swap, or choose 25%, 50%, 75% or MAX.");updateTradePercentUI();refreshTradeBalances();
- if(selectedToken){qxSetupChartRanges(selectedToken);}
 }
 let qxTokenDetailRequestId=0,qxTokenDetailAbortController=null;
 let qxChartRequestId=0, qxChartAbortController=null;
@@ -3638,14 +3698,14 @@ async function qxGetPoolTrades(pool){
   const response=await qxTimedFetch("https://api.geckoterminal.com/api/v2/networks/solana/pools/"+encodeURIComponent(key)+"/trades?page=1",{headers:{accept:"application/json;version=20230203"},cache:"no-store"},9000);
   if(!response.ok)throw new Error("Trade feed request failed ("+response.status+")");
   const data=await response.json();
-  qxPoolTradesCache.set(key,{data,expires:Date.now()+6000});
+  qxPoolTradesCache.set(key,{data,expires:Date.now()+60000});
   return data;
  })();
  qxPoolTradesCache.set(key,{...(cached?.data?{data:cached.data}:{}),promise,expires:Date.now()+9000});
  try{return await promise;}catch(error){
   const latest=qxPoolTradesCache.get(key);
-  if(cached?.data){qxPoolTradesCache.set(key,{data:cached.data,expires:Date.now()+2500});return cached.data;}
-  if(latest?.data){qxPoolTradesCache.set(key,{data:latest.data,expires:Date.now()+2500});return latest.data;}
+  if(cached?.data){qxPoolTradesCache.set(key,{data:cached.data,expires:Date.now()+10000});return cached.data;}
+  if(latest?.data){qxPoolTradesCache.set(key,{data:latest.data,expires:Date.now()+10000});return latest.data;}
   qxPoolTradesCache.delete(key);throw error;
  }
 }
@@ -3748,23 +3808,30 @@ async function qxLoadLiveChart(token,range="1H"){
   for(const t of ticks){const bucket=Math.floor(t.time/(seconds*1000))*(seconds*1000);let c=buckets.get(bucket);if(!c){c={time:Math.floor(bucket/1000),open:t.price,high:t.price,low:t.price,close:t.price,volume:0,trades:0};buckets.set(bucket,c);}c.high=Math.max(c.high,t.price);c.low=Math.min(c.low,t.price);c.close=t.price;c.volume+=t.volume;c.trades++;}
   points=[...buckets.values()].slice(-60);sourceLabel="Real pool trades · "+seconds+"s candles";
  }
- // A quiet token may have no trades in the latest page. Never leave the chart blank:
- // show the provider's real 1-minute OHLCV history instead of fabricated candles.
- if(!points.length){
-  const rangeMap={"1m":["minute",1],"5m":["minute",5],"15m":["minute",15],"30m":["minute",30],"1H":["hour",1],"4H":["hour",4],"1D":["day",1]};
-  const cfg=seconds?["minute",1]:(rangeMap[range]||rangeMap["1H"]),unit=cfg[0],aggregate=cfg[1];
+ // A quiet token may have no sub-minute trades in the provider's latest page.
+ // Do not disguise 1-minute OHLCV as 1s/5s/15s/30s candles: that would make
+ // the selected interval and the chart's time axis factually incorrect.
+ if(!points.length&&!seconds){
+  const rangeMap={"now":["minute",1],"1m":["minute",1],"5m":["minute",5],"15m":["minute",15],"30m":["minute",30],"1h":["hour",1],"4h":["hour",4],"1d":["day",1]};
+  const cfg=rangeMap[String(range).toLowerCase()]||rangeMap["1H"],unit=cfg[0],aggregate=cfg[1];
   const endpoint=unit==="minute"?"minute":unit==="hour"?"hour":"day";
   const url="https://api.geckoterminal.com/api/v2/networks/solana/pools/"+encodeURIComponent(pair)+"/ohlcv/"+endpoint+"?aggregate="+aggregate+"&limit=120&token="+poolTokenSide;
   const r=await qxTimedFetch(url,{signal:chartController.signal,headers:{accept:"application/json;version=20230203"},cache:"no-store"},10000);if(!r.ok)throw new Error("Historical OHLCV request failed ("+r.status+")");
   const j=await r.json(),rows=Array.isArray(j?.data?.attributes?.ohlcv_list)?j.data.attributes.ohlcv_list:[];
   points=rows.map(x=>({time:Number(x?.[0]),open:Number(x?.[1]),high:Number(x?.[2]),low:Number(x?.[3]),close:Number(x?.[4]),volume:Number(x?.[5]||0)})).filter(x=>Number.isFinite(x.time)&&x.open>0&&x.high>0&&x.low>0&&x.close>0).sort((a,b)=>a.time-b.time).slice(-90);
-  if(points.length)sourceLabel=seconds?"Real 1m pool OHLCV · no recent sub-minute trades":"GeckoTerminal pool OHLCV";
+  if(points.length)sourceLabel="GeckoTerminal pool OHLCV";
  }
  }
  if(requestId!==qxChartRequestId||String(selectedToken?.baseToken?.address||"")!==mint)return;
- if(!points.length){const status=$("qxOwnedChartStatus");if(status)status.textContent='No verified price candles are available from the selected pool yet. QX will retry automatically.';return;}
+ if(!points.length){
+  const status=$("qxOwnedChartStatus");
+  if(status)status.textContent=seconds?"No recent verified pool trades at this interval. Waiting for actual trades; no 1-minute candles are substituted.":"No verified price candles are available from the selected pool yet. QX will retry automatically.";
+  const rect=host.getBoundingClientRect(),dpr=Math.max(1,window.devicePixelRatio||1),w=Math.max(280,Math.floor(rect.width||700)),h=Math.max(220,Math.floor(rect.height||340));
+  canvas.width=w*dpr;canvas.height=h*dpr;canvas.style.width=w+"px";canvas.style.height=h+"px";ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
+  return;
+ }
  if(!(cachedChart&&cachedChart.expires>Date.now())){
-  qxChartDataCache.set(chartCacheKey,{points:points.map(p=>({...p})),tradeMarkers:tradeMarkers.map(m=>({...m})),sourceLabel,expires:Date.now()+(seconds?3500:8500)});
+  qxChartDataCache.set(chartCacheKey,{points:points.map(p=>({...p})),tradeMarkers:tradeMarkers.map(m=>({...m})),sourceLabel,expires:Date.now()+60000});
   if(qxChartDataCache.size>80){const oldest=qxChartDataCache.keys().next().value;qxChartDataCache.delete(oldest);}
  }
  const draw=()=>{
@@ -3857,13 +3924,13 @@ function qxStartAgeTicker(token){
  if(qxAgeTimer&&qxAgeMint===mint)return;
  if(qxAgeTimer)clearInterval(qxAgeTimer);
  qxAgeMint=mint;
- const tick=()=>{if(String(selectedToken?.baseToken?.address||"")!==mint||!document.body.classList.contains("qx-token-open"))return;const activeToken=(selectedToken&&String(selectedToken?.baseToken?.address||"")===mint)?selectedToken:token;const created=qxTimestampMs(activeToken?.tokenCreatedAt);const el=$("qxTokenAge");if(el)el.textContent=created?qxAgeText(created):"Age —";};
+ const tick=()=>{if(String(selectedToken?.baseToken?.address||"")!==mint||!document.body.classList.contains("qx-token-open"))return;const activeToken=(selectedToken&&String(selectedToken?.baseToken?.address||"")===mint)?selectedToken:token;const created=qxTimestampMs(activeToken?.tokenCreatedAt||activeToken?.pairCreatedAt||activeToken?.poolCreatedAt);const el=$("qxTokenAge");if(el)el.textContent=created?qxAgeText(created):"Age —";};
  tick();qxAgeTimer=setInterval(tick,1000);
 }
 function qxSetRealTokenInfo(token){
  const box=$("qxTokenRealInfo"),ageEl=$("qxTokenAge"),socials=$("qxTokenSocials"),title=$("qxRealInfoTitle");if(!box||!socials)return;
  qxStartAgeTicker(token);
- const mintCreated=qxTimestampMs(token?.tokenCreatedAt);
+ const mintCreated=qxTimestampMs(token?.tokenCreatedAt||token?.pairCreatedAt||token?.poolCreatedAt);
  if(ageEl)ageEl.textContent=mintCreated?qxAgeText(mintCreated):"Age —";
  if(title)title.textContent=String(qxLanguage||window.qxLanguage||"en")==="ar"?"معلومات المشروع":String(qxLanguage||window.qxLanguage||"en")==="zh"?"项目资料":"PROJECT INFO";
  socials.innerHTML="";
@@ -3948,7 +4015,7 @@ function qxStartTradesRefresh(token){
  const mint=String(token?.baseToken?.address||"");if(!mint)return;
  qxTradesRefreshTimer=setInterval(()=>{
   if(document.visibilityState==="visible"&&document.body.classList.contains("qx-token-open")&&String(selectedToken?.baseToken?.address||"")===mint)void qxLoadTrades(selectedToken);
- },8000);
+ },60000);
 }
 async function qxLoadTrades(token){
  const mint=String(token?.baseToken?.address||"");
@@ -4019,7 +4086,7 @@ function qxSetupChartRanges(token){
   // Free public chart feed: check every 15s for every selected range.
   // GeckoTerminal caches public endpoint responses, so polling faster would
   // waste the free request budget without guaranteeing fresher market data.
-  const delay=(['1s','5s','15s','30s','now'].includes(String(range).toLowerCase()))?3500:10000;
+  const delay=60000; // Public GeckoTerminal chart/trade responses are cached upstream for about one minute.
   qxChartLiveTimer=setInterval(run,delay);
  };
  document.querySelectorAll("#chartRanges [data-chart-range]").forEach(b=>b.onclick=()=>{
@@ -4079,7 +4146,8 @@ function openToken(token){
  qxSetRealTokenInfo(token);
  qxLoadRealTokenInfo(token);
  qxLoadTrades(token);qxStartTradesRefresh(token);
- try{window.QXStartMarketStream?.(token);}catch(streamStartError){console.warn("QX market stream start failed",streamStartError);}
+ // Token-specific Birdeye streaming is intentionally not started without a configured upstream key.
+ // Public verified pool/trade snapshots continue through the REST refresh path.
  const detailTop=document.getElementById("detail");
  if(detailTop) setTimeout(()=>detailTop.scrollIntoView({behavior:"smooth",block:"start"}),80);
 }
@@ -4096,6 +4164,8 @@ $("tokenBackBtn")?.addEventListener("click",function(e){
  try{history.replaceState({},"",location.pathname+location.search);}catch(_){ }
  window.scrollTo(0,0);
  const market=document.getElementById("tokenResults");if(market)setTimeout(()=>market.scrollIntoView({behavior:"smooth",block:"start"}),60);
+ // Resume discovery immediately after leaving the token terminal.
+ setTimeout(()=>{if(document.visibilityState!=="hidden"&&!document.body.classList.contains('qx-token-open')){void loadMarket();void qxRefreshPublicLiveSnapshots();}},180);
  return false;
 });
 $("tradeBuyBtn")?.addEventListener("click",()=>setTradeDirection("buy"));
@@ -4128,7 +4198,7 @@ const QX_DEX_PROFILES="https://api.dexscreener.com/token-profiles/latest/v1";
 // DexScreener token endpoint: up to 30 comma-separated token addresses per request.
 const QX_DEX_TOKENS="https://api.dexscreener.com/tokens/v1/solana/";
 
-const QX_SOLANA_REFRESH_MS=10000; // fast discovery refresh; live snapshots/trades continue independently
+const QX_SOLANA_REFRESH_MS=20000; // refresh the public discovery universe every 20s; providers may still index later
 const QX_MARKET_CACHE_KEY="qxMarketUniverseV2";
 const QX_MARKET_CACHE_MAX_AGE=15*60*1000;
 const QX_FALLBACK_TOKEN_LIMIT=240;
@@ -4189,7 +4259,13 @@ function qxGeckoPoolToPair(item,included){
   const poolAddress=String(attrs?.address||String(item?.id||"").replace(/^solana_/i,"")),mint=String(base?.address||base?.token_address||baseRef.replace(/^solana_/i,""));
   if(!qxIsValidSolanaMint(mint)||!qxIsValidSolanaMint(poolAddress))return null;
   const tx=attrs?.transactions||{},vol=attrs?.volume_usd||{},ch=attrs?.price_change_percentage||{};
-  return {chainId:"solana",pairAddress:poolAddress,baseToken:{address:mint,name:cleanTokenText(base?.name||attrs?.name?.split("/")[0]||"Unknown Token"),symbol:cleanTokenText(base?.symbol||"TOKEN")},quoteToken:{address:String(quote?.address||quote?.token_address||quoteRef.replace(/^solana_/i,"")),name:cleanTokenText(quote?.name||""),symbol:cleanTokenText(quote?.symbol||"")},priceUsd:String(attrs?.base_token_price_usd??attrs?.price_usd??0),priceChange:{h1:qxNum(ch?.h1),h24:qxNum(ch?.h24)},volume:{h1:qxNum(vol?.h1),h24:qxNum(vol?.h24)},liquidity:{usd:qxNum(attrs?.reserve_in_usd??attrs?.liquidity_usd)},marketCap:qxNum(attrs?.market_cap_usd),fdv:qxNum(attrs?.fdv_usd),txns:{h1:{buys:qxNum(tx?.h1?.buys),sells:qxNum(tx?.h1?.sells)},h24:{buys:qxNum(tx?.h24?.buys),sells:qxNum(tx?.h24?.sells)}},pairCreatedAt:qxTimestampMs(attrs?.pool_created_at||attrs?.created_at),tokenCreatedAt:qxTimestampMs(base?.created_at||base?.token_created_at),info:{imageUrl:qxSafeUrl(base?.image_url||base?.imageUrl||attrs?.image_url||"")},dexId:cleanTokenText(String(rel?.dex?.data?.id||attrs?.dex_name||"geckoterminal"))};
+  const price=Number(attrs?.base_token_price_usd??attrs?.price_usd??0),liquidity=qxNum(attrs?.reserve_in_usd??attrs?.liquidity_usd);
+  const tokenName=cleanTokenText(base?.name||attrs?.name?.split("/")[0]||"Unknown Token"),tokenSymbol=cleanTokenText(base?.symbol||"TOKEN");
+  // GeckoTerminal's /new_pools feed is already a real indexed Solana pool.
+  // Keep incomplete new-pool rows visible as pending instead of hiding them
+  // until every market field has populated. No price/liquidity is fabricated.
+  const pendingDiscovery=!(price>0&&liquidity>0&&!qxIsPlaceholderTokenLabel(tokenName,"name")&&!qxIsPlaceholderTokenLabel(tokenSymbol,"symbol"));
+  return {chainId:"solana",pairAddress:poolAddress,baseToken:{address:mint,name:tokenName,symbol:tokenSymbol},quoteToken:{address:String(quote?.address||quote?.token_address||quoteRef.replace(/^solana_/i,"")),name:cleanTokenText(quote?.name||""),symbol:cleanTokenText(quote?.symbol||"")},priceUsd:String(price),priceChange:{h1:qxNum(ch?.h1),h24:qxNum(ch?.h24)},volume:{h1:qxNum(vol?.h1),h24:qxNum(vol?.h24)},liquidity:{usd:liquidity},marketCap:qxNum(attrs?.market_cap_usd),fdv:qxNum(attrs?.fdv_usd),txns:{h1:{buys:qxNum(tx?.h1?.buys),sells:qxNum(tx?.h1?.sells)},h24:{buys:qxNum(tx?.h24?.buys),sells:qxNum(tx?.h24?.sells)}},pairCreatedAt:qxTimestampMs(attrs?.pool_created_at||attrs?.created_at),tokenCreatedAt:qxTimestampMs(base?.created_at||base?.token_created_at),info:{imageUrl:qxSafeUrl(base?.image_url||base?.imageUrl||attrs?.image_url||"")},dexId:cleanTokenText(String(rel?.dex?.data?.id||attrs?.dex_name||"geckoterminal")),qxPendingDiscovery:pendingDiscovery};
  }catch(_){return null;}
 }
 window.qxGeckoPoolToPair=qxGeckoPoolToPair;
@@ -4203,7 +4279,16 @@ function qxLooksLikeFakeNative(p){
  if(/erc20|ethereum|bsc|binance|polygon|arbitrum|optimism|base network|wormhole.*eth|ethereum.*wrapped|wrapped.*ethereum/i.test(name+" "+symbol))return true;
  return false;
 }
-async function qxFetchGecko(path){const out=await getJSON(QX_GECKO_BASE+path,8000,0);return (out?.data||[]).map(x=>qxGeckoPoolToPair(x,out?.included||[])).filter(Boolean);}
+const qxGeckoFeedCache=new Map();
+async function qxFetchGecko(path){
+ const key=String(path||""),cached=qxGeckoFeedCache.get(key);
+ if(cached&&Date.now()-cached.at<20000)return cached.rows;
+ const out=await getJSON(QX_GECKO_BASE+key,9000,0);
+ const rows=(out?.data||[]).map(x=>qxGeckoPoolToPair(x,out?.included||[])).filter(Boolean);
+ qxGeckoFeedCache.set(key,{at:Date.now(),rows});
+ if(qxGeckoFeedCache.size>30)qxGeckoFeedCache.delete(qxGeckoFeedCache.keys().next().value);
+ return rows;
+}
 async function qxFetchDexSearch(q){
  try{
   const out=await getJSON(QX_DEX_SEARCH+encodeURIComponent(String(q||"")),7000,0);
@@ -4217,10 +4302,17 @@ async function qxFetchDexSearch(q){
  }catch(e){console.warn("QX DexScreener search unavailable for",q,e);return [];
  }
 }
+let qxDexUniverseCache={at:0,pairs:[],promise:null};
 async function qxFetchDexScreenerUniverse(){
- const queries=["SOL","USDC","JUP","BONK","WIF","RAY","PUMP","TRUMP","POPCAT","GOAT","MEME","Meme coin","AI","DOG","CAT","PEPE","INU","FROG","JITO","ORCA","MEW","FARTCOIN","PENGU","BOME","SLERF","DEGEN","CHILL","NEW SOLANA","SOLANA TOKEN","LAUNCH"];
+ if(qxDexUniverseCache.at>Date.now()-20000&&qxDexUniverseCache.pairs.length)return qxDexUniverseCache.pairs;
+ if(qxDexUniverseCache.promise)return qxDexUniverseCache.promise;
+ const queries=["SOL","BONK","WIF","PUMP","PEPE","MEME","JUP","RAY"];
+ qxDexUniverseCache.promise=(async()=>{
  const settled=await Promise.allSettled([qxFetchDexLatestSolana(),...queries.map(q=>qxFetchDexSearch(q))]);
- return bestPairsByMint(settled.flatMap(r=>r.status==="fulfilled"?(r.value||[]):[]));
+ const pairs=bestPairsByMint(settled.flatMap(r=>r.status==="fulfilled"?(r.value||[]):[]));
+ qxDexUniverseCache.pairs=pairs;qxDexUniverseCache.at=Date.now();return pairs;
+ })().finally(()=>{qxDexUniverseCache.promise=null;});
+ return qxDexUniverseCache.promise;
 }
 async function qxFetchDexLatestSolana(){
  try{
@@ -4240,13 +4332,13 @@ async function qxFetchDexLatestSolana(){
   return bestPairsByMint(pairs).filter(qxIsTokenDiscoveryReady);
  }catch(error){console.warn("QX DexScreener latest Solana token discovery unavailable",error);return [];}
 }
-/* QX PUBLIC MARKET SNAPSHOTS
+/* QX PUBLIC MARKET SNAPSHOTS V147
    DexScreener public REST API; no Birdeye key or paid subscription.
    This is real provider data, not simulated ticks. REST snapshots are periodic,
    not trade-by-trade WebSocket events. Requests are chunked to 30 mints per call. */
 let qxPublicSnapshotBusy=false,qxPublicSnapshotLast=0,qxPublicSnapshotFailures=0;
 async function qxRefreshPublicLiveSnapshots(){
- if(qxPublicSnapshotBusy||document.visibilityState==='hidden'||!allPairs.length)return;
+ if(qxPublicSnapshotBusy||document.visibilityState==='hidden'||document.body.classList.contains('qx-token-open')||!allPairs.length)return;
  qxPublicSnapshotBusy=true;
  try{
   const source=bestPairsByMint(allPairs.filter(qxIsDisplayReady)).slice(0,120);
@@ -4332,7 +4424,7 @@ async function qxFetchJupiterMarketFallback(){
 }
 function qxReadMarketCache(){
  try{
-  const raw=JSON.parse(localStorage.getItem(QX_MARKET_CACHE_KEY)||"null");
+  const raw=JSON.parse(window.qxSafeStorage.getItem(QX_MARKET_CACHE_KEY)||"null");
   if(!raw||!Array.isArray(raw.pairs)||!raw.savedAt)return [];
   if(Date.now()-Number(raw.savedAt)>QX_MARKET_CACHE_MAX_AGE)return [];
   return bestPairsByMint(raw.pairs).filter(qxIsDisplayReady);
@@ -4341,7 +4433,7 @@ function qxReadMarketCache(){
 function qxWriteMarketCache(pairs){
  try{
   const clean=bestPairsByMint(pairs).filter(qxIsDisplayReady).slice(0,2000);
-  if(clean.length)localStorage.setItem(QX_MARKET_CACHE_KEY,JSON.stringify({savedAt:Date.now(),pairs:clean}));
+  if(clean.length)window.qxSafeStorage.setItem(QX_MARKET_CACHE_KEY,JSON.stringify({savedAt:Date.now(),pairs:clean}));
  }catch(e){console.warn("QX market cache write failed",e);}
 }
 function qxIsPlaceholderTokenLabel(value,kind="name"){
@@ -4364,12 +4456,11 @@ async function qxFetchJupiterMeta(force=false){
 function qxMergeJupiterMeta(list,meta){return (list||[]).map(p=>{const mint=String(p?.baseToken?.address||"");const m=meta.get(mint);if(!m)return p;p.baseToken=p.baseToken||{};if(qxIsPlaceholderTokenLabel(p.baseToken.name,"name")&&!qxIsPlaceholderTokenLabel(m.name,"name"))p.baseToken.name=m.name;if(qxIsPlaceholderTokenLabel(p.baseToken.symbol,"symbol")&&!qxIsPlaceholderTokenLabel(m.symbol,"symbol"))p.baseToken.symbol=m.symbol;if(!p.info)p.info={};if(!p.info.imageUrl&&m.imageUrl)p.info.imageUrl=m.imageUrl;if(m.decimals!==undefined&&m.decimals!==null&&Number.isInteger(Number(m.decimals)))p.tokenDecimals=Number(m.decimals);return p;});}
 function qxIsDisplayReady(p){
  if(!qxIsTokenDiscoveryReady(p))return false;
+ // A real on-chain pool event is enough to show a clearly marked pending row.
+ // Names, logos, price and liquidity are enriched later; no values are fabricated.
+ if(p?.qxVerifiedLaunch===true||p?.qxLiveDetected===true||p?.qxPendingDiscovery===true)return true;
  const name=String(p?.baseToken?.name||"").trim(),symbol=String(p?.baseToken?.symbol||"").trim();
  if(qxIsPlaceholderTokenLabel(name,"name")||qxIsPlaceholderTokenLabel(symbol,"symbol"))return false;
- // A verified QX launch or a just-detected on-chain pool may appear before
- // external price/liquidity indexing. Such rows are explicitly marked pending;
- // the swap path independently verifies an executable route before signing.
- if(p?.qxVerifiedLaunch===true||p?.qxLiveDetected===true)return true;
  return qxNum(p?.priceUsd)>0&&qxNum(p?.liquidity?.usd)>0;
 }
 function qxPairScore(p){return qxNum(p?.liquidity?.usd)*1000+qxNum(p?.volume?.h24)+qxNum(p?.txns?.h24?.buys)+qxNum(p?.txns?.h24?.sells);}
@@ -4396,8 +4487,8 @@ function bestPairsByMint(list){
   if(!qxNum(chosen.fdv)&&qxNum(other?.fdv))chosen.fdv=other.fdv;
   if(!chosen.pairCreatedAt&&other?.pairCreatedAt)chosen.pairCreatedAt=other.pairCreatedAt;
   if(!chosen.tokenCreatedAt&&other?.tokenCreatedAt)chosen.tokenCreatedAt=other.tokenCreatedAt;
-  const qxSource=p?.qxVerifiedLaunch?p:(old?.qxVerifiedLaunch?old:null);
-  if(qxSource){for(const key of ["qxVerifiedLaunch","qxGlobalLaunch","qxLaunchRecord","qxActivePool","qxCurveConfig","qxMigrated","qxDammV2Pool"]){if(qxSource[key]!==undefined)chosen[key]=qxSource[key];}}
+  const qxSource=(p?.qxVerifiedLaunch||p?.qxPendingDiscovery)?p:((old?.qxVerifiedLaunch||old?.qxPendingDiscovery)?old:null);
+  if(qxSource){for(const key of ["qxVerifiedLaunch","qxGlobalLaunch","qxLaunchRecord","qxActivePool","qxCurveConfig","qxMigrated","qxDammV2Pool","qxPendingDiscovery"]){if(qxSource[key]!==undefined)chosen[key]=qxSource[key];}}
   map.set(mint,chosen);
  }
  return [...map.values()];
@@ -4546,7 +4637,7 @@ function renderMarket(){
   const freshness=isFresh?'<span class="coin-fresh-tag">NEW</span>':'';
   const qxLaunchBadge=p?.qxVerifiedLaunch?'<span class="coin-fresh-tag" style="border-color:rgba(139,92,246,.45);color:#c4b5fd;background:rgba(139,92,246,.12)">QX LAUNCH</span>':'';
   const qxLiveBadge=p?.qxLiveDetected?'<span class="coin-fresh-tag" style="border-color:rgba(56,210,156,.45);color:#71e6b7;background:rgba(56,210,156,.10)">LIVE · VERIFYING</span>':'';
-  const marketState=p?.qxLiveDetected&&!(qxNum(p.priceUsd)>0&&qxNum(p.liquidity?.usd)>0)?(qxLanguage==="ar"?"تم الرصد · جارٍ جلب بيانات التداول":qxLanguage==="zh"?"已检测 · 正在获取交易数据":"Detected · market data pending"):"";
+  const marketState=(p?.qxLiveDetected||p?.qxPendingDiscovery)&&!(qxNum(p.priceUsd)>0&&qxNum(p.liquidity?.usd)>0)?(qxLanguage==="ar"?"تم الرصد · جارٍ جلب بيانات التداول":qxLanguage==="zh"?"已检测 · 正在获取交易数据":"Detected · market data pending"):"";
   const txns=qxNum(p.txns?.h24?.buys)+qxNum(p.txns?.h24?.sells);
   const ageValue=qxMarketAgeLabel(p);
   return '<article class="market-row market-row-rich qx-market-card"><button type="button" class="coin-button" data-mint="'+mint+'">'+img+fallback+'<span class="coin-info"><span class="coin-title-line"><strong>'+name+'</strong>'+freshness+qxLaunchBadge+qxLiveBadge+'</span><small>'+symbol+' · '+mint.slice(0,6)+'…'+mint.slice(-4)+'</small><span class="coin-inline-meta">'+marketState+'</span></span></button><span class="qx-market-value">'+(hasPrice?qxFormatTokenPrice(p.priceUsd):"—")+'</span><span class="qx-market-value '+cls+'">'+changeText.trim()+'</span><span class="qx-market-value">'+qxMarketMetric(p.volume?.h24)+'</span><span class="qx-market-value">'+qxMarketMetric(p.marketCap||p.fdv)+'</span><span class="qx-market-value">'+qxMarketMetric(p.liquidity?.usd)+'</span><span class="qx-market-value">'+ageValue+'</span><span class="qx-market-value">'+(txns>0?txns.toLocaleString():"—")+'</span><div class="market-card-right">'+spark+'</div></article>';
@@ -4558,7 +4649,7 @@ function renderMarket(){
 
 $("marketTabs").addEventListener("click",event=>{const button=event.target.closest("[data-category]");if(!button)return;currentCategory=button.dataset.category;marketDisplayLimit=80;if(currentCategory==="volume"||currentCategory==="spot"){sortMetric=currentCategory==="volume"?"volume":"liquidity";sortDirection="desc";}else{sortMetric="default";sortDirection="desc";}console.info("QX market category",currentCategory,{all:allPairs.length,newCoins:newPairs.length});document.querySelectorAll(".market-tab").forEach(t=>t.classList.toggle("active",t===button));renderMarket();});
 document.addEventListener("click",e=>{if(e.target.closest("#qxMarketLoadMore")){marketDisplayLimit+=80;renderMarket();}});
-const qxViewAllButton=document.getElementById("qxViewAllBtn");if(qxViewAllButton)qxViewAllButton.addEventListener("click",()=>{if(Array.isArray(window.QXPreviousMarketPairs)){allPairs=window.QXPreviousMarketPairs.slice();newPairs=qxFreshNewPairs(allPairs);window.QXNewPairs=newPairs;delete window.QXPreviousMarketPairs;}currentCategory="all";sortMetric="";sortDirection="desc";marketDisplayLimit=80;const searchInput=$("search");if(searchInput)searchInput.value="";document.querySelectorAll(".market-tab").forEach(b=>b.classList.toggle("active",b.dataset.category==="all"));renderMarket();});
+const qxViewAllButton=document.getElementById("qxViewAllBtn");if(qxViewAllButton)qxViewAllButton.addEventListener("click",()=>{if(Array.isArray(window.QXPreviousMarketPairs)){allPairs=window.QXPreviousMarketPairs.slice();newPairs=qxFreshNewPairs(allPairs);window.QXNewPairs=newPairs;delete window.QXPreviousMarketPairs;}currentCategory="all";sortMetric="";sortDirection="desc";marketDisplayLimit=240;const searchInput=$("search");if(searchInput)searchInput.value="";document.querySelectorAll(".market-tab").forEach(b=>b.classList.toggle("active",b.dataset.category==="all"));renderMarket();});
 let qxMarketSearchRequestId=0;
 async function searchMarket(){
  marketDisplayLimit=80;
@@ -4721,8 +4812,8 @@ async function qxRegisterVerifiedLaunchGlobally(record){
   const data=await r.json().catch(()=>({}));
   if(!r.ok||!data?.ok)throw new Error(data?.error||"Global QX launch registration failed");
   record.globalRegistry="verified";record.globalRegistryAt=Date.now();
-  localStorage.setItem("qxRealLaunches",JSON.stringify((JSON.parse(localStorage.getItem("qxRealLaunches")||"[]")||[]).map(x=>String(x?.mint||"")===String(record.mint)?record:x).slice(0,20)));
-  try{localStorage.removeItem("qxPendingLaunchRegistryRecord");localStorage.removeItem("qxPendingLaunchRegistryMedia");}catch(_){ }
+  window.qxSafeStorage.setItem("qxRealLaunches",JSON.stringify((JSON.parse(window.qxSafeStorage.getItem("qxRealLaunches")||"[]")||[]).map(x=>String(x?.mint||"")===String(record.mint)?record:x).slice(0,20)));
+  try{window.qxSafeStorage.removeItem("qxPendingLaunchRegistryRecord");window.qxSafeStorage.removeItem("qxPendingLaunchRegistryMedia");}catch(_){ }
   return true;
  }catch(e){console.warn("QX global launch registry unavailable",e);return false;}
 }
@@ -4770,7 +4861,7 @@ let qxLaunchRegistryRetryBusy=false;
 async function qxRetryPendingLaunchRegistry(){
  if(qxLaunchRegistryRetryBusy||!connected||!walletAddress)return false;
  let record=null,media=null,image=null;
- try{record=JSON.parse(localStorage.getItem("qxPendingLaunchRegistryRecord")||"null");}catch(_){record=null;}
+ try{record=JSON.parse(window.qxSafeStorage.getItem("qxPendingLaunchRegistryRecord")||"null");}catch(_){record=null;}
  if(!record||String(record.creator||"")!==String(walletAddress))return false;
  qxLaunchRegistryRetryBusy=true;
  try{
@@ -4780,18 +4871,18 @@ async function qxRetryPendingLaunchRegistry(){
    if(!recoveredPool)return false;
    record.pool=recoveredPool;
    try{
-    localStorage.setItem("qxPendingLaunchRegistryRecord",JSON.stringify(record));
-    const rows=JSON.parse(localStorage.getItem("qxRealLaunches")||"[]");
-    if(Array.isArray(rows))localStorage.setItem("qxRealLaunches",JSON.stringify(rows.map(x=>String(x?.mint||"")===String(record.mint)?{...x,pool:recoveredPool}:x).slice(0,20)));
+    window.qxSafeStorage.setItem("qxPendingLaunchRegistryRecord",JSON.stringify(record));
+    const rows=JSON.parse(window.qxSafeStorage.getItem("qxRealLaunches")||"[]");
+    if(Array.isArray(rows))window.qxSafeStorage.setItem("qxRealLaunches",JSON.stringify(rows.map(x=>String(x?.mint||"")===String(record.mint)?{...x,pool:recoveredPool}:x).slice(0,20)));
    }catch(_){}
   }
   if(!record.poolSignature||!record.config||!record.supply)return false;
-  try{image=JSON.parse(localStorage.getItem("qxPendingLaunchRegistryImage")||"null");}catch(_){image=null;}
-  try{media=JSON.parse(localStorage.getItem("qxPendingLaunchRegistryMedia")||"null");}catch(_){media=null;}
+  try{image=JSON.parse(window.qxSafeStorage.getItem("qxPendingLaunchRegistryImage")||"null");}catch(_){image=null;}
+  try{media=JSON.parse(window.qxSafeStorage.getItem("qxPendingLaunchRegistryMedia")||"null");}catch(_){media=null;}
   if(image){
    if(String(image.owner||"")!==String(walletAddress)||String(image.mint||"")!==String(record.mint||""))throw new Error("Pending token image does not match the connected creator wallet and mint.");
    await qxQxTokenMediaUpload(image);
-   localStorage.removeItem("qxPendingLaunchRegistryImage");
+   window.qxSafeStorage.removeItem("qxPendingLaunchRegistryImage");
   }
   if(media){
    if(String(media.owner||"")!==String(walletAddress)||String(media.mint||"")!==String(record.mint||""))throw new Error("Pending token metadata does not match the connected creator wallet and mint.");
@@ -4800,11 +4891,11 @@ async function qxRetryPendingLaunchRegistry(){
   const ok=await qxRegisterVerifiedLaunchGlobally(record);
   if(!ok)return false;
   try{
-   localStorage.removeItem("qxPendingLaunchRegistryRecord");
-   localStorage.removeItem("qxPendingLaunchRegistryMedia");
-   localStorage.removeItem("qxPendingLaunchRegistryImage");
-   const rows=JSON.parse(localStorage.getItem("qxRealLaunches")||"[]");
-   if(Array.isArray(rows))localStorage.setItem("qxRealLaunches",JSON.stringify(rows.map(x=>String(x?.mint||"")===String(record.mint)?{...x,pool:record.pool,partialLaunch:false,metadataPending:false,globalRegistry:"verified",globalRegistryAt:Date.now()}:x).slice(0,20)));
+   window.qxSafeStorage.removeItem("qxPendingLaunchRegistryRecord");
+   window.qxSafeStorage.removeItem("qxPendingLaunchRegistryMedia");
+   window.qxSafeStorage.removeItem("qxPendingLaunchRegistryImage");
+   const rows=JSON.parse(window.qxSafeStorage.getItem("qxRealLaunches")||"[]");
+   if(Array.isArray(rows))window.qxSafeStorage.setItem("qxRealLaunches",JSON.stringify(rows.map(x=>String(x?.mint||"")===String(record.mint)?{...x,pool:record.pool,partialLaunch:false,metadataPending:false,globalRegistry:"verified",globalRegistryAt:Date.now()}:x).slice(0,20)));
   }catch(_){ }
   return true;
  }catch(e){console.warn("QX pending global launch registration retry deferred",e);return false;}
@@ -4841,7 +4932,7 @@ async function qxReadVerifiedQXLaunchMarkets(){
  try{
   const global=await qxReadGlobalVerifiedLaunchMarkets();
   if(global.length)out.push(...global);
-  const saved=JSON.parse(localStorage.getItem("qxRealLaunches")||"[]");
+  const saved=JSON.parse(window.qxSafeStorage.getItem("qxRealLaunches")||"[]");
   if(!Array.isArray(saved)||!saved.length)return out;
   await qxLibraryReady;const dbc=await qxDbcReady;const connection=await qxGetHealthyConnection();
   const client=new dbc.DynamicBondingCurveClient(connection,"confirmed");
@@ -4879,9 +4970,7 @@ async function qxFetchMarketUniverse(){
   qxReadVerifiedQXLaunchMarkets(),
   qxFetchDexScreenerUniverse(),
   qxFetchGecko('/new_pools?page=1&include=base_token,quote_token,dex'),
-  qxFetchGecko('/new_pools?page=2&include=base_token,quote_token,dex'),
-  qxFetchGecko('/pools?page=1&include=base_token,quote_token,dex'),
-  qxFetchGecko('/trending_pools?page=1&include=base_token,quote_token,dex')
+  qxFetchGecko('/new_pools?page=2&include=base_token,quote_token,dex')
  ];
  const settled=await Promise.allSettled(jobs);
  let pairs=bestPairsByMint(settled.flatMap(r=>r.status==='fulfilled'?(r.value||[]):[]));
@@ -4994,12 +5083,12 @@ async function loadMarket(){
 /* QX v125: periodic public REST snapshots are the market price source. */
 function qxSetMarketDataStatus(text){const el=$("marketStatus");if(!el)return;const raw=String(text||""),lang=String(qxLanguage||window.qxLanguage||"en");if(raw.includes("provider refresh unavailable"))el.textContent=lang==="ar"?"لقطات الأسعار العامة · تعذر تحديث المصدر · إعادة المحاولة":lang==="zh"?"公共价格快照 · 数据源暂不可用 · 正在重试":"Public snapshots · provider refresh unavailable · retrying";else if(raw.includes("markets refreshed")){const count=(raw.match(/·\s*(\d+)\s+Solana markets refreshed/)||[])[1]||"0";const time=raw.split(" · ").pop()||"";el.textContent=lang==="ar"?"لقطات الأسعار العامة · تم تحديث "+count+" سوقاً · "+time:lang==="zh"?"公共价格快照 · 已更新 "+count+" 个 Solana 市场 · "+time:"Public snapshots · "+count+" Solana markets refreshed · "+time;}else if(raw.includes("temporarily unavailable"))el.textContent=lang==="ar"?"لقطات الأسعار العامة · غير متاحة مؤقتاً · إعادة المحاولة":lang==="zh"?"公共价格快照 · 暂时不可用 · 正在重试":"Public snapshots · temporarily unavailable · retrying";else el.textContent=lang==="ar"?"لقطات الأسعار العامة نشطة":lang==="zh"?"公共价格快照已启用":"Public price snapshots are active.";}
 function qxFindMarketObjects(mint){const out=[];for(const list of [allPairs,newPairs,trendingPairs])for(const p of list||[])if(String(p?.baseToken?.address||"")===mint&&!out.includes(p))out.push(p);if(selectedToken&&String(selectedToken?.baseToken?.address||"")===mint&&!out.includes(selectedToken))out.push(selectedToken);return out;}
-window.QXMarketDiagnostics=()=>({source:"DexScreener REST snapshots",snapshotIntervalMs:10000,lastSnapshotAt:qxPublicSnapshotLast,snapshotFailures:qxPublicSnapshotFailures,markets:allPairs.length,newCoins:newPairs.length});
+window.QXMarketDiagnostics=()=>({source:"DexScreener REST snapshots",snapshotIntervalMs:60000,lastSnapshotAt:qxPublicSnapshotLast,snapshotFailures:qxPublicSnapshotFailures,markets:allPairs.length,newCoins:newPairs.length,marketRefreshPausedForToken:document.body.classList.contains('qx-token-open')});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){qxQuoteRequestId++;qxQuoteAbortController?.abort();}else{void qxRefreshPublicLiveSnapshots();if(connected)void refreshRealWalletBalance();}});
 
-setInterval(()=>{if(document.visibilityState!=="hidden"&&!marketBusy)loadMarket();},QX_SOLANA_REFRESH_MS);
-// Refresh public market snapshots every 15s; provider responses may still be cached upstream.
-setInterval(()=>{if(document.visibilityState!=="hidden")void qxRefreshPublicLiveSnapshots();},10000);
+setInterval(()=>{if(document.visibilityState!=="hidden"&&!marketBusy&&!document.body.classList.contains('qx-token-open'))loadMarket();},QX_SOLANA_REFRESH_MS);
+// Pause market-wide REST snapshots while the token terminal is open; chart/trade refreshes remain independent.
+setInterval(()=>{if(document.visibilityState!=="hidden"&&!document.body.classList.contains('qx-token-open'))void qxRefreshPublicLiveSnapshots();},60000);
 
 // New-pool discovery is included in the consolidated market refresh above; no paid stream is required.
 
@@ -5053,10 +5142,10 @@ void loadMarket().then(()=>qxRefreshPublicLiveSnapshots()).catch(e=>console.warn
   const $=id=>document.getElementById(id);
   const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
   const state={
-    watch:JSON.parse(localStorage.getItem('qxWatchlistV2')||'[]'),
-    history:JSON.parse(localStorage.getItem('qxTradeHistoryV2')||'[]')
+    watch:JSON.parse(window.qxSafeStorage.getItem('qxWatchlistV2')||'[]'),
+    history:JSON.parse(window.qxSafeStorage.getItem('qxTradeHistoryV2')||'[]')
   };
-  function save(){localStorage.setItem('qxWatchlistV2',JSON.stringify(state.watch.slice(0,50)));localStorage.setItem('qxTradeHistoryV2',JSON.stringify(state.history.slice(0,100)))}
+  function save(){window.qxSafeStorage.setItem('qxWatchlistV2',JSON.stringify(state.watch.slice(0,50)));window.qxSafeStorage.setItem('qxTradeHistoryV2',JSON.stringify(state.history.slice(0,100)))}
   function qxUserTradeMoney(v){const n=Number(v);if(!Number.isFinite(n))return '—';if(Math.abs(n)>=1e9)return '$'+(n/1e9).toFixed(2)+'B';if(Math.abs(n)>=1e6)return '$'+(n/1e6).toFixed(2)+'M';if(Math.abs(n)>=1e3)return '$'+(n/1e3).toFixed(2)+'K';if(Math.abs(n)<.01&&n!==0){const d=Math.min(30,Math.max(8,Math.ceil(-Math.log10(Math.abs(n)))+6));return '$'+n.toFixed(d).replace(/0+$/,'').replace(/\.$/,'')}return '$'+n.toFixed(4).replace(/0+$/,'').replace(/\.$/,'')}
   function currentToken(){return window.QXTerminalTokenMint?{mint:window.QXTerminalTokenMint}:window.__QXSelectedToken||null}
   function qxUserTradeRenderHistory(){
@@ -5537,7 +5626,7 @@ void loadMarket().then(()=>qxRefreshPublicLiveSnapshots()).catch(e=>console.warn
  }
  function tr(value,language){const map=dictionaries[language]||{};if(map[value])return map[value];for(const [from,to] of Object.entries(map))if(value===to)return language==='en'?from:to;return value;}
  function apply(runBase=true){
-  const language=langSelect.value||localStorage.getItem('qxLanguage')||'en';
+  const language=langSelect.value||window.qxSafeStorage.getItem('qxLanguage')||'en';
   const state=window.__QXLanguageState||(window.__QXLanguageState={nodes:new WeakMap(),ready:false,lastLanguage:'en'});
   const sourceMap=dictionaries;
   const canonical=(value)=>{
@@ -5610,11 +5699,11 @@ void loadMarket().then(()=>qxRefreshPublicLiveSnapshots()).catch(e=>console.warn
     [...opts].slice(0,3).forEach((o,i)=>{if(o.textContent!==optionLabels[i])o.textContent=optionLabels[i]});
   }
   const currency=document.getElementById('qxCurrency');
-  if(currency){const labels=language==='ar'?['دولار أمريكي','درهم إماراتي','يورو','جنيه إسترليني','ين ياباني']:language==='zh'?['美元','阿联酋迪拉姆','欧元','英镑','日元']:['US Dollar','UAE Dirham','Euro','British Pound','Japanese Yen'];[...currency.options].forEach((o,i)=>{const code=o.value;const label=code+' — '+(labels[i]||code);if(o.textContent!==label)o.textContent=label});}
+  if(currency){const labels=language==='ar'?['دولار أمريكي','سولانا']:language==='zh'?['美元','Solana']:['US Dollar','Solana'];[...currency.options].forEach((o,i)=>{const code=o.value;const label=code+' — '+(labels[i]||code);if(o.textContent!==label)o.textContent=label});}
   state.lastLanguage=language;state.ready=true;
  } window.qxApplyLanguage=apply;window.QXApplyLanguage=apply;
- langSelect.addEventListener('change',()=>{localStorage.setItem('qxLanguage',langSelect.value);apply();window.dispatchEvent(new CustomEvent('QXLanguageChanged',{detail:{language:langSelect.value}}));if(typeof window.renderMarket==='function')window.renderMarket()});
- const saved=localStorage.getItem('qxLanguage');if(saved&&['en','ar','zh'].includes(saved))langSelect.value=saved;apply();
+ langSelect.addEventListener('change',()=>{window.qxSafeStorage.setItem('qxLanguage',langSelect.value);apply();window.dispatchEvent(new CustomEvent('QXLanguageChanged',{detail:{language:langSelect.value}}));if(typeof window.renderMarket==='function')window.renderMarket()});
+ const saved=window.qxSafeStorage.getItem('qxLanguage');if(saved&&['en','ar','zh'].includes(saved))langSelect.value=saved;apply();
  // Intentionally no document-wide MutationObserver: market updates can replace large DOM trees.
  // Dynamic sections call qxApplyLanguage explicitly when they render.
 
@@ -5724,9 +5813,9 @@ void loadMarket().then(()=>qxRefreshPublicLiveSnapshots()).catch(e=>console.warn
 (function(){
  const key="qxPriceAlertsV1",$=id=>document.getElementById(id);
  const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
- const read=()=>{try{return JSON.parse(localStorage.getItem(key)||"[]")}catch(_){return[]}},save=a=>localStorage.setItem(key,JSON.stringify(a.slice(0,50)));
+ const read=()=>{try{return JSON.parse(window.qxSafeStorage.getItem(key)||"[]")}catch(_){return[]}},save=a=>window.qxSafeStorage.setItem(key,JSON.stringify(a.slice(0,50)));
  const words={en:{none:"No active price alerts.",triggered:"Triggered",active:"Active",remove:"Remove",open:"Open a token first.",invalid:"Enter a target price greater than zero.",title:"QX price alert"},ar:{none:"لا توجد تنبيهات سعر نشطة.",triggered:"تم التفعيل",active:"نشط",remove:"حذف",open:"افتح صفحة العملة أولاً.",invalid:"أدخل سعراً مستهدفاً أكبر من صفر.",title:"تنبيه سعر من QX"},zh:{none:"暂无有效价格提醒。",triggered:"已触发",active:"启用中",remove:"删除",open:"请先打开代币详情页。",invalid:"请输入大于零的目标价格。",title:"QX 价格提醒"}};
- const L=()=>words[window.qxLanguage||localStorage.getItem("qxLanguage")||"en"]||words.en;
+ const L=()=>words[window.qxLanguage||window.qxSafeStorage.getItem("qxLanguage")||"en"]||words.en;
  function current(){return window.__QXSelectedToken||window.QXSelectedToken||window.selectedToken||window.QXCurrentToken||null;}
  function render(){const host=$("qxAlertList");if(!host)return;const t=L(),a=read();if(!a.length){host.innerHTML='<div class="qx-empty">'+esc(t.none)+'</div>';return;}host.innerHTML=a.map((x,i)=>'<div class="qx-list-row"><div><strong>'+esc(x.symbol)+' · '+(x.direction==="above"?"≥":"≤")+' '+esc(x.price)+'</strong><small>'+esc(x.name||x.mint.slice(0,8)+"…")+' · '+esc(x.triggered?t.triggered:t.active)+'</small></div><button type="button" data-qx-alert-remove="'+i+'">'+esc(t.remove)+'</button></div>').join("");host.querySelectorAll("[data-qx-alert-remove]").forEach(b=>b.onclick=()=>{const rows=read();rows.splice(Number(b.dataset.qxAlertRemove),1);save(rows);render();});}
  function error(message){const el=$("qxAlertError");if(el)el.textContent=message||"";const input=$("qxAlertPrice");if(input)input.setAttribute("aria-invalid",String(!!message));}
@@ -5792,8 +5881,8 @@ void loadMarket().then(()=>qxRefreshPublicLiveSnapshots()).catch(e=>console.warn
   ar:{connect:"اربط محفظة سولانا لعرض عمليات إطلاق QX الخاصة بها.",connectHint:"اربط محفظتك ثم حدّث هذه الصفحة.",checking:"جارٍ فحص سولانا…",connected:"المحفظة المتصلة",checkingData:"جارٍ فحص سجل إطلاق QX ومجمعات سولانا…",none:"لا توجد عملات QX مسجلة لهذه المحفظة بعد.",verified:"موثق في سجل QX العالمي",pool:"تم التحقق من مجمع الشبكة · الإدراج العالمي قيد الانتظار",partial:"إطلاق جزئي · يلزم الفحص",local:"سجل محلي · التحقق قيد الانتظار",date:"التاريخ غير متاح",free:"إنشاء QX مجاني",mint:"عنوان العملة",poolLabel:"المجمع",error:"تعذر التحقق من عمليات الإطلاق حالياً. حاول مرة أخرى.",refresh:"تحديث بيانات المنشئ"},
   zh:{connect:"连接 Solana 钱包以查看此钱包创建的 QX 代币。",connectHint:"连接钱包后刷新此页面。",checking:"正在检查 Solana…",connected:"已连接钱包",checkingData:"正在检查 QX 发行登记和 Solana 池记录…",none:"此钱包尚无 QX 代币发行记录。",verified:"已在 QX 全球登记中验证",pool:"链上池已验证 · 等待全球登记",partial:"部分发行 · 需要检查",local:"本地记录 · 等待验证",date:"日期不可用",free:"QX 免费创建",mint:"代币地址",poolLabel:"流动性池",error:"暂时无法验证发行记录，请重试。",refresh:"刷新创建者数据"}
  };
- const L=()=>text[window.qxLanguage||localStorage.getItem("qxLanguage")||"en"]||text.en;
- function localLaunches(){try{const value=JSON.parse(localStorage.getItem("qxRealLaunches")||"[]");return Array.isArray(value)?value:[];}catch(_){return [];}}
+ const L=()=>text[window.qxLanguage||window.qxSafeStorage.getItem("qxLanguage")||"en"]||text.en;
+ function localLaunches(){try{const value=JSON.parse(window.qxSafeStorage.getItem("qxRealLaunches")||"[]");return Array.isArray(value)?value:[];}catch(_){return [];}}
  async function refresh(){
   const identity=$("creatorIdentity"),host=$("creatorLaunches"),button=$("creatorRefreshBtn");if(!identity||!host)return;const t=L();
   const wallet=window.QXGetWalletState?.()||{};if(!wallet.connected||!wallet.address){identity.textContent=t.connect;host.innerHTML='<div class="empty-state">'+esc(t.connectHint)+'</div>';if(button){button.disabled=false;button.textContent=t.refresh;}return;}
@@ -6020,7 +6109,12 @@ body.qx-token-open #detail .qx-full-dex-chart #detailChart{height:350px!importan
   }catch(error){console.debug("QX listing backfill unavailable; live stream will retry",error?.message||error);}
   finally{backfillBusy=false;}
  }
- function start(){stopped=false;if(!ws||ws.readyState>=WebSocket.CLOSING)connect();void backfill();if(!backfillTimer)backfillTimer=setInterval(()=>{if(document.visibilityState==="visible")void backfill();},60000);}
+ function start(){
+  // Birdeye upstream credentials are not configured on this deployment.
+  // Do not create a reconnect storm against a stream that cannot authenticate.
+  // Public DexScreener/GeckoTerminal discovery continues in loadMarket().
+  stopped=true;close();
+ }
  function stop(){stopped=true;close();if(backfillTimer){clearInterval(backfillTimer);backfillTimer=null;}}
  window.QXStartGlobalDiscoveryStream=start;window.QXStopGlobalDiscoveryStream=stop;
  window.addEventListener("online",start);
@@ -6029,9 +6123,48 @@ body.qx-token-open #detail .qx-full-dex-chart #detailChart{height:350px!importan
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",start,{once:true});else start();
 })();
 </script>
-</body>
-</html>
 
+<script id="qx-phantom-return-viewport-v142">
+(function(){
+ 'use strict';
+ var META='width=device-width, initial-scale=1, viewport-fit=cover';
+ var root=document.documentElement;
+ var busy=false;
+ function physicalPhone(){
+  var w=Number(window.screen&&window.screen.width)||0;
+  var h=Number(window.screen&&window.screen.height)||0;
+  var touch=Number(navigator.maxTouchPoints||0)>0||('ontouchstart' in window);
+  return touch&&w>0&&Math.min(w,h)<=760;
+ }
+ function sync(){
+  if(busy)return;busy=true;
+  try{
+   var mobile=physicalPhone();
+   if(mobile)root.setAttribute('data-qx-physical-mobile','1');
+   else root.removeAttribute('data-qx-physical-mobile');
+   var meta=document.querySelector('meta[name="viewport"]');
+   if(meta&&meta.getAttribute('content')!==META)meta.setAttribute('content',META);
+   // Keep layout dimensions tied to the physical device; never apply CSS zoom or disable user pinch-zoom.
+   if(mobile){
+    document.body&&document.body.style.setProperty('max-width','100%','important');
+    document.body&&document.body.style.setProperty('overflow-x','hidden','important');
+   }
+  }catch(error){console.warn('QX mobile viewport sync:',error);}
+  busy=false;
+ }
+ var queued=false;
+ function queueSync(){if(queued)return;queued=true;requestAnimationFrame(function(){queued=false;sync();requestAnimationFrame(sync);});}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',sync,{once:true});else sync();
+ window.addEventListener('pageshow',queueSync,{passive:true});
+ window.addEventListener('focus',queueSync,{passive:true});
+ window.addEventListener('resize',queueSync,{passive:true});
+ window.addEventListener('orientationchange',function(){setTimeout(queueSync,80);},{passive:true});
+ document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')queueSync();});
+ if(window.visualViewport){window.visualViewport.addEventListener('resize',queueSync,{passive:true});window.visualViewport.addEventListener('scroll',queueSync,{passive:true});}
+ var viewportMeta=document.querySelector('meta[name="viewport"]');
+ if(viewportMeta&&window.MutationObserver){new MutationObserver(function(){if(viewportMeta.getAttribute('content')!==META)queueSync();}).observe(viewportMeta,{attributes:true,attributeFilter:['content']});}
+})();
+</script>
 <style id="qx-v7-professional-polish">
 .qx-contract-line{display:flex!important;align-items:center!important;gap:8px!important;min-width:0!important;}
 .qx-contract-line .qx-contract-label{flex:0 0 auto!important;}
@@ -6052,3 +6185,10 @@ body.qx-token-open #detail .qx-full-dex-chart #detailChart{height:350px!importan
 .qx-contract-line .qx-copy-contract{flex:0 0 auto!important;margin:0!important;justify-self:auto!important;white-space:nowrap!important;}
 @media(max-width:520px){.qx-contract-line{gap:5px!important}.qx-contract-line code{max-width:min(38vw,145px)!important}.qx-contract-line .qx-copy-contract{min-width:0!important;padding:5px 7px!important}}
 </style>
+
+<style id="qx-v148-mobile-chart-height">
+/* Equal-or-greater specificity overrides the legacy 570px mobile terminal rule. */
+@media(max-width:760px){.qx-full-dex-chart #detailChart{height:320px!important;min-height:260px!important}.qx-full-dex-chart #detailChart canvas{height:100%!important;min-height:260px!important}}
+</style>
+</body>
+</html>
