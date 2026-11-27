@@ -2102,12 +2102,9 @@ async function qxLaunchToken(options={}){
    firstBuyParam={buyer:payer,receiver:payer,buyAmount:amountIn,minimumAmountOut:simulated.minimumAmountOut,referralTokenAccount:null};
   }
 
-  // Meteora DBC v2 returns TWO transactions and they must remain separate.
-  // The config account is created first; only after that confirmation is the
-  // pool + first-buy transaction signed. Never merge these transactions:
-  // doing so breaks the transaction/message header expected by Phantom and
-  // produces errors such as `header.numRequiredSignatures` before approval.
-  status.textContent="Preparing the real Meteora config transaction…";
+  // SDK v2 returns two unsigned transactions. The config keypair signs the
+  // config transaction; the base-mint keypair signs the pool transaction.
+  status.textContent="Preparing one approval for the complete QX launch…";
   const pair=await client.partner.createConfigAndPoolWithFirstBuy({
    config:config.publicKey,
    feeClaimer:new PublicKey("9C6bcBgeHnRwJfTYKqPjEGeP9egxKWQgR5GCXVSEeDXH"),
@@ -2121,66 +2118,54 @@ async function qxLaunchToken(options={}){
 
   const configTx=pair.createConfigTx;
   const poolTx=pair.createPoolWithFirstBuyTx;
-  if(!configTx?.instructions?.length||!poolTx?.instructions?.length){
-   throw new Error("Meteora did not return the required config and pool transactions. No wallet signature was requested.");
-  }
+  if(!configTx?.instructions?.length||!poolTx?.instructions?.length)throw new Error("Meteora did not return both required launch transactions. No wallet signature was requested.");
 
-  // ---- STEP 1: Config transaction ----
-  // Prepare a fresh legacy transaction exactly as returned by the SDK.
-  // Do not copy instructions into another transaction and do not mix it with
-  // the pool transaction. The config keypair is the only extra signer here.
-  const configBlock=await connection.getLatestBlockhash("confirmed");
-  configTx.recentBlockhash=configBlock.blockhash;
-  configTx.lastValidBlockHeight=configBlock.lastValidBlockHeight;
-  configTx.feePayer=payer;
-  configTx.partialSign(config);
-  try{
-   const configSimulation=await connection.simulateTransaction(configTx,{sigVerify:false,replaceRecentBlockhash:false,commitment:"processed"});
-   if(configSimulation?.value?.err){
-    const logs=Array.isArray(configSimulation.value.logs)?configSimulation.value.logs:[];
-    const detail=logs.slice(-5).join(" | ");
-    throw new Error("QX Meteora config preflight failed before wallet approval."+(detail?" "+detail:""));
+  // QX launch is intentionally two Solana transactions. Meteora SDK v2 builds
+  // Config and Pool+FirstBuy as separate transactions because they have
+  // different signer sets. They must NOT be merged: merging them changes the
+  // transaction message/signer layout and can produce the wallet adapter error
+  // `undefined is not an object (evaluating 'e.header.numRequiredSignatures')`.
+  const prepareLaunchTx=async(tx,label)=>{
+   if(typeof tx.add!=="function"||typeof tx.serialize!=="function"||typeof tx.partialSign!=="function"){
+    throw new Error("QX received an unsupported Meteora "+label+" transaction type. No wallet signature was requested.");
    }
-  }catch(preflightError){
-   if(String(preflightError?.message||"").startsWith("QX Meteora config preflight failed before wallet approval."))throw preflightError;
-   throw new Error("QX could not preflight the Meteora config transaction before wallet approval. No signature was requested. "+(preflightError?.message||String(preflightError)));
-  }
-  status.textContent="Approve the Meteora config transaction in your wallet…";
-  const configSig=await qxSendWalletTx(configTx,signer,connection,[]);
-
-  // Config is now confirmed on-chain. Keep its signature separately so a pool
-  // failure can never be mistaken for a failed/duplicated config creation.
-  const configOnlyRecord={
-   name,symbol,decimals,supply:supplyText,initialMarketCap:initialMc,migrationMarketCap:migrationMc,
-   firstBuySol:firstBuy,mint:baseMint.publicKey.toBase58(),config:config.publicKey.toBase58(),
-   configSignature:configSig,poolSignature:"",creator:payer.toBase58(),metadataUri:uri||"",image:image||"",
-   createdAt:Date.now(),feeSol:0,feeStatus:"free QX token creation",qxSupplyShareBps:500,
-   qxSupplyShareReceiver:"9C6bcBgeHnRwJfTYKqPjEGeP9egxKWQgR5GCXVSEeDXH"
+   const bh=await connection.getLatestBlockhash("confirmed");
+   tx.feePayer=payer;
+   tx.recentBlockhash=bh.blockhash;
+   tx.lastValidBlockHeight=bh.lastValidBlockHeight;
+   return tx;
   };
-  confirmedLaunchTx=configOnlyRecord;
-
-  // ---- STEP 2: Pool + first buy transaction ----
-  // A new blockhash is required because this is a different transaction.
-  const poolBlock=await connection.getLatestBlockhash("confirmed");
-  poolTx.recentBlockhash=poolBlock.blockhash;
-  poolTx.lastValidBlockHeight=poolBlock.lastValidBlockHeight;
-  poolTx.feePayer=payer;
-  // The pool transaction requires the newly generated base-mint signer.
-  poolTx.partialSign(baseMint);
-  try{
-   const poolSimulation=await connection.simulateTransaction(poolTx,{sigVerify:false,replaceRecentBlockhash:false,commitment:"processed"});
-   if(poolSimulation?.value?.err){
-    const logs=Array.isArray(poolSimulation.value.logs)?poolSimulation.value.logs:[];
-    const detail=logs.slice(-5).join(" | ");
-    throw new Error("QX Meteora pool preflight failed before wallet approval."+(detail?" "+detail:""));
+  const preflightLaunchTx=async(tx,label,extraSigner)=>{
+   try{
+    tx.partialSign(extraSigner);
+    const simulation=await connection.simulateTransaction(tx,{sigVerify:false,replaceRecentBlockhash:false,commitment:"processed"});
+    if(simulation?.value?.err){
+     const logs=Array.isArray(simulation.value.logs)?simulation.value.logs:[];
+     const detail=logs.slice(-6).join(" | ");
+     throw new Error("QX "+label+" preflight failed before wallet approval."+(detail?" "+detail:""));
+    }
+   }catch(preflightError){
+    if(String(preflightError?.message||"").startsWith("QX "+label+" preflight failed before wallet approval."))throw preflightError;
+    throw new Error("QX could not preflight the Meteora "+label.toLowerCase()+" transaction before wallet approval. No signature was requested. "+(preflightError?.message||String(preflightError)));
    }
-  }catch(preflightError){
-   if(String(preflightError?.message||"").startsWith("QX Meteora pool preflight failed before wallet approval."))throw preflightError;
-   throw new Error("QX could not preflight the Meteora pool transaction before wallet approval. No pool signature was requested. "+(preflightError?.message||String(preflightError)));
-  }
-  status.textContent="Approve the Meteora pool + first-buy transaction in your wallet…";
-  const poolSig=await qxSendWalletTx(poolTx,signer,connection,[]);
-  confirmedLaunchTx={...configOnlyRecord,poolSignature:poolSig};
+  };
+
+  status.textContent="Preparing the Meteora config transaction…";
+  await prepareLaunchTx(configTx,"Config");
+  // Only the Config keypair signs this transaction before the wallet signs.
+  await preflightLaunchTx(configTx,"Config",config);
+  status.textContent="Review and approve the Meteora config transaction in your wallet…";
+  const configSig=await qxSendWalletTx(configTx,signer,connection,[config]);
+
+  // The Pool+FirstBuy transaction must use a fresh recent blockhash and only
+  // the base-mint keypair as its extra signer. It is never combined with Config.
+  status.textContent="Preparing the Meteora pool and first-buy transaction…";
+  await prepareLaunchTx(poolTx,"Pool + First Buy");
+  await preflightLaunchTx(poolTx,"Pool + First Buy",baseMint);
+  status.textContent="Review and approve the Meteora pool + first buy transaction in your wallet…";
+  const poolSig=await qxSendWalletTx(poolTx,signer,connection,[baseMint]);
+
+  confirmedLaunchTx={name,symbol,decimals,supply:supplyText,initialMarketCap:initialMc,migrationMarketCap:migrationMc,firstBuySol:firstBuy,mint:baseMint.publicKey.toBase58(),config:config.publicKey.toBase58(),configSignature:configSig,poolSignature:poolSig,creator:payer.toBase58(),metadataUri:uri||"",image:image||"",createdAt:Date.now(),feeSol:0,feeStatus:"free QX token creation",qxSupplyShareBps:500,qxSupplyShareReceiver:"9C6bcBgeHnRwJfTYKqPjEGeP9egxKWQgR5GCXVSEeDXH"};
 
   // The DBC pool is created on-chain. Graduation is performed by Meteora's
   // mainnet migration keeper once the configured quote threshold is reached.
@@ -5746,3 +5731,47 @@ body.qx-token-open #detail .qx-full-dex-chart #detailChart{height:350px!importan
   };
   ws.onmessage=e=>onMessage(e,myGeneration);
   ws.onerror=()=>setStatus("Market stream reconnecting · REST fallback active");
+  ws.onclose=e=>{if(socket===ws)socket=null;clearTimers();setStatus("Market stream disconnected · code "+String(e?.code||0)+" · REST fallback active");reconnect(myGeneration);};
+ }
+ window.QXStartMarketStream=async function(token){
+  const mint=String(token?.baseToken?.address||"");if(!mint)return;
+  if(activeMint===mint&&socket&&[WebSocket.CONNECTING,WebSocket.OPEN].includes(socket.readyState))return;
+  manuallyStopped=false;generation++;const myGeneration=generation;closeSocket();activeMint=mint;activeToken=token;activePool="";retryDelay=1500;
+  try{
+   if(typeof qxResolveVerifiedPool==="function"){
+    const resolved=await qxResolveVerifiedPool(token,mint);
+    if(myGeneration!==generation)return;
+    activePool=String(resolved?.address||token?.pairAddress||token?.poolAddress||"");
+   }
+  }catch(error){console.warn("QX stream pool resolution deferred",error);}
+  if(myGeneration!==generation)return;
+  connect(myGeneration);
+ };
+ window.QXStopMarketStream=function(){manuallyStopped=true;generation++;activeMint="";activePool="";activeToken=null;closeSocket();};
+ window.addEventListener("online",()=>{if(!manuallyStopped&&activeMint&&(!socket||socket.readyState>=WebSocket.CLOSING)){generation++;connect(generation);}});
+ document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&!manuallyStopped&&activeMint&&(!socket||socket.readyState>=WebSocket.CLOSING)){generation++;connect(generation);}});
+})();
+</script>
+</body>
+</html>
+
+<style id="qx-v7-professional-polish">
+.qx-contract-line{display:flex!important;align-items:center!important;gap:8px!important;min-width:0!important;}
+.qx-contract-line .qx-contract-label{flex:0 0 auto!important;}
+.qx-contract-line code{flex:1 1 auto!important;min-width:0!important;text-align:left!important;}
+.qx-copy-contract{flex:0 0 auto!important;margin-left:auto!important;white-space:nowrap!important;min-width:54px!important;}
+.qx-trades-table{contain:layout paint;will-change:contents;}
+.qx-trade-row{min-height:31px;transition:none!important;}
+.qx-trade-buy,.qx-trade-sell{font-variant-numeric:tabular-nums;}
+@media(max-width:520px){.qx-contract-line{gap:6px!important}.qx-contract-line code{font-size:10px!important;padding:6px!important}.qx-copy-contract{padding:6px 8px!important}.qx-trade-row{grid-template-columns:46px 44px minmax(58px,1fr) minmax(58px,1fr)!important;min-height:29px!important;}}
+</style>
+
+
+<style id="qx-v7-contract-controls-grouped">
+/* Keep contract text and its copy control together; never push Copy to the far edge. */
+.qx-contract-line{display:inline-flex!important;align-items:center!important;justify-content:flex-start!important;gap:7px!important;width:auto!important;max-width:100%!important;min-width:0!important;}
+.qx-contract-line .qx-contract-label{flex:0 0 auto!important;}
+.qx-contract-line code{flex:0 1 auto!important;width:auto!important;max-width:min(42vw,190px)!important;min-width:0!important;text-align:left!important;}
+.qx-contract-line .qx-copy-contract{flex:0 0 auto!important;margin:0!important;justify-self:auto!important;white-space:nowrap!important;}
+@media(max-width:520px){.qx-contract-line{gap:5px!important}.qx-contract-line code{max-width:min(38vw,145px)!important}.qx-contract-line .qx-copy-contract{min-width:0!important;padding:5px 7px!important}}
+</style>
