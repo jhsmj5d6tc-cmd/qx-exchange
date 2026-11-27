@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="format-detection" content="telephone=no">
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#080711">
 <meta name="google-site-verification" content="A5ntuJ6pvvK-Uo8HHA96o5bUPFGOg_70p-Nh_rsZ8NM">
 <title>QX Exchange — Solana Token Discovery</title>
@@ -180,12 +180,6 @@ html[dir="rtl"] .qx-main-menu select,html[dir="rtl"] .qx-main-menu label{text-al
 @media(prefers-reduced-motion:reduce){#publicAdsList.qx-trending-grid .qx-trending-card{transition:none!important;}}
 </style>
 
-<style id="qx-phantom-mobile-viewport-fix">
-html{width:100%;max-width:100%;overflow-x:hidden;-webkit-text-size-adjust:100%;text-size-adjust:100%;touch-action:pan-x pan-y;}
-body{width:100%;max-width:100%;overflow-x:hidden;transform:none!important;zoom:1!important;-webkit-text-size-adjust:100%;}
-button,a,[role="button"],select,input,textarea{touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
-@media(max-width:760px){input,select,textarea,button{font-size:16px!important;}html,body{min-width:320px;max-width:100vw;}body{overscroll-behavior-x:none;} .panel:hover,.hero:hover{transform:none!important;} .btn:active,.market-tab:active,.nav-btn:active{transform:none!important;}}
-</style>
 <style id="qx-mobile-comfort-and-currency-v1">
 :root{--qx-mobile-gutter:clamp(12px,3.5vw,22px)}
 html{scroll-behavior:smooth;scroll-padding-top:72px}body{overflow-x:hidden;min-width:320px;padding-bottom:env(safe-area-inset-bottom)}
@@ -248,6 +242,14 @@ button,select,input,textarea{touch-action:manipulation}button,.btn,.market-tab,.
   <span class="brand-copy"><span class="brand-name">QX <b>EXCHANGE</b></span><span class="brand-tagline">GLOBAL SOLANA EXCHANGE</span></span>
  </a>
  <div class="qx-header-controls">
+<div class="qx-nav-area">
+<button id="qxNavToggle" class="qx-nav-toggle" type="button" aria-label="Open main menu" aria-expanded="false" aria-controls="qxNavMenu"><svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+<div id="qxNavMenu" class="qx-nav-menu" aria-hidden="true" hidden>
+<button type="button" class="qx-nav-item" data-page="marketsPage">Markets</button>
+<button type="button" class="qx-nav-item" data-page="walletPage">Wallet</button>
+<button type="button" class="qx-nav-item" data-page="createPage">Create Token</button>
+</div>
+</div>
 <div class="qx-menu-area qx-preferences-area">
   <button class="qx-menu-toggle qx-preferences-toggle" id="qxMenuToggle" type="button" aria-label="Language and currency settings" aria-expanded="false" aria-controls="qxMainMenu"><span id="qxPreferencesButtonText">EN · USD</span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m3 6 5 5 5-5"/></svg></button>
   <div class="qx-main-menu qx-preferences-popover" id="qxMainMenu" aria-hidden="true">
@@ -666,6 +668,11 @@ function showPage(id){
   p.setAttribute("aria-hidden",String(!active));
   if("inert" in p)p.inert=!active;
  });
+ document.querySelectorAll(".qx-nav-item").forEach(b=>{
+  const active=b.dataset.page===id;
+  b.classList.toggle("active",active);
+  if(active)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current");
+ });
  qxCloseMainMenu();
  window.dispatchEvent(new CustomEvent("QXPageChanged",{detail:{pageId:id,requestedPageId:requestedId}}));
  const embeddedTarget=(requestedId==="launchPage"||requestedId==="creatorPage")?document.getElementById(requestedId):null;
@@ -696,7 +703,9 @@ if(qxMenuToggle&&qxMainMenu){
  document.addEventListener("click",e=>{if(!e.target.closest(".qx-menu-area"))qxCloseMainMenu();});
  document.addEventListener("keydown",e=>{if(e.key==="Escape")qxCloseMainMenu();});
 }
-function qxCloseNavMenu(){}
+const qxNavToggle=document.getElementById("qxNavToggle"),qxNavMenu=document.getElementById("qxNavMenu");
+function qxCloseNavMenu(){if(!qxNavToggle||!qxNavMenu)return;qxNavMenu.hidden=true;qxNavMenu.setAttribute("aria-hidden","true");qxNavToggle.setAttribute("aria-expanded","false");}
+if(qxNavToggle&&qxNavMenu){qxNavToggle.addEventListener("click",()=>{qxCloseMainMenu();const open=qxNavMenu.hidden;qxNavMenu.hidden=!open;qxNavMenu.setAttribute("aria-hidden",String(!open));qxNavToggle.setAttribute("aria-expanded",String(open));});document.addEventListener("click",e=>{if(!e.target.closest(".qx-nav-area"))qxCloseNavMenu();});document.addEventListener("keydown",e=>{if(e.key==="Escape"){qxCloseNavMenu();qxCloseMainMenu();}});}
 document.addEventListener("click",e=>{
  const button=e.target.closest("[data-page]");
  if(button&&!button.closest("#qxMainMenu"))showPage(button.dataset.page);
@@ -2011,21 +2020,17 @@ function qxNormalizeMeteoraLegacyTransaction(sourceTx,payer,latestBlockhash){
 async function qxPreflightMeteoraLaunchTransaction(sourceTx,payer,connection,label,extraSigners=[]){
  const latest=await connection.getLatestBlockhash("confirmed");
  const tx=qxNormalizeMeteoraLegacyTransaction(sourceTx,payer,latest);
- if(extraSigners.length)tx.partialSign(...extraSigners);
+ // Local keypair signatures are intentionally deferred until after Phantom signs.
  let bytes;
  try{bytes=tx.serialize({requireAllSignatures:false,verifySignatures:false});}
  catch(error){throw new Error("QX could not serialize the Meteora "+label+" transaction before wallet approval. No signature was requested. "+(error?.message||String(error)));}
  if(bytes.length>1232)throw new Error("The Meteora "+label+" transaction is "+bytes.length+" bytes; Solana's transaction limit is 1,232 bytes. No signature was requested.");
  try{
-  // A Legacy Transaction has two classes of required signatures here:
-  // the connected wallet (payer), which Phantom must add later, and QX's
-  // ephemeral Meteora keypair (Config for Config; mint for Pool). Passing
-  // only the ephemeral keypair to Connection.simulateTransaction() makes
-  // web3.js try to serialize a fully signed transaction and can throw
-  // the opaque "!signature" assertion because the wallet has not signed yet.
-  // Simulate the partially-signed wire message through Solana RPC with
-  // sigVerify:false. This validates account/program execution without asking
-  // Phantom to sign early or pretending the wallet signature exists.
+  // Keep every signer slot unsigned before the wallet prompt. Simulate the
+  // exact message through Solana RPC with sigVerify:false, then let Phantom
+  // sign first and collect QX's required Meteora keypair signatures afterward.
+  // This follows Phantom's multi-signer transaction guidance and lets its own
+  // simulator inspect the transaction before any non-wallet signature exists.
   if(!Array.isArray(extraSigners)||extraSigners.length===0){
    throw new Error("QX launch transaction is missing its required Meteora keypair signer. No wallet signature was requested.");
   }
@@ -2055,14 +2060,23 @@ async function qxPreflightMeteoraLaunchTransaction(sourceTx,payer,connection,lab
  return tx;
 }
 async function qxSendWalletTx(tx,signer,connection,extraSigners=[]){
- if(!tx||typeof tx.partialSign!=="function")throw new Error("QX received an invalid Meteora transaction before wallet approval.");
+ if(!tx||typeof tx.partialSign!=="function"||typeof tx.compileMessage!=="function")throw new Error("QX received an invalid Meteora transaction before wallet approval.");
  if(!Array.isArray(extraSigners)||!extraSigners.length)throw new Error("QX is missing the required Meteora keypair signer. No wallet signature was requested.");
- for(const kp of extraSigners)tx.partialSign(kp);
  const message=tx.compileMessage();
  const required=message.accountKeys.slice(0,message.header.numRequiredSignatures).map(k=>k.toBase58());
- const signedLocally=new Set(extraSigners.map(k=>k.publicKey.toBase58()));
- const missingBeforeWallet=required.filter(k=>k!==message.accountKeys[0].toBase58()&&!signedLocally.has(k));
- if(missingBeforeWallet.length)throw new Error("Meteora transaction is missing required local signatures: "+missingBeforeWallet.join(", ")+". No wallet signature was requested.");
+ const payerAddress=tx.feePayer?.toBase58?.()||message.accountKeys[0]?.toBase58?.();
+ if(!payerAddress||required[0]!==payerAddress)throw new Error("Meteora transaction fee payer does not match the connected wallet. No wallet signature was requested.");
+ const localSignerAddresses=extraSigners.map(kp=>kp?.publicKey?.toBase58?.()).filter(Boolean);
+ if(localSignerAddresses.length!==extraSigners.length)throw new Error("QX received an invalid Meteora local signer. No wallet signature was requested.");
+ const missingLocal=required.filter(address=>address!==payerAddress&&!localSignerAddresses.includes(address));
+ const unexpectedLocal=localSignerAddresses.filter(address=>!required.includes(address));
+ if(missingLocal.length||unexpectedLocal.length){
+  throw new Error("Meteora signer set is invalid. Missing local signers: "+(missingLocal.join(", ")||"none")+". Unexpected local signers: "+(unexpectedLocal.join(", ")||"none")+". No wallet signature was requested.");
+ }
+ // Phantom's developer guidance: ask the wallet to sign first, then collect
+ // the remaining required local keypair signatures on the returned transaction.
+ // Pre-signing the transaction before Phantom can prevent Phantom's simulator
+ // from accurately understanding a multi-signer transaction.
  let signed;
  try{
   signed=await signer.signTransaction(tx);
@@ -2073,10 +2087,22 @@ async function qxSendWalletTx(tx,signer,connection,extraSigners=[]){
   }
   throw new Error("Wallet could not approve the QX launch transaction. "+raw);
  }
- if(!signed||typeof signed.serialize!=="function")throw new Error("The wallet did not return a serializable signed transaction.");
- const sig=await connection.sendRawTransaction(signed.serialize(),{skipPreflight:false,preflightCommitment:"confirmed",maxRetries:3});
- const bh=tx.recentBlockhash;
- const conf=await connection.confirmTransaction({signature:sig,blockhash:bh,lastValidBlockHeight:tx.lastValidBlockHeight},"confirmed");
+ if(!signed||typeof signed.serialize!=="function"||typeof signed.partialSign!=="function")throw new Error("The wallet did not return a transaction that can safely collect the remaining Meteora signatures.");
+ const signedMessage=signed.compileMessage();
+ const signedPayer=signed.feePayer?.toBase58?.()||signedMessage.accountKeys[0]?.toBase58?.();
+ const payerSignature=signed.signatures?.find(entry=>entry.publicKey?.toBase58?.()===payerAddress)?.signature;
+ if(signedPayer!==payerAddress||!payerSignature)throw new Error("Phantom did not return the connected wallet's required transaction signature. The transaction was not submitted.");
+ // Add only the exact Meteora keypairs required by this transaction, after
+ // the wallet signature has been returned. No other signer is accepted.
+ signed.partialSign(...extraSigners);
+ const missingSignatures=(signed.signatures||[]).filter(entry=>!entry.signature).map(entry=>entry.publicKey?.toBase58?.()||"unknown");
+ if(missingSignatures.length)throw new Error("The Meteora transaction is still missing signatures for: "+missingSignatures.join(", ")+". It was not submitted.");
+ let rawTransaction;
+ try{rawTransaction=signed.serialize();}
+ catch(error){throw new Error("QX could not serialize the fully signed Meteora transaction. It was not submitted. "+(error?.message||String(error)));}
+ const sig=await connection.sendRawTransaction(rawTransaction,{skipPreflight:false,preflightCommitment:"confirmed",maxRetries:3});
+ const bh=signed.recentBlockhash;
+ const conf=await connection.confirmTransaction({signature:sig,blockhash:bh,lastValidBlockHeight:signed.lastValidBlockHeight},"confirmed");
  if(conf.value?.err)throw new Error("On-chain transaction failed: "+JSON.stringify(conf.value.err));
  return sig;
 }
