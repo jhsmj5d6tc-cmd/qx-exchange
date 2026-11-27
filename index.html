@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#080711">
 <meta name="google-site-verification" content="A5ntuJ6pvvK-Uo8HHA96o5bUPFGOg_70p-Nh_rsZ8NM">
 <title>QX Exchange — Solana Token Discovery</title>
-<meta name="qx-build" content="QX-ROOT-LAUNCH-SWAP-FIX-V123">
+<meta name="qx-build" content="QX-MOBILE-COMFORT-CURRENCY-V122">
 
 
 
@@ -226,6 +226,21 @@ button,select,input,textarea{touch-action:manipulation}button,.btn,.market-tab,.
 @media(max-width:620px){#publicAdsList .qx-trending-track{gap:8px;animation-duration:28s;}#publicAdsList .qx-trending-card{flex-basis:210px;width:210px;}}
 @media(prefers-reduced-motion:reduce){#publicAdsList .qx-trending-track{animation:none;overflow-x:auto;}}
 </style>
+
+<style id="qx-official-token-card-style">
+.qx-official-token{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 14px;padding:13px 14px;border:1px solid rgba(164,126,255,.42);border-radius:14px;background:linear-gradient(110deg,rgba(104,68,171,.19),rgba(17,13,30,.94) 62%);box-shadow:inset 0 1px 0 rgba(255,255,255,.035)}
+.qx-official-token-main{display:flex;align-items:center;gap:11px;min-width:0}
+.qx-official-token-mark{width:42px;height:42px;flex:0 0 42px;display:grid;place-items:center;border-radius:13px;background:linear-gradient(145deg,#9b73ff,#4d2d91);color:#fff;font-weight:950;font-size:15px;letter-spacing:-.7px;box-shadow:0 5px 18px #6c45b744}
+.qx-official-token-copy{min-width:0}
+.qx-official-token-kicker{display:block;margin-bottom:4px;color:#c4a9ff;font-size:9px;font-weight:900;letter-spacing:1px}
+.qx-official-token-name{display:block;color:#fff;font-size:14px;font-weight:900;line-height:1.2}
+.qx-official-token-address{display:block;max-width:min(64vw,410px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:5px;color:#a99dbd;font:10px ui-monospace,SFMono-Regular,Menlo,monospace}
+.qx-official-token-actions{display:flex;gap:7px;flex:0 0 auto}
+.qx-official-token-actions button{min-height:36px;padding:0 10px;border:1px solid rgba(173,145,230,.35);border-radius:9px;background:rgba(139,92,246,.13);color:#eee5ff;font-size:10px;font-weight:850;cursor:pointer}
+.qx-official-token-actions .qx-official-open{background:#a78bfa;color:#130b23;border-color:#a78bfa}
+@media(max-width:560px){.qx-official-token{align-items:flex-start;flex-wrap:wrap}.qx-official-token-main{width:100%}.qx-official-token-actions{width:100%}.qx-official-token-actions button{flex:1}.qx-official-token-address{max-width:calc(100vw - 105px)}}
+</style>
+
 </head>
 <body>
 <div class="wrap">
@@ -248,6 +263,8 @@ button,select,input,textarea{touch-action:manipulation}button,.btn,.market-tab,.
 <button type="button" class="qx-nav-item" data-page="marketsPage">Markets</button>
 <button type="button" class="qx-nav-item" data-page="walletPage">Wallet</button>
 <button type="button" class="qx-nav-item" data-page="createPage">Create Token</button>
+<button type="button" class="qx-nav-item" data-page="launchPage">Launch Market</button>
+<button type="button" class="qx-nav-item" data-page="creatorPage">Creator Dashboard</button>
 </div>
 </div>
 <div class="qx-menu-area qx-preferences-area">
@@ -304,17 +321,6 @@ button,select,input,textarea{touch-action:manipulation}button,.btn,.market-tab,.
   </div>
   <div class="qx-pnl-note" id="qxPnlNote">P&amp;L uses confirmed QX swaps recorded by this browser. Older transactions that were not recorded by QX cannot be reconstructed from this local history.</div>
  </section>
-
-  <div class="qx-embedded-section-divider" aria-hidden="true"></div>
-  <section id="creatorPage" class="qx-embedded-page-section" aria-label="creatorPage">
- <div class="market-heading"><h2>Creator Dashboard</h2><span class="tag">QX CREATOR</span></div>
- <section class="panel">
-  <div class="small">Your QX launches are checked against the global launch registry and Solana mainnet pool records. Local-only records are marked as pending until verified.</div>
-  <div id="creatorIdentity" style="margin:14px 0;font-weight:700">Connect your wallet to load your launches.</div>
-  <button class="btn primary" type="button" id="creatorRefreshBtn">REFRESH CREATOR DATA</button>
-  <div id="creatorLaunches" style="margin-top:16px"></div>
- </section>
-</section>
 </main>
 
 
@@ -353,9 +359,10 @@ button,select,input,textarea{touch-action:manipulation}button,.btn,.market-tab,.
   </div>
   <p class="small" style="margin-top:16px">The successful result is verified from Solana: mint + Meteora DBC pool + launch configuration. QX creation fee is 0 SOL; only required Solana network costs apply. A token is not marked as launched merely because it was saved in browser storage.</p>
  </section>
+</main>
 
-  <div class="qx-embedded-section-divider" aria-hidden="true"></div>
-  <section id="launchPage" class="qx-embedded-page-section" aria-label="launchPage">
+
+<main id="launchPage" class="page">
  <div class="market-heading"><h2>QX Launch</h2><span class="tag">REAL SOLANA LAUNCH</span></div>
  <section class="panel qx-launch-hero">
   <div class="tag">QX DYNAMIC BONDING CURVE</div>
@@ -393,11 +400,7 @@ button,select,input,textarea{touch-action:manipulation}button,.btn,.market-tab,.
   </div>
   <p id="launchChainStatus" class="small" style="margin-top:10px">On-chain graduation status will appear here after the launch is created.</p>
  </section>
-</section>
 </main>
-
-
-
 
 <main id="marketsPage" class="page active qx-v2-markets">
   <section class="qx-discovery-hero">
@@ -431,6 +434,22 @@ button,select,input,textarea{touch-action:manipulation}button,.btn,.market-tab,.
       <div><span class="qx-section-kicker">MARKETS</span><h2>Solana market terminal</h2></div>
       <div class="qx-market-head-actions"><button class="qx-icon-btn" type="button" title="Refresh markets" onclick="window.QXRefreshMarkets?.()">↻</button><button class="btn primary" type="button" onclick="showPage('createPage')">＋ CREATE</button></div>
     </div>
+
+    <section class="qx-official-token" id="qxOfficialTokenCard" aria-label="Official QX token">
+      <div class="qx-official-token-main">
+        <div class="qx-official-token-mark" aria-hidden="true">QX</div>
+        <div class="qx-official-token-copy">
+          <span class="qx-official-token-kicker">OFFICIAL QX TOKEN · SOLANA</span>
+          <strong class="qx-official-token-name">QX</strong>
+          <code class="qx-official-token-address" id="qxOfficialTokenAddress">D4TV2CnbbN69qPNqavTbHguBbcerFcE2FacbgS4Dpump</code>
+        </div>
+      </div>
+      <div class="qx-official-token-actions">
+        <button type="button" id="qxOfficialCopyBtn" onclick="window.QXCopyOfficialContract()">COPY CONTRACT</button>
+        <button type="button" class="qx-official-open" onclick="window.QXOpenTokenByMint('D4TV2CnbbN69qPNqavTbHguBbcerFcE2FacbgS4Dpump')">VIEW TOKEN</button>
+      </div>
+    </section>
+
     <div class="qx-market-toolbar">
       <div class="qx-search-wrap"><span>⌕</span><input id="search" type="search" aria-label="Search Solana tokens by name, symbol, or contract address" placeholder="Search token, symbol or contract" autocomplete="off" enterkeyhint="search"><button id="searchBtn" type="button">SEARCH</button></div>
       <div class="qx-quick-links"><button type="button" onclick="showPage('walletPage')">PORTFOLIO</button><button type="button" onclick="showPage('launchPage')">LAUNCH</button></div>
@@ -571,7 +590,15 @@ button,select,input,textarea{touch-action:manipulation}button,.btn,.market-tab,.
   </section>
 </main>
 
-
+<main id="creatorPage" class="page">
+ <div class="market-heading"><h2>Creator Dashboard</h2><span class="tag">QX CREATOR</span></div>
+ <section class="panel">
+  <div class="small">Your QX launches are checked against the global launch registry and Solana mainnet pool records. Local-only records are marked as pending until verified.</div>
+  <div id="creatorIdentity" style="margin:14px 0;font-weight:700">Connect your wallet to load your launches.</div>
+  <button class="btn primary" type="button" id="creatorRefreshBtn">REFRESH CREATOR DATA</button>
+  <div id="creatorLaunches" style="margin-top:16px"></div>
+ </section>
+</main>
 
 
 
@@ -651,13 +678,6 @@ button,select,input,textarea{touch-action:manipulation}button,.btn,.market-tab,.
 <script>
 function showPage(id){
  qxCloseMainMenu();qxCloseNavMenu();
- // Leaving Markets closes the active token terminal cleanly before another page is shown.
- if(id!=="marketsPage"&&document.body.classList.contains("qx-token-open")&&typeof window.QXCloseTokenTerminal==="function"){
-  window.QXCloseTokenTerminal();
- }
- const requestedId=id;
- if(id==="launchPage")id="createPage";
- if(id==="creatorPage")id="walletPage";
  const target=document.getElementById(id);
  if(!target||!target.classList.contains("page"))return false;
  document.body.classList.toggle("qx-wallet-active",id==="walletPage");
@@ -674,10 +694,8 @@ function showPage(id){
   if(active)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current");
  });
  qxCloseMainMenu();
- window.dispatchEvent(new CustomEvent("QXPageChanged",{detail:{pageId:id,requestedPageId:requestedId}}));
- const embeddedTarget=(requestedId==="launchPage"||requestedId==="creatorPage")?document.getElementById(requestedId):null;
- if(embeddedTarget){embeddedTarget.scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"start"});}
- else{window.scrollTo({top:0,behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"});}
+ window.dispatchEvent(new CustomEvent("QXPageChanged",{detail:{pageId:id}}));
+ window.scrollTo({top:0,behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"});
  return true;
 }
 
@@ -1881,15 +1899,6 @@ function parseTokenUnits(value,decimals){
  if(raw<=0n||raw>18446744073709551615n)throw new Error("Supply must be greater than zero and fit the SPL token limit.");
  return raw;
 }
-async function qxAwaitRpc(promise,timeoutMs=4500,label="Solana RPC request"){
- let timer=null;
- try{
-  return await Promise.race([
-   Promise.resolve(promise),
-   new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error(label+" timed out after "+timeoutMs+"ms. No transaction was signed.")),Math.max(500,Number(timeoutMs)||4500));})
-  ]);
- }finally{if(timer)clearTimeout(timer);}
-}
 async function qxProbeRpcEndpoint(endpoint,signal=null){
  const controller=signal?null:new AbortController(),activeSignal=signal||controller.signal;let timer=null;
  if(controller)timer=setTimeout(()=>controller.abort(),3500);
@@ -1905,15 +1914,9 @@ async function qxGetHealthyConnection(){
  const ordered=available.length?available:RPCS;
  const controllers=[];
  const attempts=ordered.map(async endpoint=>{
-  const controller=new AbortController();controllers.push(controller);let timer=null;
-  try{
-   await Promise.race([
-    qxProbeRpcEndpoint(endpoint,controller.signal),
-    new Promise((_,reject)=>{timer=setTimeout(()=>{controller.abort();reject(new Error("RPC health check timed out after 3500ms"));},3500);})
-   ]);
-   qxRpcMarkSuccess(endpoint);return {endpoint,connection:new Connection(endpoint,"confirmed"),controller};
-  }catch(error){qxRpcMarkFailure(endpoint,error);throw new Error(endpoint+": "+(error?.message||String(error)));}
-  finally{if(timer)clearTimeout(timer);}
+  const controller=new AbortController();controllers.push(controller);
+  try{await qxProbeRpcEndpoint(endpoint,controller.signal);qxRpcMarkSuccess(endpoint);return {endpoint,connection:new Connection(endpoint,"confirmed"),controller};}
+  catch(error){qxRpcMarkFailure(endpoint,error);throw new Error(endpoint+": "+(error?.message||String(error)));}
  });
  try{
   const winner=await Promise.any(attempts);
@@ -2020,36 +2023,14 @@ function qxNormalizeMeteoraLegacyTransaction(sourceTx,payer,latestBlockhash){
 async function qxPreflightMeteoraLaunchTransaction(sourceTx,payer,connection,label,extraSigners=[]){
  const latest=await connection.getLatestBlockhash("confirmed");
  const tx=qxNormalizeMeteoraLegacyTransaction(sourceTx,payer,latest);
- // Local keypair signatures are intentionally deferred until after Phantom signs.
+ if(extraSigners.length)tx.partialSign(...extraSigners);
  let bytes;
  try{bytes=tx.serialize({requireAllSignatures:false,verifySignatures:false});}
  catch(error){throw new Error("QX could not serialize the Meteora "+label+" transaction before wallet approval. No signature was requested. "+(error?.message||String(error)));}
  if(bytes.length>1232)throw new Error("The Meteora "+label+" transaction is "+bytes.length+" bytes; Solana's transaction limit is 1,232 bytes. No signature was requested.");
  try{
-  // Keep every signer slot unsigned before the wallet prompt. Simulate the
-  // exact message through Solana RPC with sigVerify:false, then let Phantom
-  // sign first and collect QX's required Meteora keypair signatures afterward.
-  // This follows Phantom's multi-signer transaction guidance and lets its own
-  // simulator inspect the transaction before any non-wallet signature exists.
-  if(!Array.isArray(extraSigners)||extraSigners.length===0){
-   throw new Error("QX launch transaction is missing its required Meteora keypair signer. No wallet signature was requested.");
-  }
-  const message=tx.compileMessage();
-  const required=message.accountKeys.slice(0,message.header.numRequiredSignatures).map(k=>k.toBase58());
-  const payerAddress=payer.toBase58();
-  const localSignerAddresses=new Set(extraSigners.map(k=>k.publicKey.toBase58()));
-  const missingLocal=required.filter(k=>k!==payerAddress&&!localSignerAddresses.has(k));
-  if(missingLocal.length){
-   throw new Error("Meteora "+label+" transaction requires an unexpected local signer: "+missingLocal.join(", ")+". No wallet signature was requested.");
-  }
-  const partialBytes=tx.serialize({requireAllSignatures:false,verifySignatures:false});
-  const encoded=qxBytesToB64(partialBytes);
-  if(typeof connection._rpcRequest!=="function")throw new Error("The Solana RPC connection does not expose raw transaction simulation.");
-  const rpcResult=await connection._rpcRequest("simulateTransaction",[encoded,{encoding:"base64",sigVerify:false,replaceRecentBlockhash:false,commitment:"confirmed"}]);
-  const simulation=rpcResult?.result;
-  if(rpcResult?.error)throw new Error(rpcResult.error.message||JSON.stringify(rpcResult.error));
-  if(!simulation?.value)throw new Error("Solana RPC returned an invalid simulation response.");
-  if(simulation.value.err){
+  const simulation=await connection.simulateTransaction(tx,{commitment:"confirmed",sigVerify:false,replaceRecentBlockhash:false});
+  if(simulation?.value?.err){
    const logs=Array.isArray(simulation.value.logs)?simulation.value.logs:[];
    throw new Error("QX Meteora "+label+" preflight failed: "+JSON.stringify(simulation.value.err)+(logs.length?" · "+logs.slice(-5).join(" | "):""));
   }
@@ -2060,23 +2041,7 @@ async function qxPreflightMeteoraLaunchTransaction(sourceTx,payer,connection,lab
  return tx;
 }
 async function qxSendWalletTx(tx,signer,connection,extraSigners=[]){
- if(!tx||typeof tx.partialSign!=="function"||typeof tx.compileMessage!=="function")throw new Error("QX received an invalid Meteora transaction before wallet approval.");
- if(!Array.isArray(extraSigners)||!extraSigners.length)throw new Error("QX is missing the required Meteora keypair signer. No wallet signature was requested.");
- const message=tx.compileMessage();
- const required=message.accountKeys.slice(0,message.header.numRequiredSignatures).map(k=>k.toBase58());
- const payerAddress=tx.feePayer?.toBase58?.()||message.accountKeys[0]?.toBase58?.();
- if(!payerAddress||required[0]!==payerAddress)throw new Error("Meteora transaction fee payer does not match the connected wallet. No wallet signature was requested.");
- const localSignerAddresses=extraSigners.map(kp=>kp?.publicKey?.toBase58?.()).filter(Boolean);
- if(localSignerAddresses.length!==extraSigners.length)throw new Error("QX received an invalid Meteora local signer. No wallet signature was requested.");
- const missingLocal=required.filter(address=>address!==payerAddress&&!localSignerAddresses.includes(address));
- const unexpectedLocal=localSignerAddresses.filter(address=>!required.includes(address));
- if(missingLocal.length||unexpectedLocal.length){
-  throw new Error("Meteora signer set is invalid. Missing local signers: "+(missingLocal.join(", ")||"none")+". Unexpected local signers: "+(unexpectedLocal.join(", ")||"none")+". No wallet signature was requested.");
- }
- // Phantom's developer guidance: ask the wallet to sign first, then collect
- // the remaining required local keypair signatures on the returned transaction.
- // Pre-signing the transaction before Phantom can prevent Phantom's simulator
- // from accurately understanding a multi-signer transaction.
+ for(const kp of extraSigners)tx.partialSign(kp);
  let signed;
  try{
   signed=await signer.signTransaction(tx);
@@ -2087,22 +2052,10 @@ async function qxSendWalletTx(tx,signer,connection,extraSigners=[]){
   }
   throw new Error("Wallet could not approve the QX launch transaction. "+raw);
  }
- if(!signed||typeof signed.serialize!=="function"||typeof signed.partialSign!=="function")throw new Error("The wallet did not return a transaction that can safely collect the remaining Meteora signatures.");
- const signedMessage=signed.compileMessage();
- const signedPayer=signed.feePayer?.toBase58?.()||signedMessage.accountKeys[0]?.toBase58?.();
- const payerSignature=signed.signatures?.find(entry=>entry.publicKey?.toBase58?.()===payerAddress)?.signature;
- if(signedPayer!==payerAddress||!payerSignature)throw new Error("Phantom did not return the connected wallet's required transaction signature. The transaction was not submitted.");
- // Add only the exact Meteora keypairs required by this transaction, after
- // the wallet signature has been returned. No other signer is accepted.
- signed.partialSign(...extraSigners);
- const missingSignatures=(signed.signatures||[]).filter(entry=>!entry.signature).map(entry=>entry.publicKey?.toBase58?.()||"unknown");
- if(missingSignatures.length)throw new Error("The Meteora transaction is still missing signatures for: "+missingSignatures.join(", ")+". It was not submitted.");
- let rawTransaction;
- try{rawTransaction=signed.serialize();}
- catch(error){throw new Error("QX could not serialize the fully signed Meteora transaction. It was not submitted. "+(error?.message||String(error)));}
- const sig=await connection.sendRawTransaction(rawTransaction,{skipPreflight:false,preflightCommitment:"confirmed",maxRetries:3});
- const bh=signed.recentBlockhash;
- const conf=await connection.confirmTransaction({signature:sig,blockhash:bh,lastValidBlockHeight:signed.lastValidBlockHeight},"confirmed");
+ if(!signed||typeof signed.serialize!=="function")throw new Error("The wallet did not return a serializable signed transaction.");
+ const sig=await connection.sendRawTransaction(signed.serialize(),{skipPreflight:false,preflightCommitment:"confirmed",maxRetries:3});
+ const bh=tx.recentBlockhash;
+ const conf=await connection.confirmTransaction({signature:sig,blockhash:bh,lastValidBlockHeight:tx.lastValidBlockHeight},"confirmed");
  if(conf.value?.err)throw new Error("On-chain transaction failed: "+JSON.stringify(conf.value.err));
  return sig;
 }
@@ -2844,7 +2797,7 @@ async function qxVerifyConfirmedSwapOnChain(signature, tokenMint, direction, wal
 async function qxAssertSignedTransactionFresh(connection,lastValidBlockHeight,routeLabel){
  const last=Number(lastValidBlockHeight);
  if(!Number.isSafeInteger(last)||last<=0)throw new Error(routeLabel+" did not provide a valid lastValidBlockHeight. The signed transaction was not submitted.");
- const current=await qxAwaitRpc(connection.getBlockHeight("confirmed"),4500,routeLabel+" expiry check");
+ const current=await connection.getBlockHeight("confirmed");
  if(!Number.isFinite(current)||last-current<=8)throw new Error(routeLabel+" transaction expired or was too close to expiry while the wallet was open. The signed transaction was not submitted. Request a fresh quote and approve the new transaction.");
  return current;
 }
@@ -3195,11 +3148,11 @@ async function qxExecuteJupiterRouterSwap(q){
  const all=[...(build.setupInstructions||[]).map(qxBuildApiInstruction),qxBuildApiInstruction(build.swapInstruction),...(build.cleanupInstruction?[qxBuildApiInstruction(build.cleanupInstruction)]:[]),...(build.otherInstructions||[]).map(qxBuildApiInstruction),...(build.tipInstruction?[qxBuildApiInstruction(build.tipInstruction)]:[])];
  const lookup=[];
  for(const address of Object.keys(build.addressesByLookupTableAddress||{})){
-  const result=await qxAwaitRpc(connection.getAddressLookupTable(new PublicKey(address)),4500,"Jupiter address lookup table read");
+  const result=await connection.getAddressLookupTable(new PublicKey(address));
   if(!result?.value)throw new Error("A Jupiter address lookup table could not be loaded. No transaction was signed.");
   lookup.push(result.value);
  }
- const latest=await qxAwaitRpc(connection.getLatestBlockhash("confirmed"),4500,"Jupiter recent blockhash request");
+ const latest=await connection.getLatestBlockhash("confirmed");
  // QX measures compute usage locally and supplies its own unit-limit instruction.
  // Jupiter's build response may also include SetComputeUnitLimit; including both
  // produces a duplicate Compute Budget variant and can fail simulation before
@@ -3207,12 +3160,11 @@ async function qxExecuteJupiterRouterSwap(q){
  const budget=(build.computeBudgetInstructions||[]).map(qxBuildApiInstruction).filter(ix=>!(ix.programId?.equals?.(ComputeBudgetProgram.programId)&&ix.data?.[0]===2));
  const compile=(units)=>new VersionedTransaction(new TransactionMessage({payerKey:owner,recentBlockhash:latest.blockhash,instructions:[ComputeBudgetProgram.setComputeUnitLimit({units}),...budget,...all]}).compileToV0Message(lookup));
  let tx=compile(1400000);
- qxSetSwapStatus("Simulating the Jupiter transaction before opening Phantom…");
- const simulation=await qxAwaitRpc(connection.simulateTransaction(tx,{commitment:"confirmed",sigVerify:false}),6000,"Jupiter transaction simulation");
+ const simulation=await connection.simulateTransaction(tx,{commitment:"confirmed",sigVerify:false});
  if(simulation.value?.err)throw new Error("Jupiter Router transaction simulation failed: "+JSON.stringify(simulation.value.err)+". No transaction was signed.");
  const used=Number(simulation.value?.unitsConsumed||0),units=used>0?Math.min(1400000,Math.ceil(used*1.2)):1400000;
  tx=compile(units);
- qxSetSwapStatus("Jupiter Router simulation passed. Opening Phantom now — review and approve the swap there…");
+ qxSetSwapStatus("Router route simulated successfully. Approve the real transaction in your wallet…");
  const signed=await provider.signTransaction(tx);if(!signed?.serialize)throw new Error("The wallet did not return a signed Router transaction.");
  if(q.tokenMint!==selectedToken?.baseToken?.address||q.walletAddress!==walletAddress||Number(q.amount)!==Number($("tradeAmountInput")?.value||0))throw new Error("Trade details changed during wallet approval. The signed transaction was not submitted.");
  await qxAssertSignedTransactionFresh(connection,latest.lastValidBlockHeight,"Jupiter Router");
@@ -3391,7 +3343,6 @@ async function qxExecuteSwap(){
   finally{swapBusy=false;if(routerButton)routerButton.disabled=!(Number($("tradeAmountInput")?.value)>0)||!connected||!selectedToken;}
   return;
  }
- qxSetSwapStatus("Preparing your Jupiter transaction. Checking the wallet and Solana connection before opening Phantom…");
  const executionBalanceReady=await qxRefreshTradeBalancesBounded();
  const executionRoute=pendingSwapOrder?.route||"JUPITER";
  // A direct-route balance read is a convenience/safety check, not a network
@@ -3444,70 +3395,37 @@ async function qxExecuteSwap(){
   if(requestedReferralFee>0&&!Number.isFinite(returnedFeeBps))throw new Error("Jupiter returned invalid referral fee metadata. Request a fresh order.");
   const provider=window.QXGetActiveWalletProvider?.()||null;
   if(typeof provider?.signTransaction!=="function")throw new Error("The connected wallet cannot sign this swap. Reconnect your wallet and try again.");
-  // Jupiter V2 uses different expiry clocks by router:
-  // Metis/Dflow/OKX are bounded by lastValidBlockHeight; JupiterZ RFQ
-  // orders are bounded by expireAt. The previous fixed 80-block buffer
-  // rejected otherwise-valid aggregator orders (and could loop forever
-  // requesting another order). Enforce the provider's real expiry instead.
-  const routerName=String(order.router||"").toLowerCase();
-  const isJupiterRfq=routerName==="jupiterz";
-  let orderLastValid=0,orderExpireAtMs=0,expiryConnection=null;
-  const refreshJupiterOrder=async(message)=>{
+  // Check Jupiter's actual Solana block-height expiry, not only quote age.
+  // Orders with less than ~32 seconds of lifetime are refreshed before Phantom.
+  const orderLastValid=Number(order.lastValidBlockHeight);
+  if(!Number.isSafeInteger(orderLastValid)||orderLastValid<=0)throw new Error("Jupiter's order did not include a valid lastValidBlockHeight. No transaction was signed.");
+  const expiryConnection=await qxGetHealthyConnection();
+  const preSignHeight=await expiryConnection.getBlockHeight("confirmed");
+  if(!Number.isFinite(preSignHeight)||orderLastValid-preSignHeight<80){
    pendingSwapOrder=null;
-   qxSetSwapStatus(message);
+   qxSetSwapStatus("The Jupiter order is too close to expiry. QX is requesting a new live order; review the refreshed amount before approving.");
    await qxRequestLiveQuote();
-   throw new Error("Jupiter order refreshed. Review the new output amount and confirm again.");
-  };
-  if(isJupiterRfq){
-   const rawExpiry=order.expireAt;
-   orderExpireAtMs=typeof rawExpiry==="number"?(rawExpiry<1e12?rawExpiry*1000:rawExpiry):Date.parse(String(rawExpiry||""));
-   if(!Number.isFinite(orderExpireAtMs)||orderExpireAtMs<=0)throw new Error("JupiterZ did not return a valid RFQ expireAt timestamp. No transaction was signed.");
-   if(orderExpireAtMs-Date.now()<1500)await refreshJupiterOrder("The JupiterZ RFQ quote has expired or is too close to expiry. Requesting a fresh quote…");
-  }else{
-   orderLastValid=Number(order.lastValidBlockHeight);
-   if(!Number.isSafeInteger(orderLastValid)||orderLastValid<=0)throw new Error("Jupiter aggregator order did not include a valid lastValidBlockHeight. No transaction was signed.");
-   expiryConnection=await qxGetHealthyConnection();
-   qxSetSwapStatus("Checking the Jupiter order expiry on Solana before requesting wallet approval…");
-   const preSignHeight=await qxAwaitRpc(expiryConnection.getBlockHeight("confirmed"),4500,"Jupiter order expiry check");
-   // Do not discard a still-valid Jupiter order merely because it is within
-   // an arbitrary 12-block safety window. On mobile wallets, the extra RPC
-   // balance/health checks can consume that window and cause an endless
-   // refresh-confirm-refresh loop. Jupiter's lastValidBlockHeight is the
-   // authoritative expiry boundary: refresh only after the chain has passed it.
-   if(!Number.isFinite(preSignHeight)||preSignHeight>orderLastValid){
-    await refreshJupiterOrder("The Jupiter aggregator transaction has actually expired. Requesting a fresh executable order…");
-   }
+   throw new Error("The previous Jupiter order was near expiry and was not signed. A fresh quote has been requested; review it and press Buy again.");
   }
-  qxSetSwapStatus("Jupiter transaction is ready. Opening Phantom now — review and approve the swap there…");
+  qxSetSwapStatus("Preparing the real Jupiter V2 transaction. Approve it in your connected wallet…");
   const tx=VersionedTransaction.deserialize(qxB64ToBytes(order.transaction));
   if(!tx.message?.staticAccountKeys?.some?.(k=>String(k?.toBase58?.()||k||"")===String(walletAddress)))throw new Error("The Jupiter transaction does not target the connected wallet. No transaction was signed.");
   const signed=await provider.signTransaction(tx);
   if(!signed||typeof signed.serialize!=="function")throw new Error("The wallet did not return a signed Solana transaction.");
   if(q.tokenMint!==selectedToken?.baseToken?.address||q.walletAddress!==walletAddress||Number(q.amount)!==Number($("tradeAmountInput")?.value||0))throw new Error("The selected token, amount or wallet changed during wallet approval. The signed transaction was not submitted.");
-  // Re-check the correct expiry clock after the wallet prompt. Never submit
-  // an expired signature. If it expired while Phantom was open, discard it
-  // and require a fresh explicit approval; never auto-sign a replacement.
-  if(isJupiterRfq){
-   if(Date.now()>=orderExpireAtMs){
-    pendingSwapOrder=null;
-    qxSetSwapStatus("The JupiterZ RFQ quote expired while the wallet was open. The signed transaction was not submitted. Refreshing the quote…");
-    await qxRequestLiveQuote();
-    throw new Error("The JupiterZ quote expired during wallet approval. Review the refreshed quote and approve again.");
-   }
-  }else{
-   const postSignHeight=await qxAwaitRpc(expiryConnection.getBlockHeight("confirmed"),4500,"Jupiter post-sign expiry check");
-   if(!Number.isFinite(postSignHeight)||postSignHeight>orderLastValid){
-    pendingSwapOrder=null;
-    qxSetSwapStatus("The Jupiter aggregator transaction expired while the wallet was open. The signed transaction was not submitted. Refreshing the quote…");
-    await qxRequestLiveQuote();
-    throw new Error("The Jupiter aggregator transaction expired during wallet approval. Review the refreshed quote and approve again.");
-   }
+  // Phantom approval may outlast the remaining blockhash lifetime. Never send
+  // a signed payload that is already expired or about to expire; discard it,
+  // refresh the quote, and require a new explicit approval.
+  const postSignHeight=await expiryConnection.getBlockHeight("confirmed");
+  if(!Number.isFinite(postSignHeight)||orderLastValid-postSignHeight<=8){
+   pendingSwapOrder=null;
+   qxSetSwapStatus("The Jupiter order expired while Phantom was open. The signed transaction was not submitted. Refreshing the quote; approve only the new order.");
+   await qxRequestLiveQuote();
+   throw new Error("The previous signed order was not submitted because its blockhash lifetime ended during wallet approval. A fresh quote is ready; review it and approve again.");
   }
   const signedTransaction=qxBytesToB64(signed.serialize());
   qxSetSwapStatus("Submitting the signed transaction to Jupiter for on-chain execution and confirmation…");
-  const executePayload={signedTransaction,requestId:order.requestId};
-  if(!isJupiterRfq&&Number.isSafeInteger(orderLastValid))executePayload.lastValidBlockHeight=orderLastValid;
-  const executeResponse=await fetch("https://api.jup.ag/swap/v2/execute",{method:"POST",headers:{"Content-Type":"application/json",accept:"application/json","x-api-key":QX_JUP_API_KEY},body:JSON.stringify(executePayload)});
+  const executeResponse=await fetch("https://api.jup.ag/swap/v2/execute",{method:"POST",headers:{"Content-Type":"application/json",accept:"application/json","x-api-key":QX_JUP_API_KEY},body:JSON.stringify({signedTransaction,requestId:order.requestId,lastValidBlockHeight:order.lastValidBlockHeight})});
   const execution=await executeResponse.json().catch(()=>({}));
   if(!executeResponse.ok)throw new Error(execution.error||execution.errorMessage||("Jupiter execution failed (HTTP "+executeResponse.status+")."));
   const executionStatus=String(execution.status||"").toLowerCase();
@@ -4023,17 +3941,6 @@ function qxSetupChartRanges(token){
 }
 function openToken(token){
  window.__QXTokenUserOpen=true;
- // Re-open the same terminal DOM node from a clean visible state on every token entry.
- const terminalNode=document.getElementById("detail");
- if(terminalNode){
-  terminalNode.hidden=false;
-  terminalNode.removeAttribute("hidden");
-  terminalNode.removeAttribute("aria-hidden");
-  terminalNode.style.removeProperty("visibility");
-  terminalNode.style.removeProperty("opacity");
-  terminalNode.style.removeProperty("pointer-events");
-  terminalNode.style.display="block";
- }
  try{const mint=String(token?.baseToken?.address||token?.address||"");if(mint&&history.pushState){history.pushState({qxTokenMint:mint},"",location.pathname+location.search+"#token="+encodeURIComponent(mint));}}catch(_){}
  /* Keep the existing detail terminal as a single DOM node. It is already placed by QXEnsureTerminalPlacement; do not move it again or switch pages before populating it. */
  window.QXEnsureTerminalPlacement?.();
@@ -5176,16 +5083,8 @@ void loadMarket().then(()=>qxRefreshPublicLiveSnapshots()).catch(e=>console.warn
     try{if(chartHost?.__qxChart?.remove)chartHost.__qxChart.remove();}catch(_){}
     if(chartHost){try{chartHost.__qxResizeObserver?.disconnect();}catch(_){}chartHost.__qxResizeObserver=null;chartHost.__qxChart=null;chartHost.__qxSeries=null;chartHost.__qxLastCandle=null;chartHost.__qxLiveCandle=null;chartHost.dataset.mint="";}
     document.body.classList.remove("qx-token-open","qx-trade-modal-open");
-    // Reset the route/open latch as well as the visual state. Otherwise a stale
-    // token route can block or replay the next token after returning to Markets.
-    window.__QXTokenUserOpen=false;
     const modal=$("qxTradeModal");if(modal)modal.classList.remove("open");
-    const detail=$("detail");if(detail){
-      detail.style.display="none";
-      detail.hidden=false;
-      detail.removeAttribute("hidden");
-      detail.removeAttribute("aria-hidden");
-    }
+    const detail=$("detail");if(detail){detail.style.display="none";detail.hidden=false;detail.removeAttribute("hidden");}
     selectedToken=null;window.__QXSelectedToken=null;window.QXTerminalTokenMint="";pendingSwapOrder=null;
     if(typeof window.QXClearTerminalToken==="function")window.QXClearTerminalToken();
     try{history.replaceState({},"",location.pathname+location.search);}catch(_){}
@@ -5226,10 +5125,6 @@ void loadMarket().then(()=>qxRefreshPublicLiveSnapshots()).catch(e=>console.warn
     if(markets){markets.classList.add('active');markets.setAttribute('aria-hidden','false');markets.style.display='block';if('inert' in markets)markets.inert=false;}
     detail.hidden=false;
     detail.removeAttribute('hidden');
-    detail.removeAttribute('aria-hidden');
-    detail.style.removeProperty('visibility');
-    detail.style.removeProperty('opacity');
-    detail.style.removeProperty('pointer-events');
     detail.style.display='block';
     document.body.classList.add('qx-token-open');
     setWatchButton(token);
@@ -5818,7 +5713,7 @@ void loadMarket().then(()=>qxRefreshPublicLiveSnapshots()).catch(e=>console.warn
  }
  const button=$("creatorRefreshBtn");if(button)button.addEventListener("click",refresh);
  window.addEventListener("QXWalletChanged",refresh);
- window.addEventListener("QXPageChanged",event=>{if(event.detail?.pageId==="walletPage")void refresh();});
+ window.addEventListener("QXPageChanged",event=>{if(event.detail?.pageId==="creatorPage")void refresh();});
  window.addEventListener("QXLanguageChanged",refresh);
 })();
 </script>
@@ -5929,43 +5824,40 @@ body.qx-token-open #detail .qx-full-dex-chart #detailChart{height:350px!importan
 })();
 </script>
 
-<style id="qx-three-independent-pages">
-.qx-embedded-page-section{display:block;position:relative;margin-top:26px;scroll-margin-top:22px;min-width:0}
-.qx-embedded-section-divider{height:1px;margin:28px 0;background:linear-gradient(90deg,transparent,var(--qx-line),transparent)}
-#launchPage>.market-heading,#creatorPage>.market-heading{margin:0 0 12px}
-</style>
-
-<nav class="qx-bottom-navigation" aria-label="Main navigation">
- <button type="button" class="qx-bottom-item" data-page="walletPage" aria-label="Wallet">
-  <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="15" rx="3"/><path d="M3 9h18M16 14h2"/></svg><span>Wallet</span>
- </button>
- <button type="button" class="qx-bottom-item qx-bottom-market active" data-page="marketsPage" aria-label="Markets" aria-current="page">
-  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5M4 19h17M7 15l4-4 3 2 6-7"/></svg><span>Markets</span>
- </button>
- <button type="button" class="qx-bottom-item" data-page="createPage" aria-label="Create Token">
-  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v16M4 12h16"/><circle cx="12" cy="12" r="9"/></svg><span>Create Token</span>
- </button>
-</nav>
-<style id="qx-mobile-three-page-navigation">
-/* Three clear, independent app pages with a persistent, thumb-friendly bottom bar. */
-body{padding-bottom:calc(94px + env(safe-area-inset-bottom))!important;}
-.qx-bottom-navigation{position:fixed!important;inset-inline:0!important;bottom:0!important;z-index:5000!important;display:grid!important;grid-template-columns:1fr 1fr 1fr!important;align-items:stretch!important;gap:8px!important;min-height:76px!important;padding:8px max(14px,env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left))!important;background:rgba(10,8,19,.97)!important;border-top:1px solid rgba(166,135,220,.22)!important;box-shadow:0 -10px 30px rgba(0,0,0,.28)!important;backdrop-filter:blur(18px)!important;-webkit-backdrop-filter:blur(18px)!important;}
-.qx-bottom-item{appearance:none!important;-webkit-appearance:none!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:5px!important;min-width:0!important;min-height:58px!important;padding:6px 4px!important;border:1px solid transparent!important;border-radius:13px!important;background:transparent!important;color:#a9a0ba!important;font:700 11px/1.2 system-ui,sans-serif!important;white-space:nowrap!important;-webkit-tap-highlight-color:transparent!important;touch-action:manipulation!important;}
-.qx-bottom-item svg{width:22px!important;height:22px!important;display:block!important;fill:none!important;stroke:currentColor!important;stroke-width:1.8!important;stroke-linecap:round!important;stroke-linejoin:round!important;}
-.qx-bottom-item.active{color:#58e6b0!important;background:rgba(91,225,176,.09)!important;border-color:rgba(91,225,176,.18)!important;}
-.qx-bottom-market{transform:translateY(-3px)!important;}
-.qx-bottom-item:focus-visible{outline:2px solid #58e6b0!important;outline-offset:2px!important;}
-.page{min-width:0!important;width:100%!important;}
-@media(max-width:600px){.wrap{width:calc(100% - 20px)!important;margin-inline:auto!important;}header{padding-top:max(10px,env(safe-area-inset-top))!important;padding-bottom:15px!important;}.page>.panel,.page>.hero{margin-bottom:12px!important;border-radius:15px!important;}#walletPage,#marketsPage,#createPage{scroll-margin-top:8px!important;}#walletPage .value{font-size:clamp(26px,8vw,34px)!important;}#createPage input,#createPage select,#createPage textarea,#walletPage input,#marketsPage input{font-size:16px!important;}#marketsPage #detail{max-width:100%!important;overflow:hidden!important;}}
-@media(max-width:360px){.qx-bottom-navigation{gap:4px!important;padding-inline:8px!important;}.qx-bottom-item{font-size:10px!important;}.qx-bottom-item svg{width:20px!important;height:20px!important;}.wrap{width:calc(100% - 16px)!important;}}
-@media(prefers-reduced-motion:reduce){.qx-bottom-item,.qx-bottom-market{transition:none!important;transform:none!important;}}
-</style>
-<script id="qx-bottom-navigation-behavior">
-(()=>{
- const nav=document.querySelector('.qx-bottom-navigation');if(!nav)return;
- nav.addEventListener('click',event=>{const button=event.target.closest('button[data-page]');if(!button)return;const page=button.dataset.page;if(typeof window.showPage==='function')window.showPage(page);else return;});
- const sync=()=>{const active=document.querySelector('.page.active');if(!active)return;nav.querySelectorAll('button[data-page]').forEach(button=>{const selected=button.dataset.page===active.id;button.classList.toggle('active',selected);if(selected)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');});};
- window.addEventListener('QXPageChanged',sync);document.addEventListener('DOMContentLoaded',sync);sync();
+<script id="qx-official-token-actions">
+(function(){
+  const officialMint = "D4TV2CnbbN69qPNqavTbHguBbcerFcE2FacbgS4Dpump";
+  window.QXCopyOfficialContract = async function(){
+    const button = document.getElementById("qxOfficialCopyBtn");
+    const original = button ? button.textContent : "COPY CONTRACT";
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(officialMint);
+      } else {
+        const field = document.createElement("textarea");
+        field.value = officialMint;
+        field.setAttribute("readonly", "");
+        field.style.position = "fixed";
+        field.style.opacity = "0";
+        document.body.appendChild(field);
+        field.select();
+        const copied = document.execCommand("copy");
+        field.remove();
+        if (!copied) throw new Error("Clipboard unavailable");
+      }
+      if (button) {
+        button.textContent = "COPIED";
+        window.setTimeout(() => { button.textContent = original; }, 1400);
+      }
+      return true;
+    } catch (error) {
+      if (button) {
+        button.textContent = "COPY FAILED";
+        window.setTimeout(() => { button.textContent = original; }, 1400);
+      }
+      return false;
+    }
+  };
 })();
 </script>
 
