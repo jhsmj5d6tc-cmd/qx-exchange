@@ -248,8 +248,6 @@ button,select,input,textarea{touch-action:manipulation}button,.btn,.market-tab,.
 <button type="button" class="qx-nav-item" data-page="marketsPage">Markets</button>
 <button type="button" class="qx-nav-item" data-page="walletPage">Wallet</button>
 <button type="button" class="qx-nav-item" data-page="createPage">Create Token</button>
-<button type="button" class="qx-nav-item" data-page="launchPage">Launch Market</button>
-<button type="button" class="qx-nav-item" data-page="creatorPage">Creator Dashboard</button>
 </div>
 </div>
 <div class="qx-menu-area qx-preferences-area">
@@ -306,6 +304,17 @@ button,select,input,textarea{touch-action:manipulation}button,.btn,.market-tab,.
   </div>
   <div class="qx-pnl-note" id="qxPnlNote">P&amp;L uses confirmed QX swaps recorded by this browser. Older transactions that were not recorded by QX cannot be reconstructed from this local history.</div>
  </section>
+
+  <div class="qx-embedded-section-divider" aria-hidden="true"></div>
+  <section id="creatorPage" class="qx-embedded-page-section" aria-label="creatorPage">
+ <div class="market-heading"><h2>Creator Dashboard</h2><span class="tag">QX CREATOR</span></div>
+ <section class="panel">
+  <div class="small">Your QX launches are checked against the global launch registry and Solana mainnet pool records. Local-only records are marked as pending until verified.</div>
+  <div id="creatorIdentity" style="margin:14px 0;font-weight:700">Connect your wallet to load your launches.</div>
+  <button class="btn primary" type="button" id="creatorRefreshBtn">REFRESH CREATOR DATA</button>
+  <div id="creatorLaunches" style="margin-top:16px"></div>
+ </section>
+</section>
 </main>
 
 
@@ -344,10 +353,9 @@ button,select,input,textarea{touch-action:manipulation}button,.btn,.market-tab,.
   </div>
   <p class="small" style="margin-top:16px">The successful result is verified from Solana: mint + Meteora DBC pool + launch configuration. QX creation fee is 0 SOL; only required Solana network costs apply. A token is not marked as launched merely because it was saved in browser storage.</p>
  </section>
-</main>
 
-
-<main id="launchPage" class="page">
+  <div class="qx-embedded-section-divider" aria-hidden="true"></div>
+  <section id="launchPage" class="qx-embedded-page-section" aria-label="launchPage">
  <div class="market-heading"><h2>QX Launch</h2><span class="tag">REAL SOLANA LAUNCH</span></div>
  <section class="panel qx-launch-hero">
   <div class="tag">QX DYNAMIC BONDING CURVE</div>
@@ -385,7 +393,11 @@ button,select,input,textarea{touch-action:manipulation}button,.btn,.market-tab,.
   </div>
   <p id="launchChainStatus" class="small" style="margin-top:10px">On-chain graduation status will appear here after the launch is created.</p>
  </section>
+</section>
 </main>
+
+
+
 
 <main id="marketsPage" class="page active qx-v2-markets">
   <section class="qx-discovery-hero">
@@ -559,15 +571,7 @@ button,select,input,textarea{touch-action:manipulation}button,.btn,.market-tab,.
   </section>
 </main>
 
-<main id="creatorPage" class="page">
- <div class="market-heading"><h2>Creator Dashboard</h2><span class="tag">QX CREATOR</span></div>
- <section class="panel">
-  <div class="small">Your QX launches are checked against the global launch registry and Solana mainnet pool records. Local-only records are marked as pending until verified.</div>
-  <div id="creatorIdentity" style="margin:14px 0;font-weight:700">Connect your wallet to load your launches.</div>
-  <button class="btn primary" type="button" id="creatorRefreshBtn">REFRESH CREATOR DATA</button>
-  <div id="creatorLaunches" style="margin-top:16px"></div>
- </section>
-</main>
+
 
 
 
@@ -647,6 +651,13 @@ button,select,input,textarea{touch-action:manipulation}button,.btn,.market-tab,.
 <script>
 function showPage(id){
  qxCloseMainMenu();qxCloseNavMenu();
+ // Leaving Markets closes the active token terminal cleanly before another page is shown.
+ if(id!=="marketsPage"&&document.body.classList.contains("qx-token-open")&&typeof window.QXCloseTokenTerminal==="function"){
+  window.QXCloseTokenTerminal();
+ }
+ const requestedId=id;
+ if(id==="launchPage")id="createPage";
+ if(id==="creatorPage")id="walletPage";
  const target=document.getElementById(id);
  if(!target||!target.classList.contains("page"))return false;
  document.body.classList.toggle("qx-wallet-active",id==="walletPage");
@@ -663,8 +674,10 @@ function showPage(id){
   if(active)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current");
  });
  qxCloseMainMenu();
- window.dispatchEvent(new CustomEvent("QXPageChanged",{detail:{pageId:id}}));
- window.scrollTo({top:0,behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"});
+ window.dispatchEvent(new CustomEvent("QXPageChanged",{detail:{pageId:id,requestedPageId:requestedId}}));
+ const embeddedTarget=(requestedId==="launchPage"||requestedId==="creatorPage")?document.getElementById(requestedId):null;
+ if(embeddedTarget){embeddedTarget.scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"start"});}
+ else{window.scrollTo({top:0,behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"});}
  return true;
 }
 
@@ -3953,6 +3966,17 @@ function qxSetupChartRanges(token){
 }
 function openToken(token){
  window.__QXTokenUserOpen=true;
+ // Re-open the same terminal DOM node from a clean visible state on every token entry.
+ const terminalNode=document.getElementById("detail");
+ if(terminalNode){
+  terminalNode.hidden=false;
+  terminalNode.removeAttribute("hidden");
+  terminalNode.removeAttribute("aria-hidden");
+  terminalNode.style.removeProperty("visibility");
+  terminalNode.style.removeProperty("opacity");
+  terminalNode.style.removeProperty("pointer-events");
+  terminalNode.style.display="block";
+ }
  try{const mint=String(token?.baseToken?.address||token?.address||"");if(mint&&history.pushState){history.pushState({qxTokenMint:mint},"",location.pathname+location.search+"#token="+encodeURIComponent(mint));}}catch(_){}
  /* Keep the existing detail terminal as a single DOM node. It is already placed by QXEnsureTerminalPlacement; do not move it again or switch pages before populating it. */
  window.QXEnsureTerminalPlacement?.();
@@ -5095,8 +5119,16 @@ void loadMarket().then(()=>qxRefreshPublicLiveSnapshots()).catch(e=>console.warn
     try{if(chartHost?.__qxChart?.remove)chartHost.__qxChart.remove();}catch(_){}
     if(chartHost){try{chartHost.__qxResizeObserver?.disconnect();}catch(_){}chartHost.__qxResizeObserver=null;chartHost.__qxChart=null;chartHost.__qxSeries=null;chartHost.__qxLastCandle=null;chartHost.__qxLiveCandle=null;chartHost.dataset.mint="";}
     document.body.classList.remove("qx-token-open","qx-trade-modal-open");
+    // Reset the route/open latch as well as the visual state. Otherwise a stale
+    // token route can block or replay the next token after returning to Markets.
+    window.__QXTokenUserOpen=false;
     const modal=$("qxTradeModal");if(modal)modal.classList.remove("open");
-    const detail=$("detail");if(detail){detail.style.display="none";detail.hidden=false;detail.removeAttribute("hidden");}
+    const detail=$("detail");if(detail){
+      detail.style.display="none";
+      detail.hidden=false;
+      detail.removeAttribute("hidden");
+      detail.removeAttribute("aria-hidden");
+    }
     selectedToken=null;window.__QXSelectedToken=null;window.QXTerminalTokenMint="";pendingSwapOrder=null;
     if(typeof window.QXClearTerminalToken==="function")window.QXClearTerminalToken();
     try{history.replaceState({},"",location.pathname+location.search);}catch(_){}
@@ -5137,6 +5169,10 @@ void loadMarket().then(()=>qxRefreshPublicLiveSnapshots()).catch(e=>console.warn
     if(markets){markets.classList.add('active');markets.setAttribute('aria-hidden','false');markets.style.display='block';if('inert' in markets)markets.inert=false;}
     detail.hidden=false;
     detail.removeAttribute('hidden');
+    detail.removeAttribute('aria-hidden');
+    detail.style.removeProperty('visibility');
+    detail.style.removeProperty('opacity');
+    detail.style.removeProperty('pointer-events');
     detail.style.display='block';
     document.body.classList.add('qx-token-open');
     setWatchButton(token);
@@ -5725,7 +5761,7 @@ void loadMarket().then(()=>qxRefreshPublicLiveSnapshots()).catch(e=>console.warn
  }
  const button=$("creatorRefreshBtn");if(button)button.addEventListener("click",refresh);
  window.addEventListener("QXWalletChanged",refresh);
- window.addEventListener("QXPageChanged",event=>{if(event.detail?.pageId==="creatorPage")void refresh();});
+ window.addEventListener("QXPageChanged",event=>{if(event.detail?.pageId==="walletPage")void refresh();});
  window.addEventListener("QXLanguageChanged",refresh);
 })();
 </script>
@@ -5835,6 +5871,47 @@ body.qx-token-open #detail .qx-full-dex-chart #detailChart{height:350px!importan
  document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&!manuallyStopped&&activeMint&&(!socket||socket.readyState>=WebSocket.CLOSING)){generation++;connect(generation);}});
 })();
 </script>
+
+<style id="qx-three-independent-pages">
+.qx-embedded-page-section{display:block;position:relative;margin-top:26px;scroll-margin-top:22px;min-width:0}
+.qx-embedded-section-divider{height:1px;margin:28px 0;background:linear-gradient(90deg,transparent,var(--qx-line),transparent)}
+#launchPage>.market-heading,#creatorPage>.market-heading{margin:0 0 12px}
+</style>
+
+<nav class="qx-bottom-navigation" aria-label="Main navigation">
+ <button type="button" class="qx-bottom-item" data-page="walletPage" aria-label="Wallet">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="15" rx="3"/><path d="M3 9h18M16 14h2"/></svg><span>Wallet</span>
+ </button>
+ <button type="button" class="qx-bottom-item qx-bottom-market active" data-page="marketsPage" aria-label="Markets" aria-current="page">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5M4 19h17M7 15l4-4 3 2 6-7"/></svg><span>Markets</span>
+ </button>
+ <button type="button" class="qx-bottom-item" data-page="createPage" aria-label="Create Token">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v16M4 12h16"/><circle cx="12" cy="12" r="9"/></svg><span>Create Token</span>
+ </button>
+</nav>
+<style id="qx-mobile-three-page-navigation">
+/* Three clear, independent app pages with a persistent, thumb-friendly bottom bar. */
+body{padding-bottom:calc(94px + env(safe-area-inset-bottom))!important;}
+.qx-bottom-navigation{position:fixed!important;inset-inline:0!important;bottom:0!important;z-index:5000!important;display:grid!important;grid-template-columns:1fr 1fr 1fr!important;align-items:stretch!important;gap:8px!important;min-height:76px!important;padding:8px max(14px,env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left))!important;background:rgba(10,8,19,.97)!important;border-top:1px solid rgba(166,135,220,.22)!important;box-shadow:0 -10px 30px rgba(0,0,0,.28)!important;backdrop-filter:blur(18px)!important;-webkit-backdrop-filter:blur(18px)!important;}
+.qx-bottom-item{appearance:none!important;-webkit-appearance:none!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:5px!important;min-width:0!important;min-height:58px!important;padding:6px 4px!important;border:1px solid transparent!important;border-radius:13px!important;background:transparent!important;color:#a9a0ba!important;font:700 11px/1.2 system-ui,sans-serif!important;white-space:nowrap!important;-webkit-tap-highlight-color:transparent!important;touch-action:manipulation!important;}
+.qx-bottom-item svg{width:22px!important;height:22px!important;display:block!important;fill:none!important;stroke:currentColor!important;stroke-width:1.8!important;stroke-linecap:round!important;stroke-linejoin:round!important;}
+.qx-bottom-item.active{color:#58e6b0!important;background:rgba(91,225,176,.09)!important;border-color:rgba(91,225,176,.18)!important;}
+.qx-bottom-market{transform:translateY(-3px)!important;}
+.qx-bottom-item:focus-visible{outline:2px solid #58e6b0!important;outline-offset:2px!important;}
+.page{min-width:0!important;width:100%!important;}
+@media(max-width:600px){.wrap{width:calc(100% - 20px)!important;margin-inline:auto!important;}header{padding-top:max(10px,env(safe-area-inset-top))!important;padding-bottom:15px!important;}.page>.panel,.page>.hero{margin-bottom:12px!important;border-radius:15px!important;}#walletPage,#marketsPage,#createPage{scroll-margin-top:8px!important;}#walletPage .value{font-size:clamp(26px,8vw,34px)!important;}#createPage input,#createPage select,#createPage textarea,#walletPage input,#marketsPage input{font-size:16px!important;}#marketsPage #detail{max-width:100%!important;overflow:hidden!important;}}
+@media(max-width:360px){.qx-bottom-navigation{gap:4px!important;padding-inline:8px!important;}.qx-bottom-item{font-size:10px!important;}.qx-bottom-item svg{width:20px!important;height:20px!important;}.wrap{width:calc(100% - 16px)!important;}}
+@media(prefers-reduced-motion:reduce){.qx-bottom-item,.qx-bottom-market{transition:none!important;transform:none!important;}}
+</style>
+<script id="qx-bottom-navigation-behavior">
+(()=>{
+ const nav=document.querySelector('.qx-bottom-navigation');if(!nav)return;
+ nav.addEventListener('click',event=>{const button=event.target.closest('button[data-page]');if(!button)return;const page=button.dataset.page;if(typeof window.showPage==='function')window.showPage(page);else return;});
+ const sync=()=>{const active=document.querySelector('.page.active');if(!active)return;nav.querySelectorAll('button[data-page]').forEach(button=>{const selected=button.dataset.page===active.id;button.classList.toggle('active',selected);if(selected)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');});};
+ window.addEventListener('QXPageChanged',sync);document.addEventListener('DOMContentLoaded',sync);sync();
+})();
+</script>
+
 </body>
 </html>
 
