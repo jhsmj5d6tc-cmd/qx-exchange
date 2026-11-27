@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="format-detection" content="telephone=no">
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#080711">
 <meta name="google-site-verification" content="A5ntuJ6pvvK-Uo8HHA96o5bUPFGOg_70p-Nh_rsZ8NM">
 <title>QX Exchange — Solana Token Discovery</title>
@@ -225,102 +225,6 @@ button,select,input,textarea{touch-action:manipulation}button,.btn,.market-tab,.
 @keyframes qxTrendingMarquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 @media(max-width:620px){#publicAdsList .qx-trending-track{gap:8px;animation-duration:28s;}#publicAdsList .qx-trending-card{flex-basis:210px;width:210px;}}
 @media(prefers-reduced-motion:reduce){#publicAdsList .qx-trending-track{animation:none;overflow-x:auto;}}
-</style>
-<style>
-/* QX MOBILE WEBVIEW ROOT FIX: prevent iOS/embedded-wallet text autosizing from changing the page scale. */
-html{width:100%;min-width:0;-webkit-text-size-adjust:100%;text-size-adjust:100%;}
-body{width:100%;min-width:0;max-width:100%;}
-input,select,textarea,button{max-width:100%;}
-@supports (-webkit-touch-callout:none){html{-webkit-text-size-adjust:100%;}body{overflow-x:hidden;}}
-</style>
-<style id="qx-comfort-layout-final">
-/* QX COMFORT LAYOUT — final responsive presentation layer. Functional JS/IDs are preserved. */
-:root{--qx-content-max:1180px;--qx-gutter:clamp(12px,3.5vw,28px);--qx-card-radius:16px;--qx-control-h:42px}
-html,body{width:100%;max-width:100%;overflow-x:hidden}
-body{font-size:15px}
-.wrap{width:calc(100% - (2 * var(--qx-gutter)))!important;max-width:var(--qx-content-max)!important;margin-inline:auto!important}
-.page{width:100%!important;max-width:var(--qx-content-max)!important;margin-inline:auto!important;padding:18px 0 34px!important}
-.page>.hero,.page>.panel,.page>.list{width:100%;max-width:100%;margin-inline:auto}
-button,.btn,select,input,textarea{font-size:16px}
-button,.btn,.market-tab,.qx-nav-item,.qx-preferences-toggle{min-height:42px}
-
-/* WALLET: one asset per comfortable vertical card. */
-#walletPage .hero{padding:clamp(16px,4vw,24px)!important;border-radius:18px!important}
-#walletPage .wallet-value-line{display:flex!important;align-items:center!important;gap:10px!important;flex-wrap:wrap!important}
-#walletPage #totalValue{font-size:clamp(28px,7vw,42px)!important;line-height:1.05!important;font-weight:900!important;letter-spacing:-.7px!important}
-#walletPage .wallet-badges{margin-top:9px!important}
-#walletPage .wallet-actions{margin-top:12px!important}
-#walletPage>.market-heading{margin-top:22px!important}
-#walletPage .list{padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important}
-#walletPage .list>.row.head{display:none!important}
-#walletPage #assetsList{display:grid!important;grid-template-columns:1fr!important;gap:10px!important}
-#walletPage #assetsList .asset-row{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:10px!important;padding:16px!important;border:1px solid rgba(177,139,225,.16)!important;border-radius:16px!important;background:linear-gradient(145deg,rgba(18,15,26,.98),rgba(9,8,13,.98))!important;box-shadow:0 10px 30px rgba(0,0,0,.20)!important;min-height:116px!important}
-#walletPage #assetsList .asset-token{display:flex!important;align-items:center!important;gap:11px!important;min-width:0!important}
-#walletPage #assetsList .asset-logo,#walletPage #assetsList .asset-fallback{width:42px!important;height:42px!important;flex:0 0 42px!important;border-radius:50%!important}
-#walletPage #assetsList .asset-name{display:flex!important;flex-direction:column!important;gap:3px!important;min-width:0!important}
-#walletPage #assetsList .asset-name strong{font-size:15px!important;line-height:1.25!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
-#walletPage #assetsList .asset-name small{font-size:10px!important;color:#9e95aa!important}
-#walletPage #assetsList .asset-number{display:flex!important;justify-content:space-between!important;align-items:baseline!important;gap:12px!important;min-width:0!important;font-size:14px!important;font-weight:800!important;font-variant-numeric:tabular-nums!important;color:#eef0f6!important}
-#walletPage #assetsList .asset-number:nth-child(2)::before{content:"Balance";color:#8d8499;font-size:9px;font-weight:800;letter-spacing:.7px}
-#walletPage #assetsList .asset-number:nth-child(3)::before{content:"Value";color:#8d8499;font-size:9px;font-weight:800;letter-spacing:.7px}
-#walletPage .qx-pnl-panel{margin-top:14px!important}
-#walletPage .qx-pnl-grid,#walletPage .qx-portfolio-summary{grid-template-columns:1fr!important;gap:9px!important}
-
-/* MARKETS: mobile is vertical, desktop retains a useful aligned market table. */
-#marketsPage{width:100%!important;max-width:100%!important}
-#marketsPage .qx-discovery-hero{border-radius:18px!important}
-#marketsPage .qx-market-shell{border-radius:18px!important}
-#marketsPage #tokenResults{min-width:0!important;overflow:visible!important}
-@media(max-width:760px){
- #marketsPage .qx-discovery-hero{padding:16px!important}
- #marketsPage .qx-market-shell{padding:12px!important}
- #marketsPage #tokenResults .qx-market-columns{display:none!important}
- #marketsPage #tokenResults .qx-market-card{display:grid!important;grid-template-columns:minmax(0,1fr)!important;grid-template-areas:"asset" "price" "metrics"!important;gap:10px!important;width:100%!important;min-width:0!important;min-height:0!important;height:auto!important;padding:15px 14px!important;border:1px solid rgba(145,160,190,.13)!important;border-radius:15px!important;margin:0 0 8px!important;background:linear-gradient(145deg,rgba(17,14,23,.98),rgba(8,7,11,.99))!important}
- #marketsPage #tokenResults .coin-button{grid-area:asset!important;display:flex!important;align-items:center!important;gap:11px!important;width:100%!important}
- #marketsPage #tokenResults .coin-logo,#marketsPage #tokenResults .coin-fallback{width:42px!important;height:42px!important;flex-basis:42px!important}
- #marketsPage #tokenResults .coin-title-line strong{font-size:14px!important}
- #marketsPage #tokenResults .coin-info small{font-size:10px!important}
- #marketsPage #tokenResults .coin-inline-meta{margin-top:5px!important}
- #marketsPage #tokenResults .market-card-right{grid-area:price!important;display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;align-items:center!important;justify-content:stretch!important;gap:10px!important;width:100%!important;max-width:none!important}
- #marketsPage #tokenResults .market-price{font-size:16px!important;text-align:left!important}
- #marketsPage #tokenResults .market-change{font-size:11px!important;text-align:right!important}
- #marketsPage #tokenResults .qx-mini-chart{width:100%!important;max-width:130px!important;height:28px!important}
- #marketsPage #tokenResults .qx-row-metrics{grid-area:metrics!important;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;width:100%!important;padding-top:10px!important;border-top:1px solid rgba(145,160,190,.10)!important}
- #marketsPage #tokenResults .qx-row-metrics>span{display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:3px!important;font-size:11px!important;min-width:0!important;text-align:left!important}
- #marketsPage #tokenResults .qx-row-metrics>span:before{font-size:8px!important;color:#77859a!important;font-weight:850!important;letter-spacing:.45px!important}
- #marketsPage #tokenResults .qx-row-metrics>span:nth-child(1):before{content:"24H CHANGE"}
- #marketsPage #tokenResults .qx-row-metrics>span:nth-child(2):before{content:"VOLUME"}
- #marketsPage #tokenResults .qx-row-metrics>span:nth-child(3):before{content:"MARKET CAP"}
- #marketsPage #tokenResults .qx-row-metrics>span:nth-child(4):before{content:"LIQUIDITY"}
-}
-
-/* CREATE / LAUNCH: comfortable single-column mobile forms. */
-#createPage>section,#launchPage>section{border-radius:18px!important}
-@media(max-width:760px){
- #createPage>section,#launchPage>section{padding:15px!important}
- #createPage>section>div[style*="grid-template-columns"],#createPage>section div[style*="grid-template-columns:1fr 1fr"],#launchPage .qx-launch-grid{grid-template-columns:1fr!important}
- #createPage input,#createPage select,#createPage textarea,#launchPage input,#launchPage select,#launchPage textarea{width:100%!important;min-height:44px!important}
-}
-
-/* TRADING page shell. The real existing QX trade ticket remains the execution engine. */
-#tradingPage{display:none}
-#tradingPage.active{display:block!important}
-.qx-trading-shell{max-width:760px!important;margin:0 auto!important}
-.qx-trading-shell .panel{border-radius:18px!important}
-.qx-trading-actions{display:grid!important;grid-template-columns:1fr 1fr!important;gap:10px!important;margin-top:14px!important}
-.qx-trading-actions button{min-height:48px!important;font-weight:900!important}
-.qx-trading-actions .buy{background:#123b2d!important;border-color:#236b50!important;color:#7df0b4!important}
-.qx-trading-actions .sell{background:#421d2b!important;border-color:#78374d!important;color:#ff9bad!important}
-.qx-trading-note{margin-top:12px!important;font-size:11px!important;color:#91879d!important;line-height:1.55!important}
-
-/* Bottom navigation: stable size, no giant scaling inside wallet browsers. */
-.bottom-nav{height:auto!important;min-height:62px!important;padding:8px max(10px,env(safe-area-inset-left)) calc(8px + env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-right))!important}
-.bottom-nav .nav-btn{min-height:46px!important;padding:7px 10px!important;font-size:10px!important}
-@media(max-width:380px){.bottom-nav .nav-btn{font-size:9px!important;padding-inline:7px!important}}
-
-/* RTL: never push controls off-screen. */
-html[dir="rtl"] #walletPage,html[dir="rtl"] #marketsPage,html[dir="rtl"] #createPage,html[dir="rtl"] #launchPage,html[dir="rtl"] #tradingPage{direction:rtl}
-html[dir="rtl"] #walletPage #assetsList .asset-number{direction:ltr}
 </style>
 </head>
 <body>
@@ -2065,7 +1969,16 @@ async function qxUploadTokenMetadataUri(name,symbol,description,image,socials={}
 }
 async function qxSendWalletTx(tx,signer,connection,extraSigners=[]){
  for(const kp of extraSigners)tx.partialSign(kp);
- const signed=await signer.signTransaction(tx);
+ let signed;
+ try{
+  signed=await signer.signTransaction(tx);
+ }catch(walletError){
+  const raw=String(walletError?.message||walletError||"");
+  if(/rejected|reject|denied|declined|cancelled|canceled|blocked/i.test(raw)){
+   throw new Error("Wallet approval was rejected or blocked. No QX token was created.");
+  }
+  throw new Error("Wallet could not approve the QX launch. No QX token was created. "+raw);
+ }
  const sig=await connection.sendRawTransaction(signed.serialize(),{skipPreflight:false,preflightCommitment:"confirmed"});
  const bh=tx.recentBlockhash;
  // The transaction object has the blockhash used to build it; confirm with the same blockhash.
@@ -2189,9 +2102,11 @@ async function qxLaunchToken(options={}){
    firstBuyParam={buyer:payer,receiver:payer,buyAmount:amountIn,minimumAmountOut:simulated.minimumAmountOut,referralTokenAccount:null};
   }
 
-  // SDK v2 returns two unsigned transactions. The config keypair signs the
-  // config transaction; the base-mint keypair signs the pool transaction.
-  status.textContent="Preparing one approval for the complete QX launch…";
+  // Meteora DBC v2 returns TWO dependent transactions. They must remain separate:
+  // 1) create the config, confirm it on-chain;
+  // 2) create the pool + optional first buy using the confirmed config.
+  // Do not merge them: merging changes the SDK's account/compute layout and can
+  // produce wallet preflight failures such as "Invalid arguments" or "request blocked".
   const pair=await client.partner.createConfigAndPoolWithFirstBuy({
    config:config.publicKey,
    feeClaimer:new PublicKey("9C6bcBgeHnRwJfTYKqPjEGeP9egxKWQgR5GCXVSEeDXH"),
@@ -2205,83 +2120,57 @@ async function qxLaunchToken(options={}){
 
   const configTx=pair.createConfigTx;
   const poolTx=pair.createPoolWithFirstBuyTx;
-  if(!configTx?.instructions?.length||!poolTx?.instructions?.length)throw new Error("Meteora did not return both required launch instruction sets. No wallet signature was requested.");
-  // The DBC SDK exposes config and pool creation as two transactions. Their
-  // instructions are ordered into one Solana transaction so the wallet signs once.
-  // The config is initialized before the pool instruction executes in the same atomic transaction.
-  const launchBlock=await connection.getLatestBlockhash("confirmed");
-  const combinedTx=new Transaction({feePayer:payer,recentBlockhash:launchBlock.blockhash});
-  combinedTx.lastValidBlockHeight=launchBlock.lastValidBlockHeight;
-  // Merge duplicate Compute Budget instructions safely: Solana rejects repeated
-  // compute-budget variants in one transaction. Keep the highest requested value.
-  const budgetByTag=new Map(),launchInstructions=[];
-  for(const ix of [...configTx.instructions,...poolTx.instructions]){
-   if(ix.programId?.equals?.(ComputeBudgetProgram.programId)&&ix.data?.length){
-    const tag=ix.data[0],prior=budgetByTag.get(tag);
-    if(!prior){budgetByTag.set(tag,ix);continue;}
-    const readValue=(item)=>tag===2?item.data.readUInt32LE(1):tag===3?Number(item.data.readBigUInt64LE(1)):tag===1?item.data.readUInt32LE(1):0;
-    if([1,2,3].includes(tag)&&readValue(ix)>readValue(prior))budgetByTag.set(tag,ix);
-    continue;
-   }
-   launchInstructions.push(ix);
-  }
-  combinedTx.add(...budgetByTag.values(),...launchInstructions);
-  combinedTx.partialSign(config,baseMint);
-  let serializedSize=0;
-  try{serializedSize=combinedTx.serialize({requireAllSignatures:false,verifySignatures:false}).length;}
-  catch(sizeError){throw new Error("QX could not safely prepare the single-signature launch transaction: "+(sizeError?.message||String(sizeError)));}
-  if(serializedSize>1232)throw new Error("Meteora's complete launch instructions exceed Solana's 1,232-byte transaction limit ("+serializedSize+" bytes). QX stopped before asking for a signature; it will not split the launch into extra approvals or create a partial token.");
-  status.textContent="Review and approve the complete QX launch once in your wallet…";
-  // QX token creation is free. The creator pays only Solana network fees and
-  // the required on-chain account rent. The optional Meteora display metadata
-  // PDA is deliberately not a second transaction; token metadata URI is in DBC config.
-  const poolSig=await qxSendWalletTx(combinedTx,signer,connection,[config,baseMint]);
-  const configSig=poolSig;
-  confirmedLaunchTx={name,symbol,decimals,supply:supplyText,initialMarketCap:initialMc,migrationMarketCap:migrationMc,firstBuySol:firstBuy,mint:baseMint.publicKey.toBase58(),config:config.publicKey.toBase58(),configSignature:configSig,poolSignature:poolSig,creator:payer.toBase58(),metadataUri:uri||"",image:image||"",createdAt:Date.now(),feeSol:0,feeStatus:"free QX token creation",qxSupplyShareBps:500,qxSupplyShareReceiver:"9C6bcBgeHnRwJfTYKqPjEGeP9egxKWQgR5GCXVSEeDXH"};
+  if(!configTx?.instructions?.length||!poolTx?.instructions?.length)throw new Error("Meteora did not return both required launch transactions. No wallet signature was requested.");
 
-  // The DBC pool is created on-chain. Graduation is performed by Meteora's
-  // mainnet migration keeper once the configured quote threshold is reached.
-  // Never rediscover this QX pool with getPoolByBaseMint(): that is an indexed
-  // getProgramAccounts-style request and may be rejected by public RPCs with 403.
-  // The confirmed creation transaction already contains the exact pool account.
-  async function qxReadCreatedDbcPoolFromTx(signature, expectedMint, expectedConfig){
-   const endpoints=[connection.rpcEndpoint,...RPCS].filter((v,i,a)=>v&&a.indexOf(v)===i);
-   let lastReadError=null;
-   for(let attempt=0;attempt<6;attempt++){
-    for(const endpoint of endpoints){
-     try{
-      const readerConnection=endpoint===connection.rpcEndpoint?connection:new Connection(endpoint,"confirmed");
-      const readerClient=endpoint===connection.rpcEndpoint?client:new dbc.DynamicBondingCurveClient(readerConnection,"confirmed");
-      const tx=await readerConnection.getTransaction(signature,{commitment:"confirmed",maxSupportedTransactionVersion:0});
-      if(!tx){lastReadError=new Error("Transaction is not indexed by "+endpoint);continue;}
-      if(tx.meta?.err)throw new Error("The pool-creation transaction contains an on-chain error: "+JSON.stringify(tx.meta.err));
-      const keys=[];
-      const pushKey=k=>{const v=String(k?.pubkey?.toBase58?.()||k?.toBase58?.()||k||"");if(qxIsValidSolanaMint(v)&&!keys.includes(v))keys.push(v);};
-      for(const k of (tx.transaction?.message?.staticAccountKeys||tx.transaction?.message?.accountKeys||[]))pushKey(k);
-      for(const k of (tx.meta?.loadedAddresses?.writable||[]))pushKey(k);
-      for(const k of (tx.meta?.loadedAddresses?.readonly||[]))pushKey(k);
-      for(const address of keys){
-       try{
-        const candidate=await readerClient.state.getPool(new PublicKey(address));
-        const state=candidate?.poolState||candidate;
-        if(!candidate||!state)continue;
-        const candidateMint=String(state?.baseMint?.toBase58?.()||state?.baseMint||state?.tokenBaseMint?.toBase58?.()||state?.tokenBaseMint||state?.baseTokenMint?.toBase58?.()||state?.baseTokenMint||"");
-        const candidateConfig=String(state?.config?.toBase58?.()||state?.config||"");
-        if(candidateMint!==String(expectedMint)||candidateConfig!==String(expectedConfig))continue;
-        const publicKey=candidate?.publicKey||candidate?.address||new PublicKey(address);
-        return {...candidate,publicKey,poolState:state};
-       }catch(poolReadError){lastReadError=poolReadError;}
-      }
-      lastReadError=new Error("Transaction was readable at "+endpoint+" but no DBC pool matched the exact mint and config.");
-     }catch(error){
-      if(String(error?.message||"").includes("on-chain error"))throw error;
-      lastReadError=error;
-     }
+  const qxPrepareLaunchTx=async(tx,label)=>{
+   const block=await connection.getLatestBlockhash("confirmed");
+   tx.feePayer=payer;
+   tx.recentBlockhash=block.blockhash;
+   tx.lastValidBlockHeight=block.lastValidBlockHeight;
+   let size=0;
+   try{size=tx.serialize({requireAllSignatures:false,verifySignatures:false}).length;}
+   catch(e){throw new Error("QX could not prepare the Meteora "+label+" transaction. No wallet signature was requested. "+(e?.message||String(e)));}
+   if(size>1232)throw new Error("Meteora "+label+" transaction exceeds Solana's 1,232-byte limit ("+size+" bytes). QX stopped before wallet approval.");
+   try{
+    const simulation=await connection.simulateTransaction(tx,{sigVerify:false,replaceRecentBlockhash:true,commitment:"processed"});
+    if(simulation?.value?.err){
+     const logs=Array.isArray(simulation.value.logs)?simulation.value.logs:[];
+     const detail=logs.slice(-4).join(" | ");
+     throw new Error("QX "+label+" preflight failed before wallet approval."+(detail?" "+detail:""));
     }
-    if(attempt<5)await new Promise(resolve=>setTimeout(resolve,850));
+   }catch(e){
+    if(String(e?.message||"").startsWith("QX "+label+" preflight failed before wallet approval."))throw e;
+    throw new Error("QX could not preflight the Meteora "+label+" transaction before wallet approval. No signature was requested. "+(e?.message||String(e)));
    }
-   throw new Error("The confirmed QX pool transaction did not expose a Meteora DBC account whose base mint AND config exactly match this launch after 6 retries across configured RPC endpoints. QX refused to record an unverified pool. Last read error: "+(lastReadError?.message||String(lastReadError||"unknown")));
+   return tx;
+  };
+
+  // STEP 1 — config. Only this transaction initializes the DBC configuration.
+  status.textContent="Step 1/2 · Approve QX token configuration in your wallet…";
+  await qxPrepareLaunchTx(configTx,"config");
+  const configSig=await qxSendWalletTx(configTx,signer,connection,[config]);
+
+  // The config is now confirmed before the pool transaction is prepared. This
+  // is the critical dependency the previous merged transaction skipped.
+  try{
+   const configCheck=await connection.getSignatureStatus(configSig,{searchTransactionHistory:true});
+   if(configCheck?.value?.err)throw new Error("The QX Meteora config transaction failed on-chain: "+JSON.stringify(configCheck.value.err));
+   if(configCheck?.value?.confirmationStatus!=="finalized")await connection.confirmTransaction(configSig,"confirmed");
+  }catch(e){
+   throw new Error("QX config was signed but could not be confirmed safely. No pool transaction was requested. "+(e?.message||String(e)));
   }
+
+  // Keep the confirmed config in memory so a pool failure can be retried without
+  // generating a second mint/config pair during the same page session.
+  confirmedLaunchTx={name,symbol,decimals,supply:supplyText,initialMarketCap:initialMc,migrationMarketCap:migrationMc,firstBuySol:firstBuy,mint:baseMint.publicKey.toBase58(),config:config.publicKey.toBase58(),configSignature:configSig,poolSignature:"",creator:payer.toBase58(),metadataUri:uri||"",image:image||"",createdAt:Date.now(),feeSol:0,feeStatus:"free QX token creation",qxSupplyShareBps:500,qxSupplyShareReceiver:"9C6bcBgeHnRwJfTYKqPjEGeP9egxKWQgR5GCXVSEeDXH",partialConfigConfirmed:true};
+
+  // STEP 2 — pool + first buy. Refresh the blockhash AFTER config confirmation.
+  status.textContent="Step 2/2 · Approve Meteora pool creation + first buy…";
+  await qxPrepareLaunchTx(poolTx,"pool + first buy");
+  const poolSig=await qxSendWalletTx(poolTx,signer,connection,[baseMint]);
+  confirmedLaunchTx.poolSignature=poolSig;
+  confirmedLaunchTx.partialConfigConfirmed=false;
+
   const poolState=await qxReadCreatedDbcPoolFromTx(poolSig,baseMint.publicKey.toBase58(),config.publicKey.toBase58());
   const poolAddress=poolState?.publicKey?.toBase58?.()||poolState?.address?.toBase58?.()||"";
   if(!poolState||!poolAddress)throw new Error("Meteora confirmed the pool transaction, but QX could not resolve the exact DBC pool account from that transaction. Launch was not recorded as verified.");
@@ -4689,12 +4578,12 @@ async function qxRetryPendingLaunchRegistry(){
   try{media=JSON.parse(localStorage.getItem("qxPendingLaunchRegistryMedia")||"null");}catch(_){media=null;}
   if(image){
    if(String(image.owner||"")!==String(walletAddress)||String(image.mint||"")!==String(record.mint||""))throw new Error("Pending token image does not match the connected creator wallet and mint.");
-   await qxQxTokenMediaUpload({...image,poolSignature:record.poolSignature});
+   await qxQxTokenMediaUpload(image);
    localStorage.removeItem("qxPendingLaunchRegistryImage");
   }
   if(media){
    if(String(media.owner||"")!==String(walletAddress)||String(media.mint||"")!==String(record.mint||""))throw new Error("Pending token metadata does not match the connected creator wallet and mint.");
-   await qxQxTokenMediaUpload({...media,poolSignature:record.poolSignature});
+   await qxQxTokenMediaUpload(media);
   }
   const ok=await qxRegisterVerifiedLaunchGlobally(record);
   if(!ok)return false;
@@ -5822,39 +5711,6 @@ body.qx-token-open #detail .qx-full-dex-chart #detailChart{height:350px!importan
  window.QXStopMarketStream=function(){manuallyStopped=true;generation++;activeMint="";activePool="";activeToken=null;closeSocket();};
  window.addEventListener("online",()=>{if(!manuallyStopped&&activeMint&&(!socket||socket.readyState>=WebSocket.CLOSING)){generation++;connect(generation);}});
  document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&!manuallyStopped&&activeMint&&(!socket||socket.readyState>=WebSocket.CLOSING)){generation++;connect(generation);}});
-})();
-</script>
-
-<script id="qx-comfort-navigation-final">
-(function(){
-  const nav=document.querySelector('.bottom-nav');
-  if(nav&&!document.querySelector('.qx-trading-nav-btn')){
-    const b=document.createElement('button');b.type='button';b.className='nav-btn qx-trading-nav-btn';b.dataset.page='tradingPage';b.setAttribute('aria-label','Trading');b.innerHTML='<svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 18 18 5M8 5h10v10"/></svg><span>Trading</span>';
-    const market=nav.querySelector('[data-page="marketsPage"]');market?nav.insertBefore(b,market):nav.appendChild(b);
-  }
-  if(!document.getElementById('tradingPage')){
-    const main=document.createElement('main');main.id='tradingPage';main.className='page';main.setAttribute('aria-hidden','true');
-    main.innerHTML='<div class="market-heading"><div><h2>Trading</h2><div class="small">QX spot trading</div></div><span class="tag">SOLANA</span></div><section class="panel qx-trading-shell"><div class="tag">TRADING TERMINAL</div><h2 style="margin:10px 0 6px">Buy or sell a token</h2><p class="small">Select a live token from Markets first. QX keeps the existing real quote and wallet-signing engine; this page is only the dedicated trading entry.</p><div class="qx-trading-actions"><button type="button" class="btn buy" data-qx-open-trade="buy">BUY</button><button type="button" class="btn sell" data-qx-open-trade="sell">SELL</button></div><p class="qx-trading-note" id="qxTradingState">No token selected yet. Open Markets and choose a token to trade.</p><button type="button" class="btn" id="qxTradingMarketsBtn" style="width:100%;margin-top:12px">Open Markets</button></section></main>';
-    const firstPage=document.querySelector('main.page');firstPage?.parentNode?.insertBefore(main,firstPage);
-  }
-  function selected(){return window.__QXSelectedToken||window.selectedToken||null}
-  function goMarket(){window.showPage?.('marketsPage')}
-  document.addEventListener('click',function(e){
-    const b=e.target.closest('[data-qx-open-trade]');
-    if(b){
-      const token=selected();
-      if(!token){goMarket();return;}
-      const target=b.dataset.qxOpenTrade;
-      const candidates=document.querySelectorAll('body.qx-token-open .qx-trade-launch button, #detail .qx-trade-launch button');
-      const btn=Array.from(candidates).find(x=>String(x.className).toLowerCase().includes(target));
-      if(btn)btn.click();else goMarket();
-    }
-    if(e.target.closest('#qxTradingMarketsBtn'))goMarket();
-  });
-  window.addEventListener('QXPageChanged',function(e){
-    const state=document.getElementById('qxTradingState');
-    if(state){const token=selected();state.textContent=token?'Selected: '+String(token.baseToken?.name||token.baseToken?.symbol||'Token')+' · choose BUY or SELL.':'No token selected yet. Open Markets and choose a token to trade.';}
-  });
 })();
 </script>
 </body>
