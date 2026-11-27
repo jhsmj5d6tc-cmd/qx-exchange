@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#080711">
 <meta name="google-site-verification" content="A5ntuJ6pvvK-Uo8HHA96o5bUPFGOg_70p-Nh_rsZ8NM">
 <title>QX Exchange — Solana Token Discovery</title>
-<meta name="qx-build" content="QX-MOBILE-COMFORT-CURRENCY-V122">
+<meta name="qx-build" content="QX-ROOT-LAUNCH-SWAP-FIX-V123">
 
 
 
@@ -1998,7 +1998,13 @@ async function qxPreflightMeteoraLaunchTransaction(sourceTx,payer,connection,lab
  catch(error){throw new Error("QX could not serialize the Meteora "+label+" transaction before wallet approval. No signature was requested. "+(error?.message||String(error)));}
  if(bytes.length>1232)throw new Error("The Meteora "+label+" transaction is "+bytes.length+" bytes; Solana's transaction limit is 1,232 bytes. No signature was requested.");
  try{
-  const simulation=await connection.simulateTransaction(tx,{commitment:"confirmed",sigVerify:false,replaceRecentBlockhash:false});
+  // web3.js 1.98.4 has two overloads: Legacy Transaction expects
+  // (transaction, signers?, includeAccounts?), while the config-object
+  // overload belongs to VersionedTransaction. This is a Legacy Transaction;
+  // its required Meteora signer has already been partially signed above.
+  // Passing an empty signer array selects the correct Legacy overload and
+  // avoids the "Invalid arguments" failure before Phantom is opened.
+  const simulation=await connection.simulateTransaction(tx,[]);
   if(simulation?.value?.err){
    const logs=Array.isArray(simulation.value.logs)?simulation.value.logs:[];
    throw new Error("QX Meteora "+label+" preflight failed: "+JSON.stringify(simulation.value.err)+(logs.length?" · "+logs.slice(-5).join(" | "):""));
@@ -3364,67 +3370,65 @@ async function qxExecuteSwap(){
   if(requestedReferralFee>0&&!Number.isFinite(returnedFeeBps))throw new Error("Jupiter returned invalid referral fee metadata. Request a fresh order.");
   const provider=window.QXGetActiveWalletProvider?.()||null;
   if(typeof provider?.signTransaction!=="function")throw new Error("The connected wallet cannot sign this swap. Reconnect your wallet and try again.");
-  // Jupiter V2 has two different expiry contracts: Metis/Dflow/OKX use
-  // lastValidBlockHeight, while JupiterZ RFQ uses the market-maker expireAt
-  // timestamp. Treating every route as a block-height order incorrectly
-  // rejects valid RFQ orders and can force needless re-quotes.
+  // Jupiter V2 uses different expiry clocks by router:
+  // Metis/Dflow/OKX are bounded by lastValidBlockHeight; JupiterZ RFQ
+  // orders are bounded by expireAt. The previous fixed 80-block buffer
+  // rejected otherwise-valid aggregator orders (and could loop forever
+  // requesting another order). Enforce the provider's real expiry instead.
   const routerName=String(order.router||"").toLowerCase();
-  const isJupiterZ=routerName==="jupiterz";
-  const orderLastValid=Number(order.lastValidBlockHeight);
-  let orderExpireAt=0;
-  if(isJupiterZ){
-   const rawExpireAt=order.expireAt;
-   orderExpireAt=typeof rawExpireAt==="number"?(rawExpireAt<1e12?rawExpireAt*1000:rawExpireAt):Date.parse(String(rawExpireAt||""));
-   if(!Number.isFinite(orderExpireAt)||orderExpireAt<=0)throw new Error("JupiterZ did not return a valid RFQ expireAt timestamp. No transaction was signed; request a fresh order.");
-   if(orderExpireAt-Date.now()<15000){
-    pendingSwapOrder=null;
-    qxSetSwapStatus("The JupiterZ RFQ is close to its market-maker expiry. QX is refreshing the order; review the new output before approving.");
-    await qxRequestLiveQuote();
-    throw new Error("The JupiterZ quote was too close to its RFQ expiry and was not signed. A refreshed quote is ready for review.");
-   }
+  const isJupiterRfq=routerName==="jupiterz";
+  let orderLastValid=0,orderExpireAtMs=0,expiryConnection=null;
+  const refreshJupiterOrder=async(message)=>{
+   pendingSwapOrder=null;
+   qxSetSwapStatus(message);
+   await qxRequestLiveQuote();
+   throw new Error("Jupiter order refreshed. Review the new output amount and confirm again.");
+  };
+  if(isJupiterRfq){
+   const rawExpiry=order.expireAt;
+   orderExpireAtMs=typeof rawExpiry==="number"?(rawExpiry<1e12?rawExpiry*1000:rawExpiry):Date.parse(String(rawExpiry||""));
+   if(!Number.isFinite(orderExpireAtMs)||orderExpireAtMs<=0)throw new Error("JupiterZ did not return a valid RFQ expireAt timestamp. No transaction was signed.");
+   if(orderExpireAtMs-Date.now()<1500)await refreshJupiterOrder("The JupiterZ RFQ quote has expired or is too close to expiry. Requesting a fresh quote…");
   }else{
-   if(!Number.isSafeInteger(orderLastValid)||orderLastValid<=0)throw new Error("Jupiter's aggregator order did not include a valid lastValidBlockHeight. No transaction was signed.");
-   const expiryConnection=await qxGetHealthyConnection();
+   orderLastValid=Number(order.lastValidBlockHeight);
+   if(!Number.isSafeInteger(orderLastValid)||orderLastValid<=0)throw new Error("Jupiter aggregator order did not include a valid lastValidBlockHeight. No transaction was signed.");
+   expiryConnection=await qxGetHealthyConnection();
    const preSignHeight=await expiryConnection.getBlockHeight("confirmed");
-   if(!Number.isFinite(preSignHeight)||orderLastValid-preSignHeight<80){
-    pendingSwapOrder=null;
-    qxSetSwapStatus("The Jupiter aggregator order is close to its Solana blockhash expiry. QX is refreshing it; review the new output before approving.");
-    await qxRequestLiveQuote();
-    throw new Error("The previous Jupiter aggregator order was near blockhash expiry and was not signed. A refreshed quote is ready for review.");
+   // A small safety margin only: 12 blocks (~5 seconds), not 80 blocks
+   // (~32 seconds). The signed order is handed to Jupiter immediately.
+   if(!Number.isFinite(preSignHeight)||orderLastValid-preSignHeight<=12){
+    await refreshJupiterOrder("The Jupiter aggregator order is at its actual expiry boundary. Requesting a fresh executable order…");
    }
   }
-  // RFQ landing is managed by Jupiter and is governed by expireAt; do not
-  // make JupiterZ depend on a separate browser RPC being healthy.
-  const expiryConnection=isJupiterZ?null:await qxGetHealthyConnection();
   qxSetSwapStatus("Preparing the real Jupiter V2 transaction. Approve it in your connected wallet…");
   const tx=VersionedTransaction.deserialize(qxB64ToBytes(order.transaction));
   if(!tx.message?.staticAccountKeys?.some?.(k=>String(k?.toBase58?.()||k||"")===String(walletAddress)))throw new Error("The Jupiter transaction does not target the connected wallet. No transaction was signed.");
   const signed=await provider.signTransaction(tx);
   if(!signed||typeof signed.serialize!=="function")throw new Error("The wallet did not return a signed Solana transaction.");
   if(q.tokenMint!==selectedToken?.baseToken?.address||q.walletAddress!==walletAddress||Number(q.amount)!==Number($("tradeAmountInput")?.value||0))throw new Error("The selected token, amount or wallet changed during wallet approval. The signed transaction was not submitted.");
-  // Re-check the expiry contract after wallet approval. RFQ quotes expire by
-  // expireAt; aggregator orders expire by Solana block height. Never submit a
-  // signed transaction after either validity window has closed.
-  if(isJupiterZ){
-   if(Date.now()>=orderExpireAt){
+  // Re-check the correct expiry clock after the wallet prompt. Never submit
+  // an expired signature. If it expired while Phantom was open, discard it
+  // and require a fresh explicit approval; never auto-sign a replacement.
+  if(isJupiterRfq){
+   if(Date.now()>=orderExpireAtMs){
     pendingSwapOrder=null;
-    qxSetSwapStatus("The JupiterZ RFQ expired while the wallet was open. The signed transaction was not submitted. Refreshing the quote for a new approval.");
+    qxSetSwapStatus("The JupiterZ RFQ quote expired while the wallet was open. The signed transaction was not submitted. Refreshing the quote…");
     await qxRequestLiveQuote();
-    throw new Error("The JupiterZ market-maker quote expired during wallet approval. The signed transaction was not submitted; review and approve the refreshed quote.");
+    throw new Error("The JupiterZ quote expired during wallet approval. Review the refreshed quote and approve again.");
    }
   }else{
    const postSignHeight=await expiryConnection.getBlockHeight("confirmed");
-   if(!Number.isFinite(postSignHeight)||orderLastValid-postSignHeight<=8){
+   if(!Number.isFinite(postSignHeight)||postSignHeight>orderLastValid){
     pendingSwapOrder=null;
-    qxSetSwapStatus("The Jupiter order expired while Phantom was open. The signed transaction was not submitted. Refreshing the quote; approve only the new order.");
+    qxSetSwapStatus("The Jupiter aggregator transaction expired while the wallet was open. The signed transaction was not submitted. Refreshing the quote…");
     await qxRequestLiveQuote();
-    throw new Error("The previous signed order was not submitted because its blockhash lifetime ended during wallet approval. A fresh quote is ready; review it and approve again.");
+    throw new Error("The Jupiter aggregator transaction expired during wallet approval. Review the refreshed quote and approve again.");
    }
   }
   const signedTransaction=qxBytesToB64(signed.serialize());
   qxSetSwapStatus("Submitting the signed transaction to Jupiter for on-chain execution and confirmation…");
   const executePayload={signedTransaction,requestId:order.requestId};
-  if(Number.isSafeInteger(orderLastValid)&&orderLastValid>0)executePayload.lastValidBlockHeight=orderLastValid;
+  if(!isJupiterRfq&&Number.isSafeInteger(orderLastValid))executePayload.lastValidBlockHeight=orderLastValid;
   const executeResponse=await fetch("https://api.jup.ag/swap/v2/execute",{method:"POST",headers:{"Content-Type":"application/json",accept:"application/json","x-api-key":QX_JUP_API_KEY},body:JSON.stringify(executePayload)});
   const execution=await executeResponse.json().catch(()=>({}));
   if(!executeResponse.ok)throw new Error(execution.error||execution.errorMessage||("Jupiter execution failed (HTTP "+executeResponse.status+")."));
