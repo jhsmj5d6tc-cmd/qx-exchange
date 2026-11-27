@@ -1967,6 +1967,48 @@ async function qxUploadTokenMetadataUri(name,symbol,description,image,socials={}
  qxPendingLaunchMetadata={owner,mint,mime:"application/json",dataBase64};
  return uri;
 }
+function qxNormalizeMeteoraLegacyTransaction(sourceTx,payer,latestBlockhash){
+ // The Meteora SDK is bundled independently from QX's web3.js import. Rebuild
+ // each SDK transaction with QX's single web3.js runtime so wallet adapters,
+ // serialization and RPC simulation all receive the same Transaction class.
+ if(!sourceTx||!Array.isArray(sourceTx.instructions)||!sourceTx.instructions.length){
+  throw new Error("Meteora returned an empty or unsupported launch transaction.");
+ }
+ const tx=new Transaction({feePayer:payer,recentBlockhash:latestBlockhash.blockhash});
+ tx.lastValidBlockHeight=latestBlockhash.lastValidBlockHeight;
+ const instructions=sourceTx.instructions.map((ix,index)=>{
+  if(!ix?.programId||!Array.isArray(ix.keys)||!(ix.data instanceof Uint8Array||ArrayBuffer.isView(ix.data))){
+   throw new Error("Meteora launch instruction "+index+" is malformed; no wallet signature was requested.");
+  }
+  return new TransactionInstruction({
+   programId:new PublicKey(ix.programId.toBase58?.()||String(ix.programId)),
+   keys:ix.keys.map(meta=>({pubkey:new PublicKey(meta.pubkey.toBase58?.()||String(meta.pubkey)),isSigner:!!meta.isSigner,isWritable:!!meta.isWritable})),
+   data:Uint8Array.from(ix.data)
+  });
+ });
+ tx.add(...instructions);
+ return tx;
+}
+async function qxPreflightMeteoraLaunchTransaction(sourceTx,payer,connection,label,extraSigners=[]){
+ const latest=await connection.getLatestBlockhash("confirmed");
+ const tx=qxNormalizeMeteoraLegacyTransaction(sourceTx,payer,latest);
+ if(extraSigners.length)tx.partialSign(...extraSigners);
+ let bytes;
+ try{bytes=tx.serialize({requireAllSignatures:false,verifySignatures:false});}
+ catch(error){throw new Error("QX could not serialize the Meteora "+label+" transaction before wallet approval. No signature was requested. "+(error?.message||String(error)));}
+ if(bytes.length>1232)throw new Error("The Meteora "+label+" transaction is "+bytes.length+" bytes; Solana's transaction limit is 1,232 bytes. No signature was requested.");
+ try{
+  const simulation=await connection.simulateTransaction(tx,{commitment:"confirmed",sigVerify:false,replaceRecentBlockhash:false});
+  if(simulation?.value?.err){
+   const logs=Array.isArray(simulation.value.logs)?simulation.value.logs:[];
+   throw new Error("QX Meteora "+label+" preflight failed: "+JSON.stringify(simulation.value.err)+(logs.length?" · "+logs.slice(-5).join(" | "):""));
+  }
+ }catch(error){
+  if(String(error?.message||"").includes("preflight failed:"))throw error;
+  throw new Error("QX could not preflight the Meteora "+label+" transaction before wallet approval. No signature was requested. "+(error?.message||String(error)));
+ }
+ return tx;
+}
 async function qxSendWalletTx(tx,signer,connection,extraSigners=[]){
  for(const kp of extraSigners)tx.partialSign(kp);
  let signed;
@@ -1975,13 +2017,13 @@ async function qxSendWalletTx(tx,signer,connection,extraSigners=[]){
  }catch(walletError){
   const raw=String(walletError?.message||walletError||"");
   if(/rejected|reject|denied|declined|cancelled|canceled|blocked/i.test(raw)){
-   throw new Error("Wallet approval was rejected or blocked. No QX token was created.");
+   throw new Error("Wallet approval was rejected or blocked. This transaction was not confirmed.");
   }
-  throw new Error("Wallet could not approve the QX launch. No QX token was created. "+raw);
+  throw new Error("Wallet could not approve the QX launch transaction. "+raw);
  }
- const sig=await connection.sendRawTransaction(signed.serialize(),{skipPreflight:false,preflightCommitment:"confirmed"});
+ if(!signed||typeof signed.serialize!=="function")throw new Error("The wallet did not return a serializable signed transaction.");
+ const sig=await connection.sendRawTransaction(signed.serialize(),{skipPreflight:false,preflightCommitment:"confirmed",maxRetries:3});
  const bh=tx.recentBlockhash;
- // The transaction object has the blockhash used to build it; confirm with the same blockhash.
  const conf=await connection.confirmTransaction({signature:sig,blockhash:bh,lastValidBlockHeight:tx.lastValidBlockHeight},"confirmed");
  if(conf.value?.err)throw new Error("On-chain transaction failed: "+JSON.stringify(conf.value.err));
  return sig;
@@ -2102,9 +2144,8 @@ async function qxLaunchToken(options={}){
    firstBuyParam={buyer:payer,receiver:payer,buyAmount:amountIn,minimumAmountOut:simulated.minimumAmountOut,referralTokenAccount:null};
   }
 
-  // SDK v2 returns two unsigned transactions. The config keypair signs the
-  // config transaction; the base-mint keypair signs the pool transaction.
-  status.textContent="Preparing one approval for the complete QX launch…";
+  // SDK v2 intentionally returns two dependent transactions. Do not merge
+  // them: Config must be confirmed before the pool initializer can execute.
   const pair=await client.partner.createConfigAndPoolWithFirstBuy({
    config:config.publicKey,
    feeClaimer:new PublicKey("9C6bcBgeHnRwJfTYKqPjEGeP9egxKWQgR5GCXVSEeDXH"),
@@ -2115,56 +2156,23 @@ async function qxLaunchToken(options={}){
    preCreatePoolParam:{baseMint:baseMint.publicKey,name,symbol,uri,poolCreator:payer},
    firstBuyParam
   });
+  if(!pair?.createConfigTx?.instructions?.length||!pair?.createPoolWithFirstBuyTx?.instructions?.length){
+   throw new Error("Meteora did not return both required launch transactions. No wallet signature was requested.");
+  }
 
-  const configTx=pair.createConfigTx;
-  const poolTx=pair.createPoolWithFirstBuyTx;
-  if(!configTx?.instructions?.length||!poolTx?.instructions?.length)throw new Error("Meteora did not return both required launch transactions. No wallet signature was requested.");
-
-  // QX launch is intentionally two Solana transactions. Meteora SDK v2 builds
-  // Config and Pool+FirstBuy as separate transactions because they have
-  // different signer sets. They must NOT be merged: merging them changes the
-  // transaction message/signer layout and can produce the wallet adapter error
-  // `undefined is not an object (evaluating 'e.header.numRequiredSignatures')`.
-  const prepareLaunchTx=async(tx,label)=>{
-   if(typeof tx.add!=="function"||typeof tx.serialize!=="function"||typeof tx.partialSign!=="function"){
-    throw new Error("QX received an unsupported Meteora "+label+" transaction type. No wallet signature was requested.");
-   }
-   const bh=await connection.getLatestBlockhash("confirmed");
-   tx.feePayer=payer;
-   tx.recentBlockhash=bh.blockhash;
-   tx.lastValidBlockHeight=bh.lastValidBlockHeight;
-   return tx;
-  };
-  const preflightLaunchTx=async(tx,label,extraSigner)=>{
-   try{
-    tx.partialSign(extraSigner);
-    const simulation=await connection.simulateTransaction(tx,{sigVerify:false,replaceRecentBlockhash:false,commitment:"processed"});
-    if(simulation?.value?.err){
-     const logs=Array.isArray(simulation.value.logs)?simulation.value.logs:[];
-     const detail=logs.slice(-6).join(" | ");
-     throw new Error("QX "+label+" preflight failed before wallet approval."+(detail?" "+detail:""));
-    }
-   }catch(preflightError){
-    if(String(preflightError?.message||"").startsWith("QX "+label+" preflight failed before wallet approval."))throw preflightError;
-    throw new Error("QX could not preflight the Meteora "+label.toLowerCase()+" transaction before wallet approval. No signature was requested. "+(preflightError?.message||String(preflightError)));
-   }
-  };
-
-  status.textContent="Preparing the Meteora config transaction…";
-  await prepareLaunchTx(configTx,"Config");
-  // Only the Config keypair signs this transaction before the wallet signs.
-  await preflightLaunchTx(configTx,"Config",config);
-  status.textContent="Review and approve the Meteora config transaction in your wallet…";
+  status.textContent="Preparing and checking the Meteora Config transaction…";
+  const configTx=await qxPreflightMeteoraLaunchTransaction(pair.createConfigTx,payer,connection,"Config",[config]);
+  status.textContent="Approve the Meteora Config transaction in Phantom…";
   const configSig=await qxSendWalletTx(configTx,signer,connection,[config]);
 
-  // The Pool+FirstBuy transaction must use a fresh recent blockhash and only
-  // the base-mint keypair as its extra signer. It is never combined with Config.
-  status.textContent="Preparing the Meteora pool and first-buy transaction…";
-  await prepareLaunchTx(poolTx,"Pool + First Buy");
-  await preflightLaunchTx(poolTx,"Pool + First Buy",baseMint);
-  status.textContent="Review and approve the Meteora pool + first buy transaction in your wallet…";
+  // The Config account must exist on-chain before the pool transaction is
+  // built/simulated. Fetch a new blockhash after Config confirmation.
+  status.textContent="Config confirmed. Preparing the Pool + First Buy transaction…";
+  const configCheck=await connection.getAccountInfo(config.publicKey,"confirmed");
+  if(!configCheck)throw new Error("Meteora Config transaction was confirmed but the Config account is not readable yet. Config signature: "+configSig+". Do not create another token; retry recovery.");
+  const poolTx=await qxPreflightMeteoraLaunchTransaction(pair.createPoolWithFirstBuyTx,payer,connection,"Pool + First Buy",[baseMint]);
+  status.textContent="Approve the Meteora Pool + First Buy transaction in Phantom…";
   const poolSig=await qxSendWalletTx(poolTx,signer,connection,[baseMint]);
-
   confirmedLaunchTx={name,symbol,decimals,supply:supplyText,initialMarketCap:initialMc,migrationMarketCap:migrationMc,firstBuySol:firstBuy,mint:baseMint.publicKey.toBase58(),config:config.publicKey.toBase58(),configSignature:configSig,poolSignature:poolSig,creator:payer.toBase58(),metadataUri:uri||"",image:image||"",createdAt:Date.now(),feeSol:0,feeStatus:"free QX token creation",qxSupplyShareBps:500,qxSupplyShareReceiver:"9C6bcBgeHnRwJfTYKqPjEGeP9egxKWQgR5GCXVSEeDXH"};
 
   // The DBC pool is created on-chain. Graduation is performed by Meteora's
@@ -2755,6 +2763,13 @@ async function qxVerifyConfirmedSwapOnChain(signature, tokenMint, direction, wal
  }
  throw new Error("Solana confirmed the transaction but its parsed balance effects are not readable yet.");
 }
+async function qxAssertSignedTransactionFresh(connection,lastValidBlockHeight,routeLabel){
+ const last=Number(lastValidBlockHeight);
+ if(!Number.isSafeInteger(last)||last<=0)throw new Error(routeLabel+" did not provide a valid lastValidBlockHeight. The signed transaction was not submitted.");
+ const current=await connection.getBlockHeight("confirmed");
+ if(!Number.isFinite(current)||last-current<=8)throw new Error(routeLabel+" transaction expired or was too close to expiry while the wallet was open. The signed transaction was not submitted. Request a fresh quote and approve the new transaction.");
+ return current;
+}
 async function qxExecuteDammV2Swap(q){
  if(!q||q.route!=="DAMM_V2")throw new Error("No DAMM v2 order is available.");
  const provider=window.QXGetActiveWalletProvider?.()||null;if(typeof provider?.signTransaction!=="function")throw new Error("The connected wallet cannot sign this DAMM v2 trade. Reconnect your wallet and try again.");
@@ -2785,6 +2800,7 @@ async function qxExecuteDammV2Swap(q){
   }
  }
  const signed=await provider.signTransaction(tx);if(!signed?.serialize)throw new Error("The wallet did not return a signed DAMM v2 transaction.");
+ await qxAssertSignedTransactionFresh(connection,latest.lastValidBlockHeight,"Meteora DAMM v2");
  const sig=await connection.sendRawTransaction(signed.serialize(),{skipPreflight:false,preflightCommitment:"confirmed"});
  const conf=await connection.confirmTransaction({signature:sig,blockhash:latest.blockhash,lastValidBlockHeight:latest.lastValidBlockHeight},"confirmed");
  if(conf.value?.err)throw new Error("DAMM v2 swap failed on-chain: "+JSON.stringify(conf.value.err));
@@ -2958,6 +2974,7 @@ async function qxExecuteDirectDbcSwap(q){
   }
  }
  const signed=await provider.signTransaction(swapTx);if(!signed?.serialize)throw new Error("The wallet did not return a signed DBC transaction.");
+ await qxAssertSignedTransactionFresh(connection,latest.lastValidBlockHeight,"Meteora DBC");
  const sig=await connection.sendRawTransaction(signed.serialize(),{skipPreflight:false,preflightCommitment:"confirmed"});
  const conf=await connection.confirmTransaction({signature:sig,blockhash:latest.blockhash,lastValidBlockHeight:latest.lastValidBlockHeight},"confirmed");
  if(conf.value?.err)throw new Error("Direct Meteora DBC swap failed on-chain: "+JSON.stringify(conf.value.err));
@@ -3119,6 +3136,7 @@ async function qxExecuteJupiterRouterSwap(q){
  qxSetSwapStatus("Router route simulated successfully. Approve the real transaction in your wallet…");
  const signed=await provider.signTransaction(tx);if(!signed?.serialize)throw new Error("The wallet did not return a signed Router transaction.");
  if(q.tokenMint!==selectedToken?.baseToken?.address||q.walletAddress!==walletAddress||Number(q.amount)!==Number($("tradeAmountInput")?.value||0))throw new Error("Trade details changed during wallet approval. The signed transaction was not submitted.");
+ await qxAssertSignedTransactionFresh(connection,latest.lastValidBlockHeight,"Jupiter Router");
  const signature=await connection.sendRawTransaction(signed.serialize(),{skipPreflight:false,preflightCommitment:"confirmed",maxRetries:3});
  window.QXLastConfirmedSwapSignature=signature;pendingSwapOrder=null;
  const confirmation=await connection.confirmTransaction({signature,blockhash:latest.blockhash,lastValidBlockHeight:latest.lastValidBlockHeight},"confirmed");
@@ -3346,12 +3364,34 @@ async function qxExecuteSwap(){
   if(requestedReferralFee>0&&!Number.isFinite(returnedFeeBps))throw new Error("Jupiter returned invalid referral fee metadata. Request a fresh order.");
   const provider=window.QXGetActiveWalletProvider?.()||null;
   if(typeof provider?.signTransaction!=="function")throw new Error("The connected wallet cannot sign this swap. Reconnect your wallet and try again.");
+  // Check Jupiter's actual Solana block-height expiry, not only quote age.
+  // Orders with less than ~32 seconds of lifetime are refreshed before Phantom.
+  const orderLastValid=Number(order.lastValidBlockHeight);
+  if(!Number.isSafeInteger(orderLastValid)||orderLastValid<=0)throw new Error("Jupiter's order did not include a valid lastValidBlockHeight. No transaction was signed.");
+  const expiryConnection=await qxGetHealthyConnection();
+  const preSignHeight=await expiryConnection.getBlockHeight("confirmed");
+  if(!Number.isFinite(preSignHeight)||orderLastValid-preSignHeight<80){
+   pendingSwapOrder=null;
+   qxSetSwapStatus("The Jupiter order is too close to expiry. QX is requesting a new live order; review the refreshed amount before approving.");
+   await qxRequestLiveQuote();
+   throw new Error("The previous Jupiter order was near expiry and was not signed. A fresh quote has been requested; review it and press Buy again.");
+  }
   qxSetSwapStatus("Preparing the real Jupiter V2 transaction. Approve it in your connected wallet…");
   const tx=VersionedTransaction.deserialize(qxB64ToBytes(order.transaction));
   if(!tx.message?.staticAccountKeys?.some?.(k=>String(k?.toBase58?.()||k||"")===String(walletAddress)))throw new Error("The Jupiter transaction does not target the connected wallet. No transaction was signed.");
   const signed=await provider.signTransaction(tx);
   if(!signed||typeof signed.serialize!=="function")throw new Error("The wallet did not return a signed Solana transaction.");
   if(q.tokenMint!==selectedToken?.baseToken?.address||q.walletAddress!==walletAddress||Number(q.amount)!==Number($("tradeAmountInput")?.value||0))throw new Error("The selected token, amount or wallet changed during wallet approval. The signed transaction was not submitted.");
+  // Phantom approval may outlast the remaining blockhash lifetime. Never send
+  // a signed payload that is already expired or about to expire; discard it,
+  // refresh the quote, and require a new explicit approval.
+  const postSignHeight=await expiryConnection.getBlockHeight("confirmed");
+  if(!Number.isFinite(postSignHeight)||orderLastValid-postSignHeight<=8){
+   pendingSwapOrder=null;
+   qxSetSwapStatus("The Jupiter order expired while Phantom was open. The signed transaction was not submitted. Refreshing the quote; approve only the new order.");
+   await qxRequestLiveQuote();
+   throw new Error("The previous signed order was not submitted because its blockhash lifetime ended during wallet approval. A fresh quote is ready; review it and approve again.");
+  }
   const signedTransaction=qxBytesToB64(signed.serialize());
   qxSetSwapStatus("Submitting the signed transaction to Jupiter for on-chain execution and confirmation…");
   const executeResponse=await fetch("https://api.jup.ag/swap/v2/execute",{method:"POST",headers:{"Content-Type":"application/json",accept:"application/json","x-api-key":QX_JUP_API_KEY},body:JSON.stringify({signedTransaction,requestId:order.requestId,lastValidBlockHeight:order.lastValidBlockHeight})});
