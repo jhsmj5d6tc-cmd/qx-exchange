@@ -2002,9 +2002,14 @@ async function qxPreflightMeteoraLaunchTransaction(sourceTx,payer,connection,lab
   // (transaction, signers?, includeAccounts?), while the config-object
   // overload belongs to VersionedTransaction. This is a Legacy Transaction;
   // its required Meteora signer has already been partially signed above.
-  // Passing an empty signer array selects the correct Legacy overload and
-  // avoids the "Invalid arguments" failure before Phantom is opened.
-  const simulation=await connection.simulateTransaction(tx,[]);
+  // The Legacy Transaction overload requires its signer keypairs here.
+  // Passing [] drops the Config/Mint signer context and can fail with
+  // "No signers" before Phantom is opened. Reuse the exact internal
+  // signers that were applied above; the connected wallet still signs later.
+  if(!Array.isArray(extraSigners)||extraSigners.length===0){
+   throw new Error("QX launch transaction is missing its required Meteora keypair signer. No wallet signature was requested.");
+  }
+  const simulation=await connection.simulateTransaction(tx,extraSigners);
   if(simulation?.value?.err){
    const logs=Array.isArray(simulation.value.logs)?simulation.value.logs:[];
    throw new Error("QX Meteora "+label+" preflight failed: "+JSON.stringify(simulation.value.err)+(logs.length?" · "+logs.slice(-5).join(" | "):""));
@@ -3394,10 +3399,13 @@ async function qxExecuteSwap(){
    if(!Number.isSafeInteger(orderLastValid)||orderLastValid<=0)throw new Error("Jupiter aggregator order did not include a valid lastValidBlockHeight. No transaction was signed.");
    expiryConnection=await qxGetHealthyConnection();
    const preSignHeight=await expiryConnection.getBlockHeight("confirmed");
-   // A small safety margin only: 12 blocks (~5 seconds), not 80 blocks
-   // (~32 seconds). The signed order is handed to Jupiter immediately.
-   if(!Number.isFinite(preSignHeight)||orderLastValid-preSignHeight<=12){
-    await refreshJupiterOrder("The Jupiter aggregator order is at its actual expiry boundary. Requesting a fresh executable order…");
+   // Do not discard a still-valid Jupiter order merely because it is within
+   // an arbitrary 12-block safety window. On mobile wallets, the extra RPC
+   // balance/health checks can consume that window and cause an endless
+   // refresh-confirm-refresh loop. Jupiter's lastValidBlockHeight is the
+   // authoritative expiry boundary: refresh only after the chain has passed it.
+   if(!Number.isFinite(preSignHeight)||preSignHeight>orderLastValid){
+    await refreshJupiterOrder("The Jupiter aggregator transaction has actually expired. Requesting a fresh executable order…");
    }
   }
   qxSetSwapStatus("Preparing the real Jupiter V2 transaction. Approve it in your connected wallet…");
